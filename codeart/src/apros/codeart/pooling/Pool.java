@@ -1,7 +1,11 @@
 package apros.codeart.pooling;
 
+import static apros.codeart.Util.as;
 import static apros.codeart.i18n.Language.strings;
 
+import java.time.Duration;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -74,8 +78,7 @@ public final class Pool<T> implements AutoCloseable {
 	 */
 	public int getBorrowedCount() {
 		synchronized (_syncRoot) {
-			if (_isDisposed)
-				throw new IllegalStateException(strings("PoolDisposed"));
+			checkDisposed();
 			return _borrowedCount;
 		}
 	}
@@ -89,10 +92,23 @@ public final class Pool<T> implements AutoCloseable {
 	 */
 	public int getWaiterCount() {
 		synchronized (_syncRoot) {
-			if (_isDisposed)
-				throw new IllegalStateException(strings("PoolDisposed"));
+			checkDisposed();
 			return _waiterCount;
 		}
+	}
+
+	/// <summary>
+	/// 借出的数量超过最大值
+	/// </summary>
+	/// <returns></returns>
+	public Boolean isBorrowedOverstep() {
+		synchronized (_syncRoot) {
+			return this.isBorrowedOverstepImpl();
+		}
+	}
+
+	private Boolean isBorrowedOverstepImpl() {
+		return _loanCapacity > 0 && _borrowedCount >= _loanCapacity;
 	}
 
 	/**
@@ -123,25 +139,147 @@ public final class Pool<T> implements AutoCloseable {
 		_maxUses = config.getMaxUses();
 		_fetchOrder = config.getFetchOrder();
 
-		_container = createContainer(config.getPoolCapacity() > 0 ? config.getPoolCapacity() : 10);
+		_container = createContainer();
 	}
 
-	private IPoolContainer<ResidentItem<T>> createContainer(int capacity) {
-		if (_fetchOrder == PoolFetchOrder.Fifo) {
-			return new FifoContainer<ResidentItem>(capacity);
-		} else if (_fetchOrder == PoolFetchOrder.Lifo) {
-			return new LifoContainer<ResidentItem>(capacity);
-		} else {
-			throw new NotSupportedException(string.Format(Strings.NotSupportedPoolFetchOrder, _fetchOrder));
+	public Pool(Supplier<T> itemFactory, BiFunction<T, PoolItemPhase, Boolean> itemFilter, PoolConfig config) {
+		this(itemFactory, itemFilter, null, config);
+	}
+
+	private IPoolContainer<ResidentItem<T>> createContainer() {
+
+		return _fetchOrder == PoolFetchOrder.Fifo ? new FifoContainer<ResidentItem<T>>()
+				: new LifoContainer<ResidentItem<T>>();
+	}
+
+	private void checkDisposed() {
+		if (_isDisposed)
+			throw new IllegalStateException(strings("PoolDisposed"));
+	}
+
+	public IPoolItem<T> borrow() throws PoolingException {
+		ResidentItem<T> resident = null;
+		ArrayList<ResidentItem<T>> expiredItems = null;
+		try {
+			synchronized (_syncRoot) {
+				checkDisposed();
+
+				while (this.isBorrowedOverstepImpl()) {
+					// 当借出的数量超过指定数量时，等待
+					++_waiterCount;
+					_syncRoot.wait();// 释放当前线程对_syncRoot的锁，流放当前线程到等待队列,消费者的线程此时会被阻塞
+					--_waiterCount;
+				}
+
+				while (_container.getCount() > 0) {
+					resident = _container.take();
+					// 如果项的寿命到期或者该项已被抛弃, 或超过了停留时间(停留时间在每次使用后会被刷新)
+					if (isInvalid(resident) || !filter(resident, PoolItemPhase.Leaving)) {
+						if (expiredItems == null)
+							expiredItems = new ArrayList<ResidentItem<T>>();
+						expiredItems.add(resident);// 那么将该项移到过期集合中
+						resident = null;// 重置项指针指向null
+						continue;
+					}
+					break;
+				}
+
+				++_borrowedCount;
+			}
+
+			try {
+				// 如果在容器中没有找到可用的项，那么创建被封装的新项
+				if (resident == null)
+					resident = new ResidentItem<T>(this, _itemFactory.get());
+
+				var borrowedItem = resident.borrow();
+
+				return borrowedItem;
+			} catch (Exception e) {
+				decrementBorrowedCount();// 如果出错，则本次借出失败，减少一次借出的数量(因为之前++_borrowedCount)
+				throw new PoolingException(strings("BorrowPoolItemFailed", this.getClass().getName()), e);
+			}
+		} catch (InterruptedException e) {
+			throw new PoolingException(strings("BorrowPoolItemFailed", this.getClass().getName()), e);
+		} finally {
+			if (expiredItems != null) {
+				for (var item : expiredItems) {
+					discardItem(item);
+				}
+			}
 		}
 	}
 
-	/// <summary>
-	/// 向池中归还项
-	/// </summary>
-	/// <param name="residentItem"></param>
-	void back(ResidentItem<T> residentItem) {
-			DecrementBorrowedCount();
+	/**
+	 * 项是否无效
+	 * 
+	 * @param resident
+	 * @return
+	 */
+	private boolean isInvalid(ResidentItem<T> resident) {
+		return resident.isCorrupted() || isRemainTimeExpired(resident) || isLifespanExpired(resident)
+				|| isOverstepUseCount(resident);
+	}
+
+	/**
+	 * 是否超过了停留时间
+	 * 
+	 * @param residentItem
+	 * @return
+	 */
+	private boolean isRemainTimeExpired(ResidentItem<T> residentItem) {
+
+		return _maxRemainTime > 0
+				&& Duration.between(residentItem.getLastUsedTime(), Instant.now()).getSeconds() >= _maxRemainTime;
+	}
+
+	/**
+	 * 项的寿命是否到期
+	 * 
+	 * @param residentItem
+	 * @return
+	 */
+	private boolean isLifespanExpired(ResidentItem<T> residentItem) {
+
+		return _maxLifespan > 0
+				&& Duration.between(residentItem.getCreateTime(), Instant.now()).getSeconds() >= _maxLifespan;
+	}
+
+	/**
+	 * 超出使用次数
+	 * 
+	 * @param residentItem
+	 * @return
+	 */
+	private boolean isOverstepUseCount(ResidentItem<T> residentItem) {
+		return _maxUses > 0 && residentItem.getUseCount() >= _maxUses;
+	}
+
+	private boolean filter(ResidentItem<T> residentItem, PoolItemPhase phase) {
+		if (_itemFilter == null)
+			return true;
+		return _itemFilter.apply(residentItem.getItem(), phase);
+	}
+
+	/**
+	 * 减少借出数量，同时将等待队列中的一个线程放行到就绪队列中
+	 */
+	private void decrementBorrowedCount() {
+		synchronized (_syncRoot) {
+			--_borrowedCount;
+			if (_waiterCount > 0) {
+				// 将等待队列中的一个线程放行到就绪队列
+				_syncRoot.notify();
+			}
+		}
+	}
+
+	/**
+	 * 向池中归还项
+	 * @param residentItem
+	 */
+	private void back(ResidentItem<T> residentItem) {
+			decrementBorrowedCount();
 
 	     //如果项被显示注明了需要抛弃
 	     //    或者项使用次数超过了限制
@@ -175,6 +313,25 @@ public final class Pool<T> implements AutoCloseable {
 			}
 			if (!returned) //如果没有返回，那么移除项
 	         DiscardItem(residentItem);
+	}
+
+	/**
+	 * 抛弃并释放池中的项
+	 * 
+	 * @param residentItem
+	 * @throws PoolingException
+	 */
+	private void discardItem(ResidentItem<T> residentItem) throws PoolingException {
+		try {
+			if (_itemDestroyer != null)
+				_itemDestroyer.accept(residentItem.getItem());
+
+			var disposableObject = as(residentItem.getItem(), AutoCloseable.class);
+			if (disposableObject != null)
+				disposableObject.close();
+		} catch (Exception e) {
+			throw new PoolingException(strings("DisposePoolItemFailed", this.getClass().getName()), e);
+		}
 	}
 
 	@Override

@@ -15,7 +15,8 @@ class LanguageTest {
 
 	@Test
 	void strings_cannot_empty() {
-		Util.check_strings("cannot_empty", "%s cannot be empty", "%s不能为空", "%sは空ではいけません");
+		Util.check_strings("CannotEmpty", "%s cannot be empty", "%s不能为空", "%sは空ではいけません");
+		Util.check_strings("CannotEmpty", "a cannot be empty", "a不能为空", "aは空ではいけません", "a");
 	}
 
 }
