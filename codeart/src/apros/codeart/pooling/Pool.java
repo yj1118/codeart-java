@@ -1,11 +1,11 @@
 package apros.codeart.pooling;
 
+import static apros.codeart.i18n.Language.strings;
+
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import static apros.codeart.i18n.Language.strings;
 
 public final class Pool<T> implements AutoCloseable {
 
@@ -140,8 +140,7 @@ public final class Pool<T> implements AutoCloseable {
 	/// 向池中归还项
 	/// </summary>
 	/// <param name="residentItem"></param>
-	void back(ResidentItem<T> residentItem)
-		{
+	void back(ResidentItem<T> residentItem) {
 			DecrementBorrowedCount();
 
 	     //如果项被显示注明了需要抛弃
@@ -176,7 +175,7 @@ public final class Pool<T> implements AutoCloseable {
 			}
 			if (!returned) //如果没有返回，那么移除项
 	         DiscardItem(residentItem);
-		}
+	}
 
 	@Override
 	public void close() throws Exception {
