@@ -26,7 +26,12 @@ final class BorrowedItem<T> implements IPoolItem<T> {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void setCorrupted() {
+		_parent.setCorrupted();
+	}
+
+	@Override
+	public void close() throws PoolingException {
 		_parent.back();
 	}
 }

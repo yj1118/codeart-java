@@ -20,7 +20,7 @@ public class Language {
 	}
 
 	public static String strings(Locale locale, String key, Object... args) {
-		return String.format(strings(key), args);
+		return String.format(strings(locale, key), args);
 	}
 
 }

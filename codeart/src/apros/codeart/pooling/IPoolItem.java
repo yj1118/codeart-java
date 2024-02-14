@@ -17,10 +17,18 @@ public interface IPoolItem<T> extends AutoCloseable {
 	T getItem();
 
 	/**
-	 * 获取或设置一个值，表示该项是否是损坏的，如果是损坏的，那么应该从它所属的Pool{T}实例中将该项移除
+	 * 获取一个值，表示该项是否是损坏的，如果是损坏的，那么应该从它所属的Pool{T}实例中将该项移除
 	 * 
 	 * @return
 	 */
 	boolean isCorrupted();
+
+	/**
+	 * 设置项是损坏的
+	 */
+	void setCorrupted();
+
+	@Override
+	void close() throws PoolingException;
 
 }

@@ -19,9 +19,10 @@ public final class Pool<T> implements AutoCloseable {
 	private final Object _syncRoot = new Object();
 	private final Supplier<T> _itemFactory;
 	private final BiFunction<T, PoolItemPhase, Boolean> _itemFilter;
-	private final Consumer<T> _itemDestroyer; // 毁灭者，当项被消除时，会使用该对象进行额外的销毁操作
+	private final Consumer<T> _itemDestroyer; // 当项被消除时，会使用该对象进行额外的销毁操作
 	private IPoolContainer<ResidentItem<T>> _container;
 	private boolean _isDisposed;
+	private int _poolVersion;
 
 	private final PoolFetchOrder _fetchOrder;
 
@@ -154,15 +155,20 @@ public final class Pool<T> implements AutoCloseable {
 
 	private void checkDisposed() {
 		if (_isDisposed)
-			throw new IllegalStateException(strings("PoolDisposed"));
+			throw new IllegalStateException(strings("PoolDisposed", this.getClass().getName()));
 	}
 
 	public IPoolItem<T> borrow() throws PoolingException {
 		ResidentItem<T> resident = null;
 		ArrayList<ResidentItem<T>> expiredItems = null;
 		try {
+
+			int currentPoolVersion;
+
 			synchronized (_syncRoot) {
 				checkDisposed();
+
+				currentPoolVersion = this._poolVersion; // 借出时，池的版本号
 
 				while (this.isBorrowedOverstepImpl()) {
 					// 当借出的数量超过指定数量时，等待
@@ -192,7 +198,7 @@ public final class Pool<T> implements AutoCloseable {
 				if (resident == null)
 					resident = new ResidentItem<T>(this, _itemFactory.get());
 
-				var borrowedItem = resident.borrow();
+				var borrowedItem = resident.borrow(currentPoolVersion);
 
 				return borrowedItem;
 			} catch (Exception e) {
@@ -208,6 +214,67 @@ public final class Pool<T> implements AutoCloseable {
 				}
 			}
 		}
+	}
+
+	/**
+	 * 归还项
+	 * 
+	 * @param item
+	 * @throws PoolingException
+	 */
+	public void back(IPoolItem<T> item) throws PoolingException {
+		item.close();
+	}
+
+	/**
+	 * 使用池中的项
+	 * 
+	 * @param action
+	 * @throws PoolingException
+	 */
+	public void using(Consumer<T> action) throws PoolingException {
+		try (var item = this.borrow()) {
+			try {
+				action.accept(item.getItem());
+			} catch (Exception e) {
+				item.setCorrupted();
+				throw e;
+			}
+		}
+	}
+
+	/**
+	 * 取池中当前项的数量
+	 * 
+	 * @return
+	 */
+	public int getCount() {
+
+		synchronized (_syncRoot) {
+			checkDisposed();
+			return _container.getCount();
+		}
+
+	}
+
+	/**
+	 * 清理池
+	 * 
+	 * @throws PoolingException
+	 */
+	public void clear() throws PoolingException {
+		IPoolContainer<ResidentItem<T>> oldContainer;
+
+		synchronized (_syncRoot) {
+			checkDisposed();
+
+			_poolVersion++; // 更改池版本号，因此，借出的项在归还时，都会被清理
+
+			oldContainer = _container;
+			_container = createContainer();
+		}
+
+		clearPool(oldContainer);
 	}
 
 	/**
@@ -276,43 +343,41 @@ public final class Pool<T> implements AutoCloseable {
 
 	/**
 	 * 向池中归还项
+	 * 
 	 * @param residentItem
+	 * @throws PoolingException
 	 */
-	private void back(ResidentItem<T> residentItem) {
-			decrementBorrowedCount();
+	void back(ResidentItem<T> residentItem) throws PoolingException {
+		decrementBorrowedCount();
 
-	     //如果项被显示注明了需要抛弃
-	     //    或者项使用次数超过了限制
-	     //    或者项在池中的寿命超过了限制
-	     //那么项被需要被抛弃
-	     bool discard = IsExpired(residentItem);
+		// 如果项被显示注明了需要抛弃
+		// 或者项使用次数超过了限制
+		// 或者项在池中的寿命超过了限制
+		// 那么项被需要被抛弃
+		boolean discard = isInvalid(residentItem);
 
-			if (!discard) //如果项没有被抛弃，那么调用过滤方法，进一步判断，是否被抛弃
-	         discard = !_filter(residentItem, PoolItemPhase.Returning);
+		if (!discard) // 如果项没有被抛弃，那么调用过滤方法，进一步判断，是否被抛弃
+			discard = !filter(residentItem, PoolItemPhase.Returning);
 
-			if (discard)
-			{
-				DiscardItem(residentItem);
-				return;
+		if (discard) {
+			discardItem(residentItem);
+			return;
+		}
+
+		boolean returned = false;
+		synchronized (_syncRoot) {
+			if (!_isDisposed && residentItem.getPoolVersionWhenBorrowed() == this._poolVersion
+					&& (_poolCapacity <= 0 || _container.getCount() < _poolCapacity)) {
+				// 如果池没有被释放
+				// 并且项的池版本等于当前池的版本
+				// 并且池中的项数量没有达到限定值
+				// 那么将项放入容器中
+				_container.put(residentItem);
+				returned = true;
 			}
-
-			bool returned = false;
-			lock (_syncRoot)
-			{
-				if (!_isDisposed
-					&& residentItem.PoolVersionWhenBorrowed == this._poolVersion
-					&& (_poolCapacity <= 0 || _container.Count < _poolCapacity))
-				{
-	             //如果池没有被释放
-	             //    并且项的池版本等于当前池的版本
-	             //    并且池中的项数量没有达到限定值
-	             //那么将项放入容器中
-					_container.Put(residentItem);
-					returned = true;
-				}
-			}
-			if (!returned) //如果没有返回，那么移除项
-	         DiscardItem(residentItem);
+		}
+		if (!returned) // 如果没有返回，那么移除项
+			discardItem(residentItem);
 	}
 
 	/**
@@ -334,10 +399,29 @@ public final class Pool<T> implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * 清理池中所有项，并且标示池已被释放，不能再使用
+	 */
 	@Override
 	public void close() throws Exception {
-		// TODO Auto-generated method stub
+		synchronized (_syncRoot) {
+			_isDisposed = true;
+			clearPool(_container);
+		}
 
+	}
+
+	/**
+	 * 实现真正清理池的动作
+	 * 
+	 * @param container
+	 * @throws PoolingException
+	 */
+	private void clearPool(IPoolContainer<ResidentItem<T>> container) throws PoolingException {
+		while (container.getCount() > 0) {
+			var item = container.take();
+			discardItem(item);
+		}
 	}
 
 }

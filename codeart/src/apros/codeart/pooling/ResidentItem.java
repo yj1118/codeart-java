@@ -97,23 +97,39 @@ final class ResidentItem<T> {
 	/**
 	 * 当项要被借出时，需要调用该方法，项不能重复借出
 	 * 
+	 * @param poolVersion 项被借出时，池的版本
+	 * 
 	 * @return 封装了借出的项，释放该项时，对象将返回到池中
 	 */
-	IPoolItem<T> borrow() throws IllegalStateException {
+	IPoolItem<T> borrow(int poolVersion) throws PoolingException {
 		if (_isBorrowed)
-			throw new IllegalStateException(strings("RepeatBorrowingPoolItem"));
+			throw new PoolingException(strings("RepeatBorrowingPoolItem", _owner.getClass().getName()));
 
 		_isBorrowed = true;
+		setPoolVersionWhenBorrowed(poolVersion);
 
 		return _borrowedItem;
 	}
 
 	/**
+	 * 项被借出时，池的版本
+	 */
+	private int _poolVersionWhenBorrowed;
+
+	private void setPoolVersionWhenBorrowed(int poolVersion) {
+		_poolVersionWhenBorrowed = poolVersion;
+	}
+
+	int getPoolVersionWhenBorrowed() {
+		return _poolVersionWhenBorrowed;
+	}
+
+	/**
 	 * 交还对象到所属的池中,当满足PoolConfig配置的条件时，项可能会被丢弃，并且相关的资源会被释放
 	 */
-	public void back() {
+	public void back() throws PoolingException {
 		if (!_isBorrowed)
-			throw new IllegalStateException(strings("CannotReturnPoolItem"));
+			throw new PoolingException(strings("CannotReturnPoolItem", _owner.getClass().getName()));
 		_isBorrowed = false;
 		_lastUsedTime = Instant.now(); // 更新最后一次使用的时间
 		++_useCount;
