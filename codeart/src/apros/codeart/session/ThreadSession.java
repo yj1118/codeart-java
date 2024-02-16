@@ -35,7 +35,7 @@ public final class ThreadSession implements ISession {
 		return local.get().getItem().contains(name);
 	}
 
-	public boolean isInvalid() {
+	public boolean valid() {
 		return local.get() != null;
 	}
 

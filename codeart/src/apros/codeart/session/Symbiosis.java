@@ -6,6 +6,7 @@ import static apros.codeart.runtime.Util.as;
 import java.util.HashSet;
 
 import apros.codeart.IReusable;
+import apros.codeart.pooling.IPoolItem;
 import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
 import apros.codeart.pooling.PoolItemPhase;
@@ -14,13 +15,7 @@ final class Symbiosis implements IReusable {
 
 	private HashSet<Object> _items = new HashSet<Object>();
 
-	/**
-	 * 打开共生器的次数
-	 */
-	private int OpenTimes;
-
 	private Symbiosis() {
-		this.OpenTimes = 0;
 	}
 
 	public void add(Object item) {
@@ -56,7 +51,7 @@ final class Symbiosis implements IReusable {
 		_items.clear();
 	}
 
-	public static Pool<Symbiosis> Pool = new Pool<Symbiosis>(() -> {
+	private static Pool<Symbiosis> _pool = new Pool<Symbiosis>(() -> {
 		return new Symbiosis();
 	}, (sym, phase) -> {
 		if (phase == PoolItemPhase.Returning) {
@@ -65,40 +60,39 @@ final class Symbiosis implements IReusable {
 		return true;
 	}, PoolConfig.onlyMaxRemainTime(300));
 
-	private final String _sessionKey = "__Symbiosis.Current";
+	private final static String _sessionKey = "__Symbiosis.Current";
 
-	/// <summary>
-	/// 当前应用程序会话中是否存在共生器
-	/// </summary>
-	/// <returns></returns>
+	/**
+	 * 当前应用程序会话中是否存在共生器
+	 * 
+	 * @return
+	 */
 	private static boolean ExistsCurrent() {
-		return Session.exists() && Session.getItem < Symbiosis > (_sessionKey) != null;
+		return Session.exists() && Session.getItem(_sessionKey) != null;
 	}
 
-	/// <summary>
-	/// 打开共生器
-	/// </summary>
-	public static Symbiosis Open() {
-		Symbiosis sym;
-		if (ExistsCurrent()) {
-			sym = Current;
-		} else {
-			sym = _pool.Borrow();
-			Current = sym;
-		}
-		sym.OpenTimes++;
-		return sym;
+	/**
+	 * 获取或设置当前会话的数据上下文
+	 * 
+	 * @return
+	 */
+	public static IPoolItem<Symbiosis> getCurrent() {
+		Session.<IPoolItem<Symbiosis>>obtainItem(_sessionKey, () -> {
+			return _pool.borrow();
+		});
+	}
+
+	public static void setCurrent(Symbiosis obj) {
+		Session.setItem(_sessionKey, obj);
 	}
 
 	/// <summary>
 	/// 关闭当前共生器
 	/// </summary>
-	public static void Close() {
-		Symbiosis sym = Current;
-		sym.OpenTimes--;
-		if (sym.OpenTimes == 0) {
-			_pool.Return(sym);
-			Current = null;
+	public static void close() throws Exception {
+		if (ExistsCurrent()) {
+			var sym = Session.<IPoolItem<Symbiosis>>getItem(_sessionKey);
+			_pool.back(sym);
 		}
 	}
 

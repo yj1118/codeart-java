@@ -1,6 +1,7 @@
 package apros.codeart.session;
 
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 /**
  * 应用程序会话，指的是在应用程序执行期间，不同的用户会拥有自己的appSession，该对象仅对当前用户负责
@@ -18,7 +19,6 @@ public final class Session {
 	    try
 	    {
 	        Initialize();
-	        if (useSymbiosis) Symbiosis.Open();
 	        action();
 	    }
 	    catch (Exception)
@@ -59,28 +59,28 @@ public final class Session {
 		return current() != null && current().valid();
 	}
 
-	public static <T> T getOrAddItem(String name, Function<T> factory) {
-		var session = Current;
+	@SuppressWarnings("unchecked")
+	public static <T> T obtainItem(String name, Supplier<T> factory) {
+		var session = current();
 		Object item = session.getItem(name);
 		if (item == null) {
-			item = factory();
-			appSession.SetItem(name, item);
+			item = factory.get();
+			session.setItem(name, item);
 		}
 		return (T) item;
 	}
 
 	public static <T> void setItem(String name, T value) {
-		Current.SetItem(name, value);
+		current().setItem(name, value);
 	}
 
-	public static object GetItem(string name) {
-		return Current.GetItem(name);
-	}
+//	public static Object getItem(String name) {
+//		return current().getItem(name);
+//	}
 
-	public static T GetItem<T>(
-	string name)
-	{
-		return (T) GetItem(name);
+	@SuppressWarnings("unchecked")
+	public static <T> T getItem(String name) {
+		return (T) current().getItem(name);
 	}
 
 }
