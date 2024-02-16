@@ -16,6 +16,12 @@ public class PoolConfig {
 		_loanCapacity = loanCapacity;
 	}
 
+	public static PoolConfig onlyMaxRemainTime(int maxRemainTime) {
+		var config = new PoolConfig();
+		config.setMaxRemainTime(maxRemainTime);
+		return config;
+	}
+
 	private PoolFetchOrder _fetchOrder;
 
 	/**

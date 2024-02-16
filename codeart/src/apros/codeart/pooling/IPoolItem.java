@@ -1,6 +1,8 @@
 package apros.codeart.pooling;
 
-public interface IPoolItem<T> extends AutoCloseable {
+import apros.codeart.IReusable;
+
+public interface IPoolItem<T> extends IReusable {
 
 	/**
 	 * 获取项所属的池
@@ -27,8 +29,5 @@ public interface IPoolItem<T> extends AutoCloseable {
 	 * 设置项是损坏的
 	 */
 	void setCorrupted();
-
-	@Override
-	void close() throws PoolingException;
 
 }

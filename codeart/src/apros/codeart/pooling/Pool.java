@@ -1,7 +1,7 @@
 package apros.codeart.pooling;
 
-import static apros.codeart.Util.as;
 import static apros.codeart.i18n.Language.strings;
+import static apros.codeart.runtime.Util.as;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -18,6 +18,9 @@ public final class Pool<T> implements AutoCloseable {
 	/// </summary>
 	private final Object _syncRoot = new Object();
 	private final Supplier<T> _itemFactory;
+	/**
+	 * 返回true，表示继续使用该项，返回false表示抛弃项
+	 */
 	private final BiFunction<T, PoolItemPhase, Boolean> _itemFilter;
 	private final Consumer<T> _itemDestroyer; // 当项被消除时，会使用该对象进行额外的销毁操作
 	private IPoolContainer<ResidentItem<T>> _container;
@@ -220,26 +223,31 @@ public final class Pool<T> implements AutoCloseable {
 	 * 归还项
 	 * 
 	 * @param item
+	 * @throws Exception
 	 * @throws PoolingException
 	 */
-	public void back(IPoolItem<T> item) throws PoolingException {
-		item.close();
+	public void back(IPoolItem<T> item) throws Exception {
+		item.clear();
 	}
 
 	/**
 	 * 使用池中的项
 	 * 
 	 * @param action
-	 * @throws PoolingException
+	 * @throws Exception
 	 */
-	public void using(Consumer<T> action) throws PoolingException {
-		try (var item = this.borrow()) {
-			try {
-				action.accept(item.getItem());
-			} catch (Exception e) {
+	public void using(Consumer<T> action) throws Exception {
+		IPoolItem<T> item = null;
+		try {
+			item = this.borrow();
+			action.accept(item.getItem());
+		} catch (Exception e) {
+			if (item != null)
 				item.setCorrupted();
-				throw e;
-			}
+			throw e;
+		} finally {
+			if (item != null)
+				item.clear();
 		}
 	}
 

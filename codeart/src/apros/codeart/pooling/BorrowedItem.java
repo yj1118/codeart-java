@@ -31,7 +31,7 @@ final class BorrowedItem<T> implements IPoolItem<T> {
 	}
 
 	@Override
-	public void close() throws PoolingException {
+	public void clear() throws PoolingException {
 		_parent.back();
 	}
 }
