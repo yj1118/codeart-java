@@ -1,8 +1,6 @@
 package apros.codeart.pooling;
 
-import apros.codeart.IReusable;
-
-public interface IPoolItem<T> extends IReusable {
+public interface IPoolItem<T> extends IReusable, AutoCloseable {
 
 	/**
 	 * 获取项所属的池

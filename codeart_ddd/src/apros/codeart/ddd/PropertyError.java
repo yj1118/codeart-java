@@ -25,7 +25,7 @@ public class PropertyError extends ValidationError {
 
 	private static PropertyError CreateReusable(String propertyName, String code, String message)
     {
-        var error = Symbiosis.TryMark(_propertyErrorPool, () =>
+        var error = Session.TryMark(_propertyErrorPool, () =>
         {
             return new PropertyValidationError();
         });

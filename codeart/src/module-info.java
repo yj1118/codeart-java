@@ -5,6 +5,7 @@
  * 
  */
 module apros.codeart {
+	exports apros.codeart;
 	exports apros.codeart.util;
 	exports apros.codeart.i18n;
 	exports apros.codeart.pooling;

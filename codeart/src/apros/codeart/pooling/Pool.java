@@ -150,6 +150,10 @@ public final class Pool<T> implements AutoCloseable {
 		this(itemFactory, itemFilter, null, config);
 	}
 
+	public Pool(Supplier<T> itemFactory, PoolConfig config) {
+		this(itemFactory, null, null, config);
+	}
+
 	private IPoolContainer<ResidentItem<T>> createContainer() {
 
 		return _fetchOrder == PoolFetchOrder.Fifo ? new FifoContainer<ResidentItem<T>>()
@@ -161,7 +165,7 @@ public final class Pool<T> implements AutoCloseable {
 			throw new IllegalStateException(strings("PoolDisposed", this.getClass().getName()));
 	}
 
-	public IPoolItem<T> borrow() throws PoolingException {
+	public IPoolItem<T> borrow() throws Exception {
 		ResidentItem<T> resident = null;
 		ArrayList<ResidentItem<T>> expiredItems = null;
 		try {
@@ -208,7 +212,7 @@ public final class Pool<T> implements AutoCloseable {
 				decrementBorrowedCount();// 如果出错，则本次借出失败，减少一次借出的数量(因为之前++_borrowedCount)
 				throw new PoolingException(strings("BorrowPoolItemFailed", this.getClass().getName()), e);
 			}
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			throw new PoolingException(strings("BorrowPoolItemFailed", this.getClass().getName()), e);
 		} finally {
 			if (expiredItems != null) {
@@ -330,9 +334,15 @@ public final class Pool<T> implements AutoCloseable {
 		return _maxUses > 0 && residentItem.getUseCount() >= _maxUses;
 	}
 
-	private boolean filter(ResidentItem<T> residentItem, PoolItemPhase phase) {
-		if (_itemFilter == null)
+	private boolean filter(ResidentItem<T> residentItem, PoolItemPhase phase) throws Exception {
+		if (_itemFilter == null) {
+			if (phase == PoolItemPhase.Returning && residentItem.isReusable()) {
+				// 如果是可回收的，那么在回到池中时，清理下资源
+				var reusable = (IReusable) residentItem.getItem();
+				reusable.clear();
+			}
 			return true;
+		}
 		return _itemFilter.apply(residentItem.getItem(), phase);
 	}
 
@@ -355,7 +365,7 @@ public final class Pool<T> implements AutoCloseable {
 	 * @param residentItem
 	 * @throws PoolingException
 	 */
-	void back(ResidentItem<T> residentItem) throws PoolingException {
+	void back(ResidentItem<T> residentItem) throws Exception {
 		decrementBorrowedCount();
 
 		// 如果项被显示注明了需要抛弃

@@ -1,0 +1,9 @@
+<config>
+  <codeArt language="zh-CN">
+    <appSession>
+		<start.handles>
+			<handle method="" />
+		</start.handles>
+	</appSession>
+  </codeArt>
+</config>

@@ -1,6 +1,7 @@
 package apros.codeart.pooling;
 
 import static apros.codeart.i18n.Language.strings;
+import static apros.codeart.runtime.Util.is;
 
 import java.time.Instant;
 
@@ -94,6 +95,10 @@ final class ResidentItem<T> {
 		return _useCount;
 	}
 
+	public boolean isReusable() {
+		return is(this._item, IReusable.class);
+	}
+
 	/**
 	 * 当项要被借出时，需要调用该方法，项不能重复借出
 	 * 
@@ -127,7 +132,7 @@ final class ResidentItem<T> {
 	/**
 	 * 交还对象到所属的池中,当满足PoolConfig配置的条件时，项可能会被丢弃，并且相关的资源会被释放
 	 */
-	public void back() throws PoolingException {
+	public void back() throws Exception {
 		if (!_isBorrowed)
 			throw new PoolingException(strings("CannotReturnPoolItem", _owner.getClass().getName()));
 		_isBorrowed = false;

@@ -1,11 +1,11 @@
-package apros.codeart.session;
+package apros.codeart.context;
 
-import apros.codeart.IReusable;
+import apros.codeart.pooling.IReusable;
 
-public interface ISession extends IReusable {
+public interface IContextSession extends IReusable {
 
 	/**
-	 * 指示会话是否无效
+	 * 指示会话是否有效
 	 * 
 	 * @return
 	 */

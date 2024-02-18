@@ -8,6 +8,11 @@ public final class StringUtil {
 		str.setLength(0);
 	}
 
+	/**
+	 * 向字符串末尾添加一个换行符
+	 * 
+	 * @param str
+	 */
 	public static void appendLine(StringBuilder str) {
 		str.append(System.lineSeparator());
 	}

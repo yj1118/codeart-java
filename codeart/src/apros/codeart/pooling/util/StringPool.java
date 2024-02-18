@@ -23,11 +23,11 @@ public final class StringPool {
 		return true;
 	}, PoolConfig.onlyMaxRemainTime(300));
 
-	public static IPoolItem<StringBuilder> borrow() throws PoolingException {
+	public static IPoolItem<StringBuilder> borrow() throws Exception {
 		return _pool.borrow();
 	}
 
-	public static String using(Consumer<StringBuilder> action) throws PoolingException {
+	public static String using(Consumer<StringBuilder> action) throws Exception {
 		String result = null;
 		try (var item = borrow()) {
 			var str = item.getItem();
@@ -37,7 +37,15 @@ public final class StringPool {
 		return result;
 	}
 
-	public static String join(String separator, Iterable<String> items) throws PoolingException {
+	/**
+	 * 组成一句话，可以指定分隔符
+	 * 
+	 * @param separator
+	 * @param items
+	 * @return
+	 * @throws Exception
+	 */
+	public static String join(String separator, Iterable<String> items) throws Exception {
 		return StringPool.using((msg) -> {
 			var i = 0;
 			for (var item : items) {
@@ -49,8 +57,17 @@ public final class StringPool {
 		});
 	}
 
-	public static <T> String join(String separator, Iterable<T> items, Function<T, String> map)
-			throws PoolingException {
+	/**
+	 * 组成一句话，可以指定分隔符
+	 * 
+	 * @param <T>
+	 * @param separator
+	 * @param items
+	 * @param map
+	 * @return
+	 * @throws Exception
+	 */
+	public static <T> String join(String separator, Iterable<T> items, Function<T, String> map) throws Exception {
 		return StringPool.using((msg) -> {
 			var i = 0;
 			for (var item : items) {
@@ -69,11 +86,11 @@ public final class StringPool {
 	 * @return
 	 * @throws PoolingException
 	 */
-	public static String lines(Iterable<String> items) throws PoolingException {
+	public static String lines(Iterable<String> items) throws Exception {
 		return join(System.lineSeparator(), items);
 	}
 
-	public static <T> String lines(Iterable<T> items, Function<T, String> map) throws PoolingException {
+	public static <T> String lines(Iterable<T> items, Function<T, String> map) throws Exception {
 		return join(System.lineSeparator(), items, map);
 	}
 

@@ -1,16 +1,17 @@
-package apros.codeart.session;
+package apros.codeart.context;
 
 import apros.codeart.pooling.IPoolItem;
-import apros.codeart.pooling.PoolingException;
 
-@SessionAccess
-public final class ThreadSession implements ISession {
+@ContextSessionAccess
+public final class ThreadSession implements IContextSession {
 	private static ThreadLocal<IPoolItem<ContentEntries>> local = new ThreadLocal<>();
 
 	private ThreadSession() {
 	}
 
-	public void initialize() throws PoolingException {
+	public void initialize() throws Exception {
+		if (this.valid())
+			return;
 		var item = ContentEntries.Pool.borrow();
 		local.set(item);
 	}

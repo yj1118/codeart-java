@@ -31,7 +31,15 @@ final class BorrowedItem<T> implements IPoolItem<T> {
 	}
 
 	@Override
-	public void clear() throws PoolingException {
+	public void clear() throws Exception {
 		_parent.back();
+	}
+
+	/**
+	 * 该对象的关闭操作，就是清理操作，关闭后就返回到池中了，可以继续借出
+	 */
+	@Override
+	public void close() throws Exception {
+		this.close();
 	}
 }
