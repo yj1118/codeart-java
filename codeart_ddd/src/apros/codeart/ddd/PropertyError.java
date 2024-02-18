@@ -23,16 +23,16 @@ public class PropertyError extends ValidationError {
 		_propertyName = StringUtil.empty();
 	}
 
-	private static PropertyError CreateReusable(String propertyName, String code, String message)
-    {
-        var error = Session.TryMark(_propertyErrorPool, () =>
-        {
-            return new PropertyValidationError();
-        });
-        error.PropertyName = propertyName;
-        error.ErrorCode = errorCode;
-        error.Message = message;
-        return error;
-    }
+	private static PropertyError CreateReusable(String propertyName, String code, String message) {
+		return null;
+//        var error = Session.TryMark(_propertyErrorPool, () =>
+//        {
+//            return new PropertyValidationError();
+//        });
+//        error.PropertyName = propertyName;
+//        error.ErrorCode = errorCode;
+//        error.Message = message;
+//        return error;
+	}
 
 }
