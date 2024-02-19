@@ -15,7 +15,7 @@ public class LazyIndexer {
 	 * 
 	 * 只有当key第一次出现时才会使用你提供的方法创建value
 	 * 
-	 * 该方法是线程安全的
+	 * 返回的方法是线程安全的
 	 * 
 	 * @param <TKey>
 	 * @param <TValue>
@@ -23,7 +23,6 @@ public class LazyIndexer {
 	 * @param filter       过滤项，根据value的值确定是否抛弃，返回true表示不抛弃，返回false表示抛弃
 	 * @return
 	 */
-	@ThreadSafe
 	public static <TKey, TValue> Function<TKey, TValue> init(Function<TKey, TValue> valueFactory,
 			Function<TValue, Boolean> filter) {
 		if (valueFactory == null)
@@ -50,7 +49,6 @@ public class LazyIndexer {
 		};
 	}
 
-	@ThreadSafe
 	public static <TKey, TValue> Function<TKey, TValue> init(Function<TKey, TValue> valueFactory) {
 		return init(valueFactory, null);
 	}
