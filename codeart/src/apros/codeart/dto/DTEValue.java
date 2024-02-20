@@ -1,8 +1,11 @@
 package apros.codeart.dto;
 
+import static apros.codeart.runtime.Util.as;
+
 import apros.codeart.context.ContextSession;
 import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
+import apros.codeart.pooling.util.StringPool;
 import apros.codeart.util.StringUtil;
 
 class DTEValue extends DTEntity {
@@ -33,9 +36,13 @@ class DTEValue extends DTEntity {
 
 	@Override
 	public Object clone() throws CloneNotSupportedException {
-		// todo test，原版本中是克隆了value，但是新版本中考虑到value要么是字符串，要么是其他值类型，没有克隆的必要。
+		// 原版本中是克隆了value，但是新版本中考虑到value要么是字符串，要么是其他值类型，要么是DTObject（仅在此情况下克隆），没有克隆的必要。
 		try {
-			return obtain(this.getName(), this.getValue());
+			var value = this.getValue();
+			var dto = as(value, DTObject.class);
+			if (dto != null)
+				return obtain(this.getName(), dto.clone());
+			return obtain(this.getName(), value);
 		} catch (Exception e) {
 			throw new CloneNotSupportedException(e.getMessage());
 		}
@@ -60,9 +67,23 @@ class DTEValue extends DTEntity {
 	}
 
 	@Override
-	public String getCode(boolean sequential, boolean outputName) {
-		// TODO Auto-generated method stub
-		return null;
+	public String getCode(boolean sequential, boolean outputName) throws Exception {
+		String name = this.getName();
+		return StringPool.using((code) -> {
+			if (outputName && !StringUtil.isNullOrEmpty(name))
+				code.append(String.format("\"{0}\"", name));
+			if (code.length() > 0)
+				code.append(":");
+			code.append(getValueCode(sequential));
+		});
+	}
+
+	private String getValueCode(boolean sequential) throws Exception {
+		var value = this.getValue();
+		var dto = as(value, DTObject.class);
+		if (dto != null)
+			return dto.getCode(sequential, false);
+		return JSON.getCode(value);
 	}
 
 	@Override

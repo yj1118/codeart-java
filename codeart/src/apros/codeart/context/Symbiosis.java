@@ -3,12 +3,12 @@ package apros.codeart.context;
 import static apros.codeart.runtime.Util.any;
 
 import java.util.HashSet;
-import java.util.function.Supplier;
 
 import apros.codeart.pooling.IReusable;
 import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
 import apros.codeart.pooling.Util;
+import apros.codeart.util.Func;
 
 /**
  * 每个应用程序会话都会有一个唯一的共生器对象，该对象是从池中分配和回收。 每个应用程序会话可以利用共生器对象创建若干个可以被回收或释放的对象。
@@ -54,7 +54,7 @@ final class Symbiosis implements IReusable {
 		return ContextSession.<Symbiosis>obtainItem(_sessionKey, _pool);
 	}
 
-	public static <T> T obtain(Pool<T> pool, Supplier<T> creator) throws Exception {
+	public static <T> T obtain(Pool<T> pool, Func<T> creator) throws Exception {
 		var temp = pool.borrow();
 		getCurrent().add(temp);
 		return temp.getItem();

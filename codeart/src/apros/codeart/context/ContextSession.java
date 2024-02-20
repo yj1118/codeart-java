@@ -1,14 +1,12 @@
 package apros.codeart.context;
 
-import static apros.codeart.i18n.Language.strings;
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
-import java.util.function.Supplier;
 
 import apros.codeart.pooling.Pool;
 import apros.codeart.runtime.MethodUtil;
+import apros.codeart.util.Func;
 
 /**
  * 应用程序会话，指的是在应用程序执行期间，不同的请求会拥有自己的appSession，该对象仅对当前用户负责
@@ -107,13 +105,13 @@ public final class ContextSession {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T obtainItem(String name, Supplier<T> factory) {
+	public static <T> T obtainItem(String name, Func<T> factory) throws Exception {
 		if (!exists())
-			return factory.get();
+			return factory.apply();
 		var session = getCurrent();
 		Object item = session.getItem(name);
 		if (item == null) {
-			item = factory.get();
+			item = factory.apply();
 			session.setItem(name, item);
 		}
 		return (T) item;
@@ -134,19 +132,9 @@ public final class ContextSession {
 	 * @throws Exception
 	 */
 	public static <T> T obtainItem(String name, Pool<T> pool) throws Exception {
-
-		var item = obtainItem(name, () -> {
-			try {
-				return pool.borrow();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-			return null;
-		});
-		if (item != null)
-			return item.getItem();
-
-		throw new Exception(strings("FailedIObtainContextSessionItem"));
+		return obtainItem(name, () -> {
+			return pool.borrow();
+		}).getItem();
 	}
 
 	/**
@@ -159,9 +147,9 @@ public final class ContextSession {
 	 * @return
 	 * @throws Exception
 	 */
-	public static <T> T obtainItem(Pool<T> pool, Supplier<T> factory) throws Exception {
+	public static <T> T obtainItem(Pool<T> pool, Func<T> factory) throws Exception {
 		if (!exists()) // 如果不存在回话，那么直接构造
-			return factory.get();
+			return factory.apply();
 		return Symbiosis.obtain(pool, factory);
 	}
 

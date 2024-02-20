@@ -22,6 +22,14 @@ public final class StringUtil {
 		str.append(System.lineSeparator());
 	}
 
+	public static void removeLast(StringBuilder str) {
+		str.deleteCharAt(str.length() - 1);
+	}
+
+	public static char last(StringBuilder str) {
+		return str.charAt(str.length() - 1);
+	}
+
 	public static boolean isNullOrEmpty(String str) {
 		return str == null || str.equals("");
 	}

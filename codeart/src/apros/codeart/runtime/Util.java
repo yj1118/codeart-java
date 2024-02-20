@@ -20,4 +20,8 @@ public class Util {
 		return false;
 	}
 
+	public static boolean is(Class<?> cls, Class<?> targetCls) {
+		return targetCls.isAssignableFrom(cls);
+	}
+
 }

@@ -73,8 +73,9 @@ abstract class DTEntity implements IReusable {
 	 * @param sequential 是否排序输出代码
 	 * @param outputName 是否输出key值
 	 * @return
+	 * @throws Exception
 	 */
-	public abstract String getCode(boolean sequential, boolean outputName);
+	public abstract String getCode(boolean sequential, boolean outputName) throws Exception;
 
 	/**
 	 * 输出架构码
