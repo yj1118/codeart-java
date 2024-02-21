@@ -1,5 +1,7 @@
 package apros.codeart.dto;
 
+import static apros.codeart.i18n.Language.strings;
+
 import java.util.ArrayList;
 
 import apros.codeart.context.ContextSession;
@@ -15,14 +17,18 @@ public class DTObject implements IReusable {
 		return _isReadOnly;
 	}
 
-	private void ValidateReadOnly() {
+	private void validateReadOnly() {
 		if (_isReadOnly)
-			throw new DTOException(Strings.DTOReadOnly);
+			throw new IllegalStateException(strings("DTOReadOnly"));
 	}
 
 	public DTObject clone() {
 		return null;
 //        return new DTObject(_root.Clone() as DTEObject, this.IsReadOnly);
+	}
+
+	public <T> T getValue() {
+		return null;
 	}
 
 	public String getCode() {
@@ -31,6 +37,10 @@ public class DTObject implements IReusable {
 
 	public String getCode(boolean sequential, boolean outputName) {
 		return null;
+	}
+
+	public String getSchemaCode(boolean sequential, boolean outputName) throws Exception {
+		return _root.getSchemaCode(sequential, outputName);
 	}
 
 	void fillCode(StringBuilder code) {

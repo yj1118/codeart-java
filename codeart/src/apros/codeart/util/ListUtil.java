@@ -38,6 +38,14 @@ public final class ListUtil {
 		return null;
 	}
 
+	public static <T, R> Iterable<R> map(Iterable<T> source, Function<T, R> selector) {
+		ArrayList<R> list = new ArrayList<R>();
+		for (T item : source) {
+			list.add(selector.apply(item));
+		}
+		return list;
+	}
+
 	/**
 	 * 删除满足条件的第一个项
 	 * 

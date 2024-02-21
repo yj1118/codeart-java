@@ -1,12 +1,17 @@
 package apros.codeart.dto;
 
+import static apros.codeart.util.StringUtil.isNullOrEmpty;
+import static apros.codeart.util.StringUtil.removeLast;
+
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import apros.codeart.context.ContextSession;
 import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
+import apros.codeart.pooling.util.StringPool;
 import apros.codeart.util.ListUtil;
 
 final class DTEList extends DTEntity implements Iterable<DTObject> {
@@ -26,6 +31,11 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	private void addItem(DTObject item) {
 		item.setParent(this);
 		_items.add(item);
+	}
+
+	private void insertItem(int index, DTObject item) {
+		item.setParent(this);
+		_items.add(index, item);
 	}
 
 	private boolean removeItem(DTObject item) {
@@ -76,8 +86,6 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 
 	@Override
 	public boolean hasData() {
-		if (_items == null)
-			return false;
 		for (var item : _items)
 			if (item.hasData())
 				return true;
@@ -85,10 +93,15 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	@Override
+	public void clear() throws Exception {
+		super.clear();
+		_template = null;
+		_items = null; // 项会在会话结束后自动回收
+	}
+
+	@Override
 	public void clearData() {
-		if (_items != null) {
-			_items.clear();
-		}
+		_items.clear();
 	}
 
 	@Override
@@ -183,107 +196,102 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		return false;
 	}
 
-	/// <summary>
-	/// 新建一个子项，并将新建的子项加入集合中
-	/// </summary>
-	/// <returns></returns>
-	public void CreateAndPush(Action<DTObject> fill) {
-		DTObject obj = this.ItemTemplate.Clone();
-		Items.Add(obj);
+	/**
+	 * 新建一个子项，并将新建的子项加入集合中
+	 * 
+	 * @param fill
+	 */
+	public void push(Consumer<DTObject> fill) {
+		DTObject obj = _template.clone();
+		addItem(obj);
 		if (fill != null)
-			fill(obj);
-		this.Changed();
+			fill.accept(obj);
 	}
 
-	public DTObject CreateAndPush() {
-		DTObject obj = this.ItemTemplate.Clone();
-		Items.Add(obj);
-		this.Changed();
+	public DTObject push() {
+		DTObject obj = _template.clone();
+		addItem(obj);
 		return obj;
 	}
 
-	public void CreateAndInsert(int index, Action<DTObject> fill) {
-		DTObject obj = this.ItemTemplate.Clone();
-		Items.Insert(index, obj);
+	public void push(int index, Consumer<DTObject> fill) {
+		DTObject obj = _template.clone();
+		insertItem(index, obj);
 		if (fill != null)
-			fill(obj);
-		this.Changed();
+			fill.accept(obj);
 	}
 
-	public DTObject CreateAndInsert(int index) {
-		DTObject obj = this.ItemTemplate.Clone();
-		Items.Insert(index, obj);
-		this.Changed();
+	public DTObject push(int index) {
+		DTObject obj = _template.clone();
+		insertItem(index, obj);
 		return obj;
 	}
 
-	public void Push(DTObject item) {
-		Items.Add(item);
-		this.Changed();
+	public void push(DTObject item) {
+		addItem(item);
 	}
 
-	public void Insert(int index, DTObject item) {
-		Items.Insert(index, item);
-		this.Changed();
+	public void push(int index, DTObject item) {
+		insertItem(index, item);
 	}
 
-	private DTObjects _objects;
+//	private DTObjects _objects;
+//
+//	public DTObjects GetObjects() {
+//		if (_objects == null) {
+//			_objects = new DTObjects(Items);
+//		}
+//		return _objects;
+//	}
 
-	public DTObjects GetObjects() {
-		if (_objects == null) {
-			_objects = new DTObjects(Items);
-		}
-		return _objects;
+	public <T> Iterable<T> getValues() {
+		return ListUtil.map(_items, (t) -> {
+			return t.getValue();
+		});
 	}
 
-	public IEnumerable<T> GetValues<T>()
-	{
-	    return this.GetObjects().Select((t)=>t.GetValue<T>());
+	public int size() {
+		return _items.size();
 	}
 
-	public int Count
-	{
-	    get
-	    {
-	        return Items.Count;
-	    }
-	}
-
-	public DTObject this[
-	int index]
-	{
-	    get
-	    {
-	        return Items[index];
-	    }
-	}
-
-	public IEnumerator<DTObject> GetEnumerator() {
-		return Items.GetEnumerator();
-	}
-
-	IEnumerator IEnumerable.GetEnumerator()
-	{
-	    return Items.GetEnumerator();
-	}
-
-	public override void Changed()
-	{
-	    _objects = null;
-	    if (this.Parent != null)
-	        this.Parent.Changed();
+	public DTObject get(int index) {
+		return _items.get(index);
 	}
 
 	@Override
 	public String getCode(boolean sequential, boolean outputName) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		var name = this.getName();
+		return StringPool.using((code) -> {
+			if (outputName && !isNullOrEmpty(name))
+				code.append(String.format("\"%s\"", name));
+
+			if (code.length() > 0)
+				code.append(":");
+			code.append("[");
+			for (DTObject item : _items) {
+				var itemCode = item.getCode(sequential, false);
+				code.append(itemCode);
+				code.append(",");
+			}
+			if (_items.size() > 0)
+				removeLast(code);
+			code.append("]");
+		});
 	}
 
 	@Override
 	public String getSchemaCode(boolean sequential, boolean outputName) throws Exception {
-		// TODO Auto-generated method stub
-		return null;
+		var name = this.getName();
+		return StringPool.using((code) -> {
+			if (outputName && !isNullOrEmpty(name))
+				code.append(String.format("\"%s\"", name));
+
+			if (code.length() > 0)
+				code.append(":");
+			code.append("[");
+			code.append(this._template.getSchemaCode(sequential, false));
+			code.append("]");
+		});
 	}
 
 	private static Pool<DTEList> pool = new Pool<DTEList>(() -> {
