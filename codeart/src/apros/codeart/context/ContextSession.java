@@ -6,6 +6,7 @@ import java.util.HashSet;
 
 import apros.codeart.pooling.Pool;
 import apros.codeart.runtime.MethodUtil;
+import apros.codeart.util.Action;
 import apros.codeart.util.Func;
 
 /**
@@ -22,10 +23,10 @@ public final class ContextSession {
 	 * @param action
 	 * @throws Exception
 	 */
-	public static void using(Runnable action) throws Exception {
+	public static void using(Action action) throws Exception {
 		try {
 			initialize();
-			action.run();
+			action.apply();
 		} catch (Exception ex) {
 			throw ex;
 		} finally {

@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import apros.codeart.util.Action;
+import apros.codeart.util.Action1;
 import apros.codeart.util.Func;
 import apros.codeart.util.Func2;
 
@@ -23,7 +23,7 @@ public final class Pool<T> implements AutoCloseable {
 	 * 返回true，表示继续使用该项，返回false表示抛弃项
 	 */
 	private final Func2<T, PoolItemPhase, Boolean> _itemFilter;
-	private final Action<T> _itemDestroyer; // 当项被消除时，会使用该对象进行额外的销毁操作
+	private final Action1<T> _itemDestroyer; // 当项被消除时，会使用该对象进行额外的销毁操作
 	private IPoolContainer<ResidentItem<T>> _container;
 	private boolean _isDisposed;
 	private int _poolVersion;
@@ -127,7 +127,7 @@ public final class Pool<T> implements AutoCloseable {
 	 * @param itemDestroyer 当项被消除时，会使用该对象进行额外的销毁操作,可为空
 	 * @param config        池行为的配置
 	 */
-	public Pool(Func<T> itemFactory, Func2<T, PoolItemPhase, Boolean> itemFilter, Action<T> itemDestroyer,
+	public Pool(Func<T> itemFactory, Func2<T, PoolItemPhase, Boolean> itemFilter, Action1<T> itemDestroyer,
 			PoolConfig config) {
 		Objects.requireNonNull(itemFactory, "itemFactory");
 		Objects.requireNonNull(config, "config");
@@ -241,7 +241,7 @@ public final class Pool<T> implements AutoCloseable {
 	 * @param action
 	 * @throws Exception
 	 */
-	public void using(Action<T> action) throws Exception {
+	public void using(Action1<T> action) throws Exception {
 		IPoolItem<T> item = null;
 		try {
 			item = this.borrow();

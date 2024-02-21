@@ -8,7 +8,7 @@ import apros.codeart.pooling.IReusable;
 import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
 import apros.codeart.pooling.PoolItemPhase;
-import apros.codeart.util.Action;
+import apros.codeart.util.Action1;
 
 abstract class DTEntity implements IReusable {
 
@@ -126,7 +126,7 @@ abstract class DTEntity implements IReusable {
 		return ContextSession.obtainItem(listPool, () -> new ArrayList<DTEntity>());
 	}
 
-	public static void usingList(Action<ArrayList<DTEntity>> action) throws Exception {
+	public static void usingList(Action1<ArrayList<DTEntity>> action) throws Exception {
 		listPool.using(action);
 	}
 

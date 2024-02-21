@@ -7,7 +7,7 @@ import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
 import apros.codeart.pooling.PoolItemPhase;
 import apros.codeart.pooling.PoolingException;
-import apros.codeart.util.Action;
+import apros.codeart.util.Action1;
 import apros.codeart.util.StringUtil;
 
 public final class StringPool {
@@ -27,7 +27,7 @@ public final class StringPool {
 		return _pool.borrow();
 	}
 
-	public static String using(Action<StringBuilder> action) throws Exception {
+	public static String using(Action1<StringBuilder> action) throws Exception {
 		String result = null;
 		try (var item = borrow()) {
 			var str = item.getItem();
