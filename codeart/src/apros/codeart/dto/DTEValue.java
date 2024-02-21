@@ -2,13 +2,15 @@ package apros.codeart.dto;
 
 import static apros.codeart.runtime.Util.as;
 
+import java.util.function.Function;
+
 import apros.codeart.context.ContextSession;
 import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
 import apros.codeart.pooling.util.StringPool;
 import apros.codeart.util.StringUtil;
 
-class DTEValue extends DTEntity {
+final class DTEValue extends DTEntity {
 
 	@Override
 	public DTEntityType getType() {
@@ -26,31 +28,32 @@ class DTEValue extends DTEntity {
 	}
 
 	private DTEValue() {
-		this(StringUtil.empty(), null);
+		this(null, null);
 	}
 
 	private DTEValue(String name, Object value) {
-		super(name);
+		this.setName(name);
 		this._value = value;
 	}
 
 	@Override
-	public Object clone() throws CloneNotSupportedException {
+	public DTEntity cloneImpl() throws Exception {
 		// 原版本中是克隆了value，但是新版本中考虑到value要么是字符串，要么是其他值类型，要么是DTObject（仅在此情况下克隆），没有克隆的必要。
-		try {
-			var value = this.getValue();
-			var dto = as(value, DTObject.class);
-			if (dto != null)
-				return obtain(this.getName(), dto.clone());
-			return obtain(this.getName(), value);
-		} catch (Exception e) {
-			throw new CloneNotSupportedException(e.getMessage());
-		}
+		var value = this.getValue();
+		var dto = as(value, DTObject.class);
+		if (dto != null)
+			return obtain(this.getName(), dto.clone());
+		return obtain(this.getName(), value);
 	}
 
 	@Override
 	public void clear() throws Exception {
 		super.clear();
+		this.clearData();
+	}
+
+	@Override
+	public void clearData() {
 		_value = null;
 	}
 
@@ -61,7 +64,7 @@ class DTEValue extends DTEntity {
 
 	@Override
 	public Iterable<DTEntity> finds(QueryExpression query) throws Exception {
-		if (query.isSelf() || this.getName().equalsIgnoreCase(query.getSegment()))
+		if (query.onlySelf() || this.getName().equalsIgnoreCase(query.getSegment()))
 			return this.getSelfAsEntities();// 查询自身
 		return DTEntity.obtainList();
 	}
@@ -87,9 +90,8 @@ class DTEValue extends DTEntity {
 	}
 
 	@Override
-	public String getSchemaCode(boolean sequential, boolean outputName) {
-		// TODO Auto-generated method stub
-		return null;
+	public String getSchemaCode(boolean sequential, boolean outputName) throws Exception {
+		return this.getName();
 	}
 
 	private static Pool<DTEValue> pool = new Pool<DTEValue>(() -> {
@@ -101,6 +103,18 @@ class DTEValue extends DTEntity {
 		item.setName(name);
 		item.setValue(value);
 		return item;
+	}
+
+	@Override
+	public void setMember(QueryExpression query, Function<String, DTEntity> createEntity) throws Exception {
+		throw new UnsupportedOperationException("DTEValue.setMember");
+
+	}
+
+	@Override
+	public void removeMember(DTEntity e) {
+		throw new UnsupportedOperationException("DTEValue.removeMember");
+
 	}
 
 }

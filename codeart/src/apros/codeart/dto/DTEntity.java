@@ -1,13 +1,14 @@
 package apros.codeart.dto;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
 import apros.codeart.context.ContextSession;
 import apros.codeart.pooling.IReusable;
 import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
 import apros.codeart.pooling.PoolItemPhase;
-import apros.codeart.util.StringUtil;
+import apros.codeart.util.Action;
 
 abstract class DTEntity implements IReusable {
 
@@ -31,8 +32,7 @@ abstract class DTEntity implements IReusable {
 		_parent = parent;
 	}
 
-	public DTEntity(String name) {
-		_name = name;
+	public DTEntity() {
 	}
 
 	/**
@@ -60,6 +60,25 @@ abstract class DTEntity implements IReusable {
 		return _selfAsEntities;
 	}
 
+	public final Object clone() throws CloneNotSupportedException {
+		try {
+			return cloneImpl();
+		} catch (Exception e) {
+			throw new CloneNotSupportedException(e.getMessage());
+		}
+	}
+
+	protected abstract DTEntity cloneImpl() throws Exception;
+
+	public abstract void setMember(QueryExpression query, Function<String, DTEntity> createEntity) throws Exception;
+
+	/**
+	 * 删除成员
+	 * 
+	 * @param e
+	 */
+	public abstract void removeMember(DTEntity e);
+
 	/**
 	 * 根据查找表达式找出dto成员
 	 * 
@@ -84,13 +103,15 @@ abstract class DTEntity implements IReusable {
 	 * @param outputName
 	 * @return
 	 */
-	public abstract String getSchemaCode(boolean sequential, boolean outputName);
+	public abstract String getSchemaCode(boolean sequential, boolean outputName) throws Exception;
 
 	public void clear() throws Exception {
-		_name = StringUtil.empty();
+		_name = null;
 		_parent = null;
 		_selfAsEntities = null;
 	}
+
+	public abstract void clearData();
 
 	private static Pool<ArrayList<DTEntity>> listPool = new Pool<ArrayList<DTEntity>>(() -> {
 		return new ArrayList<DTEntity>();
@@ -103,6 +124,10 @@ abstract class DTEntity implements IReusable {
 
 	public static ArrayList<DTEntity> obtainList() throws Exception {
 		return ContextSession.obtainItem(listPool, () -> new ArrayList<DTEntity>());
+	}
+
+	public static void usingList(Action<ArrayList<DTEntity>> action) throws Exception {
+		listPool.using(action);
 	}
 
 }

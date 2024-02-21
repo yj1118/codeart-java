@@ -8,10 +8,10 @@ import apros.codeart.util.LazyIndexer;
 
 class QueryExpression {
 
-	private boolean _isSelf;
+	private boolean _onlySelf;
 
-	public boolean isSelf() {
-		return _isSelf;
+	public boolean onlySelf() {
+		return _onlySelf;
 	}
 
 	private String _segment;
@@ -31,6 +31,10 @@ class QueryExpression {
 		return _next;
 	}
 
+	public boolean hasNext() {
+		return _next != null;
+	}
+
 	private boolean _isEmpty;
 
 	public boolean isEmpty() {
@@ -39,7 +43,7 @@ class QueryExpression {
 
 	private QueryExpression(String queryString) {
 		this._isEmpty = isNullOrEmpty(queryString);
-		this._isSelf = queryString.equals("*");
+		this._onlySelf = queryString.equals("*");
 		this._segment = getSegment(queryString);
 		this._next = parseNext(queryString);
 	}

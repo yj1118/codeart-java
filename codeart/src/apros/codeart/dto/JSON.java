@@ -23,7 +23,7 @@ class JSON {
 		});
 	}
 
-	public static void writeValue(StringBuilder sb, Object value) throws Exception {
+	private static void writeValue(StringBuilder sb, Object value) throws Exception {
 		if (value == null) {
 			sb.append("null");
 			return;
@@ -62,13 +62,13 @@ class JSON {
 
 		if (valueClass == Instant.class) {
 			var t = TimeUtil.toUTC((Instant) value);
-			fillInstant(sb, t);
+			writeInstant(sb, t);
 			return;
 		}
 
 		if (valueClass == LocalDateTime.class) {
 			var t = TimeUtil.toUTC((LocalDateTime) value);
-			fillInstant(sb, t);
+			writeInstant(sb, t);
 			return;
 		}
 
@@ -87,7 +87,7 @@ class JSON {
 		}
 	}
 
-	private static void fillInstant(StringBuilder sb, Instant value) {
+	private static void writeInstant(StringBuilder sb, Instant value) {
 		sb.append("new Date(\"");
 		sb.append(TimeUtil.formatMemoized(value, "yyyy-MM-ddTHH:mm:ss.fffZ")); // 只有转为utc时间，火狐等浏览器才识别
 		sb.append("\")");
@@ -130,7 +130,7 @@ class JSON {
 		sb.append("\"");
 	}
 
-	public static void writeMap(StringBuilder sb, Map<?, ?> value) throws Exception {
+	private static void writeMap(StringBuilder sb, Map<?, ?> value) throws Exception {
 		boolean hasItems = false;
 		sb.append("{");
 		for (Map.Entry<?, ?> entry : value.entrySet()) {
@@ -146,7 +146,7 @@ class JSON {
 		sb.append("}");
 	}
 
-	public static void writeIterable(StringBuilder sb, Iterable<?> value) throws Exception {
+	private static void writeIterable(StringBuilder sb, Iterable<?> value) throws Exception {
 		boolean hasItems = false;
 		sb.append("[");
 		for (var item : value) {
