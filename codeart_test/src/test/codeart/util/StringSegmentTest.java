@@ -34,4 +34,35 @@ class StringSegmentTest {
 		});
 	}
 
+	@Test
+	void endsWith() throws Exception {
+		ContextSession.using(() -> {
+			var sg = StringSegment.obtain("abcdefg");
+			assertEquals(true, sg.endsWith('g'));
+			assertEquals(true, sg.endsWith("g"));
+			assertEquals(true, sg.endsWith("efg"));
+		});
+	}
+
+	@Test
+	void substr() throws Exception {
+		ContextSession.using(() -> {
+			var sg = StringSegment.obtain("abcdefg");
+			assertEquals("abc", sg.substr(0, 3).toString());
+			assertEquals("bcd", sg.substr(1, 3).toString());
+			assertEquals("defg", sg.substr(3).toString());
+		});
+	}
+
+	@Test
+	void indexOf() throws Exception {
+		ContextSession.using(() -> {
+			var sg = StringSegment.obtain("abcdefg");
+			assertEquals(-1, sg.indexOf("F"));
+			assertEquals(0, sg.indexOf("a"));
+			assertEquals(1, sg.indexOf("bcd"));
+			assertEquals(6, sg.indexOf("g"));
+		});
+	}
+
 }

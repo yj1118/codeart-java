@@ -8,9 +8,12 @@ import static apros.codeart.util.StringUtil.removeLast;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import apros.codeart.pooling.util.StringPool;
 import apros.codeart.runtime.FieldUtil;
+import apros.codeart.util.StringUtil;
 import apros.codeart.util.TimeUtil;
 
 class JSON {
@@ -182,4 +185,99 @@ class JSON {
 		sb.append("}");
 
 	}
+
+	public static String readString(String value) throws Exception {
+		if (StringUtil.isNullOrEmpty(value))
+			return StringUtil.empty();
+
+		return StringPool.using((sb) -> {
+			char sign = StringUtil.charEmpty();
+			for (var pos = 0; pos < value.length(); pos++) {
+				var c = value.charAt(pos);
+				switch (c) {
+				case '\'':
+				case '\"': {
+					if (sign == StringUtil.charEmpty()) {
+						sign = c;
+					} else {
+						if (sign == c) {
+							sign = StringUtil.charEmpty();
+						} else {
+							sb.append(c);
+						}
+					}
+				}
+					break;
+				case '\\': {
+					if (pos == value.length() - 1) {
+						// 最后个字符
+						sb.append(c);
+					} else {
+						var next = value.charAt(pos + 1);
+
+						switch (next) {
+						case '\"': {
+							sb.append('\"');
+							pos++;
+						}
+							break;
+						case '\\': {
+							sb.append('\\');
+							pos++;
+						}
+							break;
+						case 'b': {
+							sb.append('\b');
+							pos++;
+						}
+							break;
+						case 'f': {
+							sb.append('\f');
+							pos++;
+						}
+							break;
+						case 'n': {
+							sb.append('\n');
+							pos++;
+						}
+							break;
+						case 'r': {
+							sb.append('\r');
+							pos++;
+						}
+							break;
+						case 't': {
+							sb.append('\t');
+							pos++;
+						}
+							break;
+						}
+					}
+
+					break;
+				}
+				default:
+					sb.append(c);
+					break;
+				}
+			}
+		});
+	}
+
+	// Pattern是线程安全的
+	private final static Pattern _date2 = Pattern
+			.compile("(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{3})Z", Pattern.CASE_INSENSITIVE);
+
+	public static Instant parseDateTime(String code) {
+
+		if(_date2.matcher(code).matches()) return 
+
+		var reg = temp.Item;
+		var mc = reg.Match(code);
+		if (mc.Success) {
+			value = Convert.ToDateTime(code);
+			return true;
+		}
+	}
+
 }

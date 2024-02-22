@@ -4,6 +4,7 @@ import static apros.codeart.runtime.Util.any;
 
 import java.util.HashSet;
 
+import apros.codeart.diagnosis.Log;
 import apros.codeart.pooling.IReusable;
 import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
@@ -50,14 +51,19 @@ final class Symbiosis implements IReusable {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Symbiosis getCurrent() throws Exception {
+	public static Symbiosis getCurrent() {
 		return ContextSession.<Symbiosis>obtainItem(_sessionKey, _pool);
 	}
 
-	public static <T> T obtain(Pool<T> pool, Func<T> creator) throws Exception {
-		var temp = pool.borrow();
-		getCurrent().add(temp);
-		return temp.getItem();
+	public static <T> T obtain(Pool<T> pool, Func<T> creator) {
+		try {
+			var temp = pool.borrow();
+			getCurrent().add(temp);
+			return temp.getItem();
+		} catch (Exception e) {
+			Log.error(e);
+		}
+		return null;
 	}
 
 }

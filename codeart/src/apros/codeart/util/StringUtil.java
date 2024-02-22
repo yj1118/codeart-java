@@ -38,4 +38,17 @@ public final class StringUtil {
 		return "";
 	}
 
+	public static char charEmpty() {
+		return '\u0000';
+	}
+
+	public static String substr(String source, int startIndex, int length) {
+		int endIndex = startIndex + length;
+		return source.substring(startIndex, endIndex);
+	}
+
+	public static String substr(String source, int startIndex) {
+		return source.substring(startIndex, startIndex);
+	}
+
 }

@@ -22,6 +22,10 @@ public class PoolConfig {
 		return config;
 	}
 
+	public static PoolConfig onlyMaxRemainDefaultTime() {
+		return onlyMaxRemainTime(300);
+	}
+
 	private PoolFetchOrder _fetchOrder;
 
 	/**

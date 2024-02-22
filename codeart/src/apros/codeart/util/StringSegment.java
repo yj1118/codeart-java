@@ -21,7 +21,7 @@ public final class StringSegment implements IReusable {
 
 	private int _length;
 
-	public int getLength() {
+	public int length() {
 		return _length;
 	}
 
@@ -35,19 +35,19 @@ public final class StringSegment implements IReusable {
 		_length = length;
 	}
 
-	public StringSegment trim() throws Exception {
+	public StringSegment trim() {
 		return trimImpl(2);
 	}
 
-	public StringSegment trimStart() throws Exception {
+	public StringSegment trimStart() {
 		return trimImpl(0);
 	}
 
-	public StringSegment trimEnd() throws Exception {
+	public StringSegment trimEnd() {
 		return trimImpl(1);
 	}
 
-	private StringSegment trimImpl(int trimType) throws Exception {
+	private StringSegment trimImpl(int trimType) {
 		if (this.isNull())
 			return StringSegment.Empty;
 
@@ -58,7 +58,7 @@ public final class StringSegment implements IReusable {
 			// 移除前导空白
 			start = _offset;
 			while (start < length) {
-				if (!Character.isWhitespace(getChar(start))) {
+				if (!Character.isWhitespace(getAbsChar(start))) {
 					break;
 				}
 				start++;
@@ -68,7 +68,7 @@ public final class StringSegment implements IReusable {
 			// 移除后置空白
 			end = length - 1;
 			while (end >= start) {
-				if (!Character.isWhitespace(getChar(end))) {
+				if (!Character.isWhitespace(getAbsChar(end))) {
 					break;
 				}
 				end--;
@@ -77,7 +77,7 @@ public final class StringSegment implements IReusable {
 		return createTrimmedSegment(start, end);
 	}
 
-	private StringSegment createTrimmedSegment(int start, int end) throws Exception {
+	private StringSegment createTrimmedSegment(int start, int end) {
 		int length = (end - start) + 1;
 		if (length == _length) {
 			return this;
@@ -103,7 +103,7 @@ public final class StringSegment implements IReusable {
 		int pointer = 0;
 		var length = _offset + _length;
 		for (var i = _offset; i < length; i++) {
-			var c = getChar(i);
+			var c = getAbsChar(i);
 			if (!equals(c, value.charAt(pointer), ignoreCase))
 				return false;
 			pointer++;
@@ -154,7 +154,7 @@ public final class StringSegment implements IReusable {
 		int length = _offset + _length;
 		int pointer = value.length() - 1;
 		for (var i = length - 1; i >= _offset; i--) {
-			var c = getChar(i);
+			var c = getAbsChar(i);
 			if (pointer < 0)
 				break;
 			if (!equals(c, value.charAt(pointer), ignoreCase))
@@ -200,7 +200,7 @@ public final class StringSegment implements IReusable {
 		int length = _offset + _length;
 
 		for (var i = _offset; i < length; i++) {
-			var c = getChar(i);
+			var c = getAbsChar(i);
 			if (equals(c, value, ignoreCase))
 				return i - _offset; // 返回的是相对偏移量
 		}
@@ -238,7 +238,7 @@ public final class StringSegment implements IReusable {
 
 		int pointer = 0;
 		for (var i = offset; i < length; i++) {
-			var c = getChar(i);
+			var c = getAbsChar(i);
 			if (!equals(c, value.charAt(pointer), ignoreCase))
 				return -1;
 			pointer++;
@@ -252,7 +252,7 @@ public final class StringSegment implements IReusable {
 		return indexOf(value, false);
 	}
 
-	public StringSegment substring(int startIndex, int length) throws Exception {
+	public StringSegment substr(int startIndex, int length) throws Exception {
 		if (this.isNull())
 			return StringSegment.Empty;
 
@@ -260,7 +260,7 @@ public final class StringSegment implements IReusable {
 			throw new ArgumentOutOfRangeException("startIndex");
 		}
 
-		if (length < 0 || (startIndex > (this.getLength() - length))) {
+		if (length < 0 || (startIndex > (this.length() - length))) {
 			throw new ArgumentOutOfRangeException("length");
 		}
 
@@ -268,7 +268,7 @@ public final class StringSegment implements IReusable {
 			return Empty;
 		}
 
-		if ((startIndex == 0) && (length == this.getLength())) {
+		if ((startIndex == 0) && (length == this.length())) {
 			return this;
 		}
 
@@ -276,8 +276,8 @@ public final class StringSegment implements IReusable {
 		return obtain(_source, offset, length);
 	}
 
-	public StringSegment substring(int startIndex) throws Exception {
-		return this.substring(startIndex, this._length - startIndex);
+	public StringSegment substr(int startIndex) throws Exception {
+		return this.substr(startIndex, this._length - startIndex);
 	}
 
 	public boolean isNull() {
@@ -288,7 +288,7 @@ public final class StringSegment implements IReusable {
 
 	@Override
 	public String toString() {
-		return _source.substring(_offset, _length);
+		return StringUtil.substr(_source, _offset, _length);
 //		if (_value == null) {
 //			if (this.isNull())
 //				return null;
@@ -298,11 +298,11 @@ public final class StringSegment implements IReusable {
 	}
 
 	public char firstChar() {
-		return getChar(_offset);
+		return getAbsChar(_offset);
 	}
 
 	public char lastChar() {
-		return getChar(_offset + _length - 1);
+		return getAbsChar(_offset + _length - 1);
 	}
 
 	/**
@@ -311,8 +311,18 @@ public final class StringSegment implements IReusable {
 	 * @param index
 	 * @return
 	 */
-	private char getChar(int index) {
+	private char getAbsChar(int index) {
 		return _source.charAt(index);
+	}
+
+	/**
+	 * 相对下标
+	 * 
+	 * @param index
+	 * @return
+	 */
+	public char getChar(int index) {
+		return getAbsChar(_offset + index);
 	}
 
 	private static boolean equals(char a, char b, boolean ignoreCase) {
@@ -333,7 +343,7 @@ public final class StringSegment implements IReusable {
 		return new StringSegment();
 	}, PoolConfig.onlyMaxRemainTime(300));
 
-	public static StringSegment obtain(String source, int offset, int length) throws Exception {
+	public static StringSegment obtain(String source, int offset, int length) {
 		var item = ContextSession.obtainItem(pool, () -> new StringSegment());
 		item._source = source;
 		item._offset = offset;
@@ -341,7 +351,7 @@ public final class StringSegment implements IReusable {
 		return item;
 	}
 
-	public static StringSegment obtain(String source) throws Exception {
+	public static StringSegment obtain(String source) {
 		return obtain(source, 0, source.length());
 	}
 

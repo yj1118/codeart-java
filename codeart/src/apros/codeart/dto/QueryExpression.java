@@ -5,6 +5,7 @@ import static apros.codeart.util.StringUtil.isNullOrEmpty;
 import java.util.function.Function;
 
 import apros.codeart.util.LazyIndexer;
+import apros.codeart.util.StringUtil;
 
 class QueryExpression {
 
@@ -52,7 +53,7 @@ class QueryExpression {
 		var segment = queryString;
 		int dot = queryString.indexOf('.');
 		if (dot > -1)
-			segment = queryString.substring(0, dot);
+			segment = StringUtil.substr(queryString, 0, dot);
 		return segment;
 	}
 
@@ -60,7 +61,7 @@ class QueryExpression {
 		int dot = queryString.indexOf('.');
 		if (dot == -1)
 			return null;
-		var nextQueryString = queryString.substring(dot + 1);
+		var nextQueryString = StringUtil.substr(queryString, dot + 1);
 		return QueryExpression.create(nextQueryString);
 	}
 

@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashSet;
 
+import apros.codeart.diagnosis.Log;
 import apros.codeart.pooling.Pool;
 import apros.codeart.runtime.MethodUtil;
 import apros.codeart.util.Action;
@@ -106,16 +107,21 @@ public final class ContextSession {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T obtainItem(String name, Func<T> factory) throws Exception {
-		if (!exists())
-			return factory.apply();
-		var session = getCurrent();
-		Object item = session.getItem(name);
-		if (item == null) {
-			item = factory.apply();
-			session.setItem(name, item);
+	public static <T> T obtainItem(String name, Func<T> factory) {
+		try {
+			if (!exists())
+				return factory.apply();
+			var session = getCurrent();
+			Object item = session.getItem(name);
+			if (item == null) {
+				item = factory.apply();
+				session.setItem(name, item);
+			}
+			return (T) item;
+		} catch (Exception e) {
+			Log.error(e);
 		}
-		return (T) item;
+		return null;
 	}
 
 	/**
@@ -132,7 +138,7 @@ public final class ContextSession {
 	 * @return
 	 * @throws Exception
 	 */
-	public static <T> T obtainItem(String name, Pool<T> pool) throws Exception {
+	public static <T> T obtainItem(String name, Pool<T> pool) {
 		return obtainItem(name, () -> {
 			return pool.borrow();
 		}).getItem();
@@ -148,10 +154,15 @@ public final class ContextSession {
 	 * @return
 	 * @throws Exception
 	 */
-	public static <T> T obtainItem(Pool<T> pool, Func<T> factory) throws Exception {
-		if (!exists()) // 如果不存在回话，那么直接构造
-			return factory.apply();
-		return Symbiosis.obtain(pool, factory);
+	public static <T> T obtainItem(Pool<T> pool, Func<T> factory) {
+		try {
+			if (!exists()) // 如果不存在回话，那么直接构造
+				return factory.apply();
+			return Symbiosis.obtain(pool, factory);
+		} catch (Exception e) {
+			Log.error(e);
+		}
+		return null;
 	}
 
 	public static void setItem(String name, Object value) {

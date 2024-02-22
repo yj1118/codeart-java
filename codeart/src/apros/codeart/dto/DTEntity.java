@@ -9,6 +9,7 @@ import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
 import apros.codeart.pooling.PoolItemPhase;
 import apros.codeart.util.Action1;
+import apros.codeart.util.Func1;
 
 abstract class DTEntity implements IReusable {
 
@@ -122,12 +123,16 @@ abstract class DTEntity implements IReusable {
 		return true;
 	}, PoolConfig.onlyMaxRemainTime(300));
 
-	public static ArrayList<DTEntity> obtainList() throws Exception {
+	public static ArrayList<DTEntity> obtainList() {
 		return ContextSession.obtainItem(listPool, () -> new ArrayList<DTEntity>());
 	}
 
 	public static void usingList(Action1<ArrayList<DTEntity>> action) throws Exception {
 		listPool.using(action);
+	}
+
+	public static <R> R usingList(Func1<ArrayList<DTEntity>, R> action) throws Exception {
+		return listPool.using(action);
 	}
 
 }

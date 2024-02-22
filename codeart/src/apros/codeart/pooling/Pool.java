@@ -10,6 +10,7 @@ import java.util.Objects;
 
 import apros.codeart.util.Action1;
 import apros.codeart.util.Func;
+import apros.codeart.util.Func1;
 import apros.codeart.util.Func2;
 
 public final class Pool<T> implements AutoCloseable {
@@ -246,6 +247,21 @@ public final class Pool<T> implements AutoCloseable {
 		try {
 			item = this.borrow();
 			action.apply(item.getItem());
+		} catch (Exception e) {
+			if (item != null)
+				item.setCorrupted();
+			throw e;
+		} finally {
+			if (item != null)
+				item.clear();
+		}
+	}
+
+	public <R> R using(Func1<T, R> action) throws Exception {
+		IPoolItem<T> item = null;
+		try {
+			item = this.borrow();
+			return action.apply(item.getItem());
 		} catch (Exception e) {
 			if (item != null)
 				item.setCorrupted();

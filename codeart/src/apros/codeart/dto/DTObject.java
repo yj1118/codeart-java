@@ -88,15 +88,22 @@ public class DTObject implements IReusable {
 		return new DTObject();
 	}, PoolConfig.onlyMaxRemainTime(300));
 
-	static DTObject obtain() throws Exception {
+	static DTObject obtain() {
 		return ContextSession.obtainItem(pool, () -> new DTObject());
+	}
+
+	static DTObject obtain(DTEObject root, boolean isReadOnly) {
+		var dto = ContextSession.obtainItem(pool, () -> new DTObject());
+		dto._root = root;
+		dto._isReadOnly = isReadOnly;
+		return dto;
 	}
 
 	private static Pool<ArrayList<DTObject>> poolList = new Pool<ArrayList<DTObject>>(() -> {
 		return new ArrayList<DTObject>();
 	}, PoolConfig.onlyMaxRemainTime(300));
 
-	static ArrayList<DTObject> obtainList() throws Exception {
+	static ArrayList<DTObject> obtainList() {
 		return ContextSession.obtainItem(poolList, () -> new ArrayList<DTObject>());
 	}
 

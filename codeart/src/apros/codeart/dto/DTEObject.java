@@ -250,13 +250,13 @@ final class DTEObject extends DTEntity {
 		return new DTEObject();
 	}, PoolConfig.onlyMaxRemainTime(300));
 
-	public static DTEObject obtain() throws Exception {
+	public static DTEObject obtain() {
 		var item = ContextSession.obtainItem(pool, () -> new DTEObject());
 		item.setMembers(DTEntity.obtainList());
 		return item;
 	}
 
-	public static DTEObject obtain(ArrayList<DTEntity> members) throws Exception {
+	public static DTEObject obtain(ArrayList<DTEntity> members) {
 		var item = ContextSession.obtainItem(pool, () -> new DTEObject());
 		item.setMembers(members);
 		return item;
