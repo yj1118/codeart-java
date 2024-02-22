@@ -13,6 +13,16 @@ import test.codeart.TestRunner;
 class StringSegmentTest {
 
 	@Test
+	void trim() throws Exception {
+		ContextSession.using(() -> {
+			var sg = StringSegment.obtain(" abc defg ");
+			assertEquals("abc defg", sg.trim().toString());
+			assertEquals("abc defg ", sg.trimStart().toString());
+			assertEquals(" abc defg", sg.trimEnd().toString());
+		});
+	}
+
+	@Test
 	void startsWith() throws Exception {
 		ContextSession.using(() -> {
 			var sg = StringSegment.obtain("abcdefg");
@@ -20,6 +30,7 @@ class StringSegmentTest {
 			assertEquals(true, sg.startsWith("a"));
 			assertEquals(true, sg.startsWith("abc"));
 
+			assertEquals(false, sg.startsWith("1a"));
 		});
 	}
 

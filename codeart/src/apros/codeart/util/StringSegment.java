@@ -39,11 +39,11 @@ public final class StringSegment implements IReusable {
 		return trimImpl(2);
 	}
 
-	public StringSegment TrimStart() throws Exception {
+	public StringSegment trimStart() throws Exception {
 		return trimImpl(0);
 	}
 
-	public StringSegment TrimEnd() throws Exception {
+	public StringSegment trimEnd() throws Exception {
 		return trimImpl(1);
 	}
 
