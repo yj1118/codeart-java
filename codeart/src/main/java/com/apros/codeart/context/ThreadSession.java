@@ -1,0 +1,43 @@
+package com.apros.codeart.context;
+
+@ContextSessionAccess
+public final class ThreadSession implements IContextSession {
+	private static ThreadLocal<ContentEntries> local = new ThreadLocal<>();
+
+	private ThreadSession() {
+	}
+
+	public void initialize() throws Exception {
+		if (this.valid())
+			return;
+		var item = new ContentEntries();
+		local.set(item);
+	}
+
+	public void clear() throws Exception {
+		var item = local.get();
+		if (item != null) {
+			item.clear();
+			local.remove();
+		}
+	}
+
+	public Object getItem(String name) {
+		return local.get().get(name);
+	}
+
+	public void setItem(String name, Object value) {
+		local.get().set(name, value);
+	}
+
+	public boolean containsItem(String name) {
+		return local.get().contains(name);
+	}
+
+	public boolean valid() {
+		return local.get() != null;
+	}
+
+	public static final ThreadSession instance = new ThreadSession();
+
+}
