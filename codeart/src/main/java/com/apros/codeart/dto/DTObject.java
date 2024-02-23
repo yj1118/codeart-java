@@ -37,7 +37,7 @@ public class DTObject implements IReusable {
 		return null;
 	}
 
-	public String getSchemaCode(boolean sequential, boolean outputName) {
+	public String getSchemaCode(boolean sequential, boolean outputName) throws Exception {
 		return _root.getSchemaCode(sequential, outputName);
 	}
 

@@ -82,7 +82,11 @@ class EntityDeserializer {
 		return JSON.getValueByNotString(node.getValue().toString());
 	}
 
-	private static CodeTreeNode parseNode(CodeType parentCodeType, StringSegment nodeCode) {
+	private static StringSegment trimSign(StringSegment code) {
+		return code.substr(1, code.length() - 2).trim();
+	}
+
+	private static CodeTreeNode parseNode(CodeType parentCodeType, StringSegment nodeCode) throws Exception {
 		var nv = preHandle(parentCodeType, nodeCode);
 		var name = nv.getName();
 		var value = nv.getValue();
@@ -90,15 +94,15 @@ class EntityDeserializer {
 		CodeTreeNode node;
 
 		if (CodeTreeNode.isObject(value)) {
-			value = TrimSign(value);
-			var childs = ParseNodes(CodeType.Object, value);
+			value = trimSign(value);
+			var childs = parseNodes(CodeType.Object, value);
 			node = new CodeTreeNode(name, value, CodeType.Object, childs);
-		} else if (CodeTreeNode.IsList(value)) {
-			value = TrimSign(value);
-			var childs = ParseNodes(CodeType.List, value);
+		} else if (CodeTreeNode.isList(value)) {
+			value = trimSign(value);
+			var childs = parseNodes(CodeType.List, value);
 			node = new CodeTreeNode(name, value, CodeType.List, childs);
 		} else {
-			var codeType = CodeTreeNode.GetValueType(value);
+			var codeType = CodeTreeNode.getValueType(value);
 			node = new CodeTreeNode(name, value, codeType);
 		}
 		return node;
@@ -109,10 +113,10 @@ class EntityDeserializer {
 		if (o != null)
 			return DTObject.obtain(o, isReadOnly);
 
-		var members = DTEntity.obtainList();
+		var members = new LinkedList<DTEntity>();
 		members.add(root);
 
-		o = DTEObject.obtain(members);
+		o = DTEObject.obtain(StringUtil.empty(), members);
 		return DTObject.obtain(o, isReadOnly);
 	}
 
@@ -133,7 +137,7 @@ class EntityDeserializer {
 			name = StringSegment.Null;
 			value = code;
 		} else {
-			var info = Finder.Find(code, 0, ':');
+			var info = Finder.find(code, 0, ':');
 			boolean isStringValue = CodeTreeNode.getValueType(nodeCode) == CodeType.StringValue;
 
 			if (parentCodeType == CodeType.Object && !isStringValue) // 如果是{aaa}，我们会将aaa识别为name，如果是{'aaa'}，我们会将aaa识别为value
@@ -146,7 +150,19 @@ class EntityDeserializer {
 			}
 		}
 
-		return NameAndValue.obtain(name, value);
+		return new NameAndValue(name, value);
+	}
+
+	private static Iterable<CodeTreeNode> parseNodes(CodeType parentCodeType, StringSegment code) throws Exception {
+		ArrayList<CodeTreeNode> nodes = new ArrayList<CodeTreeNode>();
+		int startIndex = 0;
+		var info = Finder.find(code, startIndex, ',');
+		while (!info.isEmpty()) {
+			nodes.add(parseNode(parentCodeType, info.pass()));
+			info = Finder.find(code, info.keyPosition() + 1, ',');
+		}
+
+		return nodes;
 	}
 
 	private static class NameAndValue {

@@ -278,7 +278,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	@Override
-	public String getSchemaCode(boolean sequential, boolean outputName) {
+	public String getSchemaCode(boolean sequential, boolean outputName) throws Exception {
 		var name = this.getName();
 		var code = new StringBuilder();
 		if (outputName && !isNullOrEmpty(name))
