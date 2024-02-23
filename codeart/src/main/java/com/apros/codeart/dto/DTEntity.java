@@ -89,20 +89,18 @@ abstract class DTEntity implements AutoCloseable {
 	/**
 	 * @param sequential 是否排序输出代码
 	 * @param outputName 是否输出key值
-	 * @return
 	 * @throws Exception
 	 */
-	public abstract String getCode(boolean sequential, boolean outputName) throws Exception;
+	public abstract void fillCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception;
 
 	/**
 	 * 输出架构码
 	 * 
 	 * @param sequential
 	 * @param outputName
-	 * @return
 	 * @throws Exception
 	 */
-	public abstract String getSchemaCode(boolean sequential, boolean outputName) throws Exception;
+	public abstract void fillSchemaCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception;
 
 	public void close() throws Exception {
 		// 接触引用，防止循环引用导致内存泄漏

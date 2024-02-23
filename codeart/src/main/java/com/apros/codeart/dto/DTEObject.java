@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.function.Function;
 
 import com.apros.codeart.context.ContextSession;
-import com.apros.codeart.util.Func1;
+import com.apros.codeart.util.Action2;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 
@@ -173,16 +173,16 @@ final class DTEObject extends DTEntity {
 	}
 
 	@Override
-	public String getCode(boolean sequential, boolean outputName) throws Exception {
-		return getCodeImpl(sequential, outputName, (member) -> {
-			return member.getCode(sequential, true);
+	public void fillCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception {
+		fillCodeImpl(code, sequential, outputName, (c, member) -> {
+			member.fillCode(c, sequential, true);
 		});
 	}
 
 	@Override
-	public String getSchemaCode(boolean sequential, boolean outputName) throws Exception {
-		return getCodeImpl(sequential, outputName, (member) -> {
-			return member.getSchemaCode(sequential, true);
+	public void fillSchemaCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception {
+		fillCodeImpl(code, sequential, outputName, (c, member) -> {
+			member.fillSchemaCode(c, sequential, outputName);
 		});
 	}
 
@@ -199,11 +199,10 @@ final class DTEObject extends DTEntity {
 		return false;
 	}
 
-	private String getCodeImpl(boolean sequential, boolean outputName, Func1<DTEntity, String> getMemberCode)
-			throws Exception {
+	private void fillCodeImpl(StringBuilder code, boolean sequential, boolean outputName,
+			Action2<StringBuilder, DTEntity> fillMemberCode) throws Exception {
 		String name = this.getName();
 		var isSingleValue = this.isSingleValue();
-		var code = new StringBuilder();
 
 		if (outputName && !isNullOrEmpty(name))
 			code.append(String.format("\"%s\"", name));
@@ -212,7 +211,7 @@ final class DTEObject extends DTEntity {
 			code.append(":");
 
 		if (isSingleValue) {
-			code.append(getMemberCode.apply(_members.get(0)));
+			fillMemberCode.apply(code, _members.get(0));
 		} else {
 			code.append("{");
 
@@ -223,23 +222,21 @@ final class DTEObject extends DTEntity {
 				items.sort((t1, t2) -> {
 					return t1.getName().compareTo(t2.getName());
 				});
-				fillCode(code, items, getMemberCode);
+				fillCode(code, items, fillMemberCode);
 			} else {
-				fillCode(code, _members, getMemberCode);
+				fillCode(code, _members, fillMemberCode);
 			}
 
 			if (StringUtil.last(code) == ',')
 				StringUtil.removeLast(code);
 			code.append("}");
 		}
-		return code.toString();
 	}
 
-	private static void fillCode(StringBuilder code, Iterable<DTEntity> items, Func1<DTEntity, String> getMemberCode)
-			throws Exception {
+	private static void fillCode(StringBuilder code, Iterable<DTEntity> items,
+			Action2<StringBuilder, DTEntity> fillMemberCode) throws Exception {
 		for (var item : items) {
-			var memberCode = getMemberCode.apply(item);
-			code.append(memberCode);
+			fillMemberCode.apply(code, item);
 			code.append(",");
 		}
 	}

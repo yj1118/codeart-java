@@ -28,7 +28,7 @@ class JSON {
 		return sb.toString();
 	}
 
-	private static void writeValue(StringBuilder sb, Object value) throws Exception {
+	public static void writeValue(StringBuilder sb, Object value) throws Exception {
 		if (value == null) {
 			sb.append("null");
 			return;
@@ -41,20 +41,14 @@ class JSON {
 			return;
 		}
 
+		if (valueClass == long.class || valueClass == int.class || valueClass == float.class || valueClass == byte.class
+				|| valueClass == double.class || valueClass == short.class) {
+			sb.append(value);
+			return;
+		}
+
 		if (valueClass == Boolean.class) {
 			sb.append(value.toString().toLowerCase());
-			return;
-		}
-
-		if (valueClass == double.class || valueClass == float.class || valueClass == long.class
-				|| valueClass == int.class || valueClass == short.class || valueClass == byte.class) {
-			sb.append(value);
-			return;
-		}
-
-		if (valueClass == double.class || valueClass == float.class || valueClass == long.class
-				|| valueClass == int.class || valueClass == short.class || valueClass == byte.class) {
-			sb.append(value);
 			return;
 		}
 
@@ -98,7 +92,7 @@ class JSON {
 		sb.append("\")");
 	}
 
-	private static void writeString(StringBuilder sb, String value) {
+	public static void writeString(StringBuilder sb, String value) {
 		// 这主要是将带换行符的json代码，每行末尾添加了\字符，这样js引擎才能识别带换行的字符串
 
 		sb.append("\"");

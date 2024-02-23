@@ -1,7 +1,5 @@
 package com.apros.codeart.dto;
 
-import static com.apros.codeart.runtime.Util.as;
-
 import java.util.Collections;
 import java.util.function.Function;
 
@@ -15,33 +13,54 @@ final class DTEValue extends DTEntity {
 		return DTEntityType.VALUE;
 	}
 
+	private String _valueCode;
+
+	private boolean _valueIsString;
+
 	private Object _value;
+//
+//	public Object getValue() {
+//		return _value;
+//	}
 
-	public Object getValue() {
-		return _value;
-	}
+//	private static Object getNodeValue(CodeTreeNode node) throws Exception {
+//		if (node.getType() == CodeType.StringValue) {
+//			var value = JSON.readString(node.getValue().toString());
+//			var time = JSON.parseInstant(value);
+//			if (time != null)
+//				return time; // 有可能是客户端的JS库的JSON.Parse处理后得到的时间，得特别处理
+//			return value;
+//		}
+//		return JSON.getValueByNotString(node.getValue().toString());
+//	}
 
-	public void setValue(Object value) {
-		this._value = value;
-	}
+//	public void setValue(Object value) {
+//		this._value = value;
+//	}
 
-	private DTEValue() {
-		this(null, null);
-	}
+//	private DTEValue() {
+//		this(null, null, false, null);
+//	}
+//
+//	private DTEValue(String name, String valueCode, boolean valueIsString) {
+//		this(name, valueCode, valueIsString, null);
+//	}
 
-	private DTEValue(String name, Object value) {
+	private DTEValue(String name, String valueCode, boolean valueIsString, Object value) {
 		this.setName(name);
+		this._valueCode = valueCode;
+		this._valueIsString = valueIsString;
 		this._value = value;
 	}
 
 	@Override
 	public DTEntity cloneImpl() throws Exception {
-		// 原版本中是克隆了value，但是新版本中考虑到value要么是字符串，要么是其他值类型，要么是DTObject（仅在此情况下克隆），没有克隆的必要。
-		var value = this.getValue();
-		var dto = as(value, DTObject.class);
-		if (dto != null)
-			return obtain(this.getName(), dto.clone());
-		return obtain(this.getName(), value);
+//		// 原版本中是克隆了value，但是新版本中考虑到value要么是字符串，要么是其他值类型，要么是DTObject（仅在此情况下克隆），没有克隆的必要。
+//		var value = this.getValue();
+//		var dto = as(value, DTObject.class);
+//		if (dto != null)
+//			return obtain(this.getName(), dto.clone());
+		return obtain(this.getName(), _valueCode, _valueIsString, _value);
 	}
 
 	@Override
@@ -52,12 +71,14 @@ final class DTEValue extends DTEntity {
 
 	@Override
 	public void clearData() {
+		_valueCode = null;
+		_valueIsString = false;
 		_value = null;
 	}
 
 	@Override
 	public boolean hasData() {
-		return _value != null;
+		return _valueCode != null;
 	}
 
 	@Override
@@ -68,33 +89,44 @@ final class DTEValue extends DTEntity {
 	}
 
 	@Override
-	public String getCode(boolean sequential, boolean outputName) throws Exception {
+	public void fillCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception {
 		String name = this.getName();
-		StringBuilder code = new StringBuilder();
 		if (outputName && !StringUtil.isNullOrEmpty(name))
 			code.append(String.format("\"{0}\"", name));
 		if (code.length() > 0)
 			code.append(":");
-		code.append(getValueCode(sequential));
-
-		return code.toString();
+		fillValueCode(code, sequential);
 	}
 
-	private String getValueCode(boolean sequential) throws Exception {
-		var value = this.getValue();
-		var dto = as(value, DTObject.class);
-		if (dto != null)
-			return dto.getCode(sequential, false);
-		return JSON.getCode(value);
+	private void fillValueCode(StringBuilder code, boolean sequential) throws Exception {
+		if (_valueCode == null) {
+			// 没有valueCode，说明是以obtainByValue的方式创造的，这时候直接将value转换成码
+			JSON.writeValue(code, _value);
+			return;
+		}
+
+		// 有valueCode
+		if (_valueIsString) {
+			code.append("\"");
+			code.append(_valueCode); // _valueCode是已经解析好了的代码，直接输出
+			code.append("\"");
+			return;
+		}
+
+		// 不是字符串，直接输出
+		code.append(_valueCode);
+		return;
+
+//		var value = this.getValue();
+//		var dto = as(value, DTObject.class);
+//		if (dto != null)
+//			return dto.getCode(sequential, false);
+//		return JSON.getCode(value);
 	}
 
 	@Override
-	public String getSchemaCode(boolean sequential, boolean outputName) throws Exception {
-		return this.getName();
-	}
-
-	public static DTEValue obtain(String name, Object value) {
-		return ContextSession.registerItem(new DTEValue(name, value));
+	public void fillSchemaCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception {
+		code.append(this.getName());
 	}
 
 	@Override
@@ -107,6 +139,18 @@ final class DTEValue extends DTEntity {
 	public void removeMember(DTEntity e) {
 		throw new UnsupportedOperationException("DTEValue.removeMember");
 
+	}
+
+	public static DTEValue obtainByCode(String name, String valueCode, boolean valueIsString) {
+		return obtain(name, valueCode, valueIsString, null);
+	}
+
+	public static DTEValue obtainByValue(String name, Object value) {
+		return obtain(name, null, false, value);
+	}
+
+	private static DTEValue obtain(String name, String valueCode, boolean valueIsString, Object value) {
+		return ContextSession.registerItem(new DTEValue(name, valueCode, valueIsString, value));
 	}
 
 }
