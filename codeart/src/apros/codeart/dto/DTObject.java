@@ -2,8 +2,6 @@ package apros.codeart.dto;
 
 import static apros.codeart.i18n.Language.strings;
 
-import java.util.ArrayList;
-
 import apros.codeart.context.ContextSession;
 import apros.codeart.pooling.IReusable;
 import apros.codeart.pooling.Pool;
@@ -39,7 +37,7 @@ public class DTObject implements IReusable {
 		return null;
 	}
 
-	public String getSchemaCode(boolean sequential, boolean outputName) throws Exception {
+	public String getSchemaCode(boolean sequential, boolean outputName) {
 		return _root.getSchemaCode(sequential, outputName);
 	}
 
@@ -98,13 +96,4 @@ public class DTObject implements IReusable {
 		dto._isReadOnly = isReadOnly;
 		return dto;
 	}
-
-	private static Pool<ArrayList<DTObject>> poolList = new Pool<ArrayList<DTObject>>(() -> {
-		return new ArrayList<DTObject>();
-	}, PoolConfig.onlyMaxRemainTime(300));
-
-	static ArrayList<DTObject> obtainList() {
-		return ContextSession.obtainItem(poolList, () -> new ArrayList<DTObject>());
-	}
-
 }

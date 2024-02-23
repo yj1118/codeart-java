@@ -72,17 +72,16 @@ class EntityDeserializer {
 		}
 	}
 
-	private static Object getNodeValue(CodeTreeNode node)
-	 {
-	     if(node.getType() == CodeType.StringValue)
-	     {
-	         var value = JSON.readString(node.getValue().toString());
-	         if(JSON.TryParseDateTime(value,out var time)) 
-	             return time; //有可能是客户端的JS库的JSON.Parse处理后得到的时间，得特别处理
-	         return value;
-	     }
-	     return JSON.GetValue(node.Value);
-	 }
+	private static Object getNodeValue(CodeTreeNode node) throws Exception {
+		if (node.getType() == CodeType.StringValue) {
+			var value = JSON.readString(node.getValue().toString());
+			var time = JSON.parseInstant(value);
+			if (time != null)
+				return time; // 有可能是客户端的JS库的JSON.Parse处理后得到的时间，得特别处理
+			return value;
+		}
+		return JSON.getValueByNotString(node.getValue().toString());
+	}
 
 	private static CodeTreeNode parseNode(CodeType parentCodeType, StringSegment nodeCode) {
 		var nv = preHandle(parentCodeType, nodeCode);

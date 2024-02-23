@@ -1,17 +1,8 @@
 package apros.codeart.dto;
 
-import java.util.ArrayList;
 import java.util.function.Function;
 
-import apros.codeart.context.ContextSession;
-import apros.codeart.pooling.IReusable;
-import apros.codeart.pooling.Pool;
-import apros.codeart.pooling.PoolConfig;
-import apros.codeart.pooling.PoolItemPhase;
-import apros.codeart.util.Action1;
-import apros.codeart.util.Func1;
-
-abstract class DTEntity implements IReusable {
+abstract class DTEntity implements AutoCloseable {
 
 	private String _name;
 
@@ -106,33 +97,12 @@ abstract class DTEntity implements IReusable {
 	 */
 	public abstract String getSchemaCode(boolean sequential, boolean outputName) throws Exception;
 
-	public void clear() throws Exception {
+	public void close() throws Exception {
+		// 接触引用，防止循环引用导致内存泄漏
 		_name = null;
 		_parent = null;
 		_selfAsEntities = null;
 	}
 
 	public abstract void clearData();
-
-	private static Pool<ArrayList<DTEntity>> listPool = new Pool<ArrayList<DTEntity>>(() -> {
-		return new ArrayList<DTEntity>();
-	}, (list, phase) -> {
-		if (phase == PoolItemPhase.Returning) {
-			list.clear(); // 集合清空，集合的成员也是由池中借出来的，自然会被回收，所以这里不用再每个项清理
-		}
-		return true;
-	}, PoolConfig.onlyMaxRemainTime(300));
-
-	public static ArrayList<DTEntity> obtainList() {
-		return ContextSession.obtainItem(listPool, () -> new ArrayList<DTEntity>());
-	}
-
-	public static void usingList(Action1<ArrayList<DTEntity>> action) throws Exception {
-		listPool.using(action);
-	}
-
-	public static <R> R usingList(Func1<ArrayList<DTEntity>, R> action) throws Exception {
-		return listPool.using(action);
-	}
-
 }

@@ -1,5 +1,9 @@
 package apros.codeart.util;
 
+import java.util.function.Function;
+
+import apros.codeart.pooling.PoolingException;
+
 public final class StringUtil {
 	private StringUtil() {
 	};
@@ -49,6 +53,63 @@ public final class StringUtil {
 
 	public static String substr(String source, int startIndex) {
 		return source.substring(startIndex, startIndex);
+	}
+
+	/**
+	 * 组成一句话，可以指定分隔符
+	 * 
+	 * @param separator
+	 * @param items
+	 * @return
+	 * @throws Exception
+	 */
+	public static String join(String separator, Iterable<String> items) {
+		var sb = new StringBuilder();
+		var i = 0;
+		for (var item : items) {
+			if (i > 0)
+				sb.append(separator);
+			sb.append(item);
+			i++;
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * 组成一句话，可以指定分隔符
+	 * 
+	 * @param <T>
+	 * @param separator
+	 * @param items
+	 * @param map
+	 * @return
+	 * @throws Exception
+	 */
+	public static <T> String join(String separator, Iterable<T> items, Function<T, String> map) {
+		var sb = new StringBuilder();
+		var i = 0;
+		for (var item : items) {
+			if (i > 0)
+				sb.append(separator);
+			sb.append(map.apply(item));
+			i++;
+		}
+		return sb.toString();
+	}
+
+	/**
+	 * 转换成多行
+	 * 
+	 * @param items
+	 * @return
+	 * @throws PoolingException
+	 */
+	public static String lines(Iterable<String> items) {
+		return join(System.lineSeparator(), items);
+	}
+
+	public static <T> String lines(Iterable<T> items, Function<T, String> map) {
+		return join(System.lineSeparator(), items, map);
 	}
 
 }

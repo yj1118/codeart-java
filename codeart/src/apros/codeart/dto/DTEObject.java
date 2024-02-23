@@ -9,7 +9,6 @@ import java.util.function.Function;
 import apros.codeart.context.ContextSession;
 import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
-import apros.codeart.pooling.util.StringPool;
 import apros.codeart.util.Func1;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
@@ -181,7 +180,7 @@ final class DTEObject extends DTEntity {
 	}
 
 	@Override
-	public String getSchemaCode(boolean sequential, boolean outputName) throws Exception {
+	public String getSchemaCode(boolean sequential, boolean outputName) {
 		return getCodeImpl(sequential, outputName, (member) -> {
 			return member.getSchemaCode(sequential, true);
 		});
@@ -200,41 +199,40 @@ final class DTEObject extends DTEntity {
 		return false;
 	}
 
-	private String getCodeImpl(boolean sequential, boolean outputName, Func1<DTEntity, String> getMemberCode)
-			throws Exception {
+	private String getCodeImpl(boolean sequential, boolean outputName, Function<DTEntity, String> getMemberCode) {
 		String name = this.getName();
 		var isSingleValue = this.isSingleValue();
-		return StringPool.using((code) -> {
+		var code = new StringBuilder();
 
-			if (outputName && !isNullOrEmpty(name))
-				code.append(String.format("\"%s\"", name));
+		if (outputName && !isNullOrEmpty(name))
+			code.append(String.format("\"%s\"", name));
 
-			if (code.length() > 0)
-				code.append(":");
+		if (code.length() > 0)
+			code.append(":");
 
-			if (isSingleValue) {
-				code.append(getMemberCode.apply(_members.get(0)));
-			} else {
-				code.append("{");
+		if (isSingleValue) {
+			code.append(getMemberCode.apply(_members.get(0)));
+		} else {
+			code.append("{");
 
-				if (sequential) {
-					usingList((items) -> {
-						// 排序输出
-						items.addAll(_members);
-						items.sort((t1, t2) -> {
-							return t1.getName().compareTo(t2.getName());
-						});
-						fillCode(code, items, getMemberCode);
+			if (sequential) {
+				usingList((items) -> {
+					// 排序输出
+					items.addAll(_members);
+					items.sort((t1, t2) -> {
+						return t1.getName().compareTo(t2.getName());
 					});
-				} else {
-					fillCode(code, _members, getMemberCode);
-				}
-
-				if (StringUtil.last(code) == ',')
-					StringUtil.removeLast(code);
-				code.append("}");
+					fillCode(code, items, getMemberCode);
+				});
+			} else {
+				fillCode(code, _members, getMemberCode);
 			}
-		});
+
+			if (StringUtil.last(code) == ',')
+				StringUtil.removeLast(code);
+			code.append("}");
+		}
+		return code.toString();
 	}
 
 	private static void fillCode(StringBuilder code, Iterable<DTEntity> items, Func1<DTEntity, String> getMemberCode)

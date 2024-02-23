@@ -8,10 +8,8 @@ import static apros.codeart.util.StringUtil.removeLast;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import apros.codeart.pooling.util.StringPool;
 import apros.codeart.runtime.FieldUtil;
 import apros.codeart.util.StringUtil;
 import apros.codeart.util.TimeUtil;
@@ -21,9 +19,9 @@ class JSON {
 	}
 
 	public static String getCode(Object value) throws Exception {
-		return StringPool.using((sb) -> {
-			writeValue(sb, value);
-		});
+		var sb = new StringBuilder();
+		writeValue(sb, value);
+		return sb.toString();
 	}
 
 	private static void writeValue(StringBuilder sb, Object value) throws Exception {
@@ -186,98 +184,135 @@ class JSON {
 
 	}
 
-	public static String readString(String value) throws Exception {
+	public static String readString(String value) {
 		if (StringUtil.isNullOrEmpty(value))
 			return StringUtil.empty();
 
-		return StringPool.using((sb) -> {
-			char sign = StringUtil.charEmpty();
-			for (var pos = 0; pos < value.length(); pos++) {
-				var c = value.charAt(pos);
-				switch (c) {
-				case '\'':
-				case '\"': {
-					if (sign == StringUtil.charEmpty()) {
-						sign = c;
+		var sb = new StringBuilder();
+		char sign = StringUtil.charEmpty();
+		for (var pos = 0; pos < value.length(); pos++) {
+			var c = value.charAt(pos);
+			switch (c) {
+			case '\'':
+			case '\"': {
+				if (sign == StringUtil.charEmpty()) {
+					sign = c;
+				} else {
+					if (sign == c) {
+						sign = StringUtil.charEmpty();
 					} else {
-						if (sign == c) {
-							sign = StringUtil.charEmpty();
-						} else {
-							sb.append(c);
-						}
-					}
-				}
-					break;
-				case '\\': {
-					if (pos == value.length() - 1) {
-						// 最后个字符
 						sb.append(c);
-					} else {
-						var next = value.charAt(pos + 1);
-
-						switch (next) {
-						case '\"': {
-							sb.append('\"');
-							pos++;
-						}
-							break;
-						case '\\': {
-							sb.append('\\');
-							pos++;
-						}
-							break;
-						case 'b': {
-							sb.append('\b');
-							pos++;
-						}
-							break;
-						case 'f': {
-							sb.append('\f');
-							pos++;
-						}
-							break;
-						case 'n': {
-							sb.append('\n');
-							pos++;
-						}
-							break;
-						case 'r': {
-							sb.append('\r');
-							pos++;
-						}
-							break;
-						case 't': {
-							sb.append('\t');
-							pos++;
-						}
-							break;
-						}
 					}
-
-					break;
-				}
-				default:
-					sb.append(c);
-					break;
 				}
 			}
-		});
+				break;
+			case '\\': {
+				if (pos == value.length() - 1) {
+					// 最后个字符
+					sb.append(c);
+				} else {
+					var next = value.charAt(pos + 1);
+
+					switch (next) {
+					case '\"': {
+						sb.append('\"');
+						pos++;
+					}
+						break;
+					case '\\': {
+						sb.append('\\');
+						pos++;
+					}
+						break;
+					case 'b': {
+						sb.append('\b');
+						pos++;
+					}
+						break;
+					case 'f': {
+						sb.append('\f');
+						pos++;
+					}
+						break;
+					case 'n': {
+						sb.append('\n');
+						pos++;
+					}
+						break;
+					case 'r': {
+						sb.append('\r');
+						pos++;
+					}
+						break;
+					case 't': {
+						sb.append('\t');
+						pos++;
+					}
+						break;
+					}
+				}
+
+				break;
+			}
+			default:
+				sb.append(c);
+				break;
+			}
+		}
+		return sb.toString();
 	}
+
+	public static Object getValueByNotString(String code)
+	{
+	    if (code == null || code == "null") return null;
+	    else if (code.equalsIgnoreCase("true")) return true;
+	    else if (code.equalsIgnoreCase("false")) return false;
+	    else
+	    {
+	        int intValue = 0;
+	        if (int.TryParse(code, out intValue))
+	            return intValue;
+
+	        long longValue = 0;
+	        if (long.TryParse(code, out longValue)) return 
+	                longValue;
+
+	        float floatValue = 0;
+	        if (float.TryParse(code, out floatValue))
+	        {
+	            var dot = code.IndexOf(".");
+	            if (dot == -1 || (code.Length - dot - 1) <= 4)
+	            {
+	                //4位及以内的小数采用float，因为超过4位，输出就不准确了，被截获了，float转string
+	                return floatValue;
+	            }
+	        }
+
+	        double doubleValue = 0;
+	        if (double.TryParse(code, out doubleValue))
+	            return doubleValue;
+	    }
+	    return code;
+	}
+
+	private final static Pattern _date = Pattern.compile("new Date\\(\"(.+?)\"\\)", Pattern.CASE_INSENSITIVE);
 
 	// Pattern是线程安全的
 	private final static Pattern _date2 = Pattern
 			.compile("(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{3})Z", Pattern.CASE_INSENSITIVE);
 
-	public static Instant parseDateTime(String code) {
-
-		if(_date2.matcher(code).matches()) return 
-
-		var reg = temp.Item;
-		var mc = reg.Match(code);
-		if (mc.Success) {
-			value = Convert.ToDateTime(code);
-			return true;
+	public static Instant parseInstant(String code) {
+		if (_date2.matcher(code).matches()) {
+			return Instant.parse(code);
 		}
+
+		var matcher = _date.matcher(code);
+		if (matcher.matches()) {
+			code = matcher.group(1);
+			return Instant.parse(code);
+		}
+
+		return null;
 	}
 
 }

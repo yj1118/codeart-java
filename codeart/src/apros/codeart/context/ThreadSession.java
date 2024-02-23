@@ -1,10 +1,8 @@
 package apros.codeart.context;
 
-import apros.codeart.pooling.IPoolItem;
-
 @ContextSessionAccess
 public final class ThreadSession implements IContextSession {
-	private static ThreadLocal<IPoolItem<ContentEntries>> local = new ThreadLocal<>();
+	private static ThreadLocal<ContentEntries> local = new ThreadLocal<>();
 
 	private ThreadSession() {
 	}
@@ -12,28 +10,28 @@ public final class ThreadSession implements IContextSession {
 	public void initialize() throws Exception {
 		if (this.valid())
 			return;
-		var item = ContentEntries.Pool.borrow();
+		var item = new ContentEntries();
 		local.set(item);
 	}
 
 	public void clear() throws Exception {
 		var item = local.get();
 		if (item != null) {
-			ContentEntries.Pool.back(item);
+			item.clear();
 			local.remove();
 		}
 	}
 
 	public Object getItem(String name) {
-		return local.get().getItem().get(name);
+		return local.get().get(name);
 	}
 
 	public void setItem(String name, Object value) {
-		local.get().getItem().set(name, value);
+		local.get().set(name, value);
 	}
 
 	public boolean containsItem(String name) {
-		return local.get().getItem().contains(name);
+		return local.get().contains(name);
 	}
 
 	public boolean valid() {

@@ -36,6 +36,8 @@ public final class FieldUtil {
 	/**
 	 * 由于只是读信息，所以该方法线程安全
 	 * 
+	 * Memoized后缀表示以空间换时间
+	 * 
 	 * @param obj
 	 * @param action
 	 * @throws Exception

@@ -11,7 +11,6 @@ import java.util.function.Function;
 import apros.codeart.context.ContextSession;
 import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
-import apros.codeart.pooling.util.StringPool;
 import apros.codeart.util.ListUtil;
 
 final class DTEList extends DTEntity implements Iterable<DTObject> {
@@ -93,10 +92,10 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	@Override
-	public void clear() throws Exception {
-		super.clear();
+	public void close() throws Exception {
+		super.close();
 		_template = null;
-		_items = null; // 项会在会话结束后自动回收
+		_items = null; // 项会在会话结束后自动关闭
 	}
 
 	@Override
@@ -136,7 +135,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	public Iterable<DTEntity> finds(QueryExpression query) throws Exception {
 		if (query.onlySelf())
 			return this.getSelfAsEntities(); // *代表返回对象自己
-		var list = DTEntity.obtainList();
+		var list = new ArrayList<DTEntity>();
 		for (var e : _items) {
 			var es = e.getRoot().finds(query);
 			ListUtil.addRange(list, es);
@@ -172,7 +171,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	public void removeAts(Iterable<Integer> indexs) throws Exception {
-		var temps = DTObject.obtainList();
+		var temps = new ArrayList<DTObject>();
 		for (var i = 0; i < _items.size(); i++) {
 			if (!ListUtil.contains(indexs, i)) { // 在移除的索引之外的项，保留
 				temps.add(_items.get(i));
@@ -187,7 +186,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		removeItem(item);
 	}
 
-	public Boolean remove(Function<DTObject, Boolean> predicate) {
+	public boolean remove(Function<DTObject, Boolean> predicate) {
 		var item = ListUtil.find(_items, predicate);
 		if (item != null) {
 			removeItem(item);
@@ -259,39 +258,39 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	@Override
-	public String getCode(boolean sequential, boolean outputName) throws Exception {
+	public String getCode(boolean sequential, boolean outputName) {
 		var name = this.getName();
-		return StringPool.using((code) -> {
-			if (outputName && !isNullOrEmpty(name))
-				code.append(String.format("\"%s\"", name));
+		var code = new StringBuilder();
+		if (outputName && !isNullOrEmpty(name))
+			code.append(String.format("\"%s\"", name));
 
-			if (code.length() > 0)
-				code.append(":");
-			code.append("[");
-			for (DTObject item : _items) {
-				var itemCode = item.getCode(sequential, false);
-				code.append(itemCode);
-				code.append(",");
-			}
-			if (_items.size() > 0)
-				removeLast(code);
-			code.append("]");
-		});
+		if (code.length() > 0)
+			code.append(":");
+		code.append("[");
+		for (DTObject item : _items) {
+			var itemCode = item.getCode(sequential, false);
+			code.append(itemCode);
+			code.append(",");
+		}
+		if (_items.size() > 0)
+			removeLast(code);
+		code.append("]");
+		return code.toString();
 	}
 
 	@Override
-	public String getSchemaCode(boolean sequential, boolean outputName) throws Exception {
+	public String getSchemaCode(boolean sequential, boolean outputName) {
 		var name = this.getName();
-		return StringPool.using((code) -> {
-			if (outputName && !isNullOrEmpty(name))
-				code.append(String.format("\"%s\"", name));
+		var code = new StringBuilder();
+		if (outputName && !isNullOrEmpty(name))
+			code.append(String.format("\"%s\"", name));
 
-			if (code.length() > 0)
-				code.append(":");
-			code.append("[");
-			code.append(this._template.getSchemaCode(sequential, false));
-			code.append("]");
-		});
+		if (code.length() > 0)
+			code.append(":");
+		code.append("[");
+		code.append(this._template.getSchemaCode(sequential, false));
+		code.append("]");
+		return code.toString();
 	}
 
 	private static Pool<DTEList> pool = new Pool<DTEList>(() -> {
