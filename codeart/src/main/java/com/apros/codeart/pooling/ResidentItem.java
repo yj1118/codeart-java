@@ -132,7 +132,7 @@ final class ResidentItem<T> {
 	/**
 	 * 交还对象到所属的池中,当满足PoolConfig配置的条件时，项可能会被丢弃，并且相关的资源会被释放
 	 */
-	public void back() throws Exception {
+	public void back() {
 		if (!_isBorrowed)
 			throw new PoolingException(strings("CannotReturnPoolItem", _owner.getClass().getName()));
 		_isBorrowed = false;

@@ -1,6 +1,6 @@
 package com.apros.codeart.dto;
 
-public class CodeFormatErrorException extends Exception {
+public class CodeFormatErrorException extends RuntimeException {
 
 	/**
 	 * 

@@ -1,6 +1,6 @@
 package com.apros.codeart.pooling;
 
-public class PoolingException extends Exception {
+public class PoolingException extends RuntimeException {
 	/**
 	 * 
 	 */

@@ -337,7 +337,7 @@ public final class StringSegment implements IReusable {
 	public static final StringSegment Empty = new StringSegment("", 0, 0);
 
 	@Override
-	public void clear() throws Exception {
+	public void clear() {
 		_source = null;
 		_offset = 0;
 		_length = 0;

@@ -11,7 +11,7 @@ public final class ListUtil {
 	private ListUtil() {
 	};
 
-	public static <T> T findExable(Iterable<T> source, Func1<T, Boolean> predicate) throws Exception {
+	public static <T> T findExable(Iterable<T> source, Function<T, Boolean> predicate) {
 		for (T item : source) {
 			if (predicate.apply(item))
 				return item;
@@ -59,7 +59,7 @@ public final class ListUtil {
 	 * @return
 	 * @throws Exception
 	 */
-	public static <T> T removeExable(Iterable<T> source, Func1<T, Boolean> predicate) throws Exception {
+	public static <T> T removeExable(Iterable<T> source, Function<T, Boolean> predicate) {
 		var iterator = source.iterator();
 		while (iterator.hasNext()) {
 			T item = iterator.next();

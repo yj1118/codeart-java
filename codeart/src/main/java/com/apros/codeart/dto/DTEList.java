@@ -4,6 +4,7 @@ import static com.apros.codeart.util.StringUtil.isNullOrEmpty;
 import static com.apros.codeart.util.StringUtil.removeLast;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.function.Consumer;
@@ -11,6 +12,7 @@ import java.util.function.Function;
 
 import com.apros.codeart.context.ContextSession;
 import com.apros.codeart.util.ListUtil;
+import com.apros.codeart.util.StringUtil;
 
 final class DTEList extends DTEntity implements Iterable<DTObject> {
 	@Override
@@ -72,7 +74,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	@Override
-	public DTEntity cloneImpl() throws Exception {
+	public DTEntity cloneImpl() {
 		var obj = obtain(this.getName(), new LinkedList<DTObject>());
 		obj._template = _template.clone();
 
@@ -108,7 +110,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	@Override
-	public void setMember(QueryExpression query, Function<String, DTEntity> createEntity) throws Exception {
+	public void setMember(QueryExpression query, Function<String, DTEntity> createEntity) {
 		this._template.getRoot().setMember(query, createEntity);
 		this._template.clearData();
 
@@ -131,7 +133,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	@Override
-	public Iterable<DTEntity> finds(QueryExpression query) throws Exception {
+	public Iterable<DTEntity> finds(QueryExpression query) {
 		if (query.onlySelf())
 			return this.getSelfAsEntities(); // *代表返回对象自己
 		var list = new ArrayList<DTEntity>();
@@ -169,7 +171,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		_items = temps;
 	}
 
-	public void removeAts(Iterable<Integer> indexs) throws Exception {
+	public void removeAts(Iterable<Integer> indexs) {
 		var temps = new LinkedList<DTObject>();
 		for (var i = 0; i < _items.size(); i++) {
 			if (!ListUtil.contains(indexs, i)) { // 在移除的索引之外的项，保留
@@ -233,18 +235,14 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		insertItem(index, item);
 	}
 
-//	private DTObjects _objects;
-//
-//	public DTObjects GetObjects() {
-//		if (_objects == null) {
-//			_objects = new DTObjects(Items);
-//		}
-//		return _objects;
-//	}
+	public Iterable<DTObject> getObjects() {
+		return Collections.unmodifiableList(_items);
+	}
 
-	public <T> Iterable<T> getValues() {
+	@SuppressWarnings("unchecked")
+	public <T> Iterable<T> getValues(Class<T> cls, T defaultValue, boolean throwError) {
 		return ListUtil.map(_items, (t) -> {
-			return t.getValue();
+			return (T) t.get(StringUtil.empty(), defaultValue, throwError);
 		});
 	}
 
@@ -257,9 +255,8 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	@Override
-	public String getCode(boolean sequential, boolean outputName) {
+	public void fillCode(StringBuilder code, boolean sequential, boolean outputName) {
 		var name = this.getName();
-		var code = new StringBuilder();
 		if (outputName && !isNullOrEmpty(name))
 			code.append(String.format("\"%s\"", name));
 
@@ -274,13 +271,11 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		if (_items.size() > 0)
 			removeLast(code);
 		code.append("]");
-		return code.toString();
 	}
 
 	@Override
-	public String getSchemaCode(boolean sequential, boolean outputName) throws Exception {
+	public void fillSchemaCode(StringBuilder code, boolean sequential, boolean outputName) {
 		var name = this.getName();
-		var code = new StringBuilder();
 		if (outputName && !isNullOrEmpty(name))
 			code.append(String.format("\"%s\"", name));
 
@@ -289,7 +284,6 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		code.append("[");
 		code.append(this._template.getSchemaCode(sequential, false));
 		code.append("]");
-		return code.toString();
 	}
 
 	public static DTEList obtain(String name) {

@@ -1,14 +1,13 @@
 package com.apros.codeart.context;
 
-import java.lang.reflect.InvocationTargetException;
+import static com.apros.codeart.runtime.Util.propagate;
+
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.function.Supplier;
 
-import com.apros.codeart.diagnosis.Log;
 import com.apros.codeart.pooling.Pool;
 import com.apros.codeart.runtime.MethodUtil;
-import com.apros.codeart.util.Action;
-import com.apros.codeart.util.Func;
 
 /**
  * 应用程序会话，指的是在应用程序执行期间，不同的请求会拥有自己的appSession，该对象仅对当前用户负责
@@ -24,12 +23,12 @@ public final class ContextSession {
 	 * @param action
 	 * @throws Exception
 	 */
-	public static void using(Action action) throws Exception {
+	public static void using(Runnable action) {
 		try {
 			initialize();
-			action.apply();
+			action.run();
 		} catch (Exception ex) {
-			throw ex;
+			throw propagate(ex);
 		} finally {
 			dispose();
 		}
@@ -45,21 +44,31 @@ public final class ContextSession {
 	/// <summary>
 	/// 释放当前回话
 	/// </summary>
-	private static void dispose() throws Exception {
+	private static void dispose() {
 		process_end();
 		getCurrent().clear();
 	}
 
-	private static void process_start()
-			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		for (var method : _startHandles)
-			method.invoke(null);
+	private static void process_start() {
+		try {
+			for (var method : _startHandles)
+				method.invoke(null);
+		} catch (Exception ex) {
+			throw propagate(ex);
+		} finally {
+			dispose();
+		}
 	}
 
-	private static void process_end()
-			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		for (var method : _endHandles)
-			method.invoke(null);
+	private static void process_end() {
+		try {
+			for (var method : _endHandles)
+				method.invoke(null);
+		} catch (Exception ex) {
+			throw propagate(ex);
+		} finally {
+			dispose();
+		}
 	}
 
 	private static HashSet<Method> _startHandles = new HashSet<Method>();
@@ -107,21 +116,16 @@ public final class ContextSession {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T obtainItem(String name, Func<T> factory) {
-		try {
-			if (!exists())
-				return factory.apply();
-			var session = getCurrent();
-			Object item = session.getItem(name);
-			if (item == null) {
-				item = factory.apply();
-				session.setItem(name, item);
-			}
-			return (T) item;
-		} catch (Exception e) {
-			Log.error(e);
+	public static <T> T obtainItem(String name, Supplier<T> factory) {
+		if (!exists())
+			return factory.get();
+		var session = getCurrent();
+		Object item = session.getItem(name);
+		if (item == null) {
+			item = factory.get();
+			session.setItem(name, item);
 		}
-		return null;
+		return (T) item;
 	}
 
 	/**
@@ -154,15 +158,10 @@ public final class ContextSession {
 	 * @return
 	 * @throws Exception
 	 */
-	public static <T> T obtainItem(Pool<T> pool, Func<T> factory) {
-		try {
-			if (!exists()) // 如果不存在回话，那么直接构造
-				return factory.apply();
-			return Symbiosis.obtain(pool);
-		} catch (Exception e) {
-			Log.error(e);
-		}
-		return null;
+	public static <T> T obtainItem(Pool<T> pool, Supplier<T> factory) {
+		if (!exists()) // 如果不存在回话，那么直接构造
+			return factory.get();
+		return Symbiosis.obtain(pool);
 	}
 
 	/**

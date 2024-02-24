@@ -7,14 +7,14 @@ public final class ThreadSession implements IContextSession {
 	private ThreadSession() {
 	}
 
-	public void initialize() throws Exception {
+	public void initialize() {
 		if (this.valid())
 			return;
 		var item = new ContentEntries();
 		local.set(item);
 	}
 
-	public void clear() throws Exception {
+	public void clear() {
 		var item = local.get();
 		if (item != null) {
 			item.clear();

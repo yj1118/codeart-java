@@ -1,6 +1,7 @@
 package com.apros.codeart.pooling;
 
 import static com.apros.codeart.runtime.Util.as;
+import static com.apros.codeart.runtime.Util.propagate;
 
 public final class Util {
 	private Util() {
@@ -12,21 +13,25 @@ public final class Util {
 	 * @param item
 	 * @throws Exception
 	 */
-	public static void stop(Object item) throws Exception {
+	public static void stop(Object item) {
 		var reusable = as(item, IReusable.class);
 		if (reusable != null) {
 			reusable.clear();
 			return;
 		}
 
-		var closeable = as(item, AutoCloseable.class);
-		if (closeable != null) {
-			closeable.close();
-			return;
+		try {
+			var closeable = as(item, AutoCloseable.class);
+			if (closeable != null) {
+				closeable.close();
+				return;
+			}
+		} catch (Exception e) {
+			throw propagate(e);
 		}
 	}
 
-	public static void stop(Iterable<Object> items) throws Exception {
+	public static void stop(Iterable<Object> items) {
 		for (var item : items) {
 			stop(item);
 		}

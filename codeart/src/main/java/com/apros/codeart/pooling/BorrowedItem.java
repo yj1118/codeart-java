@@ -31,7 +31,7 @@ final class BorrowedItem<T> implements IPoolItem<T> {
 	}
 
 	@Override
-	public void clear() throws Exception {
+	public void clear() {
 		_parent.back();
 	}
 

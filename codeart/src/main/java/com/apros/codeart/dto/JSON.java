@@ -22,13 +22,13 @@ class JSON {
 	private JSON() {
 	}
 
-	public static String getCode(Object value) throws Exception {
+	public static String getCode(Object value) {
 		var sb = new StringBuilder();
 		writeValue(sb, value);
 		return sb.toString();
 	}
 
-	public static void writeValue(StringBuilder sb, Object value) throws Exception {
+	public static void writeValue(StringBuilder sb, Object value) {
 		if (value == null) {
 			sb.append("null");
 			return;
@@ -92,8 +92,8 @@ class JSON {
 		sb.append("\")");
 	}
 
+	// 这主要是将带换行符的json代码，每行末尾添加了\字符，这样js引擎才能识别带换行的字符串
 	public static void writeString(StringBuilder sb, String value) {
-		// 这主要是将带换行符的json代码，每行末尾添加了\字符，这样js引擎才能识别带换行的字符串
 
 		sb.append("\"");
 		for (int i = 0; i < value.length(); i++) {
@@ -129,7 +129,7 @@ class JSON {
 		sb.append("\"");
 	}
 
-	private static void writeMap(StringBuilder sb, Map<?, ?> value) throws Exception {
+	private static void writeMap(StringBuilder sb, Map<?, ?> value) {
 		boolean hasItems = false;
 		sb.append("{");
 		for (Map.Entry<?, ?> entry : value.entrySet()) {
@@ -145,7 +145,7 @@ class JSON {
 		sb.append("}");
 	}
 
-	private static void writeIterable(StringBuilder sb, Iterable<?> value) throws Exception {
+	private static void writeIterable(StringBuilder sb, Iterable<?> value) {
 		boolean hasItems = false;
 		sb.append("[");
 		for (var item : value) {
@@ -160,10 +160,10 @@ class JSON {
 		sb.append("]");
 	}
 
-	private static void writeObject(StringBuilder sb, Object value) throws Exception {
+	private static void writeObject(StringBuilder sb, Object value) {
 		var dto = as(value, DTObject.class);
 		if (dto != null) {
-			dto.fillCode(sb);
+			dto.fillCode(sb, false, true);
 			return;
 		}
 
@@ -260,8 +260,16 @@ class JSON {
 		return sb.toString();
 	}
 
+	public static Object getValueByString(String code) {
+		var value = JSON.readString(code);
+		var time = JSON.parseInstant(value);
+		if (time != null)
+			return time; // 有可能是客户端的JS库的JSON.Parse处理后得到的时间，得特别处理
+		return value;
+	}
+
 	public static Object getValueByNotString(String code) {
-		if (code == null || code == "null")
+		if (code == null || code.equals("null"))
 			return null;
 		else if (code.equalsIgnoreCase("true"))
 			return true;

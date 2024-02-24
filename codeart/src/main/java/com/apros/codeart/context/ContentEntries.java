@@ -24,7 +24,7 @@ public final class ContentEntries {
 		return _data.containsKey(name);
 	}
 
-	public void clear() throws Exception {
+	public void clear() {
 		Util.stop(_data.values());
 		_data.clear();
 	}

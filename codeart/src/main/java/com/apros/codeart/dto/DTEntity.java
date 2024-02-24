@@ -58,17 +58,13 @@ abstract class DTEntity implements AutoCloseable {
 		return _selfAsEntities;
 	}
 
-	public final Object clone() throws CloneNotSupportedException {
-		try {
-			return cloneImpl();
-		} catch (Exception e) {
-			throw new CloneNotSupportedException(e.getMessage());
-		}
+	public final Object clone() {
+		return cloneImpl();
 	}
 
-	protected abstract DTEntity cloneImpl() throws Exception;
+	protected abstract DTEntity cloneImpl();
 
-	public abstract void setMember(QueryExpression query, Function<String, DTEntity> createEntity) throws Exception;
+	public abstract void setMember(QueryExpression query, Function<String, DTEntity> createEntity);
 
 	/**
 	 * 删除成员
@@ -82,25 +78,22 @@ abstract class DTEntity implements AutoCloseable {
 	 * 
 	 * @param query
 	 * @return
-	 * @throws Exception
 	 */
-	public abstract Iterable<DTEntity> finds(QueryExpression query) throws Exception;
+	public abstract Iterable<DTEntity> finds(QueryExpression query);
 
 	/**
 	 * @param sequential 是否排序输出代码
 	 * @param outputName 是否输出key值
-	 * @throws Exception
 	 */
-	public abstract void fillCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception;
+	public abstract void fillCode(StringBuilder code, boolean sequential, boolean outputName);
 
 	/**
 	 * 输出架构码
 	 * 
 	 * @param sequential
 	 * @param outputName
-	 * @throws Exception
 	 */
-	public abstract void fillSchemaCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception;
+	public abstract void fillSchemaCode(StringBuilder code, boolean sequential, boolean outputName);
 
 	public void close() throws Exception {
 		// 接触引用，防止循环引用导致内存泄漏

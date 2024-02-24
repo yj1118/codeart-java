@@ -6,10 +6,10 @@ import static com.apros.codeart.util.StringUtil.isNullOrEmpty;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import com.apros.codeart.context.ContextSession;
-import com.apros.codeart.util.Action2;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 
@@ -29,8 +29,8 @@ final class DTEObject extends DTEntity {
 		setMembers(members);
 	}
 
-	public LinkedList<DTEntity> getMembers() {
-		return _members;
+	public Iterable<DTEntity> getMembers() {
+		return Collections.unmodifiableList(_members);
 	}
 
 	public DTEntity first() {
@@ -38,7 +38,7 @@ final class DTEObject extends DTEntity {
 	}
 
 	@Override
-	public DTEntity cloneImpl() throws Exception {
+	public DTEntity cloneImpl() {
 		var items = new LinkedList<DTEntity>();
 		for (var e : _members) {
 			items.add((DTEntity) e.clone());
@@ -95,7 +95,7 @@ final class DTEObject extends DTEntity {
 	}
 
 	@Override
-	public Iterable<DTEntity> finds(QueryExpression query) throws Exception {
+	public Iterable<DTEntity> finds(QueryExpression query) {
 		if (query.onlySelf())
 			return this.getSelfAsEntities();// 查询自身
 
@@ -130,7 +130,7 @@ final class DTEObject extends DTEntity {
 	 * @throws Exception
 	 */
 	@Override
-	public void setMember(QueryExpression query, Function<String, DTEntity> createEntity) throws Exception {
+	public void setMember(QueryExpression query, Function<String, DTEntity> createEntity) {
 		var segment = query.getSegment();
 
 		var entity = this.find(segment);
@@ -173,16 +173,16 @@ final class DTEObject extends DTEntity {
 	}
 
 	@Override
-	public void fillCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception {
+	public void fillCode(StringBuilder code, boolean sequential, boolean outputName) {
 		fillCodeImpl(code, sequential, outputName, (c, member) -> {
 			member.fillCode(c, sequential, true);
 		});
 	}
 
 	@Override
-	public void fillSchemaCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception {
+	public void fillSchemaCode(StringBuilder code, boolean sequential, boolean outputName) {
 		fillCodeImpl(code, sequential, outputName, (c, member) -> {
-			member.fillSchemaCode(c, sequential, outputName);
+			member.fillSchemaCode(c, sequential, true);
 		});
 	}
 
@@ -200,7 +200,7 @@ final class DTEObject extends DTEntity {
 	}
 
 	private void fillCodeImpl(StringBuilder code, boolean sequential, boolean outputName,
-			Action2<StringBuilder, DTEntity> fillMemberCode) throws Exception {
+			BiConsumer<StringBuilder, DTEntity> fillMemberCode) {
 		String name = this.getName();
 		var isSingleValue = this.isSingleValue();
 
@@ -211,7 +211,7 @@ final class DTEObject extends DTEntity {
 			code.append(":");
 
 		if (isSingleValue) {
-			fillMemberCode.apply(code, _members.get(0));
+			fillMemberCode.accept(code, _members.get(0));
 		} else {
 			code.append("{");
 
@@ -234,9 +234,9 @@ final class DTEObject extends DTEntity {
 	}
 
 	private static void fillCode(StringBuilder code, Iterable<DTEntity> items,
-			Action2<StringBuilder, DTEntity> fillMemberCode) throws Exception {
+			BiConsumer<StringBuilder, DTEntity> fillMemberCode) {
 		for (var item : items) {
-			fillMemberCode.apply(code, item);
+			fillMemberCode.accept(code, item);
 			code.append(",");
 		}
 	}

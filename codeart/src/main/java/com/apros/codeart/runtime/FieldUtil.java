@@ -1,9 +1,11 @@
 package com.apros.codeart.runtime;
 
+import static com.apros.codeart.runtime.Util.propagate;
+
 import java.lang.reflect.Field;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import com.apros.codeart.util.Action2;
 import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ThreadSafe;
 
@@ -11,16 +13,20 @@ public final class FieldUtil {
 	private FieldUtil() {
 	}
 
-	public static void each(Object obj, Action2<String, Object> action) throws Exception {
+	public static void each(Object obj, BiConsumer<String, Object> action) {
 		// 获取目标类的 Class 对象
 		Class<?> cls = obj.getClass();
 
 		// 获取类声明的所有字段
 		Field[] fields = cls.getDeclaredFields();
 
-		// 遍历字段数组
-		for (Field field : fields) {
-			action.apply(field.getName(), field.get(obj));
+		try {
+			// 遍历字段数组
+			for (Field field : fields) {
+				action.accept(field.getName(), field.get(obj));
+			}
+		} catch (Exception e) {
+			throw propagate(e);
 		}
 	}
 
@@ -43,16 +49,20 @@ public final class FieldUtil {
 	 * @throws Exception
 	 */
 	@ThreadSafe
-	public static void eachMemoized(Object obj, Action2<String, Object> action) throws Exception {
+	public static void eachMemoized(Object obj, BiConsumer<String, Object> action) {
 		// 获取目标类的 Class 对象
 		Class<?> cls = obj.getClass();
 
 		// 获取类声明的所有字段
 		Field[] fields = _getFields.apply(cls);
 
-		// 遍历字段数组
-		for (Field field : fields) {
-			action.apply(field.getName(), field.get(obj));
+		try {
+			// 遍历字段数组
+			for (Field field : fields) {
+				action.accept(field.getName(), field.get(obj));
+			}
+		} catch (Exception e) {
+			throw propagate(e);
 		}
 	}
 }

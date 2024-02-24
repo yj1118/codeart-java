@@ -2,16 +2,16 @@ package com.apros.codeart.pooling;
 
 import static com.apros.codeart.i18n.Language.strings;
 import static com.apros.codeart.runtime.Util.as;
+import static com.apros.codeart.runtime.Util.propagate;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Objects;
-
-import com.apros.codeart.util.Action1;
-import com.apros.codeart.util.Func;
-import com.apros.codeart.util.Func1;
-import com.apros.codeart.util.Func2;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public final class Pool<T> implements AutoCloseable {
 
@@ -19,12 +19,12 @@ public final class Pool<T> implements AutoCloseable {
 	/// 同步对象
 	/// </summary>
 	private final Object _syncRoot = new Object();
-	private final Func<T> _itemFactory;
+	private final Supplier<T> _itemFactory;
 	/**
 	 * 返回true，表示继续使用该项，返回false表示抛弃项
 	 */
-	private final Func2<T, PoolItemPhase, Boolean> _itemFilter;
-	private final Action1<T> _itemDestroyer; // 当项被消除时，会使用该对象进行额外的销毁操作
+	private final BiFunction<T, PoolItemPhase, Boolean> _itemFilter;
+	private final Consumer<T> _itemDestroyer; // 当项被消除时，会使用该对象进行额外的销毁操作
 	private IPoolContainer<ResidentItem<T>> _container;
 	private boolean _isDisposed;
 	private int _poolVersion;
@@ -128,7 +128,7 @@ public final class Pool<T> implements AutoCloseable {
 	 * @param itemDestroyer 当项被消除时，会使用该对象进行额外的销毁操作,可为空
 	 * @param config        池行为的配置
 	 */
-	public Pool(Func<T> itemFactory, Func2<T, PoolItemPhase, Boolean> itemFilter, Action1<T> itemDestroyer,
+	public Pool(Supplier<T> itemFactory, BiFunction<T, PoolItemPhase, Boolean> itemFilter, Consumer<T> itemDestroyer,
 			PoolConfig config) {
 		Objects.requireNonNull(itemFactory, "itemFactory");
 		Objects.requireNonNull(config, "config");
@@ -148,11 +148,11 @@ public final class Pool<T> implements AutoCloseable {
 		_container = createContainer();
 	}
 
-	public Pool(Func<T> itemFactory, Func2<T, PoolItemPhase, Boolean> itemFilter, PoolConfig config) {
+	public Pool(Supplier<T> itemFactory, BiFunction<T, PoolItemPhase, Boolean> itemFilter, PoolConfig config) {
 		this(itemFactory, itemFilter, null, config);
 	}
 
-	public Pool(Func<T> itemFactory, PoolConfig config) {
+	public Pool(Supplier<T> itemFactory, PoolConfig config) {
 		this(itemFactory, null, null, config);
 	}
 
@@ -167,7 +167,7 @@ public final class Pool<T> implements AutoCloseable {
 			throw new IllegalStateException(strings("PoolDisposed", this.getClass().getName()));
 	}
 
-	public IPoolItem<T> borrow() throws Exception {
+	public IPoolItem<T> borrow() {
 		ResidentItem<T> resident = null;
 		ArrayList<ResidentItem<T>> expiredItems = null;
 		try {
@@ -205,7 +205,7 @@ public final class Pool<T> implements AutoCloseable {
 			try {
 				// 如果在容器中没有找到可用的项，那么创建被封装的新项
 				if (resident == null)
-					resident = new ResidentItem<T>(this, _itemFactory.apply());
+					resident = new ResidentItem<T>(this, _itemFactory.get());
 
 				var borrowedItem = resident.borrow(currentPoolVersion);
 
@@ -232,7 +232,7 @@ public final class Pool<T> implements AutoCloseable {
 	 * @throws Exception
 	 * @throws PoolingException
 	 */
-	public void back(IPoolItem<T> item) throws Exception {
+	public void back(IPoolItem<T> item) {
 		item.clear();
 	}
 
@@ -242,22 +242,22 @@ public final class Pool<T> implements AutoCloseable {
 	 * @param action
 	 * @throws Exception
 	 */
-	public void using(Action1<T> action) throws Exception {
+	public void using(Consumer<T> action) {
 		IPoolItem<T> item = null;
 		try {
 			item = this.borrow();
-			action.apply(item.getItem());
+			action.accept(item.getItem());
 		} catch (Exception e) {
 			if (item != null)
 				item.setCorrupted();
-			throw e;
+			throw propagate(e);
 		} finally {
 			if (item != null)
 				item.clear();
 		}
 	}
 
-	public <R> R using(Func1<T, R> action) throws Exception {
+	public <R> R using(Function<T, R> action) {
 		IPoolItem<T> item = null;
 		try {
 			item = this.borrow();
@@ -265,7 +265,7 @@ public final class Pool<T> implements AutoCloseable {
 		} catch (Exception e) {
 			if (item != null)
 				item.setCorrupted();
-			throw e;
+			throw propagate(e);
 		} finally {
 			if (item != null)
 				item.clear();
@@ -289,9 +289,8 @@ public final class Pool<T> implements AutoCloseable {
 	/**
 	 * 清理池
 	 * 
-	 * @throws PoolingException
 	 */
-	public void clear() throws PoolingException {
+	public void clear() {
 		IPoolContainer<ResidentItem<T>> oldContainer;
 
 		synchronized (_syncRoot) {
@@ -351,7 +350,7 @@ public final class Pool<T> implements AutoCloseable {
 		return _maxUses > 0 && residentItem.getUseCount() >= _maxUses;
 	}
 
-	private boolean filter(ResidentItem<T> residentItem, PoolItemPhase phase) throws Exception {
+	private boolean filter(ResidentItem<T> residentItem, PoolItemPhase phase) {
 		if (_itemFilter == null) {
 			if (phase == PoolItemPhase.Returning && residentItem.isReusable()) {
 				// 如果是可回收的，那么在回到池中时，清理下资源
@@ -382,7 +381,7 @@ public final class Pool<T> implements AutoCloseable {
 	 * @param residentItem
 	 * @throws PoolingException
 	 */
-	void back(ResidentItem<T> residentItem) throws Exception {
+	void back(ResidentItem<T> residentItem) {
 		decrementBorrowedCount();
 
 		// 如果项被显示注明了需要抛弃
@@ -424,7 +423,7 @@ public final class Pool<T> implements AutoCloseable {
 	private void discardItem(ResidentItem<T> residentItem) throws PoolingException {
 		try {
 			if (_itemDestroyer != null)
-				_itemDestroyer.apply(residentItem.getItem());
+				_itemDestroyer.accept(residentItem.getItem());
 
 			var disposableObject = as(residentItem.getItem(), AutoCloseable.class);
 			if (disposableObject != null)

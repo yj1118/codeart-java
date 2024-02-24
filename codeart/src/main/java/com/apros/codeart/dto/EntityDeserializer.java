@@ -19,13 +19,13 @@ class EntityDeserializer {
 	private EntityDeserializer() {
 	}
 
-	public static DTEObject deserialize(String code, boolean isReadOnly) throws Exception {
+	public static DTEObject deserialize(String code, boolean isReadOnly) {
 		if (isNullOrEmpty(code))
 			return DTEObject.obtain(StringUtil.empty());
 		return deserialize(new StringSegment(code), isReadOnly);
 	}
 
-	private static DTEObject deserialize(StringSegment code, boolean isReadOnly) throws Exception {
+	private static DTEObject deserialize(StringSegment code, boolean isReadOnly) {
 		if (code.isEmpty())
 			return DTEObject.obtain(StringUtil.empty());
 		var node = parseNode(CodeType.Object, code);
@@ -35,8 +35,7 @@ class EntityDeserializer {
 		return as(ListUtil.first(entities), DTEObject.class);
 	}
 
-	private static void fillEntities(AbstractList<DTEntity> entities, CodeTreeNode node, boolean isReadOnly)
-			throws Exception {
+	private static void fillEntities(AbstractList<DTEntity> entities, CodeTreeNode node, boolean isReadOnly) {
 		var name = JSON.readString(node.getName().toString());
 		if (node.getType() == CodeType.Object) {
 			var members = new LinkedList<DTEntity>();
@@ -65,8 +64,7 @@ class EntityDeserializer {
 			var e = DTEList.obtain(name, childs);
 			entities.add(e);
 		} else {
-			Object value = getNodeValue(node);
-			var dte = DTEValue.obtain(name, value);
+			var dte = DTEValue.obtainByCode(name, node.getValue().toString(), node.getType() == CodeType.StringValue);
 			entities.add(dte);
 		}
 	}
@@ -75,7 +73,7 @@ class EntityDeserializer {
 		return code.substr(1, code.length() - 2).trim();
 	}
 
-	private static CodeTreeNode parseNode(CodeType parentCodeType, StringSegment nodeCode) throws Exception {
+	private static CodeTreeNode parseNode(CodeType parentCodeType, StringSegment nodeCode) {
 		var nv = preHandle(parentCodeType, nodeCode);
 		var name = nv.getName();
 		var value = nv.getValue();
@@ -118,8 +116,7 @@ class EntityDeserializer {
 	 * @throws Exception
 	 * @throws CodeFormatErrorException
 	 */
-	private static NameAndValue preHandle(CodeType parentCodeType, StringSegment nodeCode)
-			throws CodeFormatErrorException, Exception {
+	private static NameAndValue preHandle(CodeType parentCodeType, StringSegment nodeCode) {
 		StringSegment name, value;
 		var code = nodeCode.trim();
 		if (CodeTreeNode.isObject(code) || CodeTreeNode.isList(code)) {
@@ -142,7 +139,7 @@ class EntityDeserializer {
 		return new NameAndValue(name, value);
 	}
 
-	private static Iterable<CodeTreeNode> parseNodes(CodeType parentCodeType, StringSegment code) throws Exception {
+	private static Iterable<CodeTreeNode> parseNodes(CodeType parentCodeType, StringSegment code) {
 		ArrayList<CodeTreeNode> nodes = new ArrayList<CodeTreeNode>();
 		int startIndex = 0;
 		var info = Finder.find(code, startIndex, ',');
@@ -217,7 +214,7 @@ class EntityDeserializer {
 
 //		#region 静态成员
 
-		public static boolean isList(StringSegment code) throws CodeFormatErrorException {
+		public static boolean isList(StringSegment code) {
 			if (code.startsWith("[")) {
 				if (!code.endsWith("]"))
 					throw new CodeFormatErrorException(strings("JSONCodeBracketsError", code.toString(), "[", "]"));
@@ -226,7 +223,7 @@ class EntityDeserializer {
 			return false;
 		}
 
-		public static boolean isObject(StringSegment code) throws CodeFormatErrorException {
+		public static boolean isObject(StringSegment code) {
 			if (code.startsWith("{")) {
 				if (!code.endsWith("}"))
 					throw new CodeFormatErrorException(strings("JSONCodeBracketsError", code.toString(), "{", "}"));

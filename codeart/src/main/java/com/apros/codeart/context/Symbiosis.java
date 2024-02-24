@@ -33,7 +33,7 @@ final class Symbiosis implements IReusable {
 	}
 
 	@Override
-	public void clear() throws Exception {
+	public void clear() {
 		Util.stop(_items);
 		_items.clear();
 	}

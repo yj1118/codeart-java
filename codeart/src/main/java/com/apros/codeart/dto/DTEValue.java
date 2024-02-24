@@ -18,33 +18,18 @@ final class DTEValue extends DTEntity {
 	private boolean _valueIsString;
 
 	private Object _value;
-//
-//	public Object getValue() {
-//		return _value;
-//	}
 
-//	private static Object getNodeValue(CodeTreeNode node) throws Exception {
-//		if (node.getType() == CodeType.StringValue) {
-//			var value = JSON.readString(node.getValue().toString());
-//			var time = JSON.parseInstant(value);
-//			if (time != null)
-//				return time; // 有可能是客户端的JS库的JSON.Parse处理后得到的时间，得特别处理
-//			return value;
-//		}
-//		return JSON.getValueByNotString(node.getValue().toString());
-//	}
+	public Object getValue() {
+		if (_value == null) {
+			_value = _valueIsString ? JSON.getValueByString(_valueCode) : JSON.getValueByNotString(_valueCode);
+		}
+		return _value;
+	}
 
-//	public void setValue(Object value) {
-//		this._value = value;
-//	}
-
-//	private DTEValue() {
-//		this(null, null, false, null);
-//	}
-//
-//	private DTEValue(String name, String valueCode, boolean valueIsString) {
-//		this(name, valueCode, valueIsString, null);
-//	}
+	public void setValue(Object value) {
+		this.clearData();
+		this._value = value;
+	}
 
 	private DTEValue(String name, String valueCode, boolean valueIsString, Object value) {
 		this.setName(name);
@@ -54,7 +39,7 @@ final class DTEValue extends DTEntity {
 	}
 
 	@Override
-	public DTEntity cloneImpl() throws Exception {
+	public DTEntity cloneImpl() {
 //		// 原版本中是克隆了value，但是新版本中考虑到value要么是字符串，要么是其他值类型，要么是DTObject（仅在此情况下克隆），没有克隆的必要。
 //		var value = this.getValue();
 //		var dto = as(value, DTObject.class);
@@ -82,14 +67,14 @@ final class DTEValue extends DTEntity {
 	}
 
 	@Override
-	public Iterable<DTEntity> finds(QueryExpression query) throws Exception {
+	public Iterable<DTEntity> finds(QueryExpression query) {
 		if (query.onlySelf() || this.getName().equalsIgnoreCase(query.getSegment()))
 			return this.getSelfAsEntities();// 查询自身
 		return Collections.emptyList();
 	}
 
 	@Override
-	public void fillCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception {
+	public void fillCode(StringBuilder code, boolean sequential, boolean outputName) {
 		String name = this.getName();
 		if (outputName && !StringUtil.isNullOrEmpty(name))
 			code.append(String.format("\"{0}\"", name));
@@ -98,7 +83,7 @@ final class DTEValue extends DTEntity {
 		fillValueCode(code, sequential);
 	}
 
-	private void fillValueCode(StringBuilder code, boolean sequential) throws Exception {
+	private void fillValueCode(StringBuilder code, boolean sequential) {
 		if (_valueCode == null) {
 			// 没有valueCode，说明是以obtainByValue的方式创造的，这时候直接将value转换成码
 			JSON.writeValue(code, _value);
@@ -125,12 +110,12 @@ final class DTEValue extends DTEntity {
 	}
 
 	@Override
-	public void fillSchemaCode(StringBuilder code, boolean sequential, boolean outputName) throws Exception {
+	public void fillSchemaCode(StringBuilder code, boolean sequential, boolean outputName) {
 		code.append(this.getName());
 	}
 
 	@Override
-	public void setMember(QueryExpression query, Function<String, DTEntity> createEntity) throws Exception {
+	public void setMember(QueryExpression query, Function<String, DTEntity> createEntity) {
 		throw new UnsupportedOperationException("DTEValue.setMember");
 
 	}

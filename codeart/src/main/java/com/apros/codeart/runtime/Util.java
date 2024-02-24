@@ -24,4 +24,8 @@ public class Util {
 		return targetCls.isAssignableFrom(cls);
 	}
 
+	public static RuntimeException propagate(Throwable throwable) {
+		return new RuntimeException(throwable);
+	}
+
 }
