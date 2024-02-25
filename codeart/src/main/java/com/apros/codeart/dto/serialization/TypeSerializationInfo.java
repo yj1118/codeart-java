@@ -1,10 +1,10 @@
 package com.apros.codeart.dto.serialization;
 
 abstract class TypeSerializationInfo {
-	private DTOClassAnnotation _classAnnotation;
+	private DTOClassAnnotation _classAnn;
 
-	public DTOClassAnnotation getClassAnnotation() {
-		return _classAnnotation;
+	public DTOClassAnnotation getClassAnn() {
+		return _classAnn;
 	}
 
 	private Class<?> _targetClass;
@@ -17,5 +17,20 @@ abstract class TypeSerializationInfo {
 	public Class<?> getTargetClass() {
 		return _targetClass;
 	}
+
+//	#region 序列化方法
+//
+//	public SerializeMethod SerializeMethod
+//	{
+//        get;
+//        private set;
+//    }
+//
+//	private SerializeMethod CreateSerializeMethod()
+//    {
+//        return DTOSerializeMethodGenerator.GenerateMethod(this);
+//    }
+//
+//	#endregion
 
 }

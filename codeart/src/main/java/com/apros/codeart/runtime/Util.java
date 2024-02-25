@@ -1,5 +1,7 @@
 package com.apros.codeart.runtime;
 
+import java.lang.reflect.Modifier;
+
 public class Util {
 	@SuppressWarnings("unchecked")
 	public static <T> T as(Object obj, Class<T> cls) {
@@ -28,4 +30,7 @@ public class Util {
 		return new RuntimeException(throwable);
 	}
 
+	public static boolean isAbstract(Class<?> cls) {
+		return Modifier.isAbstract(cls.getModifiers());
+	}
 }

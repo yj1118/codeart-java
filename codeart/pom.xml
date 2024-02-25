@@ -125,9 +125,9 @@
     <version>5.10.2</version>
 	</dependency>
 	<dependency>
-	  <groupId>net.bytebuddy</groupId>
-	  <artifactId>byte-buddy</artifactId>
-	  <version>1.14.12</version>
+	    <groupId>org.ow2.asm</groupId>
+	    <artifactId>asm</artifactId>
+	    <version>9.6</version>
 	</dependency>
   </dependencies>
 

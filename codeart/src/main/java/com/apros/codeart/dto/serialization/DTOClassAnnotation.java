@@ -4,7 +4,7 @@ class DTOClassAnnotation {
 
 	private DTOSerializableMode _mode;
 
-	public DTOSerializableMode getMode() {
+	public DTOSerializableMode mode() {
 		return _mode;
 	}
 

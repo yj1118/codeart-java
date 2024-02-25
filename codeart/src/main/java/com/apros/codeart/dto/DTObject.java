@@ -5,7 +5,6 @@ import static com.apros.codeart.runtime.Util.as;
 import static com.apros.codeart.runtime.Util.is;
 
 import com.apros.codeart.context.ContextSession;
-import com.apros.codeart.dto.serialization.IDTOSerializable;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
@@ -422,141 +421,141 @@ public class DTObject implements AutoCloseable {
 		return createImpl("{}", false);
 	}
 
-	/**
-	 * 根据架构代码将对象的信息加载到dto中
-	 * 
-	 * @param schemaCode
-	 * @param target
-	 * @return
-	 */
-	public static DTObject create(String schemaCode, Object target) {
-		var dy = as(target, IDTOSerializable.class);
-		if (dy != null) {
-			return create(schemaCode, dy.getData());
-		}
-
-		var dto = as(target, DTObject.class);
-		if (dto != null) {
-			DTObject result = DTObject.Create();
-			result.load(schemaCode, dto);
-			return result;
-		}
-		return DTObjectMapper.Instance.Load(schemaCode, target);
-	}
-
-//	#region 对象映射
-
-	/// <summary>
-	/// 根据架构代码，将dto的数据创建到新实例<paramref name="instanceType"/>中
-	/// </summary>
-	/// <param name="instanceType"></param>
-	/// <param name="schemaCode"></param>
-	/// <param name="dto"></param>
-	/// <returns></returns>
-	public object Save(Type instanceType, string schemaCode) {
-		return DTObjectMapper.Instance.Save(instanceType, schemaCode, this);
-	}
-
-	/// <summary>
-	/// 根据架构代码，将dto的数据创建到新实例<paramref name="instanceType"/>中
-	/// </summary>
-	/// <param name="instanceType"></param>
-	/// <returns></returns>
-	public object Save(Type instanceType) {
-		return Save(instanceType, string.Empty);
-	}
-
-	/// <summary>
-	/// 根据架构代码，将dto中的数据全部保存到类型为<typeparamref name="T"/>的实例中
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="schemaCode"></param>
-	/// <returns></returns>
-	public void Save<T>(
-	T obj, string schemaCode)
-	{
-		var instanceType = typeof(T);
-		DTObjectMapper.Instance.Save(obj, schemaCode, this);
-	}
-
-	/// <summary>
-	/// 将dto中的数据全部保存到类型为<typeparamref name="T"/>的实例中
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <returns></returns>
-	public void Save<T>(
-	T obj)
-	{
-	     Save<T>(obj, string.Empty);
-	 }
-
-	/// <summary>
-	/// 根据架构代码，将dto中的数据全部保存到类型为<typeparamref name="T"/>的实例中
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="schemaCode"></param>
-	/// <returns></returns>
-	public T Save<T>(
-	string schemaCode)
-	{
-		var instanceType = typeof(T);
-		return (T) Save(instanceType, schemaCode);
-	}
-
-	/// <summary>
-	/// 将dto中的数据全部保存到类型为<typeparamref name="T"/>的实例中
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <returns></returns>
-	public T Save<T>()
-	{
-		return Save < T > (string.Empty);
-	}
-
-	/// <summary>
-	/// 根据架构代码将对象的信息加载到dto中
-	/// </summary>
-	/// <param name="schemaCode"></param>
-	/// <param name="target"></param>
-	/// <returns></returns>
-	public void Load(string schemaCode, object target)
-	 {
-	     var dy = target as IDTOSerializable;
-	     if(dy != null)
-	     {
-	         Load(schemaCode,dy.GetData());
-	         return;
-	     }
-
-	     var dto = target as DTObject;
-	     if (dto != null)
-	     {
-	         Load(schemaCode, target);
-	         return;
-	     }
-	     DTObjectMapper.Instance.Load(this, schemaCode, target);
-	 }
-
-	private void load(String schemaCode, DTObject target) {
-		var schema = DTObject.Create(schemaCode);
-		var entities = schema.getMembers();
-		for (var entity : entities) {
-			var name = entity.getClass();
-			if (target.exist(name)) {
-				this.setValue(name, target.getValue(name));
-			}
-		}
-	}
-
-	/// <summary>
-	/// 将<paramref name="target"/>里面的所有属性的值加载到dto中
-	/// </summary>
-	/// <param name="target"></param>
-	public void load(Object target) {
-		load(StringUtil.empty(), target);
-	}
-
-//	#endregion
+//	/**
+//	 * 根据架构代码将对象的信息加载到dto中
+//	 * 
+//	 * @param schemaCode
+//	 * @param target
+//	 * @return
+//	 */
+//	public static DTObject create(String schemaCode, Object target) {
+//		var dy = as(target, IDTOSerializable.class);
+//		if (dy != null) {
+//			return create(schemaCode, dy.getData());
+//		}
+//
+//		var dto = as(target, DTObject.class);
+//		if (dto != null) {
+//			DTObject result = DTObject.Create();
+//			result.load(schemaCode, dto);
+//			return result;
+//		}
+//		return DTObjectMapper.Instance.Load(schemaCode, target);
+//	}
+//
+////	#region 对象映射
+//
+//	/// <summary>
+//	/// 根据架构代码，将dto的数据创建到新实例<paramref name="instanceType"/>中
+//	/// </summary>
+//	/// <param name="instanceType"></param>
+//	/// <param name="schemaCode"></param>
+//	/// <param name="dto"></param>
+//	/// <returns></returns>
+//	public object Save(Type instanceType, string schemaCode) {
+//		return DTObjectMapper.Instance.Save(instanceType, schemaCode, this);
+//	}
+//
+//	/// <summary>
+//	/// 根据架构代码，将dto的数据创建到新实例<paramref name="instanceType"/>中
+//	/// </summary>
+//	/// <param name="instanceType"></param>
+//	/// <returns></returns>
+//	public object Save(Type instanceType) {
+//		return Save(instanceType, string.Empty);
+//	}
+//
+//	/// <summary>
+//	/// 根据架构代码，将dto中的数据全部保存到类型为<typeparamref name="T"/>的实例中
+//	/// </summary>
+//	/// <typeparam name="T"></typeparam>
+//	/// <param name="schemaCode"></param>
+//	/// <returns></returns>
+//	public void Save<T>(
+//	T obj, string schemaCode)
+//	{
+//		var instanceType = typeof(T);
+//		DTObjectMapper.Instance.Save(obj, schemaCode, this);
+//	}
+//
+//	/// <summary>
+//	/// 将dto中的数据全部保存到类型为<typeparamref name="T"/>的实例中
+//	/// </summary>
+//	/// <typeparam name="T"></typeparam>
+//	/// <returns></returns>
+//	public void Save<T>(
+//	T obj)
+//	{
+//	     Save<T>(obj, string.Empty);
+//	 }
+//
+//	/// <summary>
+//	/// 根据架构代码，将dto中的数据全部保存到类型为<typeparamref name="T"/>的实例中
+//	/// </summary>
+//	/// <typeparam name="T"></typeparam>
+//	/// <param name="schemaCode"></param>
+//	/// <returns></returns>
+//	public T Save<T>(
+//	string schemaCode)
+//	{
+//		var instanceType = typeof(T);
+//		return (T) Save(instanceType, schemaCode);
+//	}
+//
+//	/// <summary>
+//	/// 将dto中的数据全部保存到类型为<typeparamref name="T"/>的实例中
+//	/// </summary>
+//	/// <typeparam name="T"></typeparam>
+//	/// <returns></returns>
+//	public T Save<T>()
+//	{
+//		return Save < T > (string.Empty);
+//	}
+//
+//	/// <summary>
+//	/// 根据架构代码将对象的信息加载到dto中
+//	/// </summary>
+//	/// <param name="schemaCode"></param>
+//	/// <param name="target"></param>
+//	/// <returns></returns>
+//	public void Load(string schemaCode, object target)
+//	 {
+//	     var dy = target as IDTOSerializable;
+//	     if(dy != null)
+//	     {
+//	         Load(schemaCode,dy.GetData());
+//	         return;
+//	     }
+//
+//	     var dto = target as DTObject;
+//	     if (dto != null)
+//	     {
+//	         Load(schemaCode, target);
+//	         return;
+//	     }
+//	     DTObjectMapper.Instance.Load(this, schemaCode, target);
+//	 }
+//
+//	private void load(String schemaCode, DTObject target) {
+//		var schema = DTObject.Create(schemaCode);
+//		var entities = schema.getMembers();
+//		for (var entity : entities) {
+//			var name = entity.getClass();
+//			if (target.exist(name)) {
+//				this.setValue(name, target.getValue(name));
+//			}
+//		}
+//	}
+//
+//	/// <summary>
+//	/// 将<paramref name="target"/>里面的所有属性的值加载到dto中
+//	/// </summary>
+//	/// <param name="target"></param>
+//	public void load(Object target) {
+//		load(StringUtil.empty(), target);
+//	}
+//
+////	#endregion
 
 	static DTObject obtain(DTEObject root, boolean isReadOnly) {
 		return ContextSession.registerItem(new DTObject(root, isReadOnly));

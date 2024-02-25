@@ -1,5 +1,6 @@
 package com.apros.codeart.util;
 
+import java.util.UUID;
 import java.util.function.Function;
 
 import com.apros.codeart.pooling.PoolingException;
@@ -110,6 +111,16 @@ public final class StringUtil {
 
 	public static <T> String lines(Iterable<T> items, Function<T, String> map) {
 		return join(System.lineSeparator(), items, map);
+	}
+
+	/**
+	 * 获得不带分隔符的guid
+	 * 
+	 * @return
+	 */
+	public static String uuid() {
+		UUID uuid = UUID.randomUUID();
+		return uuid.toString().replace("-", "");
 	}
 
 }
