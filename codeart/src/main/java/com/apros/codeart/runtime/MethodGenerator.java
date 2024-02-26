@@ -32,12 +32,12 @@ public class MethodGenerator implements AutoCloseable {
 	/**
 	 * 执行栈
 	 */
-	private LinkedList<EvaluationStack> _stacks;
+	private LinkedList<StackFrame> _stacks;
 
 	private int _max_stack_deep = 0;
 
 	private void stack_enter() {
-		_stacks.push(new EvaluationStack());
+		_stacks.push(new StackFrame());
 		if (_stacks.size() > _max_stack_deep)
 			_max_stack_deep = _stacks.size();
 	}
@@ -46,7 +46,7 @@ public class MethodGenerator implements AutoCloseable {
 		_stacks.pop();
 	}
 
-	private EvaluationStack stack_current() {
+	private StackFrame stack_current() {
 		return _stacks.peek();
 	}
 
@@ -88,8 +88,8 @@ public class MethodGenerator implements AutoCloseable {
 			var info = new VarInfo(varIndex, arg.getType());
 			_vars.put(arg.getName(), info);
 		}
-		_stacks = new LinkedList<EvaluationStack>();
-		_stacks.push(new EvaluationStack());
+		_stacks = new LinkedList<StackFrame>();
+		_stacks.push(new StackFrame());
 		_visitor.visitCode();
 	}
 
