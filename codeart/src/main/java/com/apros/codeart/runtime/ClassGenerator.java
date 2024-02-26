@@ -3,7 +3,6 @@ package com.apros.codeart.runtime;
 import static com.apros.codeart.runtime.Util.propagate;
 
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.function.Consumer;
 
@@ -20,11 +19,15 @@ public final class ClassGenerator implements AutoCloseable {
 	private boolean _closed = false;
 	private String _className;
 
+	public String getClassName() {
+		return _className;
+	}
+
 	private ClassGenerator(int access, String className, Class<?> subClass) {
-		_cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+		_cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
 		var subClassName = Type.getInternalName(subClass);
-		_cw.visit(Opcodes.V1_8, access, className, null,
-				subClassName, null);
+//		String.format("com/apros/codeart/runtime/%s", className)
+		_cw.visit(Opcodes.V1_8, access, className, null, subClassName, null);
 		_className = className;
 	}
 
@@ -72,7 +75,6 @@ public final class ClassGenerator implements AutoCloseable {
 		}
 
 		var descriptor = Type.getMethodDescriptor(Type.getType(returnClass), types);
-		// 定义静态方法
 		MethodVisitor visitor = _cw.visitMethod(access, name, descriptor, null, null);
 
 		return new MethodGenerator(visitor, access, returnClass, args);
@@ -81,7 +83,17 @@ public final class ClassGenerator implements AutoCloseable {
 	public MethodGenerator defineMethodPublic(boolean isStatic, final String name, final Class<?> returnClass,
 			Consumer<IArgumenter> getArgs) {
 
-		return defineMethod(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC, name, returnClass, getArgs);
+		var access = Opcodes.ACC_PUBLIC;
+		if (isStatic)
+			access += Opcodes.ACC_STATIC;
+
+		return defineMethod(access, name, returnClass, getArgs);
+	}
+
+	public MethodGenerator defineMethodPublicStatic(final String name, final Class<?> returnClass,
+			Consumer<IArgumenter> getArgs) {
+
+		return defineMethodPublic(true, name, returnClass, getArgs);
 	}
 
 	public void save() {
@@ -89,7 +101,7 @@ public final class ClassGenerator implements AutoCloseable {
 		try (FileOutputStream fos = new FileOutputStream(filePath)) {
 			// 写入字节码到文件
 			fos.write(this.toBytes());
-		} catch (IOException e) {
+		} catch (Exception e) {
 			throw propagate(e);
 		}
 	}
@@ -100,10 +112,14 @@ public final class ClassGenerator implements AutoCloseable {
 	}
 
 	public Class<?> toClass() {
-		var bytes = this.toBytes();
-		var classLoader = new ClassLoaderImpl();
-//		var l = Thread.currentThread().getContextClassLoader();
-		return classLoader.loadClass(_className, bytes);
+		try {
+			var bytes = this.toBytes();
+			var classLoader = new ClassLoaderImpl(bytes);
+//			var l = Thread.currentThread().getContextClassLoader();
+			return classLoader.loadClass(_className);
+		} catch (Exception e) {
+			throw propagate(e);
+		}
 	}
 
 	@Override
@@ -118,8 +134,15 @@ public final class ClassGenerator implements AutoCloseable {
 	// 自定义类加载器
 	private static class ClassLoaderImpl extends ClassLoader {
 
-		public Class<?> loadClass(String name, byte[] bytecode) {
-			return defineClass(name, bytecode, 0, bytecode.length);
+		private byte[] _classData;
+
+		public ClassLoaderImpl(byte[] classData) {
+			_classData = classData;
+		}
+
+		@Override
+		protected Class<?> findClass(String name) throws ClassNotFoundException {
+			return defineClass(name, _classData, 0, _classData.length);
 		}
 	}
 
