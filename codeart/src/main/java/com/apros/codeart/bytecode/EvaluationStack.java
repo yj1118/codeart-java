@@ -17,6 +17,7 @@ class EvaluationStack {
 
 	public EvaluationStack() {
 		_frames = new LinkedList<StackFrame>();
+		this.enterFrame();
 	}
 
 	/**

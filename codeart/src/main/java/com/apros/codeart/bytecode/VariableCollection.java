@@ -2,21 +2,16 @@ package com.apros.codeart.bytecode;
 
 import java.util.ArrayList;
 
-class LocalDefinitionCollection {
+class VariableCollection {
 	private final MethodGenerator _owner;
-	private final ArrayList<LocalDefinition> _items;
+	private final ArrayList<Variable> _items;
 
-	private int _varIndex = 0;
+	private int _next_var_index = 0;
 
-	public LocalDefinitionCollection(MethodGenerator owner, Iterable<Argument> args) {
+	public VariableCollection(MethodGenerator owner) {
 		_owner = owner;
-		_items = new ArrayList<LocalDefinition>();
-
-		_varIndex = owner.isStatic() ? 0 : 1; // 实例方法的第一个变量是this
-		for (var arg : args) {
-			_varIndex++;
-			define(arg.getType(), arg.getName(), _varIndex);
-		}
+		_items = new ArrayList<Variable>();
+		_next_var_index = owner.isStatic() ? 0 : 1; // 实例方法的第一个变量是this，所以实例方法的下一个变量序号为1
 	}
 
 	/**
@@ -32,14 +27,15 @@ class LocalDefinitionCollection {
 	 * @param name
 	 * @return
 	 */
-	public BorrowedLocal borrow(Class<?> type, String name) {
+	public Variable borrow(Class<?> type, String name) {
 		for (var item : _items) {
 			if (!item.getInScope() && item.getType() == type) {
-				return new BorrowedLocal(item);
+				return item;
 			}
 		}
-		_varIndex++;
-		return new BorrowedLocal(define(type, name, _varIndex));
+		var local = define(type, name, _next_var_index);
+		_next_var_index++;
+		return local;
 	}
 
 	/**
@@ -49,8 +45,8 @@ class LocalDefinitionCollection {
 	 * @param name
 	 * @return
 	 */
-	private LocalDefinition define(Class<?> type, String name, int index) {
-		var result = new LocalDefinition(_owner, type, name, index);
+	private Variable define(Class<?> type, String name, int index) {
+		var result = new Variable(_owner, type, name, index);
 		_items.add(result);
 		return result;
 	}

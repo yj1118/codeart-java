@@ -4,7 +4,6 @@ import static com.apros.codeart.i18n.Language.strings;
 import static com.apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.function.Supplier;
 
 import org.objectweb.asm.Label;
@@ -30,15 +29,13 @@ public class MethodGenerator implements AutoCloseable {
 
 	private Class<?> _returnClass;
 
-	private HashMap<String, VarInfo> _vars;
-
 	/**
 	 * 局部变量的集合,该集合存放了所有声明过的局部变量
 	 */
-	private LocalDefinitionCollection _locals = null;
+	private VariableCollection _locals = null;
 
-	BorrowedLocal borrowLocal(Class<?> type, String name) {
-		return _locals.borrow(type, name);
+	VariableCollection locals() {
+		return _locals;
 	}
 
 	/**
@@ -64,17 +61,10 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	private void init(Iterable<Argument> args) {
-		_locals = new LocalDefinitionCollection(this, args);
+		_locals = new VariableCollection(this);
 		_evalStack = new EvaluationStack();
-		_evalStack.enterFrame(); // 进入方法，那么就意味着进入了一个栈帧
+		_scopeStack = new ScopeStack(this, args);
 		_visitor.visitCode();
-	}
-
-	private VarInfo getVar(String name) {
-		var info = _vars.get(name);
-		if (info == null)
-			throw new IllegalArgumentException(strings("VariableNotFound", name));
-		return info;
 	}
 
 	public void load_this() {
@@ -93,19 +83,13 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	/**
-	 * 加载引用类型的变量
+	 * 加载变量
 	 * 
 	 * @param index
 	 */
 	public void load_var(String name) {
-		var info = getVar(name);
-		if (info.isRef())
-			_visitor.visitVarInsn(Opcodes.ALOAD, info.getIndex());
-		else {
-			_visitor.visitVarInsn(Opcodes.ILOAD, info.getIndex());
-		}
-
-		_evalStack.push(info.getType());
+		var local = _scopeStack.getVar(name);
+		local.load();
 	}
 
 	public void load_const(int value) {
@@ -119,14 +103,14 @@ public class MethodGenerator implements AutoCloseable {
 	 * @param name
 	 * @param type
 	 */
-	public void var(String name, Class<?> type) {
-		var varCount = _vars.size();
-		var offset = _isStatic ? 0 : 1;
-		var valueIndex = offset + varCount;
-		_vars.put(name, new VarInfo(valueIndex, type));
+	public Variable declare(Class<?> type, String name) {
 
-		var descriptor = DynamicUtil.getDescriptor(type);
-		_visitor.visitLocalVariable(name, descriptor, null, null, null, valueIndex);
+		var local = _scopeStack.declare(type, name);
+
+		var descriptor = DynamicUtil.getDescriptor(local.getType());
+		_visitor.visitLocalVariable(name, descriptor, null, null, null, local.getIndex());
+
+		return local;
 	}
 
 	public MethodGenerator load_field_value(String express) {
@@ -146,8 +130,8 @@ public class MethodGenerator implements AutoCloseable {
 			// 先加载变量
 			this.load_var(varName);
 
-			var info = getVar(varName);
-			Class<?> objectType = info.getType();
+			var local = _scopeStack.getVar(varName);
+			Class<?> objectType = local.getType();
 			var field = objectType.getDeclaredField(fieldName);
 
 			Class<?> fieldType = field.getType();
@@ -192,7 +176,7 @@ public class MethodGenerator implements AutoCloseable {
 
 			_evalStack.enterFrame(); // 新建立栈帧
 			this.load_var(varName); // 先加载变量自身，作为实例方法的第一个参数（this）
-			var info = getVar(varName);
+			var info = _scopeStack.getVar(varName);
 
 			// 加载参数
 			if (loadParameters != null)
@@ -236,25 +220,33 @@ public class MethodGenerator implements AutoCloseable {
 		return this;
 	}
 
-	public void when(Supplier<LogicOperator> condition, Runnable ifAction, Runnable elseAction) {
+	public void when(Supplier<LogicOperator> condition, Runnable trueAction, Runnable falseAction) {
+
 		var op = condition.get();
-		var ifLabel = op.run(this);
+		var trueStartLabel = new Label();
+		op.run(this, trueStartLabel);
+
+		// 先执行falseAction
+
+		this._scopeStack.using(falseAction);
 		var endLabel = new Label();
 
-		elseAction.run();
 		_visitor.visitJumpInsn(Opcodes.GOTO, endLabel);
-		_visitor.visitLabel(ifLabel);
-		ifAction.run();
+		_visitor.visitLabel(trueStartLabel);
+		this._scopeStack.using(trueAction);
+
 		_visitor.visitLabel(endLabel);
 	}
 
-	public void when(Supplier<LogicOperator> condition, Runnable ifAction) {
+	public void when(Supplier<LogicOperator> condition, Runnable trueAction) {
 		var op = condition.get();
-		var ifLabel = op.run(this);
+		var trueStartLabel = new Label();
+		op.run(this, trueStartLabel);
 		var endLabel = new Label();
 		_visitor.visitJumpInsn(Opcodes.GOTO, endLabel);
-		_visitor.visitLabel(ifLabel);
-		ifAction.run();
+		_visitor.visitLabel(trueStartLabel);
+		this._scopeStack.using(trueAction);
+
 		_visitor.visitLabel(endLabel);
 	}
 
@@ -301,36 +293,13 @@ public class MethodGenerator implements AutoCloseable {
 
 	public void close() {
 		exit();
-		_evalStack.exitFrame();
-		StackAssert.isClean(_evalStack);
 		// 由于开启了COMPUTE_FRAMES ，所以只用调用visitMaxs即可，不必设置具体的值
 		_visitor.visitMaxs(0, 0);
 		_visitor.visitEnd();
-		_vars.clear();
+
+		_scopeStack = null;
+		_evalStack = null;
+		_visitor = null;
+		_locals = null;
 	}
-
-	private static class VarInfo {
-		private Class<?> _type;
-
-		public boolean isRef() {
-			return !_type.isPrimitive();
-		}
-
-		private int _index;
-
-		public int getIndex() {
-			return _index;
-		}
-
-		public Class<?> getType() {
-			return _type;
-		}
-
-		public VarInfo(int index, Class<?> type) {
-			_index = index;
-			_type = type;
-		}
-
-	}
-
 }
