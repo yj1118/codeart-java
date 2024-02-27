@@ -9,6 +9,8 @@ interface IVariable {
 	 */
 	Class<?> getType();
 
+	int getIndex();
+
 	/**
 	 * 变量名称，当变量为nul，该属性无效
 	 * 

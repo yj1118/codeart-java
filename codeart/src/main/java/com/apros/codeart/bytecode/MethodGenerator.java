@@ -13,11 +13,14 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import com.apros.codeart.runtime.DynamicUtil;
-import com.google.common.collect.Iterables;
 
 public class MethodGenerator implements AutoCloseable {
 
 	private boolean _isStatic;
+
+	public boolean isStatic() {
+		return _isStatic;
+	}
 
 	private MethodVisitor _visitor;
 
@@ -32,7 +35,11 @@ public class MethodGenerator implements AutoCloseable {
 	/**
 	 * 局部变量的集合,该集合存放了所有声明过的局部变量
 	 */
-//	private LocalDefinitionCollection _locals = new LocalDefinitionCollection(this);
+	private LocalDefinitionCollection _locals = null;
+
+	BorrowedLocal borrowLocal(Class<?> type, String name) {
+		return _locals.borrow(type, name);
+	}
 
 	/**
 	 * 调用栈
@@ -43,6 +50,12 @@ public class MethodGenerator implements AutoCloseable {
 		return _evalStack;
 	}
 
+	private ScopeStack _scopeStack;
+
+	public ScopeStack scopeStack() {
+		return _scopeStack;
+	}
+
 	MethodGenerator(MethodVisitor visitor, int access, Class<?> returnClass, Iterable<Argument> args) {
 		_visitor = visitor;
 		_isStatic = (access & Opcodes.ACC_STATIC) != 0;
@@ -51,15 +64,7 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	private void init(Iterable<Argument> args) {
-		_vars = new HashMap<>();
-		// varIndex是方法执行中，变量在变量表的位置
-		int offset = _isStatic ? 0 : 1; // 实例方法的第一个变量是this
-		for (var i = 0; i < Iterables.size(args); i++) {
-			var varIndex = i + offset;
-			var arg = Iterables.get(args, i);
-			var info = new VarInfo(varIndex, arg.getType());
-			_vars.put(arg.getName(), info);
-		}
+		_locals = new LocalDefinitionCollection(this, args);
 		_evalStack = new EvaluationStack();
 		_evalStack.enterFrame(); // 进入方法，那么就意味着进入了一个栈帧
 		_visitor.visitCode();
