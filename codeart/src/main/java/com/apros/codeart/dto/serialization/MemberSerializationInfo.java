@@ -126,7 +126,7 @@ class MemberSerializationInfo {
 //	         }
 //	     });
 //	}
-//
+
 //	/// <summary>
 //	/// 加载成员的值到堆栈上
 //	/// </summary>

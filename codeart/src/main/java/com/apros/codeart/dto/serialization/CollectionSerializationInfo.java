@@ -10,7 +10,7 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 	public CollectionSerializationInfo(Class<?> classType) {
 		super(classType);
 	}
-
+//
 //	@Override
 //	public void generateSerializeIL(MethodGenerator g)
 //	{
