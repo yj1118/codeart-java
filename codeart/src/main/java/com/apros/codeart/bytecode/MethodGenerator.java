@@ -1,11 +1,10 @@
-package com.apros.codeart.runtime;
+package com.apros.codeart.bytecode;
 
 import static com.apros.codeart.i18n.Language.strings;
 import static com.apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.function.Supplier;
 
 import org.objectweb.asm.Label;
@@ -13,6 +12,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import com.apros.codeart.runtime.DynamicUtil;
 import com.google.common.collect.Iterables;
 
 public class MethodGenerator implements AutoCloseable {
@@ -30,45 +30,37 @@ public class MethodGenerator implements AutoCloseable {
 	private HashMap<String, VarInfo> _vars;
 
 	/**
-	 * 执行栈
+	 * 局部变量的集合,该集合存放了所有声明过的局部变量
 	 */
-	private LinkedList<StackFrame> _stacks;
-
-	private int _max_stack_deep = 0;
-
-	private void stack_enter() {
-		_stacks.push(new StackFrame());
-		if (_stacks.size() > _max_stack_deep)
-			_max_stack_deep = _stacks.size();
-	}
-
-	private void stack_exit() {
-		_stacks.pop();
-	}
-
-	private StackFrame stack_current() {
-		return _stacks.peek();
-	}
-
-	private int stack_current_size() {
-		return stack_current().size();
-	}
-
-	private void stack_current_push(Class<?> cls) {
-		stack_current().push(cls);
-	}
-
-	private Class<?> stack_current_pop() {
-		return stack_current().pop();
-	}
+//	private LocalDefinitionCollection _locals = new LocalDefinitionCollection(this);
 
 	/**
-	 * 获取栈里得值得类型信息
+	 * 调用栈
+	 */
+	private CallStack _stack;
+
+	/**
+	 * 栈帧的大小（存了多少个值）
 	 * 
 	 * @return
 	 */
-	Class<?>[] getValueTypes(int expectedCount) {
-		return stack_current().getValueTypes(expectedCount);
+	private int stack_frame_size() {
+		return _stack.frame().size();
+	}
+
+	private StackItem stack_frame_pop() {
+		return _stack.frame().pop();
+	}
+
+	void stack_frame_pop(int count) {
+		while (count > 0) {
+			stack_frame_pop();
+			count--;
+		}
+	}
+
+	void stack_frame_push(Class<?> type) {
+		_stack.frame().push(type);
 	}
 
 	MethodGenerator(MethodVisitor visitor, int access, Class<?> returnClass, Iterable<Argument> args) {
@@ -88,8 +80,8 @@ public class MethodGenerator implements AutoCloseable {
 			var info = new VarInfo(varIndex, arg.getType());
 			_vars.put(arg.getName(), info);
 		}
-		_stacks = new LinkedList<StackFrame>();
-		_stacks.push(new StackFrame());
+		_stack = new CallStack();
+		_stack.push(); // 进入方法，那么就意味着调用栈要压入一个栈帧
 		_visitor.visitCode();
 	}
 
@@ -115,10 +107,6 @@ public class MethodGenerator implements AutoCloseable {
 		load_var(name); // 加载参数就是加载变量
 	}
 
-//	public void write(Consumer<MethodVisitor> write) {
-//		write.accept(_visitor);
-//	}
-
 	/**
 	 * 加载引用类型的变量
 	 * 
@@ -131,12 +119,12 @@ public class MethodGenerator implements AutoCloseable {
 		else {
 			_visitor.visitVarInsn(Opcodes.ILOAD, info.getIndex());
 		}
-		stack_current_push(info.getType());
+		stack_frame_push(info.getType());
 	}
 
 	public void load_const(int value) {
 		_visitor.visitLdcInsn(value);
-		stack_current_push(int.class);
+		stack_frame_push(int.class);
 	}
 
 	/**
@@ -181,9 +169,9 @@ public class MethodGenerator implements AutoCloseable {
 			String owner = Type.getInternalName(objectType);
 			_visitor.visitFieldInsn(Opcodes.GETFIELD, owner, field.getName(), typeDescriptor);
 
-			stack_current_pop(); // 执行完后，变量就弹出了
+			stack_frame_pop();
+			stack_frame_push(fieldType);// 值进来了
 
-			stack_current_push(fieldType); // 值进来了
 		} catch (Exception ex) {
 			throw propagate(ex);
 		}
@@ -216,7 +204,7 @@ public class MethodGenerator implements AutoCloseable {
 
 		try {
 
-			stack_enter();
+			_stack.push(); // 新建立栈帧
 			this.load_var(varName); // 先加载变量自身，作为实例方法的第一个参数（this）
 			var info = getVar(varName);
 
@@ -229,16 +217,16 @@ public class MethodGenerator implements AutoCloseable {
 			var isInterface = cls.isInterface();
 			var opcode = isInterface ? Opcodes.INVOKEINTERFACE : Opcodes.INVOKEVIRTUAL;
 
-			var argCount = stack_current_size() - 1;
+			var argCount = stack_frame_size() - 1;
 			var argClasses = new Class<?>[argCount];
 
 			var pointer = argCount - 1;
 			// 弹出栈，并且收集参数
-			while (stack_current_size() > 0) {
-				var type = stack_current_pop();
-				if (stack_current_size() == 0)
+			while (stack_frame_size() > 0) {
+				var item = stack_frame_pop();
+				if (stack_frame_size() == 0)
 					break; // 不收集最后一个，因为这是对象自身，不是传递的参数，不能作为方法的参数查找
-				argClasses[pointer] = type;
+				argClasses[pointer] = item.getValueType();
 				pointer--;
 			}
 
@@ -249,10 +237,10 @@ public class MethodGenerator implements AutoCloseable {
 
 			_visitor.visitMethodInsn(opcode, owner, methodName, descriptor, isInterface);
 
-			stack_exit(); // 调用完毕
+			_stack.pop(); // 调用完毕
 
 			if (method.getReturnType() != void.class) {
-				stack_current_push(method.getReturnType()); // 返回值会给与父级栈
+				stack_frame_push(method.getReturnType()); // 返回值会给与父级栈
 			}
 
 		} catch (Exception ex) {
@@ -284,7 +272,7 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	public void exit() {
-		var size = stack_current_size();
+		var size = stack_frame_size();
 		if (size == 0) {
 			if (_returnClass != void.class)
 				throw new IllegalArgumentException(strings("ReturnTypeMismatch"));
@@ -295,7 +283,7 @@ public class MethodGenerator implements AutoCloseable {
 		if (size > 1) {
 			throw new IllegalArgumentException(strings("ReturnError"));
 		}
-		var lastType = stack_current_pop(); // 返回就是弹出栈顶得值，给调用方用
+		var lastType = stack_frame_pop().getValueType(); // 返回就是弹出栈顶得值，给调用方用
 
 		if (lastType != _returnClass) {
 			throw new IllegalArgumentException(strings("ReturnTypeMismatch"));
@@ -330,24 +318,12 @@ public class MethodGenerator implements AutoCloseable {
 		_visitor.visitMaxs(0, 0);
 		_visitor.visitEnd();
 
-		_stacks.clear();
+		_stack.clear();
 		_vars.clear();
-		_max_stack_deep = 0;
-	}
-
-	/**
-	 * 检查栈顶至少值有多少个
-	 * 
-	 * @param count
-	 */
-	void validateLeast(int count) {
-		if (stack_current_size() < count) {
-			throw new IllegalStateException(strings("TypeMismatch"));
-		}
 	}
 
 	void validateRefs(int expectedCount) {
-		stack_current().validateRefs(expectedCount);
+		_stack.frame().validateRefs(expectedCount);
 	}
 
 	/**
@@ -357,21 +333,7 @@ public class MethodGenerator implements AutoCloseable {
 	 * @return
 	 */
 	Class<?> matchType(int expectedCount) {
-		validateLeast(expectedCount);
-		var actualTypes = this.getValueTypes(expectedCount);
-		var targetType = actualTypes[0];
-		for (var i = 1; i < actualTypes.length; i++) {
-			if (targetType != actualTypes[i])
-				throw new IllegalStateException(strings("TypeMismatch"));
-		}
-		return targetType;
-	}
-
-	void stack_pop(int count) {
-		while (count > 0) {
-			stack_current().pop();
-			count--;
-		}
+		return _stack.frame().matchType(expectedCount);
 	}
 
 	private static class VarInfo {

@@ -1,4 +1,4 @@
-package com.apros.codeart.runtime;
+package com.apros.codeart.bytecode;
 
 import java.util.function.Function;
 
@@ -42,7 +42,7 @@ public final class LogicOperator {
 			g.visitor().visitJumpInsn(Opcodes.IF_ACMPEQ, ifLabel); // 如果结果为0,那么就是相等
 		}
 
-		g.stack_pop(2); // 执行完了，弹出操作数
+		g.stack_frame_pop(2); // 执行完了，弹出操作数
 
 		return ifLabel;
 	});

@@ -1,4 +1,4 @@
-package com.apros.codeart.runtime;
+package com.apros.codeart.bytecode;
 
 class Argument {
 	private String _name;

@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.apros.codeart.TestRunner;
+import com.apros.codeart.bytecode.ClassGenerator;
+import com.apros.codeart.bytecode.LogicOperator;
 
 @ExtendWith(TestRunner.class)
 class MethodGeneratorTest {
