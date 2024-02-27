@@ -105,7 +105,7 @@ class MethodGeneratorTest {
 				mg.load_const(5);
 			}
 
-			cg.save();
+//			cg.save();
 
 			// 返回生成的字节码
 			var cls = cg.toClass();
