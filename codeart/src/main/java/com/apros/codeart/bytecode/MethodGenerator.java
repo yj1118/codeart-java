@@ -37,30 +37,10 @@ public class MethodGenerator implements AutoCloseable {
 	/**
 	 * 调用栈
 	 */
-	private CallStack _stack;
+	private EvaluationStack _evalStack;
 
-	/**
-	 * 栈帧的大小（存了多少个值）
-	 * 
-	 * @return
-	 */
-	private int stack_frame_size() {
-		return _stack.frame().size();
-	}
-
-	private StackItem stack_frame_pop() {
-		return _stack.frame().pop();
-	}
-
-	void stack_frame_pop(int count) {
-		while (count > 0) {
-			stack_frame_pop();
-			count--;
-		}
-	}
-
-	void stack_frame_push(Class<?> type) {
-		_stack.frame().push(type);
+	public EvaluationStack evalStack() {
+		return _evalStack;
 	}
 
 	MethodGenerator(MethodVisitor visitor, int access, Class<?> returnClass, Iterable<Argument> args) {
@@ -80,8 +60,8 @@ public class MethodGenerator implements AutoCloseable {
 			var info = new VarInfo(varIndex, arg.getType());
 			_vars.put(arg.getName(), info);
 		}
-		_stack = new CallStack();
-		_stack.push(); // 进入方法，那么就意味着调用栈要压入一个栈帧
+		_evalStack = new EvaluationStack();
+		_evalStack.enterFrame(); // 进入方法，那么就意味着进入了一个栈帧
 		_visitor.visitCode();
 	}
 
@@ -119,12 +99,13 @@ public class MethodGenerator implements AutoCloseable {
 		else {
 			_visitor.visitVarInsn(Opcodes.ILOAD, info.getIndex());
 		}
-		stack_frame_push(info.getType());
+
+		_evalStack.push(info.getType());
 	}
 
 	public void load_const(int value) {
 		_visitor.visitLdcInsn(value);
-		stack_frame_push(int.class);
+		_evalStack.push(int.class);
 	}
 
 	/**
@@ -169,8 +150,8 @@ public class MethodGenerator implements AutoCloseable {
 			String owner = Type.getInternalName(objectType);
 			_visitor.visitFieldInsn(Opcodes.GETFIELD, owner, field.getName(), typeDescriptor);
 
-			stack_frame_pop();
-			stack_frame_push(fieldType);// 值进来了
+			_evalStack.pop(); // 执行完毕后，变量就被弹出了
+			_evalStack.push(fieldType);// 值进来了
 
 		} catch (Exception ex) {
 			throw propagate(ex);
@@ -204,7 +185,7 @@ public class MethodGenerator implements AutoCloseable {
 
 		try {
 
-			_stack.push(); // 新建立栈帧
+			_evalStack.enterFrame(); // 新建立栈帧
 			this.load_var(varName); // 先加载变量自身，作为实例方法的第一个参数（this）
 			var info = getVar(varName);
 
@@ -217,14 +198,14 @@ public class MethodGenerator implements AutoCloseable {
 			var isInterface = cls.isInterface();
 			var opcode = isInterface ? Opcodes.INVOKEINTERFACE : Opcodes.INVOKEVIRTUAL;
 
-			var argCount = stack_frame_size() - 1;
+			var argCount = _evalStack.size() - 1;
 			var argClasses = new Class<?>[argCount];
 
 			var pointer = argCount - 1;
 			// 弹出栈，并且收集参数
-			while (stack_frame_size() > 0) {
-				var item = stack_frame_pop();
-				if (stack_frame_size() == 0)
+			while (_evalStack.size() > 0) {
+				var item = _evalStack.pop();
+				if (_evalStack.size() == 0)
 					break; // 不收集最后一个，因为这是对象自身，不是传递的参数，不能作为方法的参数查找
 				argClasses[pointer] = item.getValueType();
 				pointer--;
@@ -237,10 +218,11 @@ public class MethodGenerator implements AutoCloseable {
 
 			_visitor.visitMethodInsn(opcode, owner, methodName, descriptor, isInterface);
 
-			_stack.pop(); // 调用完毕
+			_evalStack.exitFrame(); // 调用完毕，离开栈帧
 
-			if (method.getReturnType() != void.class) {
-				stack_frame_push(method.getReturnType()); // 返回值会给与父级栈
+			var returnType = method.getReturnType();
+			if (returnType != void.class) {
+				_evalStack.push(returnType); // 返回值会给与父级栈
 			}
 
 		} catch (Exception ex) {
@@ -272,7 +254,7 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	public void exit() {
-		var size = stack_frame_size();
+		var size = _evalStack.size();
 		if (size == 0) {
 			if (_returnClass != void.class)
 				throw new IllegalArgumentException(strings("ReturnTypeMismatch"));
@@ -283,7 +265,7 @@ public class MethodGenerator implements AutoCloseable {
 		if (size > 1) {
 			throw new IllegalArgumentException(strings("ReturnError"));
 		}
-		var lastType = stack_frame_pop().getValueType(); // 返回就是弹出栈顶得值，给调用方用
+		var lastType = _evalStack.pop().getValueType(); // 返回就是弹出栈顶得值，给调用方用
 
 		if (lastType != _returnClass) {
 			throw new IllegalArgumentException(strings("ReturnTypeMismatch"));
@@ -314,26 +296,12 @@ public class MethodGenerator implements AutoCloseable {
 
 	public void close() {
 		exit();
+		_evalStack.exitFrame();
+		StackAssert.isClean(_evalStack);
 		// 由于开启了COMPUTE_FRAMES ，所以只用调用visitMaxs即可，不必设置具体的值
 		_visitor.visitMaxs(0, 0);
 		_visitor.visitEnd();
-
-		_stack.clear();
 		_vars.clear();
-	}
-
-	void validateRefs(int expectedCount) {
-		_stack.frame().validateRefs(expectedCount);
-	}
-
-	/**
-	 * 查找栈顶上得元素，得到他们得类型，如果他们之间得类型不相同，报错
-	 * 
-	 * @param expectCount 期望栈顶有几个值
-	 * @return
-	 */
-	Class<?> matchType(int expectedCount) {
-		return _stack.frame().matchType(expectedCount);
 	}
 
 	private static class VarInfo {

@@ -20,14 +20,14 @@ public final class LogicOperator {
 //	  AreNotEqual, GreaterThan, LessThan, GreaterThanOrEqualTo, LessThanOrEqualTo
 
 	public static LogicOperator IsNull = new LogicOperator((g) -> {
-		g.validateRefs(1);
+		g.evalStack().validateRefs(1);
 		var label = new Label();
 		g.visitor().visitJumpInsn(Opcodes.IFNULL, label);
 		return label;
 	});
 
 	public static LogicOperator AreEqual = new LogicOperator((g) -> {
-		var cls = g.matchType(2);
+		var cls = g.evalStack().matchType(2);
 		var ifLabel = new Label();
 		var visitor = g.visitor();
 		if (!cls.isPrimitive()) {
@@ -42,7 +42,7 @@ public final class LogicOperator {
 			g.visitor().visitJumpInsn(Opcodes.IF_ACMPEQ, ifLabel); // 如果结果为0,那么就是相等
 		}
 
-		g.stack_frame_pop(2); // 执行完了，弹出操作数
+		g.evalStack().pop(2); // 执行完了，弹出2个操作数
 
 		return ifLabel;
 	});
