@@ -161,6 +161,7 @@ final class SerializationMethodHelper {
 			// }
 		});
 	}
+
 //
 //	public static bool IsPrimitive(Type type)
 //  {
@@ -211,18 +212,20 @@ final class SerializationMethodHelper {
 //          loadValue();
 //      });
 //  }
-//
-//	public static void WriteArray(MethodGenerator g, string dtoMemberName)
-//  {
-//      var method = typeof(IDTOWriter).ResolveMethod("WriteArray",
-//                                                      new Type[] { typeof(string) });
-//      var prmIndex = SerializationArgs.WriterIndex;
-//      g.Call(method, () =>
-//      {
-//          g.LoadParameter(prmIndex);
-//          g.Load(dtoMemberName);
-//      });
-//  }
+
+	public static void writeArray(MethodGenerator g, String dtoMemberName) {
+		var method = MethodUtil.resolveMemoized(IDTOWriter.class, "writeArray", String.class);
+		var prmIndex = SerializationArgs.WriterIndex;
+
+		g.invoke(prmIndex, method, () -> {
+			g.load(dtoMemberName);
+		});
+
+//		g.invoke(method.getName(), () -> {
+//			g.LoadParameter(prmIndex);
+//			g.Load(dtoMemberName);
+//		});
+	}
 //
 //	/// <summary>
 //	/// <para>得到读取某个类型的IL代码</para>

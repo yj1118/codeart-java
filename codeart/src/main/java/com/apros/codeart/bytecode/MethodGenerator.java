@@ -3,8 +3,12 @@ package com.apros.codeart.bytecode;
 import static com.apros.codeart.i18n.Language.strings;
 import static com.apros.codeart.runtime.Util.propagate;
 
+import java.awt.List;
 import java.lang.reflect.Method;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import javax.swing.Action;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -12,6 +16,8 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import com.apros.codeart.runtime.DynamicUtil;
+import com.apros.codeart.runtime.MethodUtil;
+import com.apros.codeart.runtime.TypeUtil;
 import com.google.common.collect.Iterables;
 
 public class MethodGenerator implements AutoCloseable {
@@ -96,9 +102,10 @@ public class MethodGenerator implements AutoCloseable {
 	 * 
 	 * @param index
 	 */
-	public void loadVariable(String name) {
+	public Variable loadVariable(String name) {
 		var local = _scopeStack.getVar(name);
 		local.load();
+		return local;
 	}
 
 	public void load(int value) {
@@ -190,14 +197,17 @@ public class MethodGenerator implements AutoCloseable {
 		return invoke(express, null);
 	}
 
-	/**
-	 * 执行实例方法
-	 * 
-	 * @param varName
-	 * @param methodName
-	 * @return
-	 */
-	private MethodGenerator invoke(String varName, String methodName, Runnable loadParameters) {
+	public MethodGenerator invoke(int prmIndex, String methodName, Runnable loadParameters) {
+		var prm = Iterables.get(_prms, prmIndex);
+		return invoke(prm.getName(), methodName, loadParameters);
+	}
+
+	public MethodGenerator invoke(int prmIndex, Method method, Runnable loadParameters) {
+		var prm = Iterables.get(_prms, prmIndex);
+		return invoke(prm.getName(), method.getName(), loadParameters);
+	}
+
+	public MethodGenerator invoke(String varName, String methodName, Runnable loadParameters) {
 
 		try {
 
@@ -210,10 +220,6 @@ public class MethodGenerator implements AutoCloseable {
 				loadParameters.run();
 
 			var cls = info.getType();
-
-			var isInterface = cls.isInterface();
-			var opcode = isInterface ? Opcodes.INVOKEINTERFACE : Opcodes.INVOKEVIRTUAL;
-
 			var argCount = _evalStack.size() - 1;
 			var argClasses = new Class<?>[argCount];
 
@@ -228,11 +234,13 @@ public class MethodGenerator implements AutoCloseable {
 			}
 
 			Method method = cls.getMethod(methodName, argClasses);
+			var isInterface = cls.isInterface();
+			var opcode = isInterface ? Opcodes.INVOKEINTERFACE : Opcodes.INVOKEVIRTUAL;
 
 			var descriptor = DynamicUtil.getMethodDescriptor(method);
 			var owner = DynamicUtil.getInternalName(info.getType()); // info.getType().getName()
 
-			_visitor.visitMethodInsn(opcode, owner, methodName, descriptor, isInterface);
+			_visitor.visitMethodInsn(opcode, owner, method.getName(), descriptor, isInterface);
 
 			_evalStack.exitFrame(); // 调用完毕，离开栈帧
 
@@ -276,6 +284,55 @@ public class MethodGenerator implements AutoCloseable {
 
 		_visitor.visitLabel(endLabel);
 	}
+
+//	 #region foreach
+
+	public void each(String varName, Consumer<Variable> action) {
+
+		var target = this.loadVariable(varName); // 加载变量
+
+		var elementType = TypeUtil.resolveElementType(target.getType());
+		// 执行遍历方法iterator()
+		var method = MethodUtil.resolveMemoized(List.class, "iterator");
+		var methodDescriptor = DynamicUtil.getMethodDescriptor(method);
+		_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, DynamicUtil.getInternalName(target.getType()), "iterator",
+				methodDescriptor, true);
+
+		_evalStack.pop(); // 遍历的对象变量被弹出
+
+		_scopeStack.enter(); // 进入循环代码段
+
+		_evalStack.push(elementType);// 存入iterator() 方法返回的 Iterator 对象
+
+		// 将栈顶的值存变量
+		var local = this.declare(elementType, null); // 不起名字
+		local.save();
+
+		action.accept(local);
+
+		// todo
+
+		// var element = BeginForEach(elementType);
+//		action(element);
+//		EndForEach();
+	}
+
+	public void ForEach(Action<IVariable> action) {
+		var item = _evalStack.Peek();
+		ForEach(item.Type.ResolveElementType(), action);
+	}
+
+	private IVariable BeginForEach(Type elementType) {
+		var scope = new ForEachScope(this, elementType);
+		PushScope(scope);
+		return scope.Current;
+	}
+
+	private void EndForEach() {
+		PopScope(typeof(ForEachScope), "BeginForEach/EndForEach mismatch");
+	}
+
+//	 #endregion
 
 	public void exit() {
 		var size = _evalStack.size();

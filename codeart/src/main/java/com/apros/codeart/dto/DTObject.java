@@ -9,6 +9,19 @@ import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 
+/**
+ * 本次升级，重写了底层算法，特点：
+ * 
+ * 1.在会话上下文结束后，会切断双向引用，避免内存泄露
+ * 
+ * 2.解析字符串后，各项成员不实际存放值，而是存放的值对应的字符串，当获取的时候，可以显示调用getInt等基元类型的操作，返回基元值，避免装箱。
+ * 
+ * 我们基于这样的事实设计DTO：接受字符串，使用一次给调用方，或者将数据给与DTO，DOT生成JSON格式字符串，发送到网络。
+ * 
+ * 在这种模式下，避免了装箱和拆箱，性能良好。
+ * 
+ * 但是要频繁的操作dto的同样的值，比如getInt("value")或者setInt("value")调用好几遍，那么建议用getInt32这种引用系方法。
+ */
 public class DTObject implements AutoCloseable {
 
 	private DTEObject _root;
@@ -51,27 +64,31 @@ public class DTObject implements AutoCloseable {
 		return (String) this.get(findExp, defalutValue);
 	}
 
-	public Byte getByte(String findExp) {
+	public Byte getInt1(String findExp) {
 		return (Byte) this.get(findExp);
 	}
 
-	public Byte getByte(String findExp, Byte defaultValue) {
+	public Byte getInt1(String findExp, Byte defaultValue) {
 		return (Byte) this.get(findExp, defaultValue);
 	}
 
-	public Integer getInt(String findExp) {
+	public Short getInt2(String findExp, Short defaultValue) {
+		return (Short) this.get(findExp, defaultValue);
+	}
+
+	public Integer getInt32(String findExp) {
 		return (Integer) this.get(findExp);
 	}
 
-	public Integer getInt(String findExp, Integer defaultValue) {
+	public Integer getInt32(String findExp, Integer defaultValue) {
 		return (Integer) this.get(findExp, defaultValue);
 	}
 
-	public Long getLong(String findExp) {
+	public Long getInt64(String findExp) {
 		return (Long) this.get(findExp);
 	}
 
-	public Long getLong(String findExp, Long defaultValue) {
+	public Long getInt64(String findExp, Long defaultValue) {
 		return (Long) this.get(findExp, defaultValue);
 	}
 
@@ -83,7 +100,7 @@ public class DTObject implements AutoCloseable {
 		return (Boolean) get(findExp, defaultValue, false);
 	}
 
-	public Iterable<Long> getLongs(String findExp) {
+	public Iterable<Long> getInt64s(String findExp) {
 		return this.getValues(Long.class, findExp);
 	}
 
@@ -128,6 +145,65 @@ public class DTObject implements AutoCloseable {
 	public Object get() {
 		return get(StringUtil.empty(), true);
 	}
+
+	// region 不必装箱和拆箱的操作
+
+	public int getInt(String findExp, int defaultValue) {
+		return getInt(findExp, defaultValue, false);
+	}
+
+	public int getInt(String findExp) {
+		return getInt(findExp, 0, true);
+	}
+
+	public void setInt(String findExp, int value) {
+		setPrimitiveValue(findExp, Integer.toString(value));
+	}
+
+	private int getInt(String findExp, int defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getInt();
+	}
+
+	public long getLong(String findExp, long defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getInt();
+	}
+
+	public void setLong(String findExp, long value) {
+		setPrimitiveValue(findExp, Long.toString(value));
+	}
+
+	public void setPrimitiveValue(String findExp, String valueCode) {
+		validateReadOnly();
+
+		var es = finds(findExp, false);
+		if (Iterables.size(es) == 0) {
+			var query = QueryExpression.create(findExp);
+			_root.setMember(query, (name) -> {
+				return createPrimitiveEntity(name, valueCode);
+			});
+		} else {
+			for (var e : es) {
+				if (e.getType() == DTEntityType.VALUE) {
+					var ev = as(e, DTEValue.class);
+					ev.setValueCode(valueCode, false); // 基元值，不是字符串
+					continue;
+				}
+
+				var parent = as(e.getParent(), DTEObject.class);
+				if (parent == null)
+					throw new IllegalStateException(strings("DTOExpressionError", findExp));
+
+				var query = QueryExpression.create(e.getName());
+				parent.setMember(query, (name) -> {
+					return createPrimitiveEntity(name, valueCode);
+				});
+			}
+		}
+	}
+
+	// endregion
 
 	public void set(String findExp, Object value) {
 		validateReadOnly();
@@ -221,6 +297,10 @@ public class DTObject implements AutoCloseable {
 			});
 		}
 		return dte;
+	}
+
+	private DTEntity createPrimitiveEntity(String name, String valueCode) {
+		return DTEValue.obtainByCode(name, valueCode, false);
 	}
 
 	private DTEntity find(String findExp, boolean throwError) {

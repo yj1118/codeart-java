@@ -26,9 +26,28 @@ final class DTEValue extends DTEntity {
 		return _value;
 	}
 
+	public boolean getBoolean() {
+		return Boolean.parseBoolean(_valueCode);
+	}
+
+	public int getInt() {
+		return Integer.parseInt(_valueCode);
+	}
+
+	public long getLong() {
+		return Long.parseLong(_valueCode);
+	}
+
 	public void setValue(Object value) {
-		this.clearData();
-		this._value = value;
+		_valueCode = null;
+		_valueIsString = false;
+		_value = value;
+	}
+
+	public void setValueCode(String valueCode, boolean valueIsString) {
+		_valueCode = valueCode;
+		_valueIsString = valueIsString;
+		_value = null;
 	}
 
 	private DTEValue(String name, String valueCode, boolean valueIsString, Object value) {

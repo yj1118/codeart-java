@@ -7,7 +7,7 @@ import org.objectweb.asm.Opcodes;
 public class Variable implements IVariable {
 
 	private final MethodGenerator _owner;
-	private final String _name;
+	private String _name;
 	private final int _index;
 	private final Class<?> _type;
 
@@ -50,6 +50,10 @@ public class Variable implements IVariable {
 		return _name;
 	}
 
+	void setName(String name) {
+		_name = name;
+	}
+
 	public int getIndex() {
 		return _index;
 	}
@@ -66,6 +70,20 @@ public class Variable implements IVariable {
 		}
 
 		_owner.evalStack().push(_type);
+	}
+
+	@Override
+	public void save() {
+
+		validateScope();
+
+		if (this.isRef())
+			_owner.visitor().visitVarInsn(Opcodes.ASTORE, _index);
+		else {
+			_owner.visitor().visitVarInsn(Opcodes.ISTORE, _index);
+		}
+
+		_owner.evalStack().pop(); // 存入变量后，栈顶的值就没了
 	}
 
 	@Override

@@ -5,6 +5,9 @@ import java.lang.reflect.Field;
 import com.apros.codeart.bytecode.LogicOperator;
 import com.apros.codeart.bytecode.MethodGenerator;
 
+/**
+ * java的泛型集合不可能是基元类型，所以只用考虑引用类型即可
+ */
 class CollectionSerializationInfo extends MemberSerializationInfo {
 	public CollectionSerializationInfo(Field field, DTOMemberAnnotation memberAnn) {
 		super(field, memberAnn);
@@ -15,31 +18,26 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 	}
 
 	@Override
-	public void generateSerializeIL(MethodGenerator g)
-	{
-	    g.when(() ->
-	    {
-	        loadMemberValue(g);//加载集合到堆栈上，检查是否为null
-	        return LogicOperator.IsNull;
-	    }, () ->
-	    {
-	        SerializationMethodHelper.WriteArray(g, this.getDTOMemberName());
-	    }, () ->
-	    {
-	        var elementType = this.TargetType.ResolveElementType();
-	        ////写入数组
-	        SerializationMethodHelper.WriteArray(g,  this.getDTOMemberName());
+	public void generateSerializeIL(MethodGenerator g) {
+		g.when(() -> {
+			loadMemberValue(g);// 加载集合到堆栈上，检查是否为null
+			return LogicOperator.IsNull;
+		}, () -> {
+			SerializationMethodHelper.writeArray(g, this.getDTOMemberName());
+		}, () -> {
+//			var elementType = this.getTargetClass().ResolveElementType();
+			var elementType = Object.class; // java的泛型集合不可能是基元类型，所以只用考虑引用类型即可
+			//// 写入数组
+			SerializationMethodHelper.writeArray(g, this.getDTOMemberName());
 
-	        //写入每个项
-	        LoadMemberValue(g);
-	        g.ForEach(item ->
-	        {
-	            SerializationMethodHelper.WriteElement(g, this.DTOMemberName, elementType, () =>
-	            {
-	                g.Load(item);
-	            });
-	        });
-	    });
+			// 写入每个项
+			loadMemberValue(g);
+			g.ForEach(item -> {
+				SerializationMethodHelper.WriteElement(g, this.DTOMemberName, elementType, () -> {
+					g.Load(item);
+				});
+			});
+		});
 	}
 
 //

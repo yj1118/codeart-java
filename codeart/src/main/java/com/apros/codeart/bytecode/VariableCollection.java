@@ -30,6 +30,7 @@ class VariableCollection {
 	public Variable borrow(Class<?> type, String name) {
 		for (var item : _items) {
 			if (!item.getInScope() && item.getType() == type) {
+				item.setName(name); // 更新名称
 				return item;
 			}
 		}

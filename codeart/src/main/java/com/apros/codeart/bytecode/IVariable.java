@@ -26,6 +26,11 @@ interface IVariable extends AutoCloseable {
 	void load();
 
 	/**
+	 * 栈顶的值存入到变量里
+	 */
+	void save();
+
+	/**
 	 * 发出赋值给该变量的指令块的开始,需要在 BeginAssign 和 EndAssign 之间加载需要赋值的值
 	 */
 	void beginAssign();
