@@ -16,4 +16,18 @@ final class StackAssert {
 			throw new IllegalArgumentException(error.get());
 	}
 
+	public static void assertRefs(EvaluationStack evalStack, int expectedCount) {
+
+		evalStack.currentFrame().assertRefs(expectedCount);
+	}
+
+	/**
+	 * 检查栈顶至少值有多少个
+	 * 
+	 * @param count
+	 */
+	public static void assertCount(EvaluationStack evalStack, int expectedCount) {
+		evalStack.currentFrame().assertCount(expectedCount);
+	}
+
 }

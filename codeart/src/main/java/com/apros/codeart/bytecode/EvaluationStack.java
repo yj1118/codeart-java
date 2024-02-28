@@ -2,7 +2,9 @@ package com.apros.codeart.bytecode;
 
 import static com.apros.codeart.i18n.Language.strings;
 
+import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * 在Java中，方法的嵌套调用是通过调用栈（call stack）来实现的。每当你调用一个方法，Java虚拟机会在调用栈上创建一个新的栈帧（stack
@@ -14,6 +16,10 @@ class EvaluationStack {
 	private LinkedList<StackFrame> _frames;
 
 	private StackFrame _current;
+
+	public StackFrame currentFrame() {
+		return _current;
+	}
 
 	public EvaluationStack() {
 		_frames = new LinkedList<StackFrame>();
@@ -69,19 +75,6 @@ class EvaluationStack {
 		return _current.size();
 	}
 
-	public void validateRefs(int expectedCount) {
-		_current.validateRefs(expectedCount);
-	}
-
-	/**
-	 * 检查栈顶至少值有多少个
-	 * 
-	 * @param count
-	 */
-	public void validateLeast(int count) {
-		_current.validateLeast(count);
-	}
-
 	/**
 	 * 查找栈顶上得元素，得到他们得类型，如果他们之间得类型不相同，报错
 	 * 
@@ -92,7 +85,7 @@ class EvaluationStack {
 		return _current.matchType(expectedCount);
 	}
 
-	private static class StackFrame {
+	static class StackFrame {
 
 		private LinkedList<StackItem> _items;
 
@@ -100,15 +93,19 @@ class EvaluationStack {
 			_items = new LinkedList<StackItem>();
 		}
 
-		public StackItem[] getItems(int expectedCount) {
-			var ts = new StackItem[expectedCount];
-			var i = expectedCount - 1;
-			for (var vt : _items) {
-				ts[i] = vt;
-				i--;
-			}
-			return ts;
+		public List<StackItem> getItems() {
+			return Collections.unmodifiableList(_items);
 		}
+
+//		public StackItem[] getItems(int expectedCount) {
+//			var ts = new StackItem[expectedCount];
+//			var i = expectedCount - 1;
+//			for (var vt : _items) {
+//				ts[i] = vt;
+//				i--;
+//			}
+//			return ts;
+//		}
 
 		public void push(StackItem item) {
 			_items.push(item);
@@ -130,23 +127,25 @@ class EvaluationStack {
 			return _items.size();
 		}
 
-		public void validateRefs(int expectedCount) {
-			var items = this.getItems(expectedCount);
-			for (var item : items) {
+		public boolean assertRefs(int expectedCount) {
+
+			assertCount(expectedCount);
+
+			for (var item : _items) {
 				if (item.isPrimitive())
 					throw new IllegalArgumentException(strings("TypeMismatch"));
 			}
+			return true;
 		}
 
 		/**
-		 * 检查栈顶至少值有多少个
+		 * 检查栈顶值有多少个
 		 * 
 		 * @param count
 		 */
-		public void validateLeast(int count) {
-			if (size() < count) {
-				throw new IllegalStateException(strings("TypeMismatch"));
-			}
+		public void assertCount(int expectedCount) {
+			if (this.size() != expectedCount)
+				throw new IllegalArgumentException(strings("TypeMismatch"));
 		}
 
 		/**
@@ -156,11 +155,10 @@ class EvaluationStack {
 		 * @return
 		 */
 		Class<?> matchType(int expectedCount) {
-			validateLeast(expectedCount);
-			var items = this.getItems(expectedCount);
-			var targetType = items[0].getValueType();
-			for (var i = 1; i < items.length; i++) {
-				if (targetType != items[i].getValueType())
+			assertCount(expectedCount);
+			var targetType = _items.get(0).getValueType();
+			for (var item : _items) {
+				if (targetType != item.getValueType())
 					throw new IllegalStateException(strings("TypeMismatch"));
 			}
 			return targetType;

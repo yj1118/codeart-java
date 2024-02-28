@@ -11,7 +11,7 @@ public final class ListUtil {
 	private ListUtil() {
 	};
 
-	public static <T> T findExable(Iterable<T> source, Function<T, Boolean> predicate) {
+	public static <T> T find(Iterable<T> source, Function<T, Boolean> predicate) {
 		for (T item : source) {
 			if (predicate.apply(item))
 				return item;
@@ -19,12 +19,30 @@ public final class ListUtil {
 		return null;
 	}
 
-	public static <T> T find(Iterable<T> source, Function<T, Boolean> predicate) {
+	public static <T> Iterable<T> filter(Iterable<T> source, Function<T, Boolean> predicate) {
+		ArrayList<T> items = new ArrayList<T>();
+		for (T item : source) {
+			if (predicate.apply(item))
+				items.add(item);
+		}
+		return items;
+	}
+
+	public static <T> T find(T[] source, Function<T, Boolean> predicate) {
 		for (T item : source) {
 			if (predicate.apply(item))
 				return item;
 		}
 		return null;
+	}
+
+	public static <T> Iterable<T> filter(T[] source, Function<T, Boolean> predicate) {
+		ArrayList<T> items = new ArrayList<T>();
+		for (T item : source) {
+			if (predicate.apply(item))
+				items.add(item);
+		}
+		return items;
 	}
 
 	public static boolean contains(Iterable<Integer> source, Integer target) {

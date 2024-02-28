@@ -92,17 +92,17 @@ class MethodGeneratorTest {
 				args.add("value", int.class);
 			})) {
 				mg.when(() -> {
-					mg.load_parameter("value");
-					mg.load_const(1);
+					mg.loadParameter("value");
+					mg.load(1);
 					return LogicOperator.AreEqual;
 				}, () -> {
-					mg.load_const(1);
+					mg.load(1);
 					mg.exit();
 				}, () -> {
-					mg.load_const(0);
+					mg.load(0);
 					mg.exit();
 				});
-				mg.load_const(5);
+				mg.load(5);
 			}
 
 			// 返回生成的字节码

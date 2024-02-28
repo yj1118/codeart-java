@@ -2,6 +2,9 @@ package com.apros.codeart.dto.serialization;
 
 import java.lang.reflect.Field;
 
+import com.apros.codeart.bytecode.LogicOperator;
+import com.apros.codeart.bytecode.MethodGenerator;
+
 class CollectionSerializationInfo extends MemberSerializationInfo {
 	public CollectionSerializationInfo(Field field, DTOMemberAnnotation memberAnn) {
 		super(field, memberAnn);
@@ -10,34 +13,34 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 	public CollectionSerializationInfo(Class<?> classType) {
 		super(classType);
 	}
-//
-//	@Override
-//	public void generateSerializeIL(MethodGenerator g)
-//	{
-//	    g.If(() =>
-//	    {
-//	        LoadMemberValue(g);//加载集合到堆栈上，检查是否为null
-//	        return LogicOperator.IsNull;
-//	    }, () =>
-//	    {
-//	        SerializationMethodHelper.WriteArray(g, this.DTOMemberName);
-//	    }, () =>
-//	    {
-//	        var elementType = this.TargetType.ResolveElementType();
-//	        ////写入数组
-//	        SerializationMethodHelper.WriteArray(g, this.DTOMemberName);
-//
-//	        //写入每个项
-//	        LoadMemberValue(g);
-//	        g.ForEach(item =>
-//	        {
-//	            SerializationMethodHelper.WriteElement(g, this.DTOMemberName, elementType, () =>
-//	            {
-//	                g.Load(item);
-//	            });
-//	        });
-//	    });
-//	}
+
+	@Override
+	public void generateSerializeIL(MethodGenerator g)
+	{
+	    g.when(() ->
+	    {
+	        loadMemberValue(g);//加载集合到堆栈上，检查是否为null
+	        return LogicOperator.IsNull;
+	    }, () ->
+	    {
+	        SerializationMethodHelper.WriteArray(g, this.getDTOMemberName());
+	    }, () ->
+	    {
+	        var elementType = this.TargetType.ResolveElementType();
+	        ////写入数组
+	        SerializationMethodHelper.WriteArray(g,  this.getDTOMemberName());
+
+	        //写入每个项
+	        LoadMemberValue(g);
+	        g.ForEach(item ->
+	        {
+	            SerializationMethodHelper.WriteElement(g, this.DTOMemberName, elementType, () =>
+	            {
+	                g.Load(item);
+	            });
+	        });
+	    });
+	}
 
 //
 //public override void GenerateDeserializeIL(MethodGenerator g)

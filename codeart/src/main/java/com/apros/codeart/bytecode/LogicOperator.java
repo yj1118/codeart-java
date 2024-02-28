@@ -20,7 +20,7 @@ public final class LogicOperator {
 //	  AreNotEqual, GreaterThan, LessThan, GreaterThanOrEqualTo, LessThanOrEqualTo
 
 	public static LogicOperator IsNull = new LogicOperator((g, label) -> {
-		g.evalStack().validateRefs(1);
+		StackAssert.assertRefs(g.evalStack(), 1);
 		g.visitor().visitJumpInsn(Opcodes.IFNULL, label);
 	});
 

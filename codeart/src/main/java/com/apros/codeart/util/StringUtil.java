@@ -4,6 +4,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import com.apros.codeart.pooling.PoolingException;
+import com.google.common.base.CaseFormat;
 
 public final class StringUtil {
 	private StringUtil() {
@@ -121,6 +122,10 @@ public final class StringUtil {
 	public static String uuid() {
 		UUID uuid = UUID.randomUUID();
 		return uuid.toString().replace("-", "");
+	}
+
+	public static String firstToUpper(String str) {
+		return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, str);
 	}
 
 }

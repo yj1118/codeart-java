@@ -1,6 +1,6 @@
 package com.apros.codeart.bytecode;
 
-class Argument {
+class MethodParameter {
 	private String _name;
 
 	public String getName() {
@@ -13,7 +13,7 @@ class Argument {
 		return _type;
 	}
 
-	public Argument(String name, Class<?> type) {
+	public MethodParameter(String name, Class<?> type) {
 		_name = name;
 		_type = type;
 	}

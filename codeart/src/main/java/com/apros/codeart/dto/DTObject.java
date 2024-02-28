@@ -411,13 +411,13 @@ public class DTObject implements AutoCloseable {
 	 * @param code
 	 * @return
 	 */
-	public static DTObject Create(String code) {
+	public static DTObject create(String code) {
 		if (StringUtil.isNullOrEmpty(code))
-			return DTObject.Create();
+			return DTObject.create();
 		return createImpl(code, false);
 	}
 
-	public static DTObject Create() {
+	public static DTObject create() {
 		return createImpl("{}", false);
 	}
 
@@ -556,6 +556,18 @@ public class DTObject implements AutoCloseable {
 //	}
 //
 ////	#endregion
+
+//	#region 空对象
+
+	private final static String EmptyCode = "{__empty:true}";
+
+	public static final DTObject Empty = DTObject.create(EmptyCode);
+
+	public boolean isEmpty() {
+		return this.getBool("__empty", false);
+	}
+
+//	#endregion
 
 	static DTObject obtain(DTEObject root, boolean isReadOnly) {
 		return ContextSession.registerItem(new DTObject(root, isReadOnly));

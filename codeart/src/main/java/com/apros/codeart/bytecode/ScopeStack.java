@@ -15,17 +15,17 @@ final class ScopeStack {
 
 	private MethodGenerator _owner;
 
-	public ScopeStack(MethodGenerator owner, Iterable<Argument> args) {
+	public ScopeStack(MethodGenerator owner, Iterable<MethodParameter> prms) {
 		_scopes = new LinkedList<CodeScope>();
 		_owner = owner;
-		this.init(args);
+		this.init(prms);
 	}
 
-	private void init(Iterable<Argument> args) {
+	private void init(Iterable<MethodParameter> prms) {
 		this.enter();
 		// 将主体方法的变量加入到根范围中
-		for (var arg : args) {
-			this.declare(arg.getType(), arg.getName());
+		for (var prm : prms) {
+			this.declare(prm.getType(), prm.getName());
 		}
 	}
 

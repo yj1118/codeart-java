@@ -2,6 +2,9 @@ package com.apros.codeart.dto.serialization;
 
 import java.lang.reflect.Field;
 
+import com.apros.codeart.bytecode.MethodGenerator;
+import com.apros.codeart.util.StringUtil;
+
 class MemberSerializationInfo {
 //	#region 静态构造
 
@@ -107,40 +110,38 @@ class MemberSerializationInfo {
 		_memberAnn = memberAnn;
 	}
 
-//	/**
-//	 * 生成序列化代码
-//	 * 
-//	 * @param g
-//	 */
-//	public void GenerateSerializeIL(MethodGenerator g)
-//	{
-//	    //serializer.serialize(v); 或 //writer.Writer(v);
-//	    SerializationMethodHelper.Write(g, this.DTOMemberName, this.TargetType, (argType) =>
-//	     {
-//	         LoadMemberValue(g);
-//	         //TargetType是成员（也就是属性或者字段）的类型
-//	         //argType是方法需要接受到的类型，如果两者类型不匹配，就需要转换
-//	         if (this.TargetType.IsStruct() && !argType.IsStruct())
-//	         {
-//	             g.Box();
-//	         }
-//	     });
-//	}
+	/**
+	 * 生成序列化代码
+	 * 
+	 * @param g
+	 */
+	public void generateSerializeIL(MethodGenerator g) {
+		// serializer.serialize(v); 或 //writer.Writer(v);
+		SerializationMethodHelper.write(g, this.getDTOMemberName(), this.getTargetClass(), (argType) -> {
+			loadMemberValue(g);
+			// TargetType是成员（也就是属性或者字段）的类型
+			// argType是方法需要接受到的类型，如果两者类型不匹配，就需要转换
+//			if (this.getTargetClass().IsStruct() && !argType.IsStruct()) {
+//				g.Box();
+//			}
+		});
+	}
 
-//	/// <summary>
-//	/// 加载成员的值到堆栈上
-//	/// </summary>
-//	protected void LoadMemberValue(MethodGenerator g) {
-//		LoadOwner(g);
-//
-//		if (this.IsClassInfo)
-//			return;
-//		if (this.IsFieldInfo)
-//			g.LoadField(this.FieldInfo);
-//		else
-//			g.LoadProperty(this.PropertyInfo);
-//	}
-//
+	/**
+	 * 加载成员的值到堆栈上
+	 * 
+	 * @param g
+	 */
+	protected void loadMemberValue(MethodGenerator g) {
+
+		if (this.isClassInfo()) {
+			loadOwner(g);
+			return;
+		}
+
+		g.loadField(SerializationArgs.InstanceName, _field.getName());
+	}
+
 //	/// <summary>
 //	/// 生成反序列化代码
 //	/// </summary>
@@ -167,27 +168,23 @@ class MemberSerializationInfo {
 //		}
 //	}
 //
-//	private void LoadOwner(MethodGenerator g) {
-//		if (this.OwnerType.IsValueType)
+	private void loadOwner(MethodGenerator g) {
+		g.loadVariable(SerializationArgs.InstanceName);
+//		if (this.getOwnerClass().isPrimitive())
 //			g.LoadVariable(SerializationArgs.InstanceName, LoadOptions.ValueAsAddress);
 //		else
 //			g.LoadVariable(SerializationArgs.InstanceName);
-//	}
-//
-//	public string DTOMemberName
-//	{
-//	    get
-//	    {
-//	        if (this.MemberAttribute != null && !string.IsNullOrEmpty(this.MemberAttribute.Name)) return this.MemberAttribute.Name;
-//	        if (!string.IsNullOrEmpty(_memberInfo.Name)) return _memberInfo.Name.FirstToUpper();
-//	        return string.Empty;
-//	    }
-//	}
-//
-//	public virtual string
-//
-//	GetDTOSchemaCode()
-//	{
-//	    return this.DTOMemberName;
-//	}
+	}
+
+	public String getDTOMemberName() {
+		if (this.getMemberAnn() != null && !StringUtil.isNullOrEmpty(this.getMemberAnn().getName()))
+			return this.getMemberAnn().getName();
+		if (!StringUtil.isNullOrEmpty(_field.getName()))
+			return StringUtil.firstToUpper(_field.getName());
+		return StringUtil.empty();
+	}
+
+	public String getDTOSchemaCode() {
+		return this.getDTOMemberName();
+	}
 }

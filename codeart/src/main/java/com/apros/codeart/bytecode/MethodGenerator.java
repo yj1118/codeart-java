@@ -12,6 +12,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import com.apros.codeart.runtime.DynamicUtil;
+import com.google.common.collect.Iterables;
 
 public class MethodGenerator implements AutoCloseable {
 
@@ -20,6 +21,8 @@ public class MethodGenerator implements AutoCloseable {
 	public boolean isStatic() {
 		return _isStatic;
 	}
+
+	private Iterable<MethodParameter> _prms;
 
 	private MethodVisitor _visitor;
 
@@ -53,21 +56,22 @@ public class MethodGenerator implements AutoCloseable {
 		return _scopeStack;
 	}
 
-	MethodGenerator(MethodVisitor visitor, int access, Class<?> returnClass, Iterable<Argument> args) {
+	MethodGenerator(MethodVisitor visitor, int access, Class<?> returnClass, Iterable<MethodParameter> prms) {
 		_visitor = visitor;
 		_isStatic = (access & Opcodes.ACC_STATIC) != 0;
 		_returnClass = returnClass;
-		init(args);
+		init(prms);
 	}
 
-	private void init(Iterable<Argument> args) {
+	private void init(Iterable<MethodParameter> prms) {
+		_prms = prms;
 		_locals = new VariableCollection(this);
 		_evalStack = new EvaluationStack();
-		_scopeStack = new ScopeStack(this, args);
+		_scopeStack = new ScopeStack(this, prms);
 		_visitor.visitCode();
 	}
 
-	public void load_this() {
+	public void loadThis() {
 		if (_isStatic)
 			throw new IllegalArgumentException(strings("CannotInvokeStatic"));
 		_visitor.visitVarInsn(Opcodes.ALOAD, 0);
@@ -78,8 +82,13 @@ public class MethodGenerator implements AutoCloseable {
 	 * 
 	 * @param index
 	 */
-	public void load_parameter(String name) {
-		load_var(name); // 加载参数就是加载变量
+	public void loadParameter(String name) {
+		loadVariable(name); // 加载参数就是加载变量
+	}
+
+	public void loadParameter(int prmIndex) {
+		var prm = Iterables.get(_prms, prmIndex);
+		loadVariable(prm.getName()); // 加载参数就是加载变量
 	}
 
 	/**
@@ -87,14 +96,32 @@ public class MethodGenerator implements AutoCloseable {
 	 * 
 	 * @param index
 	 */
-	public void load_var(String name) {
+	public void loadVariable(String name) {
 		var local = _scopeStack.getVar(name);
 		local.load();
 	}
 
-	public void load_const(int value) {
+	public void load(int value) {
 		_visitor.visitLdcInsn(value);
 		_evalStack.push(int.class);
+	}
+
+	/**
+	 * 将 null 引用推送到操作数栈上
+	 */
+	public void loadNull() {
+		_visitor.visitInsn(Opcodes.ACONST_NULL);
+		_evalStack.push(Object.class);// 同步自身堆栈数据
+	}
+
+	public void load(String value) {
+		if (value == null) {
+			loadNull();
+			return;
+		}
+
+		_visitor.visitLdcInsn(value);
+		_evalStack.push(String.class);
 	}
 
 	/**
@@ -113,9 +140,9 @@ public class MethodGenerator implements AutoCloseable {
 		return local;
 	}
 
-	public MethodGenerator load_field_value(String express) {
+	public MethodGenerator loadField(String express) {
 		String[] temp = express.split("\\.");
-		return load_field_value(temp[0], temp[1]);
+		return loadField(temp[0], temp[1]);
 	}
 
 	/**
@@ -124,11 +151,11 @@ public class MethodGenerator implements AutoCloseable {
 	 * @param varName
 	 * @param fieldName
 	 */
-	private MethodGenerator load_field_value(String varName, String fieldName) {
+	public MethodGenerator loadField(String varName, String fieldName) {
 
 		try {
 			// 先加载变量
-			this.load_var(varName);
+			this.loadVariable(varName);
 
 			var local = _scopeStack.getVar(varName);
 			Class<?> objectType = local.getType();
@@ -175,7 +202,7 @@ public class MethodGenerator implements AutoCloseable {
 		try {
 
 			_evalStack.enterFrame(); // 新建立栈帧
-			this.load_var(varName); // 先加载变量自身，作为实例方法的第一个参数（this）
+			this.loadVariable(varName); // 先加载变量自身，作为实例方法的第一个参数（this）
 			var info = _scopeStack.getVar(varName);
 
 			// 加载参数

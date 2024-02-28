@@ -62,10 +62,10 @@ public final class ClassGenerator implements AutoCloseable {
 	public MethodGenerator defineMethod(final int access, final String name, final Class<?> returnClass,
 			Consumer<IArgumenter> getArgs) {
 
-		ArrayList<Argument> args = new ArrayList<Argument>(5);
+		ArrayList<MethodParameter> args = new ArrayList<MethodParameter>(5);
 
 		getArgs.accept((n, t) -> {
-			args.add(new Argument(n, t));
+			args.add(new MethodParameter(n, t));
 		});
 
 		Type[] types = new Type[args.size()];
