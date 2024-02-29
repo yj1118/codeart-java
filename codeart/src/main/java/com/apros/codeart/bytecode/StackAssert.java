@@ -2,6 +2,8 @@ package com.apros.codeart.bytecode;
 
 import java.util.function.Supplier;
 
+import com.apros.codeart.i18n.Language;
+
 final class StackAssert {
 	private StackAssert() {
 	}
@@ -11,9 +13,14 @@ final class StackAssert {
 	 * 
 	 * @param evalStack
 	 */
-	public static void isClean(EvaluationStack evalStack, Supplier<String> error) {
+	public static void assertClean(EvaluationStack evalStack, Supplier<String> error) {
 		if (evalStack.size() > 0)
 			throw new IllegalArgumentException(error.get());
+	}
+
+	public static void assertClean(EvaluationStack evalStack) {
+		if (evalStack.size() > 0)
+			throw new IllegalArgumentException(Language.strings("StackNotEmpty"));
 	}
 
 	public static void assertRefs(EvaluationStack evalStack, int expectedCount) {

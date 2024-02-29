@@ -21,6 +21,14 @@ final class ScopeStack {
 		this.init(prms);
 	}
 
+	public Label getStartLabel() {
+		return _current.getStartLabel();
+	}
+
+	public Label getEndLabel() {
+		return _current.getEndLabel();
+	}
+
 	private void init(Iterable<MethodParameter> prms) {
 		this.enter();
 		// 将主体方法的变量加入到根范围中
@@ -30,20 +38,42 @@ final class ScopeStack {
 	}
 
 	public void enter() {
-		StackAssert.isClean(_owner.evalStack(), () -> {
+		var scope = _enter();
+		_owner.visitor().visitLabel(scope.getStartLabel());
+	}
+
+	/**
+	 * 用自定义的开始标签进入代码范围，这表示代码范围不会自动标记开始位置
+	 * 
+	 * @param startLabel
+	 */
+	public void enter(Label startLabel) {
+		var scope = _enter();
+		scope.setStartLabel(startLabel);
+		_owner.visitor().visitLabel(scope.getStartLabel());
+	}
+
+	private CodeScope _enter() {
+		StackAssert.assertClean(_owner.evalStack(), () -> {
 			return strings("EnterScopeStackNotEmpty");
 		});
 
 		var scope = new CodeScope(_owner);
 		_scopes.push(scope);
 		_current = scope;
+		return scope;
+	}
+
+	public int getDepth() {
+		return _scopes.size();
 	}
 
 	public void exit() {
-		StackAssert.isClean(_owner.evalStack(), () -> {
+		StackAssert.assertClean(_owner.evalStack(), () -> {
 			return strings("ExitScopeStackNotEmpty");
 		});
 		var scope = _scopes.pop();
+		_owner.visitor().visitLabel(scope.getEndLabel());
 		scope.close();
 		_current = _scopes.peek();
 	}
@@ -118,14 +148,34 @@ final class ScopeStack {
 
 		private final ArrayList<Variable> _locals;
 
+		private Label _startLabel;
+
+		public Label getStartLabel() {
+			if (_startLabel == null)
+				_startLabel = new Label();
+			return _startLabel;
+		}
+
+		public void setStartLabel(Label label) {
+			_startLabel = label;
+		}
+
+		private Label _endLabel;
+
+		public Label getEndLabel() {
+			if (_endLabel == null)
+				_endLabel = new Label();
+			return _endLabel;
+		}
+
 		public CodeScope(MethodGenerator owner) {
 			_owner = owner;
 			_locals = new ArrayList<Variable>();
 		}
 
-		MethodGenerator getOwner() {
-			return _owner;
-		}
+//		MethodGenerator getOwner() {
+//			return _owner;
+//		}
 
 		public Variable declare(Class<?> type, String name) {
 			var local = _owner.locals().borrow(type, name);
@@ -134,9 +184,9 @@ final class ScopeStack {
 			return local;
 		}
 
-		public int getVarCount() {
-			return _locals.size();
-		}
+//		public int getVarCount() {
+//			return _locals.size();
+//		}
 
 		public Variable getVar(String name) {
 			for (var local : _locals) {

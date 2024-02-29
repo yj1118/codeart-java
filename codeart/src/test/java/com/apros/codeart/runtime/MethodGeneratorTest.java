@@ -3,6 +3,8 @@ package com.apros.codeart.runtime;
 import static com.apros.codeart.runtime.Util.propagate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -112,6 +114,36 @@ class MethodGeneratorTest {
 			var value = method.invoke(null, 1);
 
 			assertEquals(1, value);
+
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
+	@Test
+	void each() {
+		try (var cg = ClassGenerator.define()) {
+
+			try (var mg = cg.defineMethodPublicStatic("print", void.class, (args) -> {
+				args.add("list", List.class);
+			})) {
+				mg.each("list", (item) -> {
+//					mg.print(() -> {
+//						item.load();
+//					});
+				});
+			}
+
+			// 返回生成的字节码
+			var cls = cg.toClass();
+
+			var method = cls.getDeclaredMethod("print", void.class);
+
+			var temp = List.of("1", "2", "3");
+
+			method.invoke(null, temp);
+
+//			assertEquals(1, value);
 
 		} catch (Exception e) {
 			throw propagate(e);

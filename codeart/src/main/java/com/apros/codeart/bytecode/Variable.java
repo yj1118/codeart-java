@@ -4,6 +4,8 @@ import static com.apros.codeart.i18n.Language.strings;
 
 import org.objectweb.asm.Opcodes;
 
+import com.apros.codeart.runtime.DynamicUtil;
+
 public class Variable implements IVariable {
 
 	private final MethodGenerator _owner;
@@ -40,6 +42,10 @@ public class Variable implements IVariable {
 
 	public Class<?> getType() {
 		return _type;
+	}
+
+	public String getInternalTypeName() {
+		return DynamicUtil.getInternalName(_type);
 	}
 
 	public boolean isRef() {

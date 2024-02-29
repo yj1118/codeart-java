@@ -31,11 +31,12 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 			SerializationMethodHelper.writeArray(g, this.getDTOMemberName());
 
 			// 写入每个项
-			loadMemberValue(g);
-			g.ForEach(item -> {
-				SerializationMethodHelper.WriteElement(g, this.DTOMemberName, elementType, () -> {
-					g.Load(item);
-				});
+			g.each(() -> {
+				loadMemberValue(g);
+			}, item -> {
+//				SerializationMethodHelper.writeElement(g, this.getDTOMemberName(), elementType, () -> {
+//					g.Load(item);
+//				});
 			});
 		});
 	}

@@ -3,12 +3,9 @@ package com.apros.codeart.bytecode;
 import static com.apros.codeart.i18n.Language.strings;
 import static com.apros.codeart.runtime.Util.propagate;
 
-import java.awt.List;
 import java.lang.reflect.Method;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import javax.swing.Action;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -16,8 +13,6 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import com.apros.codeart.runtime.DynamicUtil;
-import com.apros.codeart.runtime.MethodUtil;
-import com.apros.codeart.runtime.TypeUtil;
 import com.google.common.collect.Iterables;
 
 public class MethodGenerator implements AutoCloseable {
@@ -147,6 +142,12 @@ public class MethodGenerator implements AutoCloseable {
 		return local;
 	}
 
+	public Variable declare(Class<?> type) {
+
+		var name = String.format("var_%d", _locals.size());
+		return declare(type, name);
+	}
+
 	public MethodGenerator loadField(String express) {
 		String[] temp = express.split("\\.");
 		return loadField(temp[0], temp[1]);
@@ -263,12 +264,17 @@ public class MethodGenerator implements AutoCloseable {
 
 		// 先执行falseAction
 
-		this._scopeStack.using(falseAction);
+		_scopeStack.enter();
+		falseAction.run();
+		_scopeStack.exit();
+
 		var endLabel = new Label();
 
 		_visitor.visitJumpInsn(Opcodes.GOTO, endLabel);
-		_visitor.visitLabel(trueStartLabel);
-		this._scopeStack.using(trueAction);
+
+		_scopeStack.enter(trueStartLabel);
+		trueAction.run();
+		_scopeStack.exit();
 
 		_visitor.visitLabel(endLabel);
 	}
@@ -287,49 +293,89 @@ public class MethodGenerator implements AutoCloseable {
 
 //	 #region foreach
 
-	public void each(String varName, Consumer<Variable> action) {
+	public void each(Runnable loadTarget, Consumer<Variable> action) {
 
-		var target = this.loadVariable(varName); // 加载变量
+		var scopeDepth = _scopeStack.getDepth();
 
-		var elementType = TypeUtil.resolveElementType(target.getType());
-		// 执行遍历方法iterator()
-		var method = MethodUtil.resolveMemoized(List.class, "iterator");
-		var methodDescriptor = DynamicUtil.getMethodDescriptor(method);
-		_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, DynamicUtil.getInternalName(target.getType()), "iterator",
-				methodDescriptor, true);
+		// 1.加载需要遍历的目标
+		loadTarget.run();
 
-		_evalStack.pop(); // 遍历的对象变量被弹出
+		// 2.执行遍历方法iterator()
+		_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/Iterator", "iterator", "()Ljava/util/Iterator;",
+				true);
+
+		_evalStack.pop(); // 弹出目标
 
 		_scopeStack.enter(); // 进入循环代码段
 
+		var elementType = Object.class;
 		_evalStack.push(elementType);// 存入iterator() 方法返回的 Iterator 对象
 
 		// 将栈顶的值存变量
-		var local = this.declare(elementType, null); // 不起名字
+		var local = this.declare(elementType); // 不用起名字
 		local.save();
+
+//		var loopStartLabel = new Label();
+		var endLabel = new Label();
+
+//		_visitor.visitLabel(loopStartLabel);
 
 		action.accept(local);
 
-		// todo
+		loadTarget.run(); // 继续加载需要遍历的变量，执行hasNext判断
+		_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/Iterator", "hasNext", "()Z", true);
+		_evalStack.pop(); // 遍历的对象变量被弹出
+		_evalStack.push(boolean.class); // 栈顶有个布尔值，表示是否有下一条数据
+		_visitor.visitJumpInsn(Opcodes.IFEQ, endLabel); // 如果为0，那么直接跳到结束
+		_evalStack.pop(); // 弹出布尔值
 
-		// var element = BeginForEach(elementType);
-//		action(element);
-//		EndForEach();
+		loadTarget.run(); // 为执行next加载目标
+		_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/Iterator", "next", "()Ljava/lang/Object;", true);
+
+		_evalStack.pop(); // 目标被弹出
+		_scopeStack.exit(); // 本次循环体结束
+
+		_scopeStack.enter(); // 建立新的循环体
+
+		_evalStack.push(elementType); // 存入next() 方法返回的 Iterator 对象
+		local.save();
+
+		_visitor.visitJumpInsn(Opcodes.GOTO, loopStartLabel);
+
+		_scopeStack.exit();
+
+		_visitor.visitLabel(endLabel);
+
+		StackAssert.assertClean(_evalStack);
+
+		ScopeAssert.assertDepth(_scopeStack, scopeDepth);
 	}
 
-	public void ForEach(Action<IVariable> action) {
-		var item = _evalStack.Peek();
-		ForEach(item.Type.ResolveElementType(), action);
+	public void each(String varName, Consumer<Variable> action) {
+		each(() -> {
+			this.loadVariable(varName);
+		}, action);
 	}
 
-	private IVariable BeginForEach(Type elementType) {
-		var scope = new ForEachScope(this, elementType);
-		PushScope(scope);
-		return scope.Current;
+	public void print(String message) {
+		print(() -> {
+			this.load(message);
+		});
 	}
 
-	private void EndForEach() {
-		PopScope(typeof(ForEachScope), "BeginForEach/EndForEach mismatch");
+	public void print(Runnable loadMessage) {
+		// 获取 System.out 对象
+		_visitor.visitFieldInsn(Opcodes.GETSTATIC, "java/lang/System", "out", "Ljava/io/PrintStream;");
+
+		_evalStack.push(System.out.getClass());
+
+		loadMessage.run();
+
+		// 调用 PrintStream.println() 方法
+		_visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V",
+				false);
+
+		_evalStack.pop(2);
 	}
 
 //	 #endregion

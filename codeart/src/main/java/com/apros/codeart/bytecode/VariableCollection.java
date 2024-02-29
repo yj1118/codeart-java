@@ -52,4 +52,8 @@ class VariableCollection {
 		return result;
 	}
 
+	public int size() {
+		return _items.size();
+	}
+
 }
