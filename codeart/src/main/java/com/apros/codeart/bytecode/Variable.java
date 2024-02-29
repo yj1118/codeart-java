@@ -13,6 +13,19 @@ public class Variable implements IVariable {
 	private final int _index;
 	private final Class<?> _type;
 
+	private boolean _inTable;
+
+	void joinTable(ScopeStack.CodeScope scope) {
+		if (!_inTable) {
+			var descriptor = DynamicUtil.getDescriptor(_type);
+			_owner.visitor().visitLocalVariable(_name, descriptor, null, scope.getStartLabel(), scope.getEndLabel(),
+					_index);
+
+			_inTable = true;
+
+		}
+	}
+
 	public Variable(MethodGenerator owner, Class<?> type, String name, int index) {
 		_owner = owner;
 		_type = type;

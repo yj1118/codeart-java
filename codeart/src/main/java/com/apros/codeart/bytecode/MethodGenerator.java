@@ -134,12 +134,7 @@ public class MethodGenerator implements AutoCloseable {
 	 */
 	public Variable declare(Class<?> type, String name) {
 
-		var local = _scopeStack.declare(type, name);
-
-		var descriptor = DynamicUtil.getDescriptor(local.getType());
-		_visitor.visitLocalVariable(name, descriptor, null, null, null, local.getIndex());
-
-		return local;
+		return _scopeStack.declare(type, name);
 	}
 
 	public Variable declare(Class<?> type) {
@@ -306,7 +301,8 @@ public class MethodGenerator implements AutoCloseable {
 
 		_evalStack.pop(); // 弹出目标
 
-		_scopeStack.enter(); // 进入循环代码段
+		var loopStartLabel = new Label();
+		_scopeStack.enter(loopStartLabel); // 进入循环代码段
 
 		var elementType = Object.class;
 		_evalStack.push(elementType);// 存入iterator() 方法返回的 Iterator 对象
@@ -315,10 +311,7 @@ public class MethodGenerator implements AutoCloseable {
 		var local = this.declare(elementType); // 不用起名字
 		local.save();
 
-//		var loopStartLabel = new Label();
 		var endLabel = new Label();
-
-//		_visitor.visitLabel(loopStartLabel);
 
 		action.accept(local);
 
@@ -336,9 +329,6 @@ public class MethodGenerator implements AutoCloseable {
 		_scopeStack.exit(); // 本次循环体结束
 
 		_scopeStack.enter(); // 建立新的循环体
-
-		_evalStack.push(elementType); // 存入next() 方法返回的 Iterator 对象
-		local.save();
 
 		_visitor.visitJumpInsn(Opcodes.GOTO, loopStartLabel);
 

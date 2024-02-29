@@ -72,8 +72,10 @@ final class ScopeStack {
 		StackAssert.assertClean(_owner.evalStack(), () -> {
 			return strings("ExitScopeStackNotEmpty");
 		});
+
+		_owner.visitor().visitLabel(_current.getEndLabel());
+
 		var scope = _scopes.pop();
-		_owner.visitor().visitLabel(scope.getEndLabel());
 		scope.close();
 		_current = _scopes.peek();
 	}
@@ -142,7 +144,7 @@ final class ScopeStack {
 		throw new IllegalArgumentException(strings("VariableNotFound", name));
 	}
 
-	private static class CodeScope implements AutoCloseable {
+	static class CodeScope implements AutoCloseable {
 
 		private final MethodGenerator _owner;
 
@@ -199,6 +201,7 @@ final class ScopeStack {
 		@Override
 		public void close() {
 			for (var local : _locals) {
+				local.joinTable(this);
 				local.close();
 			}
 		}
