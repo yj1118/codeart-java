@@ -4,6 +4,7 @@ import static com.apros.codeart.i18n.Language.strings;
 import static com.apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Method;
+import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -13,6 +14,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
 import com.apros.codeart.runtime.DynamicUtil;
+import com.apros.codeart.runtime.FieldUtil;
 import com.google.common.collect.Iterables;
 
 public class MethodGenerator implements AutoCloseable {
@@ -149,6 +151,17 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	/**
+	 * 为变量赋值
+	 * 
+	 * @param name
+	 */
+	public void assign(String varName, Runnable loadValue) {
+		var declare = _scopeStack.getVar(varName);
+		loadValue.run();
+		declare.save();
+	}
+
+	/**
 	 * 加载变量上的字段的值
 	 * 
 	 * @param varName
@@ -171,6 +184,60 @@ public class MethodGenerator implements AutoCloseable {
 
 			_evalStack.pop(); // 执行完毕后，变量就被弹出了
 			_evalStack.push(fieldType);// 值进来了
+
+		} catch (Exception ex) {
+			throw propagate(ex);
+		}
+		return this;
+	}
+
+	public MethodGenerator assignField(String express, Runnable loadValue) {
+		String[] temp = express.split("\\.");
+		return assignField(temp[0], temp[1], loadValue);
+	}
+
+	public MethodGenerator assignField(String varName, String fieldName, Runnable loadValue) {
+		try {
+			return assignField(() -> {
+				this.loadVariable(varName);
+			}, fieldName, loadValue);
+
+		} catch (
+
+		Exception ex) {
+			throw propagate(ex);
+		}
+	}
+
+	public MethodGenerator assignField(Runnable loadOwner, String fieldName, Runnable loadValue) {
+
+		try {
+			// 先加载变量
+			loadOwner.run();
+
+			var objectType = _evalStack.peek().getValueType();
+
+			loadValue.run();
+
+			var accessor = FieldUtil.getFieldWriterMemoized(objectType, fieldName);
+			if (accessor.isField()) {
+				var field = accessor.getField();
+				Class<?> fieldType = field.getType();
+
+				String typeDescriptor = Type.getDescriptor(fieldType); // 类似："Ljava/lang/String;"
+				String owner = Type.getInternalName(objectType);
+				_visitor.visitFieldInsn(Opcodes.PUTFIELD, owner, field.getName(), typeDescriptor);
+			} else {
+				Method method = accessor.getMethod();
+				var opcode = Opcodes.INVOKEVIRTUAL;
+
+				var descriptor = DynamicUtil.getMethodDescriptor(method);
+				var owner = DynamicUtil.getInternalName(objectType); // info.getType().getName()
+
+				_visitor.visitMethodInsn(opcode, owner, method.getName(), descriptor, false);
+			}
+
+			_evalStack.pop(2); // 执行完毕后，目标和变量就被弹出了
 
 		} catch (Exception ex) {
 			throw propagate(ex);
@@ -288,7 +355,7 @@ public class MethodGenerator implements AutoCloseable {
 
 //	 #region foreach
 
-	public void each(Runnable loadTarget, Consumer<Variable> action) {
+	public void each(Runnable loadTarget, Class<?> elementType, Consumer<Variable> action) {
 
 		var scopeDepth = _scopeStack.getDepth();
 
@@ -296,36 +363,47 @@ public class MethodGenerator implements AutoCloseable {
 		loadTarget.run();
 
 		// 2.执行遍历方法iterator()
-		_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/Iterator", "iterator", "()Ljava/util/Iterator;",
-				true);
+		_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/List", "iterator", "()Ljava/util/Iterator;", true);
 
 		_evalStack.pop(); // 弹出目标
+		_evalStack.push(Iterator.class);
+
+		var iterator = this.declare(Iterator.class);
+		iterator.save(); // 存储迭代器
 
 		var loopStartLabel = new Label();
 		_scopeStack.enter(loopStartLabel); // 进入循环代码段
 
-		var elementType = Object.class;
-		_evalStack.push(elementType);// 存入iterator() 方法返回的 Iterator 对象
-
-		// 将栈顶的值存变量
-		var local = this.declare(elementType); // 不用起名字
-		local.save();
+		iterator.load(); // 加载迭代器
 
 		var endLabel = new Label();
 
-		action.accept(local);
-
-		loadTarget.run(); // 继续加载需要遍历的变量，执行hasNext判断
 		_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/Iterator", "hasNext", "()Z", true);
-		_evalStack.pop(); // 遍历的对象变量被弹出
-		_evalStack.push(boolean.class); // 栈顶有个布尔值，表示是否有下一条数据
-		_visitor.visitJumpInsn(Opcodes.IFEQ, endLabel); // 如果为0，那么直接跳到结束
-		_evalStack.pop(); // 弹出布尔值
+		_evalStack.pop(); // 迭代器弹出
 
-		loadTarget.run(); // 为执行next加载目标
+		_evalStack.push(boolean.class); // 存入iterator.hasNext()的结果
+		_visitor.visitJumpInsn(Opcodes.IFEQ, endLabel); // 如果为0，那么直接跳到结束
+		_evalStack.pop(); // 弹出iterator.hasNext()的结果
+
+		iterator.load(); // 加载迭代器
 		_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/Iterator", "next", "()Ljava/lang/Object;", true);
 
-		_evalStack.pop(); // 目标被弹出
+		_evalStack.pop(); // 迭代器被弹出
+
+		_evalStack.push(Object.class); // 压入当前遍历到的对象
+		// 存入变量
+		Variable local = null;
+		if (elementType == Object.class) {
+			local = this.declare(Object.class); // 不用起名字
+			local.save();
+		} else {
+			_visitor.visitTypeInsn(Opcodes.CHECKCAST, DynamicUtil.getInternalName(elementType));
+			local = this.declare(elementType); // 不用起名字
+			local.save();
+		}
+
+		action.accept(local); // 执行用户方法
+
 		_scopeStack.exit(); // 本次循环体结束
 
 		_scopeStack.enter(); // 建立新的循环体
@@ -341,10 +419,17 @@ public class MethodGenerator implements AutoCloseable {
 		ScopeAssert.assertDepth(_scopeStack, scopeDepth);
 	}
 
-	public void each(String varName, Consumer<Variable> action) {
+	public void each(String varName, Class<?> elementType, Consumer<Variable> action) {
 		each(() -> {
 			this.loadVariable(varName);
-		}, action);
+		}, elementType, action);
+	}
+
+	/**
+	 * 以后再补充for(var i=0;i..) 的循环，这个循环的好处是可以避免装箱（for..in..）在基础类型使用时，是会装箱的
+	 */
+	public void loop() {
+
 	}
 
 	public void print(String message) {

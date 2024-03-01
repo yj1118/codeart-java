@@ -195,23 +195,21 @@ final class SerializationMethodHelper {
 //          loadValue();
 //      });
 //  }
-//
-//	public static void WriteElement(MethodGenerator g, string dtoMemberName, Type elementType, Action loadValue)
-//  {
-//      var method = typeof(IDTOWriter).ResolveMethod("WriteElement",
+
+	public static void writeElement(MethodGenerator g, String dtoMemberName, Class<?> elementType, Runnable loadValue) {
+
+//      var method =  typeof(IDTOWriter).ResolveMethod("writeElement",
 //                                                      new Type[] { elementType },
 //                                                      MethodParameter.Create<string>(), 
 //                                                      MethodParameter.Create<bool>(),
 //                                                      MethodParameter.CreateGeneric(elementType));
-//      var prmIndex = SerializationArgs.WriterIndex;
-//      g.Call(method, () =>
-//      {
-//          g.LoadParameter(prmIndex);
-//          g.Load(dtoMemberName);
-//          g.Load(IsPrimitive(elementType));
-//          loadValue();
-//      });
-//  }
+		var prmIndex = SerializationArgs.WriterIndex;
+
+		g.invoke(prmIndex, dtoMemberName, () -> {
+			g.load(dtoMemberName);
+			loadValue.run();
+		});
+	}
 
 	public static void writeArray(MethodGenerator g, String dtoMemberName) {
 		var method = MethodUtil.resolveMemoized(IDTOWriter.class, "writeArray", String.class);
@@ -226,29 +224,23 @@ final class SerializationMethodHelper {
 //			g.Load(dtoMemberName);
 //		});
 	}
+
 //
-//	/// <summary>
-//	/// <para>得到读取某个类型的IL代码</para>
-//	/// <para>reader.ReadXXX(); 或 deserialzer.Deserialze();</para>
-//	/// </summary>
-//	/// <param name="g"></param>
-//	/// <param name="valueType"></param>
-//	/// <param name="loadValue"></param>
-//	public static void Read(MethodGenerator g,string dtoMemberName, Type valueType)
-//  {
-//      var method = SerializationMethodHelper.GetTypeMethod(valueType, SerializationMethodType.Deserialize);
-//      var prmIndex = SerializationMethodHelper.GetParameterIndex(method, SerializationMethodType.Deserialize);
-//      g.Call(method, () =>
-//      {
-//          g.LoadParameter(prmIndex);
-//          g.Load(dtoMemberName);
-//          //if (prmIndex == SerializationArgs.DeserializerIndex)
-//          //{
-//          //    //是deserializer.Deserializ();
-//          //    g.LoadVariable(SerializationArgs.TypeNameTable);
-//          //}
-//      });
-//  }
+	/// <summary>
+	/// <para>得到读取某个类型的IL代码</para>
+	/// <para>reader.ReadXXX(); 或 deserialzer.Deserialze();</para>
+	/// </summary>
+	/// <param name="g"></param>
+	/// <param name="valueType"></param>
+	/// <param name="loadValue"></param>
+	public static void read(MethodGenerator g, String dtoMemberName, Class<?> valueType) {
+		var method = SerializationMethodHelper.getTypeMethod(valueType, SerializationMethodType.Deserialize);
+		var prmIndex = SerializationMethodHelper.getParameterIndex(method, SerializationMethodType.Deserialize);
+		g.invoke(method.getName(), () -> {
+			g.loadParameter(prmIndex);
+			g.load(dtoMemberName);
+		});
+	}
 //
 //	public static void ReadBlob(MethodGenerator g, string dtoMemberName)
 //  {

@@ -3,10 +3,16 @@ package com.apros.codeart.runtime;
 import static com.apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.LazyIndexer;
+import com.apros.codeart.util.ListUtil;
+import com.apros.codeart.util.StringUtil;
 import com.apros.codeart.util.ThreadSafe;
 
 public final class FieldUtil {
@@ -65,4 +71,112 @@ public final class FieldUtil {
 			throw propagate(e);
 		}
 	}
+
+	public static class Accesser {
+		private Field _field;
+
+		public Field getField() {
+			return _field;
+		}
+
+		private Method _method;
+
+		public Method getMethod() {
+			return _method;
+		}
+
+		public Accesser(Field field) {
+			_field = field;
+		}
+
+		public Accesser(Method method) {
+			_method = method;
+		}
+
+		public boolean isField() {
+			return _field != null;
+		}
+
+		public boolean isMethod() {
+			return _method != null;
+		}
+
+	}
+
+	/**
+	 * 得到约定读取字段的信息的方法
+	 */
+	public static Accesser getFieldGetterMemoized(Class<?> objClass, String fieldName) {
+
+		var name = getAgreeName(fieldName);
+		var field = getAgreeField(objClass, name);
+
+		if (canRead(field))
+			return new Accesser(field);
+		else {
+			// 如果没有访问权限，那么尝试用访问方法
+			String methodName = String.format("get%s", StringUtil.firstToUpper(name));
+			var method = MethodUtil.resolveMemoized(objClass, methodName);
+
+			if (method == null || !canRead(method))
+				throw new IllegalStateException(Language.strings("FieldNotFound", fieldName));
+
+			return new Accesser(method);
+		}
+	}
+
+	private static Field getAgreeField(Class<?> objClass, String fieldAgreeName) {
+		// 把类似 _name得名称，改为name
+
+		var fields = _getFields.apply(objClass);
+		var target = ListUtil.find(fields, (f) -> {
+			return f.getName().equalsIgnoreCase(fieldAgreeName);
+		});
+
+		if (target == null) {
+			// 再找一次 _name
+			var aName = String.format("_%s", fieldAgreeName);
+			target = ListUtil.find(fields, (f) -> {
+				return f.getName().equalsIgnoreCase(aName);
+			});
+		}
+
+		if (target == null)
+			throw new IllegalStateException(Language.strings("FieldNotFound", fieldAgreeName));
+
+		return target;
+	}
+
+	private static String getAgreeName(String fieldName) {
+		return fieldName.startsWith("_") ? fieldName.substring(1) : fieldName;
+	}
+
+	public static Accesser getFieldWriterMemoized(Class<?> objClass, String fieldName) {
+		var name = getAgreeName(fieldName);
+		var field = getAgreeField(objClass, name);
+
+		if (canWrite(field))
+			return new Accesser(field);
+		else {
+			// 如果没有访问权限，那么尝试用访问方法
+			String methodName = String.format("set%s", StringUtil.firstToUpper(name));
+			var method = MethodUtil.resolveMemoized(objClass, methodName, field.getType());
+
+			if (method == null || !canRead(method))
+				throw new IllegalStateException(Language.strings("FieldNotFound", fieldName));
+
+			return new Accesser(method);
+		}
+	}
+
+	public static boolean canRead(Member member) {
+		int modifiers = member.getModifiers();
+		return !Modifier.isPrivate(modifiers);
+	}
+
+	public static boolean canWrite(Member member) {
+		int modifiers = member.getModifiers();
+		return !Modifier.isPrivate(modifiers) && !Modifier.isFinal(modifiers);
+	}
+
 }

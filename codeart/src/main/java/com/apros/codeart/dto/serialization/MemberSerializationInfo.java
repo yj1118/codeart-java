@@ -142,31 +142,27 @@ class MemberSerializationInfo {
 		g.loadField(SerializationArgs.InstanceName, _field.getName());
 	}
 
-//	/// <summary>
-//	/// 生成反序列化代码
-//	/// </summary>
-//	/// <param name="g"></param>
-//	public virtual void GenerateDeserializeIL(MethodGenerator g)
-//	{
-//	    SetMember(g, () =>
-//	    {
-//	        SerializationMethodHelper.Read(g, this.DTOMemberName, this.TargetType);
-//	    });
-//	}
-//
-//	public void SetMember(MethodGenerator g, Action loadValue) {
-//		if (this.IsClassInfo) {
-//			g.AssignVariable(SerializationArgs.InstanceName, loadValue);
-//		} else {
-//			LoadOwner(g);
-//
-//			if (this.IsFieldInfo) {
-//				g.Assign(this.FieldInfo, loadValue);
-//			} else {
-//				g.Assign(this.PropertyInfo, loadValue);
-//			}
-//		}
-//	}
+	/// <summary>
+	/// 生成反序列化代码
+	/// </summary>
+	/// <param name="g"></param>
+	public void generateDeserializeIL(MethodGenerator g) {
+		setMember(g, () -> {
+			SerializationMethodHelper.read(g, this.getDTOMemberName(), this.getTargetClass());
+		});
+	}
+
+	public void setMember(MethodGenerator g, Runnable loadValue) {
+		if (this.isClassInfo()) {
+			g.assign(SerializationArgs.InstanceName, loadValue);
+		} else {
+
+			g.assignField(() -> {
+				loadOwner(g);
+			}, this.getField().getName(), loadValue);
+		}
+	}
+
 //
 	private void loadOwner(MethodGenerator g) {
 		g.loadVariable(SerializationArgs.InstanceName);

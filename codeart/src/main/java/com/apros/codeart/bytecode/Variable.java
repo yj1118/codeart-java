@@ -85,7 +85,15 @@ public class Variable implements IVariable {
 		if (this.isRef())
 			_owner.visitor().visitVarInsn(Opcodes.ALOAD, _index);
 		else {
-			_owner.visitor().visitVarInsn(Opcodes.ILOAD, _index);
+			int codes = Opcodes.ILOAD;
+			if (_type == long.class)
+				codes = Opcodes.LLOAD;
+			else if (_type == float.class)
+				codes = Opcodes.FLOAD;
+			else if (_type == double.class)
+				codes = Opcodes.DLOAD;
+
+			_owner.visitor().visitVarInsn(codes, _index);
 		}
 
 		_owner.evalStack().push(_type);
@@ -99,7 +107,21 @@ public class Variable implements IVariable {
 		if (this.isRef())
 			_owner.visitor().visitVarInsn(Opcodes.ASTORE, _index);
 		else {
-			_owner.visitor().visitVarInsn(Opcodes.ISTORE, _index);
+//			ISTORE: 将整数值存储到局部变量表中。
+//			LSTORE: 将长整数值存储到局部变量表中。
+//			FSTORE: 将单精度浮点数值存储到局部变量表中。
+//			DSTORE: 将双精度浮点数值存储到局部变量表中。
+//			ASTORE: 将引用类型值存储到局部变量表中。
+
+			int codes = Opcodes.ISTORE;
+			if (_type == long.class)
+				codes = Opcodes.LSTORE;
+			else if (_type == float.class)
+				codes = Opcodes.FSTORE;
+			else if (_type == double.class)
+				codes = Opcodes.DSTORE;
+
+			_owner.visitor().visitVarInsn(codes, _index);
 		}
 
 		_owner.evalStack().pop(); // 存入变量后，栈顶的值就没了
@@ -123,5 +145,19 @@ public class Variable implements IVariable {
 		// 局部变量并没有真正释放，指示把相关标记改变了
 		_inScope = false;// 指示变量脱离了代码范围
 
+	}
+
+	/**
+	 * 变量转换，该方法会把变量在栈顶转换成目标类型，但是不会更改变量在变量表中记录的变量类型
+	 */
+	@Override
+	public IVariable cast(Class<?> targetType) {
+		this.load();
+		_owner.visitor().visitTypeInsn(Opcodes.CHECKCAST, DynamicUtil.getInternalName(targetType));
+
+		var target = _owner.declare(targetType);
+		target.save();
+
+		return target;
 	}
 }

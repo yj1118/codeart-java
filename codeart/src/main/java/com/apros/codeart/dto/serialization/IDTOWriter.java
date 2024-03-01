@@ -43,9 +43,7 @@ public interface IDTOWriter {
 //
 //	void Write(String name, decimal? value);
 //
-//	void WriteElement<T>(
-//	String name, bool elementIsPrimitive,
-//	T telement);
+	void writeElement(String name, Object telement);
 //
 //	void Write(String name, object value);
 //

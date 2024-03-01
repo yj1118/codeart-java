@@ -127,25 +127,73 @@ class MethodGeneratorTest {
 			try (var mg = cg.defineMethodPublicStatic("print", void.class, (args) -> {
 				args.add("list", List.class);
 			})) {
-				mg.each("list", (item) -> {
-//					mg.print(() -> {
-//						item.load();
-//					});
+
+				mg.each("list", String.class, (item) -> {
+					mg.print(() -> {
+						item.load();
+					});
 				});
 			}
 
-			cg.save();
+//			cg.save();
 
 			// 返回生成的字节码
 			var cls = cg.toClass();
 
-			var method = cls.getDeclaredMethod("print", void.class);
+			var method = cls.getDeclaredMethod("print", List.class);
 
 			var temp = List.of("1", "2", "3");
 
 			method.invoke(null, temp);
 
 //			assertEquals(1, value);
+
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
+	public class setFieldTestObject { // 方法内部的局部类
+
+		private int _index;
+
+		public int getIndex() {
+			return _index;
+		}
+
+		public void setIndex(int value) {
+			_index = value;
+		}
+
+		public setFieldTestObject(int index) {
+			_index = index;
+		}
+	}
+
+	@Test
+	void setField() {
+
+		try (var cg = ClassGenerator.define()) {
+
+			final int index = 5;
+			try (var mg = cg.defineMethodPublicStatic("setField", void.class, (args) -> {
+				args.add("test", setFieldTestObject.class);
+			})) {
+				mg.assignField("test.index", () -> {
+					mg.load(index);
+				});
+			}
+
+//			cg.save();
+
+			// 返回生成的字节码
+			var cls = cg.toClass();
+
+			var test = new setFieldTestObject(1);
+			var method = cls.getDeclaredMethod("setField", setFieldTestObject.class);
+			method.invoke(null, test);
+
+			assertEquals(index, test.getIndex());
 
 		} catch (Exception e) {
 			throw propagate(e);

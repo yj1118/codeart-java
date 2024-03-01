@@ -33,21 +33,21 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 			// 写入每个项
 			g.each(() -> {
 				loadMemberValue(g);
-			}, item -> {
-//				SerializationMethodHelper.writeElement(g, this.getDTOMemberName(), elementType, () -> {
-//					g.Load(item);
-//				});
+			}, elementType, item -> {
+				SerializationMethodHelper.writeElement(g, this.getDTOMemberName(), elementType, () -> {
+					item.load();
+				});
 			});
 		});
 	}
 
-//
-//public override void GenerateDeserializeIL(MethodGenerator g)
+//	@Override
+//public void generateDeserializeIL(MethodGenerator g)
 //{
-//SetMember(g, () =>
+//SetMember(g, () ->
 //{
 //var count = g.Declare<int>();
-//g.Assign(count, () =>
+//g.Assign(count, () ->
 //{
 //SerializationMethodHelper.ReadLength(g, this.DTOMemberName);//读取数量
 //});

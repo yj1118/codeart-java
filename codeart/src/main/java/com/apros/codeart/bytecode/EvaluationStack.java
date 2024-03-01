@@ -67,6 +67,10 @@ class EvaluationStack {
 		return _current.pop();
 	}
 
+	public StackItem peek() {
+		return _current.peek();
+	}
+
 	public void pop(int count) {
 		_current.pop(count);
 	}
@@ -113,6 +117,10 @@ class EvaluationStack {
 
 		public StackItem pop() {
 			return _items.pop();
+		}
+
+		public StackItem peek() {
+			return _items.peek();
 		}
 
 		public void pop(int count) {
