@@ -64,9 +64,11 @@ public final class ClassGenerator implements AutoCloseable {
 
 		ArrayList<MethodParameter> args = new ArrayList<MethodParameter>(5);
 
-		getArgs.accept((n, t) -> {
-			args.add(new MethodParameter(n, t));
-		});
+		if (getArgs != null) {
+			getArgs.accept((n, t) -> {
+				args.add(new MethodParameter(n, t));
+			});
+		}
 
 		Type[] types = new Type[args.size()];
 
@@ -88,6 +90,11 @@ public final class ClassGenerator implements AutoCloseable {
 			access += Opcodes.ACC_STATIC;
 
 		return defineMethod(access, name, returnClass, getArgs);
+	}
+
+	public MethodGenerator defineMethodPublicStatic(final String name, final Class<?> returnClass) {
+
+		return defineMethodPublic(true, name, returnClass, null);
 	}
 
 	public MethodGenerator defineMethodPublicStatic(final String name, final Class<?> returnClass,

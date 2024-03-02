@@ -3,6 +3,7 @@ package com.apros.codeart.bytecode;
 import static com.apros.codeart.i18n.Language.strings;
 import static com.apros.codeart.runtime.Util.propagate;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.function.Consumer;
@@ -13,6 +14,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
+import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.DynamicUtil;
 import com.apros.codeart.runtime.FieldUtil;
 import com.google.common.collect.Iterables;
@@ -105,9 +107,39 @@ public class MethodGenerator implements AutoCloseable {
 		return local;
 	}
 
+	public void load(byte value) {
+		_visitor.visitLdcInsn(value);
+		_evalStack.push(byte.class);
+	}
+
 	public void load(int value) {
 		_visitor.visitLdcInsn(value);
 		_evalStack.push(int.class);
+	}
+
+	public void load(float value) {
+		_visitor.visitLdcInsn(value);
+		_evalStack.push(float.class);
+	}
+
+	public void load(double value) {
+		_visitor.visitLdcInsn(value);
+		_evalStack.push(double.class);
+	}
+
+	public void load(long value) {
+		// 加载 long 类型的常量，先加载低位部分
+		_visitor.visitLdcInsn(value & 0xFFFFFFFFL);
+		// 将 long 类型的常量转换为 long 类型并加载
+		_visitor.visitLdcInsn(value >>> 32);
+
+		// 将操作数栈中的两个 long 类型的常量拼接成一个 long 类型的值
+		_visitor.visitInsn(Opcodes.LOR);
+		_evalStack.push(long.class);
+	}
+
+	public void load(IVariable value) {
+		value.load();
 	}
 
 	/**
@@ -156,9 +188,14 @@ public class MethodGenerator implements AutoCloseable {
 	 * @param name
 	 */
 	public void assign(String varName, Runnable loadValue) {
-		var declare = _scopeStack.getVar(varName);
+		var local = _scopeStack.getVar(varName);
 		loadValue.run();
-		declare.save();
+		local.save();
+	}
+
+	public void assign(IVariable local, Runnable loadValue) {
+		loadValue.run();
+		local.save();
 	}
 
 	/**
@@ -414,7 +451,7 @@ public class MethodGenerator implements AutoCloseable {
 
 		_visitor.visitLabel(endLabel);
 
-		StackAssert.assertClean(_evalStack);
+		StackAssert.assertClean(this);
 
 		ScopeAssert.assertDepth(_scopeStack, scopeDepth);
 	}
@@ -454,6 +491,108 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 //	 #endregion
+
+	public void newObject(Class<?> objectType) {
+		newObject(objectType, null);
+	}
+
+	public void newObject(Class<?> objectType, Runnable loadCtorPrms) {
+		if (objectType.isArray())
+			throw new IllegalArgumentException(Language.strings("UseNewArrayMethod"));
+
+		StackAssert.assertCount(_evalStack, 0);
+
+		var objectTypeName = DynamicUtil.getInternalName(objectType);
+		// 加载要创建对象的类的类型到操作数栈上
+		_visitor.visitTypeInsn(Opcodes.NEW, objectTypeName);
+		_evalStack.push(objectType);
+
+		// 复制操作数栈顶的对象引用，因为构造函数调用需要消耗对象引用
+		_visitor.visitInsn(Opcodes.DUP);
+		_evalStack.push(objectType);
+
+		// 加载构造函数参数到操作数栈上（如果有的话）
+		if (loadCtorPrms != null)
+			loadCtorPrms.run();
+
+		var argCount = _evalStack.size() - 2;
+		var argClasses = new Class<?>[argCount];
+
+		var pointer = argCount;
+		// 弹出栈，并且收集参数
+		while (pointer > 0) {
+			var item = _evalStack.pop();
+			pointer--;
+			argClasses[pointer] = item.getValueType();
+		}
+
+		var descriptor = DynamicUtil.getConstructorDescriptor(argClasses);
+		// 调用构造函数，并传入构造函数所需的参数
+		_visitor.visitMethodInsn(Opcodes.INVOKESPECIAL, objectTypeName, "<init>", descriptor, false);
+
+		_evalStack.pop(1); // 参数已经弹出，这里弹出对象的引用（引用有两个，这里弹出其中一个）
+
+		StackAssert.assertCount(_evalStack, 1); // 对象的引用在栈顶
+	}
+
+	public void newArray(Class<?> elementType, int arrayLength) {
+		newArray(elementType, () -> {
+			this.load(arrayLength);
+		});
+	}
+
+	public void newArray(Class<?> elementType, Runnable loadLength) {
+		loadLength.run(); // 数组大小
+
+		if (elementType.isPrimitive()) {
+			var code = Opcodes.T_INT;
+			Class<?> arrayClass = int[].class;
+			if (elementType == int.class) {
+				code = Opcodes.T_INT;
+				arrayClass = int[].class;
+			} else if (elementType == long.class) {
+				code = Opcodes.T_LONG;
+				arrayClass = long[].class;
+			} else if (elementType == boolean.class) {
+				code = Opcodes.T_BOOLEAN;
+				arrayClass = boolean[].class;
+			} else if (elementType == byte.class) {
+				code = Opcodes.T_BYTE;
+				arrayClass = byte[].class;
+			} else if (elementType == short.class) {
+				code = Opcodes.T_SHORT;
+				arrayClass = short[].class;
+			} else if (elementType == char.class) {
+				code = Opcodes.T_CHAR;
+				arrayClass = char[].class;
+			} else if (elementType == float.class) {
+				code = Opcodes.T_FLOAT;
+				arrayClass = float[].class;
+			} else if (elementType == double.class) {
+				code = Opcodes.T_DOUBLE;
+				arrayClass = double[].class;
+			} else
+				throw new IllegalStateException(Language.strings("UnknownException"));
+
+			_visitor.visitIntInsn(Opcodes.NEWARRAY, code); // 创建整数数组
+
+			_evalStack.pop(); // 弹出长度参数
+			_evalStack.push(arrayClass);
+		} else {
+			_visitor.visitTypeInsn(Opcodes.ANEWARRAY, DynamicUtil.getInternalName(elementType)); // 创建对象数组
+
+			Class<?> arrayClass = Array.newInstance(elementType, 0).getClass();
+
+			_evalStack.pop(); // 弹出长度参数
+			_evalStack.push(arrayClass);
+		}
+	}
+
+	private boolean _isbroken = false;;
+
+	public void broken() {
+		_isbroken = true;
+	}
 
 	public void exit() {
 		var size = _evalStack.size();
@@ -497,6 +636,8 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	public void close() {
+		if (_isbroken)
+			return; // 代码已毁坏
 		exit();
 		// 由于开启了COMPUTE_FRAMES ，所以只用调用visitMaxs即可，不必设置具体的值
 		_visitor.visitMaxs(0, 0);

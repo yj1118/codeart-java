@@ -241,6 +241,7 @@ final class SerializationMethodHelper {
 			g.load(dtoMemberName);
 		});
 	}
+
 //
 //	public static void ReadBlob(MethodGenerator g, string dtoMemberName)
 //  {
@@ -253,22 +254,20 @@ final class SerializationMethodHelper {
 //      });
 //  }
 //
-//	/// <summary>
-//	/// 读取数组的长度
-//	/// </summary>
-//	/// <param name="g"></param>
-//	/// <param name="dtoMemberName"></param>
-//	/// <param name="valueType"></param>
-//	public static void ReadLength(MethodGenerator g, string dtoMemberName)
-//  {
-//      var method = typeof(IDTOReader).ResolveMethod("ReadLength", _readArgs);
-//      var prmIndex = SerializationArgs.ReaderIndex;
-//      g.Call(method, () =>
-//      {
-//          g.LoadParameter(prmIndex);
-//          g.Load(dtoMemberName);
-//      });
-//  }
+	/// <summary>
+	/// 读取数组的长度
+	/// </summary>
+	/// <param name="g"></param>
+	/// <param name="dtoMemberName"></param>
+	/// <param name="valueType"></param>
+	public static void readLength(MethodGenerator g, String dtoMemberName) {
+//		var method =MethodUtil.resolveMemoized(IDTOReader.class, "readLength", _readArgs)
+
+		var prmIndex = SerializationArgs.ReaderIndex;
+		g.invoke(prmIndex, "readLength", () -> {
+			g.load(dtoMemberName);
+		});
+	}
 //
 //	public static void ReadElement(MethodGenerator g, string dtoMemberName,Type elementType, IVariable index)
 //  {

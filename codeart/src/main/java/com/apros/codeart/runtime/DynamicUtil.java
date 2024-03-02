@@ -32,6 +32,10 @@ public final class DynamicUtil {
 		return getMethodDescriptor(method.getReturnType(), method.getParameterTypes());
 	}
 
+	public static String getConstructorDescriptor(final Class<?>... argumentClasses) {
+		return getMethodDescriptor(void.class, argumentClasses);
+	}
+
 	//
 
 	/**

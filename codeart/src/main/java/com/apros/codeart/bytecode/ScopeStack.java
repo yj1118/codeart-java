@@ -54,7 +54,7 @@ final class ScopeStack {
 	}
 
 	private CodeScope _enter() {
-		StackAssert.assertClean(_owner.evalStack(), () -> {
+		StackAssert.assertClean(_owner, () -> {
 			return strings("EnterScopeStackNotEmpty");
 		});
 
@@ -69,7 +69,7 @@ final class ScopeStack {
 	}
 
 	public void exit() {
-		StackAssert.assertClean(_owner.evalStack(), () -> {
+		StackAssert.assertClean(_owner, () -> {
 			return strings("ExitScopeStackNotEmpty");
 		});
 

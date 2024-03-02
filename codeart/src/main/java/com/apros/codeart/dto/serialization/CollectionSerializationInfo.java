@@ -41,60 +41,49 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 		});
 	}
 
-//	@Override
-//public void generateDeserializeIL(MethodGenerator g)
-//{
-//SetMember(g, () ->
-//{
-//var count = g.Declare<int>();
-//g.Assign(count, () ->
-//{
-//SerializationMethodHelper.ReadLength(g, this.DTOMemberName);//读取数量
-//});
-//
-//var list = g.Declare(this.TargetType);
-//
-//g.If(() =>
-//{
-//g.Load(count);
-//g.Load(0);
-//return LogicOperator.LessThan;
-//}, () =>
-//{
-////数量小于1
-////list = new List<T>();
-//var elementType = this.TargetType.ResolveElementType();
-//g.Assign(list, () =>
-//{
-//g.NewObject(this.TargetType);
-//});
-//}, () =>
-//{
-////list = new List<T>();
-//g.Assign(list, () =>
-//{
-//g.NewObject(this.TargetType);
-//});
-//
-//var elementType = this.TargetType.ResolveElementType();
-//
-//g.For(count, (index) =>
-//{
-//var item = g.Declare(elementType);
-//
-//g.Assign(item, () =>
-//{
-//SerializationMethodHelper.ReadElement(g, this.DTOMemberName, elementType, index);
-//});
-//
-//g.Load(list);
-//g.Load(item);
-//g.Call(this.TargetType.ResolveMethod("Add", elementType));
-//});
-//});
-//
-//g.Load(list);
-//
-//});
-//}
+	@Override
+	public void generateDeserializeIL(MethodGenerator g) {
+		setMember(g, () -> {
+			var count = g.declare(int.class);
+			SerializationMethodHelper.readLength(g, this.getDTOMemberName());// 读取数量
+			count.save();
+
+			var list = g.declare(this.getTargetClass());
+
+			g.when(() -> {
+				g.load(count);
+				g.load(0);
+				return LogicOperator.LessThan;
+			}, () -> {
+//数量小于1
+//list = new List<T>();
+//				var elementType = this.TargetType.ResolveElementType();
+				g.assign(list, () -> {
+					g.newObject(this.getTargetClass());
+				});
+			}, () -> {
+//list = new List<T>();
+				g.assign(list, () -> {
+					g.newObject(this.getTargetClass());
+				});
+
+				var elementType = this.TargetType.ResolveElementType();
+
+				g.For(count, (index) -> {
+					var item = g.declare(elementType);
+
+					g.assign(item, () -> {
+						SerializationMethodHelper.readElement(g, this.DTOMemberName, elementType, index);
+					});
+
+					g.Load(list);
+					g.Load(item);
+					g.Call(this.TargetType.ResolveMethod("add", elementType));
+				});
+			});
+
+			g.Load(list);
+
+		});
+	}
 }
