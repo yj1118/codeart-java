@@ -67,22 +67,22 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 					g.newObject(this.getTargetClass());
 				});
 
-				var elementType = this.TargetType.ResolveElementType();
+//				var elementType = this.TargetType.ResolveElementType();
 
-				g.For(count, (index) -> {
-					var item = g.declare(elementType);
-
-					g.assign(item, () -> {
-						SerializationMethodHelper.readElement(g, this.DTOMemberName, elementType, index);
-					});
-
-					g.Load(list);
-					g.Load(item);
-					g.Call(this.TargetType.ResolveMethod("add", elementType));
-				});
+//				g.For(count, (index) -> {
+//					var item = g.declare(elementType);
+//
+//					g.assign(item, () -> {
+//						SerializationMethodHelper.readElement(g, this.DTOMemberName, elementType, index);
+//					});
+//
+//					g.Load(list);
+//					g.Load(item);
+//					g.Call(this.TargetType.ResolveMethod("add", elementType));
+//				});
 			});
 
-			g.Load(list);
+			g.load(list);
 
 		});
 	}

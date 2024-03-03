@@ -17,6 +17,8 @@ import org.objectweb.asm.Type;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.DynamicUtil;
 import com.apros.codeart.runtime.FieldUtil;
+import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.TriConsumer;
 import com.google.common.collect.Iterables;
 
 public class MethodGenerator implements AutoCloseable {
@@ -173,7 +175,7 @@ public class MethodGenerator implements AutoCloseable {
 
 	public Variable declare(Class<?> type) {
 
-		var name = String.format("var_%d", _locals.size());
+		var name = String.format("var%d", _locals.size());
 		return declare(type, name);
 	}
 
@@ -233,17 +235,16 @@ public class MethodGenerator implements AutoCloseable {
 		return assignField(temp[0], temp[1], loadValue);
 	}
 
+	public MethodGenerator assignField(IVariable local, String fieldName, Runnable loadValue) {
+		return assignField(() -> {
+			local.load();
+		}, fieldName, loadValue);
+	}
+
 	public MethodGenerator assignField(String varName, String fieldName, Runnable loadValue) {
-		try {
-			return assignField(() -> {
-				this.loadVariable(varName);
-			}, fieldName, loadValue);
-
-		} catch (
-
-		Exception ex) {
-			throw propagate(ex);
-		}
+		return assignField(() -> {
+			this.loadVariable(varName);
+		}, fieldName, loadValue);
 	}
 
 	public MethodGenerator assignField(Runnable loadOwner, String fieldName, Runnable loadValue) {
@@ -465,14 +466,137 @@ public class MethodGenerator implements AutoCloseable {
 	/**
 	 * 以后再补充for(var i=0;i..) 的循环，这个循环的好处是可以避免装箱（for..in..）在基础类型使用时，是会装箱的
 	 */
-	public void loop() {
+	public void loop(Runnable loadList, TriConsumer<Variable, Variable, Variable> action) {
+		_scopeStack.enter();
 
+		var endLabel = _scopeStack.getEndLabel();
+
+		var i = this.declare(int.class);
+		this.load(0);
+		i.save();
+
+		// for 循环开始
+		var loopStartLabel = new Label();
+		_scopeStack.enter(loopStartLabel); // 标记循环开始处
+
+		var length = this.declare(int.class);
+		// 以下代码是加载长度 start
+		loadList.run(); // 加载集合
+		var listType = _evalStack.peek().getValueType();
+		if (listType.isArray()) {
+			_visitor.visitInsn(Opcodes.ARRAYLENGTH); // 调用数组长度方法
+			_evalStack.push(int.class);
+		} else {
+			_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/List", "size", "()I", true); // 调用 List.size()
+			_evalStack.push(int.class);
+		}
+		length.save();
+		_evalStack.pop();
+		// 以上代码是加载长度 end
+
+		i.load(); // 加载局部变量
+		length.load();
+		_visitor.visitJumpInsn(Opcodes.IF_ICMPGE, endLabel); // 如果 i>=length，则跳出循环
+
+		_evalStack.pop(2);
+
+		loadList.run(); // 加载集合
+		var elementType = TypeUtil.resolveElementType(listType);
+		i.load();
+		if (listType.isArray()) {
+			_visitor.visitInsn(Opcodes.IALOAD); // 获取数组元素[i]
+		} else {
+			// 调用 List.get(int index) 方法
+			_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;", true);
+		}
+		_evalStack.pop(2);
+		_evalStack.push(elementType);
+
+		var item = this.declare(elementType);
+		item.save();
+
+		action.accept(item, i, length);
+
+		// 对变量 i 进行自增操作
+		i.load();
+		_visitor.visitInsn(Opcodes.ICONST_1); // 将常量 1 推送到栈顶
+		_evalStack.push(int.class);
+		_visitor.visitInsn(Opcodes.IADD); // 将栈顶的两个整数值相加，并将结果压入栈顶
+		i.save();
+		_evalStack.pop();
+
+		_visitor.visitJumpInsn(Opcodes.GOTO, loopStartLabel); // 跳到循环开始处
+
+		_scopeStack.exit();
+
+		_scopeStack.exit();
 	}
 
 	public void print(String message) {
 		print(() -> {
 			this.load(message);
 		});
+	}
+
+	public void print(IVariable v) {
+		print(() -> {
+			v.load();
+		});
+	}
+
+	/**
+	 * 讲栈顶的值转换为toString
+	 */
+	public void castString() {
+		castString(null);
+	}
+
+	public void castString(Runnable load) {
+		if (load != null)
+			load.run();
+		var targetType = _evalStack.peek().getValueType();
+
+		if (targetType == String.class)
+			return;
+
+		if (!targetType.isPrimitive()) {
+			_visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Object", "toString", "()Ljava/lang/String;",
+					false);
+			_evalStack.pop();
+			_evalStack.push(String.class);
+			return;
+		}
+
+		if (targetType == int.class) {
+			_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Integer", "toString", "(I)Ljava/lang/String;",
+					false);
+		} else if (targetType == long.class) {
+			_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Long", "toString", "(J)Ljava/lang/String;",
+					false);
+		} else if (targetType == boolean.class) {
+			_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Boolean", "toString", "(Z)Ljava/lang/String;",
+					false);
+		} else if (targetType == byte.class) {
+			_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Byte", "toString", "(B)Ljava/lang/String;",
+					false);
+		} else if (targetType == float.class) {
+			_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Float", "toString", "(F)Ljava/lang/String;",
+					false);
+		} else if (targetType == double.class) {
+			_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Double", "toString", "(D)Ljava/lang/String;",
+					false);
+		} else if (targetType == short.class) {
+			_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Short", "toString", "(S)Ljava/lang/String;",
+					false);
+		} else if (targetType == char.class) {
+			_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Char", "toString", "(C)Ljava/lang/String;",
+					false);
+		} else
+			throw new IllegalStateException(Language.strings("UnknownException"));
+
+		_evalStack.pop();
+		_evalStack.push(String.class);
+
 	}
 
 	public void print(Runnable loadMessage) {
@@ -482,6 +606,7 @@ public class MethodGenerator implements AutoCloseable {
 		_evalStack.push(System.out.getClass());
 
 		loadMessage.run();
+		castString();
 
 		// 调用 PrintStream.println() 方法
 		_visitor.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/io/PrintStream", "println", "(Ljava/lang/String;)V",
