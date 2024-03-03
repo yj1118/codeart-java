@@ -82,19 +82,9 @@ public class Variable implements IVariable {
 
 		validateScope();
 
-		if (this.isRef())
-			_owner.visitor().visitVarInsn(Opcodes.ALOAD, _index);
-		else {
-			int codes = Opcodes.ILOAD;
-			if (_type == long.class)
-				codes = Opcodes.LLOAD;
-			else if (_type == float.class)
-				codes = Opcodes.FLOAD;
-			else if (_type == double.class)
-				codes = Opcodes.DLOAD;
+		var code = Util.getLoadCode(_type);
 
-			_owner.visitor().visitVarInsn(codes, _index);
-		}
+		_owner.visitor().visitVarInsn(code, _index);
 
 		_owner.evalStack().push(_type);
 	}

@@ -464,7 +464,7 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	/**
-	 * 以后再补充for(var i=0;i..) 的循环，这个循环的好处是可以避免装箱（for..in..）在基础类型使用时，是会装箱的
+	 * 
 	 */
 	public void loop(Runnable loadList, TriConsumer<Variable, Variable, Variable> action) {
 		_scopeStack.enter();
@@ -504,7 +504,26 @@ public class MethodGenerator implements AutoCloseable {
 		var elementType = TypeUtil.resolveElementType(listType);
 		i.load();
 		if (listType.isArray()) {
-			_visitor.visitInsn(Opcodes.IALOAD); // 获取数组元素[i]
+			// 获取数组元素[i]
+			if (!elementType.isPrimitive()) {
+				// 注意，是AALOAD简而言之，
+				// Opcodes.ALOAD 用于加载局部变量中的引用类型数据，
+				// 而 Opcodes.AALOAD
+				// 用于加载数组中的引用类型元素。
+				_visitor.visitInsn(Opcodes.AALOAD);
+			} else {
+				if (elementType == int.class)
+					_visitor.visitInsn(Opcodes.ILOAD);
+				else if (elementType == long.class)
+					_visitor.visitInsn(Opcodes.LLOAD);
+				else if (elementType == float.class)
+					_visitor.visitInsn(Opcodes.FLOAD);
+				else if (elementType == double.class)
+					_visitor.visitInsn(Opcodes.DLOAD);
+
+				throw new IllegalArgumentException(strings("UnknownException"));
+			}
+
 		} else {
 			// 调用 List.get(int index) 方法
 			_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/List", "get", "(I)Ljava/lang/Object;", true);

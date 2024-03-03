@@ -30,7 +30,7 @@ class ForTest {
 	}
 
 	@Test
-	void RefItemLoop() {
+	void refItemLoop() {
 		try (var cg = ClassGenerator.define()) {
 
 			ArrayList<LoopTestItem> obj = new ArrayList<>();
@@ -51,13 +51,47 @@ class ForTest {
 				});
 			}
 
-			cg.save();
-
 			// 返回生成的字节码
 			var cls = cg.toClass();
 
 			var method = cls.getDeclaredMethod("test", obj.getClass());
 			method.invoke(null, obj);
+
+			for (var t : obj) {
+				assertEquals(2, t.getValue());
+			}
+
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
+	@Test
+	void refItemArrayLoop() {
+		try (var cg = ClassGenerator.define()) {
+
+			var obj = new LoopTestItem[5];
+
+			for (var i = 0; i < 5; i++)
+				obj[i] = new LoopTestItem();
+
+			try (var mg = cg.defineMethodPublicStatic("test", void.class, (args) -> {
+				args.add("list", obj.getClass());
+			})) {
+				mg.loop(() -> {
+					mg.loadParameter(0);
+				}, (item, i, length) -> {
+					mg.assignField(item, "value", () -> {
+						mg.load(2);
+					});
+				});
+			}
+
+			// 返回生成的字节码
+			var cls = cg.toClass();
+
+			var method = cls.getDeclaredMethod("test", obj.getClass());
+			method.invoke(null, new Object[] { obj });
 
 			for (var t : obj) {
 				assertEquals(2, t.getValue());
