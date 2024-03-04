@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 
 import com.apros.codeart.bytecode.LogicOperator;
 import com.apros.codeart.bytecode.MethodGenerator;
+import com.apros.codeart.runtime.TypeUtil;
 
 /**
  * java的泛型集合不可能是基元类型，所以只用考虑引用类型即可
@@ -25,8 +26,8 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 		}, () -> {
 			SerializationMethodHelper.writeArray(g, this.getDTOMemberName());
 		}, () -> {
-//			var elementType = this.getTargetClass().ResolveElementType();
-			var elementType = Object.class; // java的泛型集合不可能是基元类型，所以只用考虑引用类型即可
+			var elementType = TypeUtil.resolveElementType(this.getTargetClass());
+//			var elementType = Object.class; // java的泛型集合不可能是基元类型，所以只用考虑引用类型即可
 			//// 写入数组
 			SerializationMethodHelper.writeArray(g, this.getDTOMemberName());
 
@@ -67,19 +68,18 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 					g.newObject(this.getTargetClass());
 				});
 
-//				var elementType = this.TargetType.ResolveElementType();
+				var elementType = TypeUtil.resolveElementType(this.getTargetClass());
 
-//				g.For(count, (index) -> {
-//					var item = g.declare(elementType);
-//
-//					g.assign(item, () -> {
-//						SerializationMethodHelper.readElement(g, this.DTOMemberName, elementType, index);
-//					});
-//
-//					g.Load(list);
-//					g.Load(item);
-//					g.Call(this.TargetType.ResolveMethod("add", elementType));
-//				});
+				g.loop(list, (item, index, length) -> {
+
+					g.assign(item, () -> {
+						SerializationMethodHelper.readElement(g, this.getDTOMemberName(), elementType, index);
+					});
+
+					g.invoke(list, "add", () -> {
+						g.load(item);
+					});
+				});
 			});
 
 			g.load(list);

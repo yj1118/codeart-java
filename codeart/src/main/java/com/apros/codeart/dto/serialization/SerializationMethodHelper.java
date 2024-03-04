@@ -6,6 +6,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
+import com.apros.codeart.bytecode.IVariable;
 import com.apros.codeart.bytecode.MethodGenerator;
 import com.apros.codeart.runtime.MethodUtil;
 import com.apros.codeart.runtime.TypeUtil;
@@ -183,18 +184,13 @@ final class SerializationMethodHelper {
 //          || type == typeof(short);
 //  }
 //
-//	public static void WriteBlob(MethodGenerator g, string dtoMemberName, Action loadValue)
-//  {
-//      var method = typeof(IDTOWriter).ResolveMethod("WriteBlob",
-//                                                      new Type[] { typeof(string), typeof(byte[]) });
-//      var prmIndex = SerializationArgs.WriterIndex;
-//      g.Call(method, () =>
-//      {
-//          g.LoadParameter(prmIndex);
-//          g.Load(dtoMemberName);
-//          loadValue();
-//      });
-//  }
+	public static void writeBlob(MethodGenerator g, String dtoMemberName, Runnable loadValue) {
+		var prmIndex = SerializationArgs.WriterIndex;
+		g.invoke(prmIndex, "writeBlob", () -> {
+			g.load(dtoMemberName);
+			loadValue.run();
+		});
+	}
 
 	public static void writeElement(MethodGenerator g, String dtoMemberName, Class<?> elementType, Runnable loadValue) {
 
@@ -242,18 +238,14 @@ final class SerializationMethodHelper {
 		});
 	}
 
-//
-//	public static void ReadBlob(MethodGenerator g, string dtoMemberName)
-//  {
-//      var method = typeof(IDTOReader).ResolveMethod("ReadBlob", typeof(string));
-//      var prmIndex = SerializationArgs.ReaderIndex;
-//      g.Call(method, () =>
-//      {
-//          g.LoadParameter(prmIndex);
-//          g.Load(dtoMemberName);
-//      });
-//  }
-//
+	public static void readBlob(MethodGenerator g, String dtoMemberName) {
+		var prmIndex = SerializationArgs.ReaderIndex;
+
+		g.invoke(prmIndex, "readBlob", () -> {
+			g.load(dtoMemberName);
+		});
+	}
+
 	/// <summary>
 	/// 读取数组的长度
 	/// </summary>
@@ -268,17 +260,13 @@ final class SerializationMethodHelper {
 			g.load(dtoMemberName);
 		});
 	}
-//
-//	public static void ReadElement(MethodGenerator g, string dtoMemberName,Type elementType, IVariable index)
-//  {
-//      var method = typeof(IDTOReader).ResolveMethod("ReadElement", new Type[] { elementType }, MethodParameter.Create<string>(), MethodParameter.Create<int>());
-//      var prmIndex = SerializationArgs.ReaderIndex;
-//      g.Call(method, () =>
-//      {
-//          g.LoadParameter(prmIndex);
-//          g.Load(dtoMemberName);
-//          g.LoadVariable(index, LoadOptions.Default);
-//      });
-//  }
+
+	public static void readElement(MethodGenerator g, String dtoMemberName, Class<?> elementType, IVariable index) {
+		var prmIndex = SerializationArgs.ReaderIndex;
+		g.invoke(prmIndex, "readElement", () -> {
+			g.load(dtoMemberName);
+			g.load(index);
+		});
+	}
 
 }

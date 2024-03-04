@@ -102,4 +102,33 @@ class ForTest {
 		}
 	}
 
+	@Test
+	void forLength() {
+		try (var cg = ClassGenerator.define()) {
+
+			try (var mg = cg.defineMethodPublicStatic("test", int.class)) {
+				var i = mg.declare(int.class);
+				mg.load(0);
+				i.save();
+				mg.loop(() -> {
+					mg.load(5);
+				}, (c) -> {
+					mg.increment(i);
+				});
+				i.load();
+			}
+
+			// 返回生成的字节码
+			var cls = cg.toClass();
+
+			var method = cls.getDeclaredMethod("test");
+			var count = method.invoke(null);
+
+			assertEquals(5, count);
+
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
 }

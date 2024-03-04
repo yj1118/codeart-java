@@ -308,19 +308,30 @@ public class MethodGenerator implements AutoCloseable {
 		return invoke(prm.getName(), method.getName(), loadParameters);
 	}
 
+	public MethodGenerator invoke(IVariable local, String methodName, Runnable loadParameters) {
+		return invoke(() -> {
+			local.load();
+		}, methodName, loadParameters);
+	}
+
 	public MethodGenerator invoke(String varName, String methodName, Runnable loadParameters) {
+		return invoke(() -> {
+			this.loadVariable(varName);
+		}, methodName, loadParameters);
+	}
+
+	public MethodGenerator invoke(Runnable loadTarget, String methodName, Runnable loadParameters) {
 
 		try {
 
 			_evalStack.enterFrame(); // 新建立栈帧
-			this.loadVariable(varName); // 先加载变量自身，作为实例方法的第一个参数（this）
-			var info = _scopeStack.getVar(varName);
+			loadTarget.run(); // 先加载变量自身，作为实例方法的第一个参数（this）
+			var cls = _evalStack.peek().getValueType();
 
 			// 加载参数
 			if (loadParameters != null)
 				loadParameters.run();
 
-			var cls = info.getType();
 			var argCount = _evalStack.size() - 1;
 			var argClasses = new Class<?>[argCount];
 
@@ -339,7 +350,7 @@ public class MethodGenerator implements AutoCloseable {
 			var opcode = isInterface ? Opcodes.INVOKEINTERFACE : Opcodes.INVOKEVIRTUAL;
 
 			var descriptor = DynamicUtil.getMethodDescriptor(method);
-			var owner = DynamicUtil.getInternalName(info.getType()); // info.getType().getName()
+			var owner = DynamicUtil.getInternalName(cls); // info.getType().getName()
 
 			_visitor.visitMethodInsn(opcode, owner, method.getName(), descriptor, isInterface);
 
@@ -463,6 +474,12 @@ public class MethodGenerator implements AutoCloseable {
 		}, elementType, action);
 	}
 
+	public void loop(IVariable local, TriConsumer<Variable, Variable, Variable> action) {
+		loop(() -> {
+			local.load();
+		}, action);
+	}
+
 	/**
 	 * 
 	 */
@@ -551,6 +568,64 @@ public class MethodGenerator implements AutoCloseable {
 		_scopeStack.exit();
 	}
 
+	public void loop(IVariable length, Consumer<Variable> action) {
+		loop(() -> {
+			length.load();
+		}, action);
+	}
+
+	/**
+	 * for(var i=0;i<length;i++){}
+	 * 
+	 * @param loadLength
+	 * @param action
+	 */
+	public void loop(Runnable loadLength, Consumer<Variable> action) {
+		_scopeStack.enter();
+
+		var endLabel = _scopeStack.getEndLabel();
+
+		var i = this.declare(int.class);
+		this.load(0);
+		i.save();
+
+		// for 循环开始
+		var loopStartLabel = new Label();
+		_scopeStack.enter(loopStartLabel); // 标记循环开始处
+
+		i.load(); // 加载局部变量
+		loadLength.run();
+		_visitor.visitJumpInsn(Opcodes.IF_ICMPGE, endLabel); // 如果 i>=length，则跳出循环
+
+		_evalStack.pop(2);
+
+		action.accept(i);
+
+		// 对变量 i 进行自增操作
+		i.load();
+		_visitor.visitInsn(Opcodes.ICONST_1); // 将常量 1 推送到栈顶
+		_evalStack.push(int.class);
+		_visitor.visitInsn(Opcodes.IADD); // 将栈顶的两个整数值相加，并将结果压入栈顶
+		i.save();
+		_evalStack.pop();
+
+		_visitor.visitJumpInsn(Opcodes.GOTO, loopStartLabel); // 跳到循环开始处
+
+		_scopeStack.exit();
+
+		_scopeStack.exit();
+	}
+
+	public void increment(IVariable local) {
+		local.load();
+		_visitor.visitInsn(Opcodes.ICONST_1); // 将常量 1 推送到栈顶
+		_evalStack.push(int.class);
+		_visitor.visitInsn(Opcodes.IADD); // 将栈顶的两个整数值相加，并将结果压入栈顶
+		_evalStack.pop(2);
+		_evalStack.push(int.class);
+		local.save();
+	}
+
 	public void print(String message) {
 		print(() -> {
 			this.load(message);
@@ -564,7 +639,7 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	/**
-	 * 讲栈顶的值转换为toString
+	 * 将栈顶的值转换为toString
 	 */
 	public void castString() {
 		castString(null);
@@ -636,11 +711,11 @@ public class MethodGenerator implements AutoCloseable {
 
 //	 #endregion
 
-	public void newObject(Class<?> objectType) {
-		newObject(objectType, null);
+	public MethodGenerator newObject(Class<?> objectType) {
+		return newObject(objectType, null);
 	}
 
-	public void newObject(Class<?> objectType, Runnable loadCtorPrms) {
+	public MethodGenerator newObject(Class<?> objectType, Runnable loadCtorPrms) {
 		if (objectType.isArray())
 			throw new IllegalArgumentException(Language.strings("UseNewArrayMethod"));
 
@@ -677,15 +752,16 @@ public class MethodGenerator implements AutoCloseable {
 		_evalStack.pop(1); // 参数已经弹出，这里弹出对象的引用（引用有两个，这里弹出其中一个）
 
 		StackAssert.assertCount(_evalStack, 1); // 对象的引用在栈顶
+		return this;
 	}
 
-	public void newArray(Class<?> elementType, int arrayLength) {
-		newArray(elementType, () -> {
+	public MethodGenerator newArray(Class<?> elementType, int arrayLength) {
+		return newArray(elementType, () -> {
 			this.load(arrayLength);
 		});
 	}
 
-	public void newArray(Class<?> elementType, Runnable loadLength) {
+	public MethodGenerator newArray(Class<?> elementType, Runnable loadLength) {
 		loadLength.run(); // 数组大小
 
 		if (elementType.isPrimitive()) {
@@ -730,9 +806,28 @@ public class MethodGenerator implements AutoCloseable {
 			_evalStack.pop(); // 弹出长度参数
 			_evalStack.push(arrayClass);
 		}
+		return this;
 	}
 
-	private boolean _isbroken = false;;
+	public MethodGenerator saveElement(IVariable array, IVariable i, IVariable element) {
+		return saveElement(() -> {
+			array.load();
+		}, () -> {
+			i.load();
+		}, () -> {
+			element.load();
+		});
+	}
+
+	public MethodGenerator saveElement(Runnable loadArray, Runnable loadElementIndex, Runnable loadValue) {
+		loadArray.run();
+		loadElementIndex.run();
+		loadValue.run();
+		_visitor.visitInsn(Opcodes.IASTORE);
+		return this;
+	}
+
+	private boolean _isbroken = false;
 
 	public void broken() {
 		_isbroken = true;

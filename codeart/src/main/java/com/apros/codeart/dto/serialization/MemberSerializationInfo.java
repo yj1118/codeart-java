@@ -1,8 +1,10 @@
 package com.apros.codeart.dto.serialization;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import com.apros.codeart.bytecode.MethodGenerator;
+import com.apros.codeart.runtime.Util;
 import com.apros.codeart.util.StringUtil;
 
 class MemberSerializationInfo {
@@ -14,32 +16,33 @@ class MemberSerializationInfo {
 		return field.getType();
 	}
 
-//	private static MemberSerializationInfo createByCollection(Class<?> targetClass, Field field, DTOMember memberAnn) {
-//		if (is(targetClass, Iterable.class)) {
-//			return field == null ? new CollectionSerializationInfo(targetClass)
-//					: new CollectionSerializationInfo(field, memberAnn);
-//		}
-//
-//		if (is(targetClass, Map.class)) {
-//			throw new IllegalStateException("暂时不支持键值对的dto序列化操作"); // todo
-//		}
-//
-//		return null;
-//
-//	}
-//
-//	public static MemberSerializationInfo Create(MemberInfo memberInfo, DTOMemberAttribute memberAttribute) {
-//		Type t = GetTargetType(null, memberInfo);
-//		// 数组
-//		if (t.IsArray)
-//			return new ArraySerializationInfo(memberInfo, memberAttribute);
-//		// ICollection或IDictionary
-//		MemberSerializationInfo info = CreateByCollection(t, memberInfo, memberAttribute);
-//		if (info != null)
-//			return info;
-//		// 普通类型
-//		return new MemberSerializationInfo(memberInfo, memberAttribute);
-//	}
+	private static MemberSerializationInfo createByCollection(Class<?> targetClass, Field field,
+			DTOMemberAnnotation memberAnn) {
+		if (Util.is(targetClass, Iterable.class)) {
+			return field == null ? new CollectionSerializationInfo(targetClass)
+					: new CollectionSerializationInfo(field, memberAnn);
+		}
+
+		if (Util.is(targetClass, Map.class)) {
+			throw new IllegalStateException("暂时不支持键值对的dto序列化操作"); // todo
+		}
+
+		return null;
+
+	}
+
+	public static MemberSerializationInfo create(Field field, DTOMemberAnnotation memberAnn) {
+		var t = getTargetClass(null, field);
+		// 数组
+		if (t.isArray())
+			return new ArraySerializationInfo(field, memberAnn);
+		// ICollection或IDictionary
+		MemberSerializationInfo info = createByCollection(t, field, memberAnn);
+		if (info != null)
+			return info;
+		// 普通类型
+		return new MemberSerializationInfo(field, memberAnn);
+	}
 //
 //	public static MemberSerializationInfo Create(Type classType) {
 //		Type t = classType;
