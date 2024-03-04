@@ -43,19 +43,18 @@ class MemberSerializationInfo {
 		// 普通类型
 		return new MemberSerializationInfo(field, memberAnn);
 	}
-//
-//	public static MemberSerializationInfo Create(Type classType) {
-//		Type t = classType;
-//		// 数组
-//		if (t.IsArray)
-//			return new ArraySerializationInfo(classType);
-//		// ICollection或IDictionary
-//		MemberSerializationInfo info = CreateByCollection(classType, null, null);
-//		if (info != null)
-//			return info;
-//		// 普通类型
-//		return new MemberSerializationInfo(classType);
-//	}
+
+	public static MemberSerializationInfo create(Class<?> classType) {
+		// 数组
+		if (classType.isArray())
+			return new ArraySerializationInfo(classType);
+		// ICollection或IDictionary
+		MemberSerializationInfo info = createByCollection(classType, null, null);
+		if (info != null)
+			return info;
+		// 普通类型
+		return new MemberSerializationInfo(classType);
+	}
 
 //	#endregion
 
@@ -122,11 +121,6 @@ class MemberSerializationInfo {
 		// serializer.serialize(v); 或 //writer.Writer(v);
 		SerializationMethodHelper.write(g, this.getDTOMemberName(), this.getTargetClass(), (argType) -> {
 			loadMemberValue(g);
-			// TargetType是成员（也就是属性或者字段）的类型
-			// argType是方法需要接受到的类型，如果两者类型不匹配，就需要转换
-//			if (this.getTargetClass().IsStruct() && !argType.IsStruct()) {
-//				g.Box();
-//			}
 		});
 	}
 
@@ -166,13 +160,8 @@ class MemberSerializationInfo {
 		}
 	}
 
-//
 	private void loadOwner(MethodGenerator g) {
 		g.loadVariable(SerializationArgs.InstanceName);
-//		if (this.getOwnerClass().isPrimitive())
-//			g.LoadVariable(SerializationArgs.InstanceName, LoadOptions.ValueAsAddress);
-//		else
-//			g.LoadVariable(SerializationArgs.InstanceName);
 	}
 
 	public String getDTOMemberName() {

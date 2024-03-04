@@ -1,5 +1,8 @@
 package com.apros.codeart.runtime;
 
+import java.lang.reflect.Modifier;
+import java.util.Collection;
+
 import com.google.common.reflect.TypeToken;
 
 public final class TypeUtil {
@@ -31,6 +34,15 @@ public final class TypeUtil {
 		Class<?> elementType = elementTypeToken.getRawType();
 
 		return elementType;
+	}
+
+	public static boolean isCollection(Class<?> cls) {
+		return cls.isArray() || Collection.class.isAssignableFrom(cls);
+	}
+
+	public static boolean isAbstract(Class<?> cls) {
+		int modifiers = cls.getModifiers();
+		return Modifier.isAbstract(modifiers);
 	}
 
 }

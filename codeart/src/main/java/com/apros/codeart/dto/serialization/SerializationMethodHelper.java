@@ -163,27 +163,6 @@ final class SerializationMethodHelper {
 		});
 	}
 
-//
-//	public static bool IsPrimitive(Type type)
-//  {
-//      return type == typeof(string)
-//          || type == typeof(int)
-//          || type == typeof(long)
-//          || type == typeof(DateTime)
-//          || type == typeof(Guid)
-//          || type == typeof(float)
-//          || type == typeof(double)
-//          || type == typeof(uint)
-//          || type == typeof(ulong)
-//          || type == typeof(ushort)
-//          || type == typeof(sbyte)
-//          || type == typeof(char)
-//          || type == typeof(byte)
-//          || type == typeof(bool)
-//          || type == typeof(decimal)
-//          || type == typeof(short);
-//  }
-//
 	public static void writeBlob(MethodGenerator g, String dtoMemberName, Runnable loadValue) {
 		var prmIndex = SerializationArgs.WriterIndex;
 		g.invoke(prmIndex, "writeBlob", () -> {

@@ -7,11 +7,10 @@ class DTObjectDeserializer implements IDTObjectDeserializer {
 	}
 
 	public Object deserialize(Class<?> objectType, DTObject dto) {
-//		if (objectType.equals(DTObject.class))
-//			return dto;
-//		TypeMakupInfo typeInfo = TypeMakupInfo.getTypeInfo(objectType);
-//		return typeInfo.deserialize(dto);
-		return null;
+		if (objectType.equals(DTObject.class))
+			return dto;
+		TypeMakupInfo typeInfo = TypeMakupInfo.getTypeInfo(objectType);
+		return typeInfo.deserialize(dto);
 	}
 
 	/**
@@ -21,8 +20,8 @@ class DTObjectDeserializer implements IDTObjectDeserializer {
 	 * @param dto
 	 */
 	public void deserialize(Object instance, DTObject dto) {
-//		TypeMakupInfo typeInfo = TypeMakupInfo.getTypeInfo(instance.getType());
-//		typeInfo.deserialize(instance, dto);
+		TypeMakupInfo typeInfo = TypeMakupInfo.getTypeInfo(instance.getType());
+		typeInfo.deserialize(instance, dto);
 	}
 
 	public static final DTObjectDeserializer Instance = new DTObjectDeserializer();
