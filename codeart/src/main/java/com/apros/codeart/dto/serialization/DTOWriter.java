@@ -1,6 +1,6 @@
 package com.apros.codeart.dto.serialization;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.apros.codeart.dto.DTObject;
 
@@ -8,7 +8,8 @@ abstract class DTOWriter implements IDTOWriter {
 
 	protected DTObject _dto;
 
-	public DTOWriter() {
+	public DTOWriter(DTObject dto) {
+		_dto = dto;
 	}
 
 	public void write(String name, byte value) {
@@ -35,8 +36,8 @@ abstract class DTOWriter implements IDTOWriter {
 		_dto.setDouble(name, value);
 	}
 
-	public void write(String name, LocalDateTime value) {
-		_dto.setLocalDateTime(name, value);
+	public void write(String name, Instant value) {
+		_dto.setInstant(name, value);
 	}
 
 	public void write(String name, String value) {

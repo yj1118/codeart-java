@@ -20,7 +20,7 @@ class DTObjectDeserializer implements IDTObjectDeserializer {
 	 * @param dto
 	 */
 	public void deserialize(Object instance, DTObject dto) {
-		TypeMakupInfo typeInfo = TypeMakupInfo.getTypeInfo(instance.getType());
+		TypeMakupInfo typeInfo = TypeMakupInfo.getTypeInfo(instance.getClass());
 		typeInfo.deserialize(instance, dto);
 	}
 

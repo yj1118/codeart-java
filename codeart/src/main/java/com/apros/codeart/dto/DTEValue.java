@@ -1,5 +1,6 @@
 package com.apros.codeart.dto;
 
+import java.time.Instant;
 import java.util.Collections;
 import java.util.function.Function;
 
@@ -30,12 +31,40 @@ final class DTEValue extends DTEntity {
 		return Boolean.parseBoolean(_valueCode);
 	}
 
+	public byte getByte() {
+		return Byte.parseByte(_valueCode);
+	}
+
+	public short getShort() {
+		return Short.parseShort(_valueCode);
+	}
+
 	public int getInt() {
 		return Integer.parseInt(_valueCode);
 	}
 
 	public long getLong() {
 		return Long.parseLong(_valueCode);
+	}
+
+	public float getFloat() {
+		return Float.parseFloat(_valueCode);
+	}
+
+	public double getDouble() {
+		return Double.parseDouble(_valueCode);
+	}
+
+	public Instant getInstant() {
+		return JSON.parseInstant(_valueCode);
+	}
+
+	public String getString() {
+		return _valueCode;
+	}
+
+	public char getChar() {
+		return _valueCode.charAt(0);
 	}
 
 	public void setValue(Object value) {

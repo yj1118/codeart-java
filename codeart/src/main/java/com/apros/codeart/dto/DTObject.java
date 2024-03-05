@@ -4,7 +4,7 @@ import static com.apros.codeart.i18n.Language.strings;
 import static com.apros.codeart.runtime.TypeUtil.as;
 import static com.apros.codeart.runtime.TypeUtil.is;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 import com.apros.codeart.context.ContextSession;
 import com.apros.codeart.util.ListUtil;
@@ -57,14 +57,6 @@ public class DTObject implements AutoCloseable {
 	}
 
 //	#region 值
-
-	public String getString(String findExp) {
-		return (String) this.get(findExp);
-	}
-
-	public String getString(String findExp, String defalutValue) {
-		return (String) this.get(findExp, defalutValue);
-	}
 
 	public Byte getInt1(String findExp) {
 		return (Byte) this.get(findExp);
@@ -148,7 +140,72 @@ public class DTObject implements AutoCloseable {
 		return get(StringUtil.empty(), true);
 	}
 
+	public DTObject getObject(String findExp) {
+		return getObject(findExp, null, true);
+	}
+
+	public DTObject getObject(String findExp, DTObject defaultValue) {
+		return getObject(findExp, defaultValue, false);
+	}
+
+	private DTObject getObject(String findExp, DTObject defaultValue, boolean throwError) {
+		var entity = this.find(DTEObject.class, findExp, throwError);
+		return entity == null ? defaultValue : DTObject.obtain(entity, true);
+	}
+
 	// region 不必装箱和拆箱的操作
+
+	public boolean getBoolean(String findExp, boolean defaultValue) {
+		return getBoolean(findExp, defaultValue, false);
+	}
+
+	public boolean getBoolean(String findExp) {
+		return getBoolean(findExp, false, true);
+	}
+
+	private boolean getBoolean(String findExp, boolean defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getBoolean();
+	}
+
+	public byte getByte(String findExp, byte defaultValue) {
+		return getByte(findExp, defaultValue, false);
+	}
+
+	public byte getByte(String findExp) {
+		return getByte(findExp, (byte) 0, true);
+	}
+
+	private byte getByte(String findExp, byte defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getByte();
+	}
+
+	public char getChar(String findExp, char defaultValue) {
+		return getChar(findExp, defaultValue, false);
+	}
+
+	public char getChar(String findExp) {
+		return getChar(findExp, StringUtil.charEmpty(), true);
+	}
+
+	private char getChar(String findExp, char defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getChar();
+	}
+
+	public short getShort(String findExp, short defaultValue) {
+		return getShort(findExp, defaultValue, false);
+	}
+
+	public short getShort(String findExp) {
+		return getShort(findExp, (short) 0, true);
+	}
+
+	private short getShort(String findExp, short defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getShort();
+	}
 
 	public int getInt(String findExp, int defaultValue) {
 		return getInt(findExp, defaultValue, false);
@@ -163,9 +220,71 @@ public class DTObject implements AutoCloseable {
 		return entity == null ? defaultValue : entity.getInt();
 	}
 
+	public long getLong(String findExp, long defaultValue) {
+		return getLong(findExp, defaultValue, false);
+	}
+
+	public long getLong(String findExp) {
+		return getLong(findExp, 0L, true);
+	}
+
 	public long getLong(String findExp, long defaultValue, boolean throwError) {
 		DTEValue entity = find(DTEValue.class, findExp, throwError);
-		return entity == null ? defaultValue : entity.getInt();
+		return entity == null ? defaultValue : entity.getLong();
+	}
+
+	public float getFloat(String findExp, float defaultValue) {
+		return getFloat(findExp, defaultValue, false);
+	}
+
+	public float getFloat(String findExp) {
+		return getFloat(findExp, 0F, true);
+	}
+
+	public float getFloat(String findExp, float defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getFloat();
+	}
+
+	public double getDouble(String findExp, double defaultValue) {
+		return getDouble(findExp, defaultValue, false);
+	}
+
+	public double getDouble(String findExp) {
+		return getDouble(findExp, (double) 0, true);
+	}
+
+	public double getDouble(String findExp, double defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getDouble();
+	}
+
+	public String getString(String findExp, String defaultValue) {
+		return getString(findExp, defaultValue, false);
+	}
+
+	public String getString(String findExp) {
+		return getString(findExp, StringUtil.empty(), true);
+	}
+
+	public String getString(String findExp, String defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getString();
+	}
+
+	//
+
+	public Instant getInstant(String findExp, Instant defaultValue) {
+		return getInstant(findExp, defaultValue, false);
+	}
+
+	public Instant getInstant(String findExp) {
+		return getInstant(findExp, Instant.MIN, true);
+	}
+
+	public Instant getInstant(String findExp, Instant defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getInstant();
 	}
 
 	public void setByte(String findExp, byte value) {
@@ -200,7 +319,7 @@ public class DTObject implements AutoCloseable {
 		setPrimitiveValue(findExp, Character.toString(value));
 	}
 
-	public void setLocalDateTime(String findExp, LocalDateTime value) {
+	public void setInstant(String findExp, Instant value) {
 		setPrimitiveValue(findExp, JSON.getString(value));
 	}
 
@@ -422,7 +541,13 @@ public class DTObject implements AutoCloseable {
 				return DTEList.obtain(name);
 			});
 		}
-		;
+	}
+
+	public Iterable<DTObject> getList(String findExp, boolean throwError) {
+		DTEList entity = find(DTEList.class, findExp, throwError);
+		if (entity == null)
+			return null;
+		return entity.getObjects();
 	}
 
 	/**

@@ -1,6 +1,6 @@
 package com.apros.codeart.dto.serialization;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 interface IDTOWriter {
 
@@ -22,7 +22,7 @@ interface IDTOWriter {
 
 	void writeElement(String name, Object telement);
 
-	void write(String name, LocalDateTime value);
+	void write(String name, Instant value);
 
 	void write(String name, String value);
 

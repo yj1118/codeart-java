@@ -5,10 +5,8 @@ import com.apros.codeart.runtime.TypeUtil;
 
 class MarkupWriter extends DTOWriter {
 
-	private DTObject _dto;
-
 	public MarkupWriter(DTObject dto) {
-		_dto = dto;
+		super(dto);
 	}
 
 	// public override

@@ -28,10 +28,9 @@ class JSON {
 		return sb.toString();
 	}
 
-	public static String getString(LocalDateTime time) {
+	public static String getString(Instant time) {
 		var sb = new StringBuilder();
-		var t = TimeUtil.toUTC(time);
-		writeInstant(sb, t);
+		writeInstant(sb, time);
 		return sb.toString();
 	}
 
@@ -327,5 +326,4 @@ class JSON {
 
 		return null;
 	}
-
 }
