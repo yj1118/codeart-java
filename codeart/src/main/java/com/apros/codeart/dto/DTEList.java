@@ -3,18 +3,24 @@ package com.apros.codeart.dto;
 import static com.apros.codeart.util.StringUtil.isNullOrEmpty;
 import static com.apros.codeart.util.StringUtil.removeLast;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.apros.codeart.context.ContextSession;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
+import com.google.common.collect.Iterables;
 
 final class DTEList extends DTEntity implements Iterable<DTObject> {
+
+	private boolean _isReadOnly;
+
 	@Override
 	public DTEntityType getType() {
 		return DTEntityType.LIST;
@@ -22,7 +28,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 
 	private DTObject _template;
 
-	private LinkedList<DTObject> _items;
+	private AbstractList<DTObject> _items;
 
 	public Iterable<DTObject> getItems() {
 		return _items;
@@ -46,8 +52,8 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		return false;
 	}
 
-	private void setItems(LinkedList<DTObject> items) {
-		_items = new LinkedList<DTObject>();
+	private void setItems(AbstractList<DTObject> items) {
+		_items = Util.createList(_isReadOnly, items.size());
 
 		if (items.size() == 0) {
 			this._template = DTObject.obtain();
@@ -68,17 +74,21 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		this._template.forceClearData();
 	}
 
-	private DTEList(String name, LinkedList<DTObject> items) {
+	private DTEList(boolean isReadOnly, String name, AbstractList<DTObject> items) {
+		_isReadOnly = isReadOnly;
 		this.setName(name);
 		this.setItems(items);
 	}
 
 	@Override
 	public DTEntity cloneImpl() {
-		var obj = obtain(this.getName(), new LinkedList<DTObject>());
+
+		var length = _items.size();
+
+		var obj = obtain(_isReadOnly, this.getName(), Util.createList(_isReadOnly, length));
 		obj._template = _template.clone();
 
-		for (var item : this.getItems()) {
+		for (var item : _items) {
 			obj.addItem(item.clone());
 		}
 		return obj;
@@ -163,7 +173,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	 * @throws Exception
 	 */
 	public void retainAts(Iterable<Integer> indexs) throws Exception {
-		var temps = new LinkedList<DTObject>();
+		var temps = Util.<DTObject>createList(_isReadOnly, Iterables.size(indexs));
 		for (var i : indexs) {
 			temps.add(_items.get(i));
 		}
@@ -172,7 +182,8 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	public void removeAts(Iterable<Integer> indexs) {
-		var temps = new LinkedList<DTObject>();
+		int length = _items.size() - Iterables.size(indexs);
+		var temps = Util.<DTObject>createList(_isReadOnly, length);
 		for (var i = 0; i < _items.size(); i++) {
 			if (!ListUtil.contains(indexs, i)) { // 在移除的索引之外的项，保留
 				temps.add(_items.get(i));
@@ -235,14 +246,14 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		insertItem(index, item);
 	}
 
-	public Iterable<DTObject> getObjects() {
+	public List<DTObject> getObjects() {
 		return Collections.unmodifiableList(_items);
 	}
 
 	@SuppressWarnings("unchecked")
 	public <T> Iterable<T> getValues(Class<T> cls, T defaultValue, boolean throwError) {
 		return ListUtil.map(_items, (t) -> {
-			return (T) t.get(StringUtil.empty(), defaultValue, throwError);
+			return (T) t.getValue(StringUtil.empty(), defaultValue, throwError);
 		});
 	}
 
@@ -286,12 +297,18 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		code.append("]");
 	}
 
-	public static DTEList obtain(String name) {
-		return ContextSession.registerItem(new DTEList(name, new LinkedList<DTObject>()));
+	/**
+	 * 获取一个可编辑的实例，该方法用于dto被调用写操作时
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public static DTEList obtainEditable(String name) {
+		return ContextSession.registerItem(new DTEList(false, name, new LinkedList<DTObject>()));
 	}
 
-	public static DTEList obtain(String name, LinkedList<DTObject> items) {
-		return ContextSession.registerItem(new DTEList(name, items));
+	public static DTEList obtain(boolean isReadOnly, String name, AbstractList<DTObject> items) {
+		return ContextSession.registerItem(new DTEList(isReadOnly, name, items));
 	}
 
 }

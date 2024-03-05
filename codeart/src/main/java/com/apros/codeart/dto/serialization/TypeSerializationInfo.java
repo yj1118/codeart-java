@@ -115,7 +115,7 @@ abstract class TypeSerializationInfo {
 	}
 
 	public DTObject serialize(Object instance) {
-		var dto = DTObject.create();
+		var dto = DTObject.editable();
 
 		var serializable = TypeUtil.as(instance, IDTOSerializable.class);
 		if (serializable != null) {

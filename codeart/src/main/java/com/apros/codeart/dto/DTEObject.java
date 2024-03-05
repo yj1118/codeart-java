@@ -3,6 +3,7 @@ package com.apros.codeart.dto;
 import static com.apros.codeart.runtime.TypeUtil.as;
 import static com.apros.codeart.util.StringUtil.isNullOrEmpty;
 
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -15,16 +16,19 @@ import com.apros.codeart.util.StringUtil;
 
 final class DTEObject extends DTEntity {
 
-	private LinkedList<DTEntity> _members;
+	private boolean _readonly;
 
-	private void setMembers(LinkedList<DTEntity> membres) {
+	private AbstractList<DTEntity> _members;
+
+	private void setMembers(AbstractList<DTEntity> membres) {
 		_members = membres;
 		for (var e : _members) {
 			e.setParent(this);
 		}
 	}
 
-	private DTEObject(String name, LinkedList<DTEntity> members) {
+	private DTEObject(boolean readonly, String name, AbstractList<DTEntity> members) {
+		_readonly = readonly;
 		setName(name);
 		setMembers(members);
 	}
@@ -39,12 +43,12 @@ final class DTEObject extends DTEntity {
 
 	@Override
 	public DTEntity cloneImpl() {
-		var items = new LinkedList<DTEntity>();
+		var items = Util.<DTEntity>createList(_readonly, _members.size());
 		for (var e : _members) {
 			items.add((DTEntity) e.clone());
 		}
 
-		return obtain(this.getName(), items);
+		return obtain(_readonly, this.getName(), items);
 	}
 
 	@Override
@@ -150,8 +154,7 @@ final class DTEObject extends DTEntity {
 		} else {
 			// 没有找到
 			if (query.hasNext()) {
-
-				var next = obtain(segment);
+				var next = obtainEditable(segment);
 				next.setParent(this);
 				_members.add(next);
 
@@ -241,12 +244,29 @@ final class DTEObject extends DTEntity {
 		}
 	}
 
-	public static DTEObject obtain(String name) {
-		return ContextSession.registerItem(new DTEObject(name, new LinkedList<DTEntity>()));
+	/**
+	 * 调用此方法获得一个可编辑的对象
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public static DTEObject obtainEditable(String name) {
+		return ContextSession.registerItem(new DTEObject(false, name, new LinkedList<DTEntity>()));
 	}
 
-	public static DTEObject obtain(String name, LinkedList<DTEntity> members) {
-		return ContextSession.registerItem(new DTEObject(name, members));
+	/**
+	 * 
+	 * 空的，且只读的
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public static DTEObject obtainReadonlyEmpty(String name) {
+		return ContextSession.registerItem(new DTEObject(true, name, new ArrayList<DTEntity>()));
+	}
+
+	public static DTEObject obtain(boolean readonly, String name, AbstractList<DTEntity> members) {
+		return ContextSession.registerItem(new DTEObject(readonly, name, members));
 	}
 
 }

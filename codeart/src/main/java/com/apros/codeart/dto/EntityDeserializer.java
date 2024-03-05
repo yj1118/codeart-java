@@ -7,7 +7,6 @@ import static com.apros.codeart.util.StringUtil.isNullOrEmpty;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringSegment;
@@ -19,32 +18,31 @@ class EntityDeserializer {
 	private EntityDeserializer() {
 	}
 
-	public static DTEObject deserialize(String code, boolean isReadOnly) {
+	public static DTEObject deserialize(String code, boolean readonly) {
 		if (isNullOrEmpty(code))
-			return DTEObject.obtain(StringUtil.empty());
-		return deserialize(new StringSegment(code), isReadOnly);
+			return readonly ? DTEObject.obtainReadonlyEmpty(StringUtil.empty())
+					: DTEObject.obtainEditable(StringUtil.empty());
+		return deserialize(new StringSegment(code), readonly);
 	}
 
-	private static DTEObject deserialize(StringSegment code, boolean isReadOnly) {
-		if (code.isEmpty())
-			return DTEObject.obtain(StringUtil.empty());
+	private static DTEObject deserialize(StringSegment code, boolean readonly) {
 		var node = parseNode(CodeType.Object, code);
 
 		var entities = new ArrayList<DTEntity>(1); // 就一个成员
-		fillEntities(entities, node, isReadOnly);
+		fillEntities(entities, node, readonly);
 		return as(ListUtil.first(entities), DTEObject.class);
 	}
 
-	private static void fillEntities(AbstractList<DTEntity> entities, CodeTreeNode node, boolean isReadOnly) {
+	private static void fillEntities(AbstractList<DTEntity> entities, CodeTreeNode node, boolean readonly) {
 		var name = JSON.readString(node.getName().toString());
 		if (node.getType() == CodeType.Object) {
-			var members = new LinkedList<DTEntity>();
+			var members = Util.<DTEntity>createList(readonly, Iterables.size(entities));
 			// 收集成员
 			for (var item : node.getChilds()) {
-				fillEntities(members, item, isReadOnly);
+				fillEntities(members, item, readonly);
 			}
 
-			var obj = DTEObject.obtain(name, members);
+			var obj = DTEObject.obtain(readonly, name, members);
 			entities.add(obj);
 		} else if (node.getType() == CodeType.List) {
 
@@ -52,19 +50,23 @@ class EntityDeserializer {
 
 			// 收集成员
 			for (var item : node.getChilds()) {
-				fillEntities(tempChilds, item, isReadOnly);
+				fillEntities(tempChilds, item, readonly);
 			}
 
-			var childs = new LinkedList<DTObject>();
+			var childs = Util.<DTObject>createList(readonly, Iterables.size(tempChilds));
 			for (var e : tempChilds) {
-				var item = createDTO(e, isReadOnly);
+				var item = createDTO(e, readonly);
 				childs.add(item);
 			}
 
-			var e = DTEList.obtain(name, childs);
+			var e = DTEList.obtain(readonly, name, childs);
 			entities.add(e);
 		} else {
-			var dte = DTEValue.obtainByCode(name, node.getValue().toString(), node.getType() == CodeType.StringValue);
+			boolean valueIsString = node.getType() == CodeType.StringValue;
+			var value = node.getValue();
+			// 如果是字符串，那么要移除首尾引号
+			var valueCode = valueIsString ? value.substr(1, value.length() - 2).toString() : value.toString();
+			var dte = DTEValue.obtainByCode(name, valueCode, valueIsString);
 			entities.add(dte);
 		}
 	}
@@ -95,16 +97,16 @@ class EntityDeserializer {
 		return node;
 	}
 
-	private static DTObject createDTO(DTEntity root, boolean isReadOnly) {
+	private static DTObject createDTO(DTEntity root, boolean readonly) {
 		var o = as(root, DTEObject.class);
 		if (o != null)
-			return DTObject.obtain(o, isReadOnly);
+			return DTObject.obtain(o, readonly);
 
-		var members = new LinkedList<DTEntity>();
+		var members = Util.<DTEntity>createList(readonly, 1);
 		members.add(root);
 
-		o = DTEObject.obtain(StringUtil.empty(), members);
-		return DTObject.obtain(o, isReadOnly);
+		o = DTEObject.obtain(readonly, StringUtil.empty(), members);
+		return DTObject.obtain(o, readonly);
 	}
 
 	/**

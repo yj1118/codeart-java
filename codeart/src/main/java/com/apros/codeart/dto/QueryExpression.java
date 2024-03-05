@@ -70,6 +70,8 @@ class QueryExpression {
 	});
 
 	public static QueryExpression create(String queryString) {
+		if (queryString == null)
+			queryString = StringUtil.empty();
 		return _getExpression.apply(queryString);
 	}
 

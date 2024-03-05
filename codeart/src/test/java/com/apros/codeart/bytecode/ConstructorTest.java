@@ -38,7 +38,7 @@ class ConstructorTest {
 				});
 			}
 
-			cg.save();
+//			cg.save();
 
 			// 返回生成的字节码
 			var cls = cg.toClass();
@@ -74,7 +74,7 @@ class ConstructorTest {
 				mg.newArray(int.class, 5);
 			}
 
-			cg.save();
+//			cg.save();
 
 			// 返回生成的字节码
 			var cls = cg.toClass();
@@ -97,7 +97,7 @@ class ConstructorTest {
 				mg.newArray(String.class, 3);
 			}
 
-			cg.save();
+//			cg.save();
 
 			// 返回生成的字节码
 			var cls = cg.toClass();

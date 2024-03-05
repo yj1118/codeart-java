@@ -5,6 +5,11 @@ import static com.apros.codeart.runtime.TypeUtil.as;
 import static com.apros.codeart.runtime.TypeUtil.is;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import com.apros.codeart.context.ContextSession;
 import com.apros.codeart.util.ListUtil;
@@ -59,39 +64,39 @@ public class DTObject implements AutoCloseable {
 //	#region 值
 
 	public Byte getInt1(String findExp) {
-		return (Byte) this.get(findExp);
+		return (Byte) this.getValue(findExp);
 	}
 
 	public Byte getInt1(String findExp, Byte defaultValue) {
-		return (Byte) this.get(findExp, defaultValue);
+		return (Byte) this.getValue(findExp, defaultValue);
 	}
 
 	public Short getInt2(String findExp, Short defaultValue) {
-		return (Short) this.get(findExp, defaultValue);
+		return (Short) this.getValue(findExp, defaultValue);
 	}
 
 	public Integer getInt32(String findExp) {
-		return (Integer) this.get(findExp);
+		return (Integer) this.getValue(findExp);
 	}
 
 	public Integer getInt32(String findExp, Integer defaultValue) {
-		return (Integer) this.get(findExp, defaultValue);
+		return (Integer) this.getValue(findExp, defaultValue);
 	}
 
 	public Long getInt64(String findExp) {
-		return (Long) this.get(findExp);
+		return (Long) this.getValue(findExp);
 	}
 
 	public Long getInt64(String findExp, Long defaultValue) {
-		return (Long) this.get(findExp, defaultValue);
+		return (Long) this.getValue(findExp, defaultValue);
 	}
 
 	public Boolean getBool(String findExp) {
-		return (Boolean) get(findExp, false, true);
+		return (Boolean) getValue(findExp, false, true);
 	}
 
 	public Boolean getBool(String findExp, boolean defaultValue) {
-		return (Boolean) get(findExp, defaultValue, false);
+		return (Boolean) getValue(findExp, defaultValue, false);
 	}
 
 	public Iterable<Long> getInt64s(String findExp) {
@@ -122,22 +127,22 @@ public class DTObject implements AutoCloseable {
 		return null;
 	}
 
-	public Object get(String findExp, Object defaultValue, boolean throwError) {
+	public Object getValue(String findExp, Object defaultValue, boolean throwError) {
 		DTEntity entity = find(findExp, throwError);
 		Object value = entity == null ? null : extractValue(entity);
 		return value == null ? defaultValue : value;
 	}
 
-	public Object get(String findExp, Object defaultValue) {
-		return get(findExp, defaultValue, false);
+	public Object getValue(String findExp, Object defaultValue) {
+		return getValue(findExp, defaultValue, false);
 	}
 
-	public Object get(String findExp) {
-		return get(findExp, null, true);
+	public Object getValue(String findExp) {
+		return getValue(findExp, null, true);
 	}
 
-	public Object get() {
-		return get(StringUtil.empty(), true);
+	public Object getValue() {
+		return getValue(StringUtil.empty(), true);
 	}
 
 	public DTObject getObject(String findExp) {
@@ -259,12 +264,16 @@ public class DTObject implements AutoCloseable {
 		return entity == null ? defaultValue : entity.getDouble();
 	}
 
+	public String getString() {
+		return getString(null, null, true);
+	}
+
 	public String getString(String findExp, String defaultValue) {
 		return getString(findExp, defaultValue, false);
 	}
 
 	public String getString(String findExp) {
-		return getString(findExp, StringUtil.empty(), true);
+		return getString(findExp, null, true);
 	}
 
 	public String getString(String findExp, String defaultValue, boolean throwError) {
@@ -288,46 +297,46 @@ public class DTObject implements AutoCloseable {
 	}
 
 	public void setByte(String findExp, byte value) {
-		setPrimitiveValue(findExp, Byte.toString(value));
+		setValue(findExp, Byte.toString(value), false);
 	}
 
 	public void setShort(String findExp, short value) {
-		setPrimitiveValue(findExp, Short.toString(value));
+		setValue(findExp, Short.toString(value), false);
 	}
 
 	public void setInt(String findExp, int value) {
-		setPrimitiveValue(findExp, Integer.toString(value));
+		setValue(findExp, Integer.toString(value), false);
 	}
 
 	public void setLong(String findExp, long value) {
-		setPrimitiveValue(findExp, Long.toString(value));
+		setValue(findExp, Long.toString(value), false);
 	}
 
 	public void setFloat(String findExp, float value) {
-		setPrimitiveValue(findExp, Float.toString(value));
+		setValue(findExp, Float.toString(value), false);
 	}
 
 	public void setDouble(String findExp, double value) {
-		setPrimitiveValue(findExp, Double.toString(value));
+		setValue(findExp, Double.toString(value), false);
 	}
 
 	public void setBoolean(String findExp, boolean value) {
-		setPrimitiveValue(findExp, Boolean.toString(value));
+		setValue(findExp, Boolean.toString(value), false);
 	}
 
 	public void setChar(String findExp, char value) {
-		setPrimitiveValue(findExp, Character.toString(value));
+		setValue(findExp, Character.toString(value), false);
 	}
 
 	public void setInstant(String findExp, Instant value) {
-		setPrimitiveValue(findExp, JSON.getString(value));
+		setValue(findExp, JSON.getString(value), false);
 	}
 
 	public void setString(String findExp, String value) {
-		setPrimitiveValue(findExp, value);
+		setValue(findExp, value, true);
 	}
 
-	public void setPrimitiveValue(String findExp, String valueCode) {
+	private void setValue(String findExp, String valueCode, boolean valueIsString) {
 		validateReadOnly();
 
 		var es = finds(findExp, false);
@@ -340,7 +349,7 @@ public class DTObject implements AutoCloseable {
 			for (var e : es) {
 				if (e.getType() == DTEntityType.VALUE) {
 					var ev = as(e, DTEValue.class);
-					ev.setValueCode(valueCode, false); // 基元值，不是字符串
+					ev.setValueCode(valueCode, valueIsString); // 基元值，不是字符串
 					continue;
 				}
 
@@ -442,7 +451,7 @@ public class DTObject implements AutoCloseable {
 	}
 
 	private DTEList createListEntity(String name, Iterable<?> list) {
-		var dte = DTEList.obtain(name);
+		var dte = DTEList.obtainEditable(name);
 
 		for (var item : list) {
 			dte.push((dto) -> {
@@ -531,23 +540,187 @@ public class DTObject implements AutoCloseable {
 	 * 
 	 * @param findExp
 	 */
-	public void setList(String findExp) {
+	public void obtainList(String findExp) {
 		validateReadOnly();
 
 		DTEList entity = find(DTEList.class, findExp, false);
 		if (entity == null) {
 			var query = QueryExpression.create(findExp);
 			_root.setMember(query, (name) -> {
-				return DTEList.obtain(name);
+				return DTEList.obtainEditable(name);
 			});
 		}
 	}
 
-	public Iterable<DTObject> getList(String findExp, boolean throwError) {
+	private void setList(String findExp, Iterable<DTObject> items) {
+		validateReadOnly();
+
+		push(findExp, null);// 以此来防止当items个数为0时，没有创建的bug
+		if (items == null)
+			return;
+		for (var item : items) {
+			push(findExp, item);
+		}
+	}
+
+	public List<DTObject> getList(String findExp) {
+		return getList(findExp, true);
+	}
+
+	public List<DTObject> getList(String findExp, boolean throwError) {
 		DTEList entity = find(DTEList.class, findExp, throwError);
 		if (entity == null)
 			return null;
 		return entity.getObjects();
+	}
+
+	/// <summary>
+	/// 向集合追加一个成员
+	/// </summary>
+	/// <param name="findExp"></param>
+	/// <param name="member"></param>
+	private void push(String findExp, DTObject member) {
+		validateReadOnly();
+
+		DTEList entity = getOrCreateList(findExp);
+		if (member == null)
+			return;
+
+		entity.push(member);
+	}
+
+	/**
+	 * 填充dto成员，然后追加到集合，不用重复查找，比较高效
+	 * 
+	 * @param <T>
+	 * @param findExp
+	 * @param list
+	 * @param action
+	 */
+	public <T> void push(String findExp, Iterable<T> list, BiConsumer<DTObject, T> action) {
+
+		validateReadOnly();
+
+		DTEList entity = getOrCreateList(findExp);
+		for (T item : list) {
+			DTObject dto = entity.push();
+			action.accept(dto, item);
+		}
+	}
+
+	public <T> void push(Iterable<T> list, BiConsumer<DTObject, T> action) {
+		this.<T>push(StringUtil.empty(), list, action);
+	}
+
+	public <T> void push(String findExp, Iterable<T> list, Function<T, DTObject> factory) {
+		validateReadOnly();
+
+		var entity = getOrCreateList(findExp);
+
+		for (T item : list) {
+			DTObject dto = factory.apply(item);
+			entity.push(dto);
+		}
+	}
+
+	public <T> void push(Iterable<T> list, Function<T, DTObject> factory) {
+		this.<T>push(StringUtil.empty(), list, factory);
+	}
+
+	public DTObject push(String findExp) {
+		validateReadOnly();
+
+		DTEList entity = getOrCreateList(findExp);
+		return entity.push();
+	}
+
+	public DTObject push() {
+		return this.push(StringUtil.empty());
+	}
+
+	private DTEList getOrCreateList(String findExp) {
+		var entity = find(DTEList.class, findExp, false);
+		if (entity == null) {
+			var query = QueryExpression.create(findExp);
+			_root.setMember(query, (name) -> {
+				return DTEList.obtainEditable(name);
+			});
+			entity = find(DTEList.class, findExp, true);
+		}
+		return entity;
+	}
+
+	public DTObject insert(String findExp, int index) {
+		validateReadOnly();
+
+		DTEList entity = getOrCreateList(findExp);
+		return entity.push(index);
+	}
+
+	public void each(String findExp, Consumer<DTObject> action) {
+		var list = getList(findExp, false);
+		if (list == null)
+			return;
+		for (var dto : list) {
+			action.accept(dto);
+		}
+	}
+
+	public DTObject top(String findExp, int count) {
+		ArrayList<DTObject> data = new ArrayList<DTObject>(count);
+
+		var list = getList(findExp, false);
+
+		if (list != null) {
+			for (var dto : list) {
+				if (data.size() == count)
+					break;
+				data.add(dto);
+			}
+		}
+
+		DTObject result = DTObject.editable();
+		result.setList("rows", data);
+		return result;
+	}
+
+	public DTObject page(String findExp, int pageIndex, int pageSize) {
+		var list = getList(findExp, false);
+		int dataCount = list == null ? 0 : Iterables.size(list);
+
+		var result = DTObject.editable();
+		result.setInt("pageIndex", pageIndex);
+		result.setInt("pageSize", pageSize);
+		result.setInt("dataCount", dataCount);
+
+		var start = (pageIndex - 1) * pageSize;
+		if (start >= dataCount) {
+			result.obtainList(findExp);
+			return result;
+		}
+
+		var end = start + pageSize - 1;
+		if (end >= dataCount)
+			end = dataCount - 1;
+
+		ArrayList<DTObject> items = new ArrayList<DTObject>(end - start + 1);
+
+		for (var i = start; i <= end; i++) {
+			items.add(Iterables.get(list, i));
+		}
+
+		result.setList(findExp, items);
+		return result;
+	}
+
+	public void each(String findExp, Function<DTObject, Boolean> action) {
+		var list = getList(findExp, false);
+		if (list == null)
+			return;
+		for (var dto : list) {
+			if (!action.apply(dto))
+				return; // 如果返回false，表示中断遍历操作
+		}
 	}
 
 	/**
@@ -585,7 +758,7 @@ public class DTObject implements AutoCloseable {
 	}
 
 	public boolean hasData() {
-		return false;
+		return _root.hasData();
 	}
 
 	/**
@@ -609,10 +782,20 @@ public class DTObject implements AutoCloseable {
 
 //	#region 代码
 
+	/**
+	 * 以不干涉排序，输出名称的规则得到json码
+	 * 
+	 * @return
+	 */
 	public String getCode() {
 		return getCode(false, true);
 	}
 
+	/**
+	 * 
+	 * @param sequential 是否排序
+	 * @return
+	 */
 	public String getCode(boolean sequential) {
 		return getCode(sequential, true);
 	}
@@ -643,9 +826,9 @@ public class DTObject implements AutoCloseable {
 
 //	#endregion
 
-	private static DTObject createImpl(String code, boolean isReadOnly) {
-		var root = EntityDeserializer.deserialize(code, isReadOnly);
-		return obtain(root, isReadOnly);
+	private static DTObject createImpl(String code, boolean readonly) {
+		var root = EntityDeserializer.deserialize(code, readonly);
+		return obtain(root, readonly);
 	}
 
 	/**
@@ -654,13 +837,23 @@ public class DTObject implements AutoCloseable {
 	 * @param code
 	 * @return
 	 */
-	public static DTObject create(String code) {
+	public static DTObject readonly(String code) {
 		if (StringUtil.isNullOrEmpty(code))
-			return DTObject.create();
+			return DTObject.readonly();
+		return createImpl(code, true);
+	}
+
+	public static DTObject readonly() {
+		return createImpl("{}", true);
+	}
+
+	public static DTObject editable(String code) {
+		if (StringUtil.isNullOrEmpty(code))
+			return DTObject.editable();
 		return createImpl(code, false);
 	}
 
-	public static DTObject create() {
+	public static DTObject editable() {
 		return createImpl("{}", false);
 	}
 
@@ -804,7 +997,7 @@ public class DTObject implements AutoCloseable {
 
 	private final static String EmptyCode = "{__empty:true}";
 
-	public static final DTObject Empty = DTObject.create(EmptyCode);
+	public static final DTObject Empty = DTObject.readonly(EmptyCode);
 
 	public boolean isEmpty() {
 		return this.getBool("__empty", false);
@@ -812,12 +1005,12 @@ public class DTObject implements AutoCloseable {
 
 //	#endregion
 
-	static DTObject obtain(DTEObject root, boolean isReadOnly) {
-		return ContextSession.registerItem(new DTObject(root, isReadOnly));
+	static DTObject obtain(DTEObject root, boolean readonly) {
+		return ContextSession.registerItem(new DTObject(root, readonly));
 	}
 
 	static DTObject obtain() {
-		return ContextSession.registerItem(new DTObject(DTEObject.obtain(StringUtil.empty()), false));
+		return ContextSession.registerItem(new DTObject(DTEObject.obtainEditable(StringUtil.empty()), false));
 	}
 
 }

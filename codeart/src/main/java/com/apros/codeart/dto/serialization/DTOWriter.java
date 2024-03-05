@@ -63,6 +63,6 @@ abstract class DTOWriter implements IDTOWriter {
 	}
 
 	public void writeArray(String name) {
-		_dto.setList(name);
+		_dto.obtainList(name);
 	}
 }

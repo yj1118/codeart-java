@@ -281,17 +281,11 @@ public final class StringSegment implements IReusable {
 		return _source == null;
 	}
 
-//	private String _value;
-
 	@Override
 	public String toString() {
+		if (this.isNull())
+			return null;
 		return StringUtil.substr(_source, _offset, _length);
-//		if (_value == null) {
-//			if (this.isNull())
-//				return null;
-//			_value = _source.substring(_offset, _length);
-//		}
-//		return _value;
 	}
 
 	public char firstChar() {

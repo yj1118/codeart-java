@@ -125,7 +125,7 @@ final class DTEValue extends DTEntity {
 	public void fillCode(StringBuilder code, boolean sequential, boolean outputName) {
 		String name = this.getName();
 		if (outputName && !StringUtil.isNullOrEmpty(name))
-			code.append(String.format("\"{0}\"", name));
+			code.append(String.format("\"%s\"", name));
 		if (code.length() > 0)
 			code.append(":");
 		fillValueCode(code, sequential);
