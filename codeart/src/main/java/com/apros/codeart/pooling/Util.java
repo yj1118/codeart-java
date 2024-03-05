@@ -1,6 +1,6 @@
 package com.apros.codeart.pooling;
 
-import static com.apros.codeart.runtime.Util.as;
+import static com.apros.codeart.runtime.TypeUtil.as;
 import static com.apros.codeart.runtime.Util.propagate;
 
 public final class Util {

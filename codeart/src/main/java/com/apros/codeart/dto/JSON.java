@@ -28,6 +28,13 @@ class JSON {
 		return sb.toString();
 	}
 
+	public static String getString(LocalDateTime time) {
+		var sb = new StringBuilder();
+		var t = TimeUtil.toUTC(time);
+		writeInstant(sb, t);
+		return sb.toString();
+	}
+
 	public static void writeValue(StringBuilder sb, Object value) {
 		if (value == null) {
 			sb.append("null");

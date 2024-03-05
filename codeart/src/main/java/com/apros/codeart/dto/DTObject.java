@@ -4,6 +4,8 @@ import static com.apros.codeart.i18n.Language.strings;
 import static com.apros.codeart.runtime.TypeUtil.as;
 import static com.apros.codeart.runtime.TypeUtil.is;
 
+import java.time.LocalDateTime;
+
 import com.apros.codeart.context.ContextSession;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
@@ -156,10 +158,6 @@ public class DTObject implements AutoCloseable {
 		return getInt(findExp, 0, true);
 	}
 
-	public void setInt(String findExp, int value) {
-		setPrimitiveValue(findExp, Integer.toString(value));
-	}
-
 	private int getInt(String findExp, int defaultValue, boolean throwError) {
 		DTEValue entity = find(DTEValue.class, findExp, throwError);
 		return entity == null ? defaultValue : entity.getInt();
@@ -170,8 +168,44 @@ public class DTObject implements AutoCloseable {
 		return entity == null ? defaultValue : entity.getInt();
 	}
 
+	public void setByte(String findExp, byte value) {
+		setPrimitiveValue(findExp, Byte.toString(value));
+	}
+
+	public void setShort(String findExp, short value) {
+		setPrimitiveValue(findExp, Short.toString(value));
+	}
+
+	public void setInt(String findExp, int value) {
+		setPrimitiveValue(findExp, Integer.toString(value));
+	}
+
 	public void setLong(String findExp, long value) {
 		setPrimitiveValue(findExp, Long.toString(value));
+	}
+
+	public void setFloat(String findExp, float value) {
+		setPrimitiveValue(findExp, Float.toString(value));
+	}
+
+	public void setDouble(String findExp, double value) {
+		setPrimitiveValue(findExp, Double.toString(value));
+	}
+
+	public void setBoolean(String findExp, boolean value) {
+		setPrimitiveValue(findExp, Boolean.toString(value));
+	}
+
+	public void setChar(String findExp, char value) {
+		setPrimitiveValue(findExp, Character.toString(value));
+	}
+
+	public void setLocalDateTime(String findExp, LocalDateTime value) {
+		setPrimitiveValue(findExp, JSON.getString(value));
+	}
+
+	public void setString(String findExp, String value) {
+		setPrimitiveValue(findExp, value);
 	}
 
 	public void setPrimitiveValue(String findExp, String valueCode) {
@@ -245,7 +279,7 @@ public class DTObject implements AutoCloseable {
 		set(StringUtil.empty(), value);
 	}
 
-	private void setObject(String findExp, DTObject obj) {
+	public void setObject(String findExp, DTObject obj) {
 		validateReadOnly();
 
 		if (StringUtil.isNullOrEmpty(findExp)) {
@@ -374,6 +408,24 @@ public class DTObject implements AutoCloseable {
 	}
 
 	/**
+	 * 如果不存在findExp对应的列表，那么创建
+	 * 
+	 * @param findExp
+	 */
+	public void setList(String findExp) {
+		validateReadOnly();
+
+		DTEList entity = find(DTEList.class, findExp, false);
+		if (entity == null) {
+			var query = QueryExpression.create(findExp);
+			_root.setMember(query, (name) -> {
+				return DTEList.obtain(name);
+			});
+		}
+		;
+	}
+
+	/**
 	 * 是否为单值dto，即：{value}的形式
 	 * 
 	 * @return
@@ -407,20 +459,6 @@ public class DTObject implements AutoCloseable {
 		return obtain((DTEObject) _root.clone(), _isReadOnly);
 	}
 
-	public String getCode() {
-		return getCode(false, false);
-	}
-
-	public String getCode(boolean sequential, boolean outputName) {
-		return null;
-	}
-
-	public String getSchemaCode(boolean sequential, boolean outputName) {
-		StringBuilder code = new StringBuilder();
-		_root.fillSchemaCode(code, sequential, outputName);
-		return code.toString();
-	}
-
 	public boolean hasData() {
 		return false;
 	}
@@ -446,25 +484,25 @@ public class DTObject implements AutoCloseable {
 
 //	#region 代码
 
-	public String GetCode() {
-		return GetCode(false, true);
+	public String getCode() {
+		return getCode(false, true);
 	}
 
-	public String GetCode(boolean sequential) {
-		return GetCode(sequential, true);
+	public String getCode(boolean sequential) {
+		return getCode(sequential, true);
 	}
 
-	public String GetSchemaCode() {
-		return GetSchemaCode(false, true);
+	public String getSchemaCode() {
+		return getSchemaCode(false, true);
 	}
 
-	public String GetCode(boolean sequential, boolean outputName) {
+	public String getCode(boolean sequential, boolean outputName) {
 		StringBuilder code = new StringBuilder();
 		fillCode(code, sequential, outputName);
 		return code.toString();
 	}
 
-	public String GetSchemaCode(boolean sequential, boolean outputName) {
+	public String getSchemaCode(boolean sequential, boolean outputName) {
 		StringBuilder code = new StringBuilder();
 		fillSchemaCode(code, sequential, outputName);
 		return code.toString();

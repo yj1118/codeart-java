@@ -4,7 +4,9 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import com.apros.codeart.dto.DTObject;
+import com.apros.codeart.runtime.ObjectUtil;
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.StringUtil;
 import com.google.common.base.Preconditions;
 
 abstract class TypeSerializationInfo {
@@ -112,23 +114,17 @@ abstract class TypeSerializationInfo {
 		return DTODeserializeMethodGenerator.generateMethod(this);
 	}
 
-	#endregion
+	public DTObject serialize(Object instance) {
+		var dto = DTObject.create();
 
-	public DTObject serialize(Object instance)
-    {
-        var dto = DTObject.create();
-
-        var serializable = instance as IDTOSerializable;
-        if(serializable != null)
-        {
-            serializable.Serialize(dto, string.Empty); //string.Empty意味着 序列化的内容会完全替换dto
-        }
-        else
-        {
-            Serialize(instance, dto);
-        }
-        return dto;
-    }
+		var serializable = TypeUtil.as(instance, IDTOSerializable.class);
+		if (serializable != null) {
+			serializable.serialize(dto, StringUtil.empty()); // string.Empty意味着 序列化的内容会完全替换dto
+		} else {
+			serialize(instance, dto);
+		}
+		return dto;
+	}
 
 	/**
 	 * 将对象instance的信息序列化到dto里
@@ -139,17 +135,17 @@ abstract class TypeSerializationInfo {
 	public abstract void serialize(Object instance, DTObject dto);
 
 	public Object deserialize(DTObject dto) {
-		var instance = this.getTargetClass().createInstance();
+		var instance = ObjectUtil.createInstance(this.getTargetClass());
 		deserialize(instance, dto);
 		return instance;
 	}
 
-	/// <summary>
-	/// 用<paramref name="dto"/>里的数据，填充<paramref name="instance"/>的属性
-	/// </summary>
-	/// <param name="instance"></param>
-	/// <param name="dto"></param>
-	/// <returns></returns>
-	public abstract void Deserialize(object instance, DTObject dto);
+	/**
+	 * 用 dto 里的数据，填充 instance 的属性
+	 * 
+	 * @param instance
+	 * @param dto
+	 */
+	public abstract void deserialize(Object instance, DTObject dto);
 
 }

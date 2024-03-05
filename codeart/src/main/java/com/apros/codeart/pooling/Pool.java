@@ -1,7 +1,7 @@
 package com.apros.codeart.pooling;
 
 import static com.apros.codeart.i18n.Language.strings;
-import static com.apros.codeart.runtime.Util.as;
+import static com.apros.codeart.runtime.TypeUtil.as;
 import static com.apros.codeart.runtime.Util.propagate;
 
 import java.time.Duration;

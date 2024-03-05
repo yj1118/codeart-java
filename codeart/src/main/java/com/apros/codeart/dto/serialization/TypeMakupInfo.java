@@ -8,6 +8,7 @@ import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.util.LazyIndexer;
 
 class TypeMakupInfo extends TypeSerializationInfo {
+
 	public TypeMakupInfo(Class<?> classType) {
 		super(classType);
 		this.initialize();
@@ -30,24 +31,22 @@ class TypeMakupInfo extends TypeSerializationInfo {
 
 	@Override
 	public void serialize(Object instance, DTObject dto) {
-		var writer = new MarkupWriter();
-		writer.Initialize(dto);
-		SerializeMethod(instance, writer);
+		var writer = new MarkupWriter(dto);
+		getSerializeMethod().invoke(instance, writer);
 	}
 
 	@Override
 	public void deserialize(Object instance, DTObject dto) {
-		var reader = new MarkupReader();
-		reader.initialize(dto);
-		DeserializeMethod(instance, reader);
+		var reader = new MarkupReader(dto);
+		getDeserializeMethod().invoke(instance, reader);
 	}
 
 	private static final Function<Class<?>, TypeMakupInfo> _getTypeInfo = LazyIndexer.init(classType -> {
 		return new TypeMakupInfo(classType);
 	});
 
-	public static TypeMakupInfo GetTypeInfo(Class<?> classType) {
-		return _getTypeInfo(classType);
+	public static TypeMakupInfo getTypeInfo(Class<?> classType) {
+		return _getTypeInfo.apply(classType);
 	}
 
 }

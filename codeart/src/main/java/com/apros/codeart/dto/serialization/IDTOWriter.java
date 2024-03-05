@@ -1,59 +1,40 @@
 package com.apros.codeart.dto.serialization;
 
-public interface IDTOWriter {
-//	void Write(String name, LocalDateTime value);
-//
-//	void Write(String name, String value);
-//
-//	void Write(String name, float value);
-//
-//	void Write(String name, double value);
-//
-//	void Write(String name, uint value);
-//
-//	void Write(String name, ulong value);
-//
-//	void Write(String name, ushort value);
-//
-//	void Write(String name, sbyte value);
-//
-//	void Write(String name, char value);
-//
-//	void Write(String name, byte value);
-//
-//	void Write(String name, bool value);
-//
-//	void Write(String name, decimal value);
-//
-//	void Write(String name, long value);
-//
-//	void Write(String name, short value);
-//
-//	void Write(String name, int value);
-//
-//	void Write(String name, Guid value);
-//
-//	void Write(String name, DateTime? value);
-//
-//	void Write(String name, byte? value);
-//
-//	void Write(String name, Guid? value);
-//
-//	void Write(String name, float? value);
-//
-//	void Write(String name, decimal? value);
-//
-	void writeElement(String name, Object telement);
-//
-//	void Write(String name, object value);
-//
-//	/// <summary>
-//	/// 写入一个空数组
-//	/// </summary>
-//	/// <param name="name"></param>
-//	void WriteArray(String name);
+import java.time.LocalDateTime;
 
-	<T extends Enum<T>> void writeEnum(String name, T enumValue);
+interface IDTOWriter {
+
+	void write(String name, byte value);
+
+	void write(String name, short value);
+
+	void write(String name, int value);
+
+	void write(String name, long value);
+
+	void write(String name, float value);
+
+	void write(String name, double value);
+
+	void write(String name, char value);
+
+	void write(String name, boolean value);
+
+	void writeElement(String name, Object telement);
+
+	void write(String name, LocalDateTime value);
+
+	void write(String name, String value);
+
+	void write(String name, Object value);
+
+	/// <summary>
+	/// 写入一个空数组
+	/// </summary>
+	/// <param name="name"></param>
+	void writeArray(String name);
+
+//	<T extends Enum<T>> void writeEnum(String name, T enumValue);
 
 }
 //
