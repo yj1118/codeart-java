@@ -1,98 +1,53 @@
 package com.apros.codeart.dto.serialization;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.function.Function;
+
+import com.apros.codeart.dto.DTObject;
+import com.apros.codeart.util.LazyIndexer;
+
 class TypeMakupInfo extends TypeSerializationInfo {
 	public TypeMakupInfo(Class<?> classType) {
 		super(classType);
 		this.initialize();
 	}
 
-protected override DTOClassAttribute
+	@Override
+	protected DTOClassAnnotation getClassAnnotation(Class<?> classType) {
+		return DTOClassAnnotation.get(classType);
+	}
 
-	GetClassAttribute(Type classType)
-{
-    return DTOClassAttribute.GetAttribute(classType);
-}
+	@Override
+	protected DTOMemberAnnotation getMemberAnnotation(Field field) {
+		return DTOMemberAnnotation.get(field);
+	}
 
-protected override DTOMemberAttribute
+	@Override
+	protected void onBuildMembers(ArrayList<MemberSerializationInfo> members) {
+		// 什么都不用执行
+	}
 
-	GetMemberAttribute(MemberInfo member)
-{
-    return DTOMemberAttribute.GetAttribute(member);
-}
+	@Override
+	public void serialize(Object instance, DTObject dto) {
+		var writer = new MarkupWriter();
+		writer.Initialize(dto);
+		SerializeMethod(instance, writer);
+	}
 
-protected override void OnBuildMembers(List<MemberSerializationInfo> members)
-{
-    //什么都不用执行
-}
+	@Override
+	public void deserialize(Object instance, DTObject dto) {
+		var reader = new MarkupReader();
+		reader.initialize(dto);
+		DeserializeMethod(instance, reader);
+	}
 
-public override void Serialize(object instance, DTObject dto)
-{
-    using (var temp = _writerPool.Borrow())
-    {
-        var writer = temp.Item;
-        writer.Initialize(dto);
-        SerializeMethod(instance, writer);
-    }
-}
+	private static final Function<Class<?>, TypeMakupInfo> _getTypeInfo = LazyIndexer.init(classType -> {
+		return new TypeMakupInfo(classType);
+	});
 
-public override void Deserialize(object instance, DTObject dto)
-{
-    using (var temp = _readerPool.Borrow())
-    {
-        var reader = temp.Item;
-        reader.Initialize(dto);
-        DeserializeMethod(instance, reader);
-    }
-}
+	public static TypeMakupInfo GetTypeInfo(Class<?> classType) {
+		return _getTypeInfo(classType);
+	}
 
-	#region 池
-
-private static Pool<MarkupWriter> _writerPool = new Pool<MarkupWriter>(() =>
-{
-    return new MarkupWriter();
-}, (writer, phase) =>
-{
-    if (phase == PoolItemPhase.Returning)
-    {
-        writer.Reset();
-    }
-    return true;
-}, new PoolConfig()
-{
-    MaxRemainTime = 300 //闲置时间300秒
-});
-
-private static Pool<MarkupReader> _readerPool = new Pool<MarkupReader>(() =>
-{
-    return new MarkupReader();
-}, (reader, phase) =>
-{
-    if (phase == PoolItemPhase.Returning)
-    {
-        reader.Reset();
-    }
-    return true;
-}, new PoolConfig()
-{
-    MaxRemainTime = 300 //闲置时间300秒
-});
-
-#endregion
-
-	#
-	region 得到TypeInfo
-
-private static readonly Func<Type,TypeMakupInfo>_getTypeInfo;
-
-static TypeMakupInfo()
-{
-    _getTypeInfo = LazyIndexer.Init<Type, TypeMakupInfo>(classType => new TypeMakupInfo(classType));
-}
-
-public static TypeMakupInfo GetTypeInfo(Type classType)
-{
-    return _getTypeInfo(classType);
-}
-
-	#endregion
 }

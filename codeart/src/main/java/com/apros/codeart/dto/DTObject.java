@@ -1,8 +1,8 @@
 package com.apros.codeart.dto;
 
 import static com.apros.codeart.i18n.Language.strings;
-import static com.apros.codeart.runtime.Util.as;
-import static com.apros.codeart.runtime.Util.is;
+import static com.apros.codeart.runtime.TypeUtil.as;
+import static com.apros.codeart.runtime.TypeUtil.is;
 
 import com.apros.codeart.context.ContextSession;
 import com.apros.codeart.util.ListUtil;

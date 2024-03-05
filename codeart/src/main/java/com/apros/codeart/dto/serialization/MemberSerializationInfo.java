@@ -4,7 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 import com.apros.codeart.bytecode.MethodGenerator;
-import com.apros.codeart.runtime.Util;
+import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.StringUtil;
 
 class MemberSerializationInfo {
@@ -18,12 +18,12 @@ class MemberSerializationInfo {
 
 	private static MemberSerializationInfo createByCollection(Class<?> targetClass, Field field,
 			DTOMemberAnnotation memberAnn) {
-		if (Util.is(targetClass, Iterable.class)) {
+		if (TypeUtil.is(targetClass, Iterable.class)) {
 			return field == null ? new CollectionSerializationInfo(targetClass)
 					: new CollectionSerializationInfo(field, memberAnn);
 		}
 
-		if (Util.is(targetClass, Map.class)) {
+		if (TypeUtil.is(targetClass, Map.class)) {
 			throw new IllegalStateException("暂时不支持键值对的dto序列化操作"); // todo
 		}
 
@@ -88,7 +88,7 @@ class MemberSerializationInfo {
 	}
 
 	public boolean isAbstract() {
-		return com.apros.codeart.runtime.Util.isAbstract(_field.getType());
+		return TypeUtil.isAbstract(_field.getType());
 	}
 
 //	#region 序列化的目标

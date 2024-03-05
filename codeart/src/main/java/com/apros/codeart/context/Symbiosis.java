@@ -1,6 +1,6 @@
 package com.apros.codeart.context;
 
-import static com.apros.codeart.runtime.Util.any;
+import static com.apros.codeart.runtime.TypeUtil.any;
 
 import java.util.HashSet;
 

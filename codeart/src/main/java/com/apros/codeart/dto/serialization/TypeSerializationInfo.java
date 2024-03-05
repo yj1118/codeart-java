@@ -114,9 +114,9 @@ abstract class TypeSerializationInfo {
 
 	#endregion
 
-	public DTObject Serialize(Object instance)
+	public DTObject serialize(Object instance)
     {
-        var dto = DTObject.Create();
+        var dto = DTObject.create();
 
         var serializable = instance as IDTOSerializable;
         if(serializable != null)
@@ -130,16 +130,17 @@ abstract class TypeSerializationInfo {
         return dto;
     }
 
-	/// <summary>
-	/// 将对象<paramref name="instance"/>的信息序列化到<paramref name="dto"/>里
-	/// </summary>
-	/// <param name="instance"></param>
-	/// <param name="dto"></param>
-	public abstract void Serialize(object instance, DTObject dto);
+	/**
+	 * 将对象instance的信息序列化到dto里
+	 * 
+	 * @param instance
+	 * @param dto
+	 */
+	public abstract void serialize(Object instance, DTObject dto);
 
-	public object Deserialize(DTObject dto) {
-		var instance = this.ClassType.CreateInstance();
-		Deserialize(instance, dto);
+	public Object deserialize(DTObject dto) {
+		var instance = this.getTargetClass().createInstance();
+		deserialize(instance, dto);
 		return instance;
 	}
 
