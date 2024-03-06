@@ -2,10 +2,14 @@ package com.apros.codeart.dto;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.LocalDateTime;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.apros.codeart.TestRunner;
+import com.apros.codeart.util.ISO8601;
+import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 
 @ExtendWith(TestRunner.class)
@@ -53,122 +57,174 @@ class CommonTest {
 			assertEquals(String.format("LS%s", i), t.getString("n"));
 		}
 
-//        Assert.AreEqual(1, dto.GetValue<int>("id"));
-//        Assert.AreEqual("Louis", dto.GetValue<string>("name"));
-		// Assert.AreEqual("{\"id\",\"name\",\"hobby\":[{\"v\",\"n\"}]}",
-		// dto.GetCode(false));
-		// Assert.AreEqual("{\"id\":1,\"name\":\"Louis\",\"hobby\":[{\"v\":0,\"n\":\"LS0\"},{\"v\":1,\"n\":\"LS1\"}]}",
-		// dto.GetCode());
+		assertEquals(1, dto.getInt("id"));
+		assertEquals("Louis", dto.getString("name"));
+		assertEquals("{\"id\":1,\"name\":\"Louis\",\"hobby\":[{\"v\":0,\"n\":\"LS0\"},{\"v\":1,\"n\":\"LS1\"}]}",
+				dto.getCode());
 
-//        var code = dto.GetCode();
-//        var copy = DTObject.Create(code);
-//        list = dto.GetList("hobby");
-//        for (int i = 0; i < list.Count; i++)
-//        {
-//            Assert.AreEqual(i, list[i].GetValue<int>("v"));
-//            Assert.AreEqual(string.Format("LS{0}", i), list[i].GetValue<string>("n"));
-//        }
-//
-//        Assert.AreEqual(1, dto.GetValue<int>("id"));
-//        Assert.AreEqual("Louis", dto.GetValue<string>("name"));
+		var code = dto.getCode();
+		var copy = DTObject.readonly(code);
+		list = dto.getList("hobby");
+
+		for (int i = 0; i < list.size(); i++) {
+			var item = list.get(i);
+			assertEquals(i, item.getInt("v"));
+			assertEquals(String.format("LS%s", i), item.getString("n"));
+		}
+
+		assertEquals(1, dto.getInt("id"));
+		assertEquals("Louis", dto.getString("name"));
 
 	}
 
+	@Test
+	public void createNestListDTO() {
+		DTObject dto = DTObject.editable("{items:[{v,n,childs:[{v,n}]}]}");
+
+		DTObject item = dto.push("items");
+		item.setInt("v", 0);
+		item.setString("n", String.format("item%s", 0));
+
+		item = dto.push("items");
+		item.setInt("v", 1);
+		item.setString("n", String.format("item%s", 1));
+
+		DTObject itemChild = item.push("childs");
+		itemChild.setInt("v", 10);
+		itemChild.setString("n", String.format("child%s", 10));
+
+		itemChild = item.push("childs");
+		itemChild.setInt("v", 20);
+		itemChild.setString("n", String.format("child%s", 20));
+
+		assertEquals(
+				"{\"items\":[{\"v\":0,\"n\":\"item0\",\"childs\":[]},{\"v\":1,\"n\":\"item1\",\"childs\":[{\"v\":10,\"n\":\"child10\"},{\"v\":20,\"n\":\"child20\"}]}]}",
+				dto.getCode());
+
+		assertEquals("{items:[{v,n,childs:[{v,n}]}]}", dto.getSchemaCode());
+	}
+
+	@Test
+	public void createSymbolDTO() {
+		DTObject dto = DTObject.editable("{id,name,sex,hobbys:[{v,n}]}");
+		dto.setInt("id", 1);
+		dto.setString("name", "loui's");
+		dto.setInt("sex", 9);
+
+		DTObject objHobbys = dto.push("hobbys");
+		objHobbys.setString("v", "1");
+		objHobbys.setString("n", "！@#09/");
+
+		assertEquals(1, dto.getInt("id"));
+		assertEquals("loui's", dto.getString("name"));
+		assertEquals(9, dto.getInt("sex"));
+		// Assert.AreEqual("{\"id\",\"name\",\"sex\",\"hobbys\":[{\"v\",\"n\"}]}",
+		// dto.GetCode(false));
+		assertEquals("{\"id\":1,\"name\":\"loui's\",\"sex\":9,\"hobbys\":[{\"v\":\"1\",\"n\":\"！@#09/\"}]}",
+				dto.getCode());
+	}
+
+	@Test
+	public void createStringDTO() {
+		DTObject dto = DTObject.editable("{name}");
+		dto.setString("name", StringUtil.empty());
+
+		assertEquals(StringUtil.empty(), dto.getString("name"));
+	}
+
+	@Test
+	public void createBoolDTO() {
+		DTObject dto = DTObject.editable("{isShow}");
+		dto.setBoolean("isShow", true);
+
+		assertEquals(true, dto.getBoolean("isShow"));
+	}
+
+	@Test
+	public void createLocalDateTimeDTO() {
+
+		{
+			var code = "{id:1,time:\"2024-03-06T15:45:30.123Z\"}";
+			DTObject dto = DTObject.readonly(code);
+
+			var time = dto.getLocalDateTime("time");
+
+			assertEquals(2024, time.getYear());
+			assertEquals(3, time.getMonthValue());
+			assertEquals(6, time.getDayOfMonth());
+
+			assertEquals(15, time.getHour());
+			assertEquals(45, time.getMinute());
+			assertEquals(30, time.getSecond());
+
+			assertEquals("{\"id\":1,\"time\":\"2024-03-06T15:45:30.123Z\"}", dto.getCode());
+		}
+
+		{
+			DTObject dto = DTObject.editable();
+
+			dto.setInt("id", 1);
+
+			var time = LocalDateTime.of(2024, 3, 6, 15, 45, 30);
+
+			dto.setLocalDateTime("time", time);
+
+			time = dto.getLocalDateTime("time");
+
+			assertEquals(2024, time.getYear());
+			assertEquals(3, time.getMonthValue());
+			assertEquals(6, time.getDayOfMonth());
+
+			assertEquals(15, time.getHour());
+			assertEquals(45, time.getMinute());
+			assertEquals(30, time.getSecond());
+
+			// 本地时间在传输时，会追加时区信息
+			var offset = ISO8601.getSystemZoneOffset();
+			assertEquals(String.format("{\"id\":1,\"time\":\"2024-03-06T15:45:30%s\"}", offset), dto.getCode());
+		}
+
+	}
+
+	private class User {
+		private int _id;
+
+		public int getId() {
+			return _id;
+		}
+
+		public void setId(int id) {
+			_id = id;
+		}
+
+		private String _name;
+
+		public String getName() {
+			return _name;
+		}
+
+		public void setName(String name) {
+			_name = name;
+		}
+
+		public User(int id, String name) {
+			_id = id;
+			_name = name;
+		}
+	}
+
+	@Test
+	public void CreateObjectDTO() {
+//		var user = new User(1, "Louis");
+//		DTObject dto = DTObject.editable("{user}");
+//		var dtoUser = DTObject.editable("{id,name}", user);
+//		dto.setObject("user", dtoUser);
 //
-//    [TestMethod]
-//    public void CreateNestListDTO()
-//    {
-//        DTObject dto = DTObject.Create("{items:[{v,n,childs:[{v,n}]}]}");
+//		dynamic result = dto.GetValue("user");
 //
-//        DTObject objItems = dto.CreateAndPush("items");
-//        objItems.SetValue("v", 0);
-//        objItems.SetValue("n", string.Format("item{0}", 0));
-//
-//        objItems = dto.CreateAndPush("items");
-//        objItems.SetValue("v", 1);
-//        objItems.SetValue("n", string.Format("item{0}", 1));
-//
-//        DTObject objChilds = objItems.CreateAndPush("childs");
-//        objChilds.SetValue("v", 10);
-//        objChilds.SetValue("n", string.Format("child{0}", 10));
-//
-//        objChilds = objItems.CreateAndPush("childs");
-//        objChilds.SetValue("v", 20);
-//        objChilds.SetValue("n", string.Format("child{0}", 20));
-//
-//
-//        //Assert.AreEqual("{\"items\":[{\"v\",\"n\",\"childs\":[{\"v\",\"n\"}]}]}", dto.GetCode(false));
-//        Assert.AreEqual("{\"items\":[{\"childs\":[],\"n\":\"item0\",\"v\":0},{\"childs\":[{\"n\":\"child10\",\"v\":10},{\"n\":\"child20\",\"v\":20}],\"n\":\"item1\",\"v\":1}]}", dto.GetCode(true));
-//    }
-//
-//    [TestMethod]
-//    public void CreateSymbolDTO()
-//    {
-//        DTObject dto = DTObject.Create("{id,name,sex,hobbys:[{v,n}]}");
-//        dto.SetValue("id", 1);
-//        dto.SetValue("name", "loui's");
-//        dto.SetValue("sex", 9);
-//
-//        DTObject objHobbys = dto.CreateAndPush("hobbys");
-//        objHobbys.SetValue("v", "1");
-//        objHobbys.SetValue("n", "！@#09/");
-//
-//        Assert.AreEqual(1, dto.GetValue<int>("id"));
-//        Assert.AreEqual("loui's", dto.GetValue<string>("name"));
-//        Assert.AreEqual(9, dto.GetValue<int>("sex"));
-//        //Assert.AreEqual("{\"id\",\"name\",\"sex\",\"hobbys\":[{\"v\",\"n\"}]}", dto.GetCode(false));
-//        Assert.AreEqual("{\"hobbys\":[{\"n\":\"！@#09/\",\"v\":\"1\"}],\"id\":1,\"name\":\"loui's\",\"sex\":9}", dto.GetCode(true));
-//    }
-//
-//    [TestMethod]
-//    public void CreateGuidDTO()
-//    {
-//        DTObject dto = DTObject.Create("{id}");
-//        dto.SetValue("id", Guid.Empty);
-//
-//        Assert.AreEqual(Guid.Empty, dto.GetValue<Guid>("id"));
-//    }
-//
-//    [TestMethod]
-//    public void CreateStringDTO()
-//    {
-//        DTObject dto = DTObject.Create("{name}");
-//        dto.SetValue("name", string.Empty);
-//
-//        Assert.AreEqual(string.Empty, dto.GetValue<string>("name"));
-//    }
-//
-//    [TestMethod]
-//    public void CreateBoolDTO()
-//    {
-//        DTObject dto = DTObject.Create("{isShow}");
-//        dto.SetValue("isShow", true);
-//
-//        Assert.AreEqual(true, dto.GetValue<bool>("isShow"));
-//    }
-//
-//    [TestMethod]
-//    public void CreateDateTimeDTO()
-//    {
-//        DTObject dto = DTObject.Create("{time}");
-//        dto.SetValue("time", DateTime.Parse("2031-08-05"));
-//
-//        Assert.AreEqual(DateTime.Parse("2031-08-05"), dto.GetValue<DateTime>("time"));
-//    }
-//
-//    [TestMethod]
-//    public void CreateObjectDTO()
-//    {
-//        var user = new User(1, "Louis");
-//        DTObject dto = DTObject.Create("{user}");
-//        var dtoUser = DTObject.Create("{id,name}", user);
-//        dto.SetValue("user", dtoUser);
-//
-//        dynamic result = dto.GetValue("user");
-//
-//        Assert.AreEqual(1, result.Id);
-//        Assert.AreEqual("Louis", result.Name);
-//    }
+//		Assert.AreEqual(1, result.Id);
+//		Assert.AreEqual("Louis", result.Name);
+	}
 //
 //    private class User
 //    {

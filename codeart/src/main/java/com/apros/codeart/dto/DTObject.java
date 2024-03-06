@@ -5,6 +5,7 @@ import static com.apros.codeart.runtime.TypeUtil.as;
 import static com.apros.codeart.runtime.TypeUtil.is;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -12,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.apros.codeart.context.ContextSession;
+import com.apros.codeart.dto.serialization.IDTOSerializable;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
@@ -23,11 +25,13 @@ import com.google.common.collect.Iterables;
  * 
  * 2.解析字符串后，各项成员不实际存放值，而是存放的值对应的字符串，当获取的时候，可以显示调用getInt等基元类型的操作，返回基元值，避免装箱。
  * 
+ * 3.只读模式的dto底层用ArrayList存放数据，可编辑的dto用LinkedList存放数据
+ * 
  * 我们基于这样的事实设计DTO：接受字符串，使用一次给调用方，或者将数据给与DTO，DOT生成JSON格式字符串，发送到网络。
  * 
  * 在这种模式下，避免了装箱和拆箱，性能良好。
  * 
- * 但是要频繁的操作dto的同样的值，比如getInt("value")或者setInt("value")调用好几遍，那么建议用getInt32这种引用系方法。
+ * 但是要频繁的操作dto的同样的值，比如getInt("value")或者setInt("value")调用好几遍，那么建议用getIntRef这种引用系方法。
  */
 public class DTObject implements AutoCloseable {
 
@@ -63,52 +67,52 @@ public class DTObject implements AutoCloseable {
 
 //	#region 值
 
-	public Byte getInt1(String findExp) {
+	public Byte getByteRef(String findExp) {
 		return (Byte) this.getValue(findExp);
 	}
 
-	public Byte getInt1(String findExp, Byte defaultValue) {
+	public Byte getByteRef(String findExp, Byte defaultValue) {
 		return (Byte) this.getValue(findExp, defaultValue);
 	}
 
-	public Short getInt2(String findExp, Short defaultValue) {
+	public Short getShortRef(String findExp, Short defaultValue) {
 		return (Short) this.getValue(findExp, defaultValue);
 	}
 
-	public Integer getInt32(String findExp) {
+	public Integer getIntRef(String findExp) {
 		return (Integer) this.getValue(findExp);
 	}
 
-	public Integer getInt32(String findExp, Integer defaultValue) {
+	public Integer getIntRef(String findExp, Integer defaultValue) {
 		return (Integer) this.getValue(findExp, defaultValue);
 	}
 
-	public Long getInt64(String findExp) {
+	public Long getLongRef(String findExp) {
 		return (Long) this.getValue(findExp);
 	}
 
-	public Long getInt64(String findExp, Long defaultValue) {
+	public Long getLongRef(String findExp, Long defaultValue) {
 		return (Long) this.getValue(findExp, defaultValue);
 	}
 
-	public Boolean getBool(String findExp) {
+	public Boolean BooleanRef(String findExp) {
 		return (Boolean) getValue(findExp, false, true);
 	}
 
-	public Boolean getBool(String findExp, boolean defaultValue) {
+	public Boolean BooleanRef(String findExp, boolean defaultValue) {
 		return (Boolean) getValue(findExp, defaultValue, false);
 	}
 
-	public Iterable<Long> getInt64s(String findExp) {
+	public Iterable<Long> getLongRefs(String findExp) {
 		return this.getValues(Long.class, findExp);
 	}
 
-	private Object extractValue(DTEntity entity) {
+	private Object extractValueRef(DTEntity entity) {
 		switch (entity.getType()) {
 		case DTEntityType.VALUE: {
 			var ev = as(entity, DTEValue.class);
 			if (ev != null)
-				return ev.getValue();
+				return ev.getValueRef();
 		}
 			break;
 		case DTEntityType.OBJECT: {
@@ -129,7 +133,7 @@ public class DTObject implements AutoCloseable {
 
 	public Object getValue(String findExp, Object defaultValue, boolean throwError) {
 		DTEntity entity = find(findExp, throwError);
-		Object value = entity == null ? null : extractValue(entity);
+		Object value = entity == null ? null : extractValueRef(entity);
 		return value == null ? defaultValue : value;
 	}
 
@@ -281,7 +285,18 @@ public class DTObject implements AutoCloseable {
 		return entity == null ? defaultValue : entity.getString();
 	}
 
-	//
+	public LocalDateTime getLocalDateTime(String findExp, LocalDateTime defaultValue) {
+		return getLocalDateTime(findExp, defaultValue, false);
+	}
+
+	public LocalDateTime getLocalDateTime(String findExp) {
+		return getLocalDateTime(findExp, LocalDateTime.MIN, true);
+	}
+
+	public LocalDateTime getLocalDateTime(String findExp, LocalDateTime defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getLocalDateTime();
+	}
 
 	public Instant getInstant(String findExp, Instant defaultValue) {
 		return getInstant(findExp, defaultValue, false);
@@ -328,10 +343,6 @@ public class DTObject implements AutoCloseable {
 		setValue(findExp, Character.toString(value), false);
 	}
 
-	public void setInstant(String findExp, Instant value) {
-		setValue(findExp, JSON.getString(value), false);
-	}
-
 	public void setString(String findExp, String value) {
 		setValue(findExp, value, true);
 	}
@@ -367,7 +378,15 @@ public class DTObject implements AutoCloseable {
 
 	// endregion
 
-	public void set(String findExp, Object value) {
+	public void setLocalDateTime(String findExp, LocalDateTime value) {
+		setValueRef(findExp, value, true);
+	}
+
+	public void setInstant(String findExp, Instant value) {
+		setValueRef(findExp, value, true);
+	}
+
+	private void setValueRef(String findExp, Object value, boolean valueCodeIsString) {
 		validateReadOnly();
 
 		var dtoValue = as(value, DTObject.class);
@@ -380,14 +399,14 @@ public class DTObject implements AutoCloseable {
 		if (Iterables.size(es) == 0) {
 			var query = QueryExpression.create(findExp);
 			_root.setMember(query, (name) -> {
-				return createEntity(name, value);
+				return createEntity(name, value, valueCodeIsString);
 			});
 		} else {
 			var isPureValue = isPureValue(value);
 			for (var e : es) {
 				if (e.getType() == DTEntityType.VALUE && isPureValue) {
 					var ev = as(e, DTEValue.class);
-					ev.setValue(value);
+					ev.setValueRef(value, valueCodeIsString);
 					continue;
 				}
 
@@ -397,14 +416,14 @@ public class DTObject implements AutoCloseable {
 
 				var query = QueryExpression.create(e.getName());
 				parent.setMember(query, (name) -> {
-					return createEntity(name, value);
+					return createEntity(name, value, valueCodeIsString);
 				});
 			}
 		}
 	}
 
-	public void set(Object value) {
-		set(StringUtil.empty(), value);
+	private void setValueRef(Object value, boolean valueCodeIsString) {
+		setValueRef(StringUtil.empty(), value, valueCodeIsString);
 	}
 
 	public void setObject(String findExp, DTObject obj) {
@@ -435,7 +454,7 @@ public class DTObject implements AutoCloseable {
 		setObject(StringUtil.empty(), obj);
 	}
 
-	private DTEntity createEntity(String name, Object value) {
+	private DTEntity createEntity(String name, Object value, boolean valueCodeIsString) {
 		var list = as(value, Iterable.class);
 		if (list != null)
 			return createListEntity(name, list);
@@ -446,7 +465,7 @@ public class DTObject implements AutoCloseable {
 			root.setName(name);
 			return root;
 		} else {
-			return DTEValue.obtainByValue(name, value);
+			return DTEValue.obtainByValue(name, value, valueCodeIsString);
 		}
 	}
 
@@ -455,7 +474,7 @@ public class DTObject implements AutoCloseable {
 
 		for (var item : list) {
 			dte.push((dto) -> {
-				dto.set(item);
+				dto.setValueRef(item, true);
 			});
 		}
 		return dte;
@@ -857,28 +876,28 @@ public class DTObject implements AutoCloseable {
 		return createImpl("{}", false);
 	}
 
-//	/**
-//	 * 根据架构代码将对象的信息加载到dto中
-//	 * 
-//	 * @param schemaCode
-//	 * @param target
-//	 * @return
-//	 */
-//	public static DTObject create(String schemaCode, Object target) {
-//		var dy = as(target, IDTOSerializable.class);
-//		if (dy != null) {
-//			return create(schemaCode, dy.getData());
-//		}
-//
-//		var dto = as(target, DTObject.class);
-//		if (dto != null) {
-//			DTObject result = DTObject.Create();
-//			result.load(schemaCode, dto);
-//			return result;
-//		}
-//		return DTObjectMapper.Instance.Load(schemaCode, target);
-//	}
-//
+	/**
+	 * 根据架构代码将对象的信息加载到dto中
+	 * 
+	 * @param schemaCode
+	 * @param target
+	 * @return
+	 */
+	public static DTObject readonly(String schemaCode, Object target) {
+		var dy = as(target, IDTOSerializable.class);
+		if (dy != null) {
+			return readonly(schemaCode, dy.getData());
+		}
+
+		var dto = as(target, DTObject.class);
+		if (dto != null) {
+			DTObject result = DTObject.readonly();
+			result.load(schemaCode, dto);
+			return result;
+		}
+		return DTObjectMapper.Instance.Load(schemaCode, target);
+	}
+
 ////	#region 对象映射
 //
 //	/// <summary>
@@ -948,29 +967,30 @@ public class DTObject implements AutoCloseable {
 //		return Save < T > (string.Empty);
 //	}
 //
-//	/// <summary>
-//	/// 根据架构代码将对象的信息加载到dto中
-//	/// </summary>
-//	/// <param name="schemaCode"></param>
-//	/// <param name="target"></param>
-//	/// <returns></returns>
-//	public void Load(string schemaCode, object target)
-//	 {
-//	     var dy = target as IDTOSerializable;
-//	     if(dy != null)
-//	     {
-//	         Load(schemaCode,dy.GetData());
-//	         return;
-//	     }
-//
-//	     var dto = target as DTObject;
-//	     if (dto != null)
-//	     {
-//	         Load(schemaCode, target);
-//	         return;
-//	     }
-//	     DTObjectMapper.Instance.Load(this, schemaCode, target);
-//	 }
+
+	/**
+	 * 根据架构代码将对象的信息加载到dto中
+	 * 
+	 * @param schemaCode
+	 * @param target
+	 */
+	public void load(String schemaCode, Object target)
+	 {
+	     var dy = target as IDTOSerializable;
+	     if(dy != null)
+	     {
+	         Load(schemaCode,dy.GetData());
+	         return;
+	     }
+
+	     var dto = target as DTObject;
+	     if (dto != null)
+	     {
+	         Load(schemaCode, target);
+	         return;
+	     }
+	     DTObjectMapper.Instance.Load(this, schemaCode, target);
+	 }
 //
 //	private void load(String schemaCode, DTObject target) {
 //		var schema = DTObject.Create(schemaCode);
@@ -1000,7 +1020,7 @@ public class DTObject implements AutoCloseable {
 	public static final DTObject Empty = DTObject.readonly(EmptyCode);
 
 	public boolean isEmpty() {
-		return this.getBool("__empty", false);
+		return this.getBoolean("__empty", false);
 	}
 
 //	#endregion

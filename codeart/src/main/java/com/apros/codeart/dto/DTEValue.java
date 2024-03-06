@@ -1,10 +1,12 @@
 package com.apros.codeart.dto;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.function.Function;
 
 import com.apros.codeart.context.ContextSession;
+import com.apros.codeart.util.ISO8601;
 import com.apros.codeart.util.StringUtil;
 
 final class DTEValue extends DTEntity {
@@ -16,13 +18,13 @@ final class DTEValue extends DTEntity {
 
 	private String _valueCode;
 
-	private boolean _valueIsString;
+	private boolean _valueCodeIsString;
 
 	private Object _value;
 
-	public Object getValue() {
+	public Object getValueRef() {
 		if (_value == null) {
-			_value = _valueIsString ? JSON.getValueByString(_valueCode) : JSON.getValueByNotString(_valueCode);
+			_value = _valueCodeIsString ? JSON.getValueByString(_valueCode) : JSON.getValueByNotString(_valueCode);
 		}
 		return _value;
 	}
@@ -56,7 +58,15 @@ final class DTEValue extends DTEntity {
 	}
 
 	public Instant getInstant() {
-		return JSON.parseInstant(_valueCode);
+		if (_value != null)
+			return (Instant) _value;
+		return ISO8601.getInstant(_valueCode);
+	}
+
+	public LocalDateTime getLocalDateTime() {
+		if (_value != null)
+			return (LocalDateTime) _value;
+		return ISO8601.getLocalDateTime(_valueCode);
 	}
 
 	public String getString() {
@@ -67,22 +77,33 @@ final class DTEValue extends DTEntity {
 		return _valueCode.charAt(0);
 	}
 
-	public void setValue(Object value) {
+	/**
+	 * 时间等引用类型通过该方法赋值
+	 * 
+	 * @param value
+	 */
+	public void setValueRef(Object value, boolean valueCodeIsString) {
 		_valueCode = null;
-		_valueIsString = false;
+		_valueCodeIsString = valueCodeIsString;
 		_value = value;
 	}
 
-	public void setValueCode(String valueCode, boolean valueIsString) {
+	/**
+	 * 基类型和字符串都是通过该方法赋值的
+	 * 
+	 * @param valueCode
+	 * @param valueIsString
+	 */
+	public void setValueCode(String valueCode, boolean valueCodeIsString) {
 		_valueCode = valueCode;
-		_valueIsString = valueIsString;
+		_valueCodeIsString = valueCodeIsString;
 		_value = null;
 	}
 
-	private DTEValue(String name, String valueCode, boolean valueIsString, Object value) {
+	private DTEValue(String name, String valueCode, boolean valueCodeIsString, Object value) {
 		this.setName(name);
 		this._valueCode = valueCode;
-		this._valueIsString = valueIsString;
+		this._valueCodeIsString = valueCodeIsString;
 		this._value = value;
 	}
 
@@ -93,7 +114,7 @@ final class DTEValue extends DTEntity {
 //		var dto = as(value, DTObject.class);
 //		if (dto != null)
 //			return obtain(this.getName(), dto.clone());
-		return obtain(this.getName(), _valueCode, _valueIsString, _value);
+		return obtain(this.getName(), _valueCode, _valueCodeIsString, _value);
 	}
 
 	@Override
@@ -105,7 +126,7 @@ final class DTEValue extends DTEntity {
 	@Override
 	public void clearData() {
 		_valueCode = null;
-		_valueIsString = false;
+		_valueCodeIsString = false;
 		_value = null;
 	}
 
@@ -139,7 +160,7 @@ final class DTEValue extends DTEntity {
 		}
 
 		// 有valueCode
-		if (_valueIsString) {
+		if (_valueCodeIsString) {
 			code.append("\"");
 			code.append(_valueCode); // _valueCode是已经解析好了的代码，直接输出
 			code.append("\"");
@@ -149,12 +170,6 @@ final class DTEValue extends DTEntity {
 		// 不是字符串，直接输出
 		code.append(_valueCode);
 		return;
-
-//		var value = this.getValue();
-//		var dto = as(value, DTObject.class);
-//		if (dto != null)
-//			return dto.getCode(sequential, false);
-//		return JSON.getCode(value);
 	}
 
 	@Override
@@ -174,16 +189,16 @@ final class DTEValue extends DTEntity {
 
 	}
 
-	public static DTEValue obtainByCode(String name, String valueCode, boolean valueIsString) {
-		return obtain(name, valueCode, valueIsString, null);
+	public static DTEValue obtainByCode(String name, String valueCode, boolean valueCodeIsString) {
+		return obtain(name, valueCode, valueCodeIsString, null);
 	}
 
-	public static DTEValue obtainByValue(String name, Object value) {
-		return obtain(name, null, false, value);
+	public static DTEValue obtainByValue(String name, Object value, boolean valueCodeIsString) {
+		return obtain(name, null, valueCodeIsString, value);
 	}
 
-	private static DTEValue obtain(String name, String valueCode, boolean valueIsString, Object value) {
-		return ContextSession.registerItem(new DTEValue(name, valueCode, valueIsString, value));
+	private static DTEValue obtain(String name, String valueCode, boolean valueCodeIsString, Object value) {
+		return ContextSession.registerItem(new DTEValue(name, valueCode, valueCodeIsString, value));
 	}
 
 }

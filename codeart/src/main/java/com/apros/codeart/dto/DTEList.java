@@ -286,9 +286,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 
 	@Override
 	public void fillSchemaCode(StringBuilder code, boolean sequential, boolean outputName) {
-		var name = this.getName();
-		if (outputName && !isNullOrEmpty(name))
-			code.append(String.format("\"%s\"", name));
+		code.append(this.getName());
 
 		if (code.length() > 0)
 			code.append(":");

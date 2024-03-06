@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.apros.codeart.runtime.FieldUtil;
+import com.apros.codeart.util.ISO8601;
 import com.apros.codeart.util.StringUtil;
-import com.apros.codeart.util.TimeUtil;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
@@ -25,12 +25,6 @@ class JSON {
 	public static String getCode(Object value) {
 		var sb = new StringBuilder();
 		writeValue(sb, value);
-		return sb.toString();
-	}
-
-	public static String getString(Instant time) {
-		var sb = new StringBuilder();
-		writeInstant(sb, time);
 		return sb.toString();
 	}
 
@@ -66,14 +60,12 @@ class JSON {
 		}
 
 		if (valueClass == Instant.class) {
-			var t = TimeUtil.toUTC((Instant) value);
-			writeInstant(sb, t);
+			writeInstant(sb, (Instant) value);
 			return;
 		}
 
 		if (valueClass == LocalDateTime.class) {
-			var t = TimeUtil.toUTC((LocalDateTime) value);
-			writeInstant(sb, t);
+			writeLocalDateTime(sb, (LocalDateTime) value);
 			return;
 		}
 
@@ -92,10 +84,16 @@ class JSON {
 		}
 	}
 
+	private static void writeLocalDateTime(StringBuilder sb, LocalDateTime value) {
+		sb.append("\"");
+		sb.append(ISO8601.toString(value));
+		sb.append("\"");
+	}
+
 	private static void writeInstant(StringBuilder sb, Instant value) {
-		sb.append("new Date(\"");
-		sb.append(TimeUtil.formatMemoized(value, "yyyy-MM-ddTHH:mm:ss.fffZ")); // 只有转为utc时间，火狐等浏览器才识别
-		sb.append("\")");
+		sb.append("\"");
+		sb.append(ISO8601.toString(value));
+		sb.append("\"");
 	}
 
 	// 这主要是将带换行符的json代码，每行末尾添加了\字符，这样js引擎才能识别带换行的字符串
@@ -268,9 +266,10 @@ class JSON {
 
 	public static Object getValueByString(String code) {
 		var value = JSON.readString(code);
+		// 注意，在没有显示指名用什么类型的日期时，默认给出的时间是Instant类型，表示一个UTC时间点，可以转换为任意别的时间
 		var time = JSON.parseInstant(value);
 		if (time != null)
-			return time; // 有可能是客户端的JS库的JSON.Parse处理后得到的时间，得特别处理
+			return time;
 		return value;
 	}
 
@@ -307,23 +306,17 @@ class JSON {
 		return code;
 	}
 
-	private final static Pattern _date = Pattern.compile("new Date\\(\"(.+?)\"\\)", Pattern.CASE_INSENSITIVE);
+//	private final static Pattern _date = Pattern.compile("new Date\\(\"(.+?)\"\\)", Pattern.CASE_INSENSITIVE);
 
 	// Pattern是线程安全的
-	private final static Pattern _date2 = Pattern
+	// ISO 8601字符串格式
+	private final static Pattern _iso8601 = Pattern
 			.compile("(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{3})Z", Pattern.CASE_INSENSITIVE);
 
 	public static Instant parseInstant(String code) {
-		if (_date2.matcher(code).matches()) {
+		if (_iso8601.matcher(code).matches()) {
 			return Instant.parse(code);
 		}
-
-		var matcher = _date.matcher(code);
-		if (matcher.matches()) {
-			code = matcher.group(1);
-			return Instant.parse(code);
-		}
-
 		return null;
 	}
 }
