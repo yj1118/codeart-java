@@ -527,7 +527,7 @@ public class DTObject implements AutoCloseable {
 		return es;
 	}
 
-	Iterable<DTEntity> getMembers() {
+	public Iterable<DTEntity> getMembers() {
 		return _root.getMembers();
 	}
 

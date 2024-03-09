@@ -6,6 +6,7 @@ import java.util.function.Supplier;
 
 import com.apros.codeart.dto.DTEntity;
 import com.apros.codeart.dto.DTObject;
+import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.StringUtil;
 
@@ -51,7 +52,8 @@ class SchemaCodes {
 
 		var fields = classType.getDeclaredFields();
 		for (var field : fields) {
-			var entity = _schema.find(field.getName(), false);
+			var name = FieldUtil.getAgreeName(field.getName());
+			var entity = _schema.find(name, false);
 			if (entity != null) {
 				var memberType = field.getType();
 				collectSchemaCode(entity, memberType);

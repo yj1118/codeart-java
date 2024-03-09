@@ -161,6 +161,10 @@ public final class FieldUtil {
 		return _getAgreeName.apply(fieldName);
 	}
 
+	public static String getAgreeName(Field field) {
+		return _getAgreeName.apply(field.getName());
+	}
+
 	public static Accesser getFieldWriterMemoized(Class<?> objClass, String fieldName) {
 
 		var field = getAgreeField(objClass, fieldName);

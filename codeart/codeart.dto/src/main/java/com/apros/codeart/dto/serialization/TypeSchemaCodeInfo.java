@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.function.Function;
 
 import com.apros.codeart.dto.DTObject;
+import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.util.LazyIndexer;
 
 class TypeSchemaCodeInfo extends TypeSerializationInfo {
@@ -22,8 +23,9 @@ class TypeSchemaCodeInfo extends TypeSerializationInfo {
 
 	@Override
 	protected DTOMemberAnnotation getMemberAnnotation(Field field) {
-		if (_schemaCodes.canMarkup(field.getName()))
-			return new DTOMemberAnnotation(field.getName(), DTOMemberType.General);
+		var name = FieldUtil.getAgreeName(field);
+		if (_schemaCodes.canMarkup(name))
+			return new DTOMemberAnnotation(name, DTOMemberType.General);
 		return null;
 	}
 
