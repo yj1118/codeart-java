@@ -183,45 +183,6 @@ class CommonTest {
 
 	}
 
-	private class User {
-		private int _id;
-
-		public int getId() {
-			return _id;
-		}
-
-		public void setId(int id) {
-			_id = id;
-		}
-
-		private String _name;
-
-		public String getName() {
-			return _name;
-		}
-
-		public void setName(String name) {
-			_name = name;
-		}
-
-		public User(int id, String name) {
-			_id = id;
-			_name = name;
-		}
-	}
-
-	@Test
-	public void CreateObjectDTO() {
-//		var user = new User(1, "Louis");
-//		DTObject dto = DTObject.editable("{user}");
-//		var dtoUser = DTObject.editable("{id,name}", user);
-//		dto.setObject("user", dtoUser);
-//
-//		dynamic result = dto.GetValue("user");
-//
-//		Assert.AreEqual(1, result.Id);
-//		Assert.AreEqual("Louis", result.Name);
-	}
 //
 //    private class User
 //    {

@@ -1,4 +1,4 @@
-package com.apros.codeart.dto.serialization;
+package com.apros.codeart.dto;
 
 import java.time.Instant;
 

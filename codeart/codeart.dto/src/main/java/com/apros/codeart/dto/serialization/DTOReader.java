@@ -3,6 +3,7 @@ package com.apros.codeart.dto.serialization;
 import java.time.Instant;
 
 import com.apros.codeart.dto.DTObject;
+import com.apros.codeart.dto.IDTOReader;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 

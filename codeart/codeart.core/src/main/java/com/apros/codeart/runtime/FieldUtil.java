@@ -108,13 +108,13 @@ public final class FieldUtil {
 	 */
 	public static Accesser getFieldGetterMemoized(Class<?> objClass, String fieldName) {
 
-		var name = getAgreeName(fieldName);
-		var field = getAgreeField(objClass, name);
+		var field = getAgreeField(objClass, fieldName);
 
 		if (canRead(field))
 			return new Accesser(field);
 		else {
 			// 如果没有访问权限，那么尝试用访问方法
+			var name = getAgreeName(fieldName);
 			String methodName = String.format("get%s", StringUtil.firstToUpper(name));
 			var method = MethodUtil.resolveMemoized(objClass, methodName);
 
@@ -147,18 +147,29 @@ public final class FieldUtil {
 		return target;
 	}
 
-	private static String getAgreeName(String fieldName) {
+	private static Function<String, String> _getAgreeName = LazyIndexer.init((fieldName) -> {
 		return fieldName.startsWith("_") ? fieldName.substring(1) : fieldName;
+	});
+
+	/**
+	 * 获得字段的约定名
+	 * 
+	 * @param fieldName
+	 * @return
+	 */
+	public static String getAgreeName(String fieldName) {
+		return _getAgreeName.apply(fieldName);
 	}
 
 	public static Accesser getFieldWriterMemoized(Class<?> objClass, String fieldName) {
-		var name = getAgreeName(fieldName);
-		var field = getAgreeField(objClass, name);
+
+		var field = getAgreeField(objClass, fieldName);
 
 		if (canWrite(field))
 			return new Accesser(field);
 		else {
 			// 如果没有访问权限，那么尝试用访问方法
+			var name = getAgreeName(fieldName);
 			String methodName = String.format("set%s", StringUtil.firstToUpper(name));
 			var method = MethodUtil.resolveMemoized(objClass, methodName, field.getType());
 

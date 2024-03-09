@@ -4,6 +4,8 @@ import static com.apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Method;
 
+import com.apros.codeart.dto.IDTOWriter;
+
 class SerializeMethod {
 
 	private Method _method;

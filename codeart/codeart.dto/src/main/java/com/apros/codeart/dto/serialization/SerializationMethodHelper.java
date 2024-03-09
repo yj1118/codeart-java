@@ -8,9 +8,12 @@ import java.util.function.Consumer;
 
 import com.apros.codeart.bytecode.IVariable;
 import com.apros.codeart.bytecode.MethodGenerator;
+import com.apros.codeart.dto.IDTOReader;
+import com.apros.codeart.dto.IDTOWriter;
 import com.apros.codeart.runtime.MethodUtil;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ReaderWriterLockSlim;
+import com.apros.codeart.util.StringUtil;
 
 /**
  * 封装了根据类型获取序列化、反序列化的方法信息
@@ -55,10 +58,11 @@ final class SerializationMethodHelper {
 			if (type.isEnum()) {
 				method = MethodUtil.resolveMemoized(IDTOWriter.class, "writeEnum", String.class, Enum.class);
 			} else {
-				method = MethodUtil.resolveMemoized(IDTOWriter.class, "write", String.class, type);
+				String methodName = String.format("write%s", StringUtil.firstToUpper(type.getSimpleName()));
+				method = MethodUtil.resolveMemoized(IDTOWriter.class, methodName, String.class, type);
 				if ((method == null) && (!type.isPrimitive())) {
 					// 如果不是int、long等基础类型，而有可能是自定义类型，那么用以下代码得到方法
-					method = MethodUtil.resolveMemoized(IDTOWriter.class, "write", _writeObjectArgs);
+					method = MethodUtil.resolveMemoized(IDTOWriter.class, "writeObject", _writeObjectArgs);
 				}
 			}
 
@@ -67,7 +71,7 @@ final class SerializationMethodHelper {
 			if (type.isEnum()) {
 				method = MethodUtil.resolveMemoized(IDTOReader.class, "readEnum", String.class);
 			} else {
-				String methodName = String.format("read{0}", type.getName());
+				String methodName = String.format("read%s", StringUtil.firstToUpper(type.getSimpleName()));
 				method = MethodUtil.resolveMemoized(IDTOReader.class, methodName, _readArgs);
 				if ((method == null) && (!type.isPrimitive())) {
 					// 如果不是int、long等基础类型，而有可能是自定义类型，那么用以下代码得到方法
@@ -149,8 +153,7 @@ final class SerializationMethodHelper {
 			Consumer<Class<?>> loadValue) {
 		var method = SerializationMethodHelper.getTypeMethod(valueType, SerializationMethodType.Serialize);
 		var prmIndex = SerializationMethodHelper.getParameterIndex(method, SerializationMethodType.Serialize);
-		g.invoke(method.getName(), () -> {
-			g.loadParameter(prmIndex);
+		g.invoke(prmIndex, method.getName(), () -> {
 			g.load(dtoMemberName);
 			var argType = method.getParameterTypes()[1];
 			loadValue.accept(argType);
@@ -211,8 +214,7 @@ final class SerializationMethodHelper {
 	public static void read(MethodGenerator g, String dtoMemberName, Class<?> valueType) {
 		var method = SerializationMethodHelper.getTypeMethod(valueType, SerializationMethodType.Deserialize);
 		var prmIndex = SerializationMethodHelper.getParameterIndex(method, SerializationMethodType.Deserialize);
-		g.invoke(method.getName(), () -> {
-			g.loadParameter(prmIndex);
+		g.invoke(prmIndex, method.getName(), () -> {
 			g.load(dtoMemberName);
 		});
 	}

@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 import com.apros.codeart.bytecode.MethodGenerator;
+import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.StringUtil;
 
@@ -165,6 +166,11 @@ class MemberSerializationInfo {
 	}
 
 	public String getDTOMemberName() {
+		var memberName = _getDTOMemberName();
+		return FieldUtil.getAgreeName(memberName);
+	}
+
+	private String _getDTOMemberName() {
 		if (this.getMemberAnn() != null && !StringUtil.isNullOrEmpty(this.getMemberAnn().getName()))
 			return this.getMemberAnn().getName();
 		if (!StringUtil.isNullOrEmpty(_field.getName()))

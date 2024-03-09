@@ -46,7 +46,7 @@ class SchemaCodeWriter extends DTOWriter {
 //	}
 
 	@Override
-	public void write(String name, Object value) {
+	public void writeObject(String name, Object value) {
 		if (value == null)
 			return; // 为isNull的成员不输出
 		// 是否自定义

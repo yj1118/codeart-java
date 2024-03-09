@@ -214,15 +214,31 @@ public class MethodGenerator implements AutoCloseable {
 
 			var local = _scopeStack.getVar(varName);
 			Class<?> objectType = local.getType();
-			var field = objectType.getDeclaredField(fieldName);
 
-			Class<?> fieldType = field.getType();
-			String typeDescriptor = Type.getDescriptor(fieldType); // 类似："Ljava/lang/String;"
-			String owner = Type.getInternalName(objectType);
-			_visitor.visitFieldInsn(Opcodes.GETFIELD, owner, field.getName(), typeDescriptor);
+			var accessor = FieldUtil.getFieldGetterMemoized(objectType, fieldName);
 
-			_evalStack.pop(); // 执行完毕后，变量就被弹出了
-			_evalStack.push(fieldType);// 值进来了
+			if (accessor.isField()) {
+				var field = objectType.getDeclaredField(fieldName);
+
+				Class<?> fieldType = field.getType();
+				String typeDescriptor = Type.getDescriptor(fieldType); // 类似："Ljava/lang/String;"
+				String owner = Type.getInternalName(objectType);
+				_visitor.visitFieldInsn(Opcodes.GETFIELD, owner, field.getName(), typeDescriptor);
+				_evalStack.pop(); // 执行完毕后，变量就被弹出了
+				_evalStack.push(fieldType);// 值进来了
+			} else {
+				Method method = accessor.getMethod();
+				var opcode = Opcodes.INVOKEVIRTUAL;
+
+				var descriptor = DynamicUtil.getMethodDescriptor(method);
+				var owner = DynamicUtil.getInternalName(objectType); // info.getType().getName()
+
+				_visitor.visitMethodInsn(opcode, owner, method.getName(), descriptor, false);
+
+				_evalStack.pop(); // 执行完毕后，变量就被弹出了
+				_evalStack.push(method.getReturnType());// 值进来了
+
+			}
 
 		} catch (Exception ex) {
 			throw propagate(ex);

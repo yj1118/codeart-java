@@ -26,7 +26,7 @@ class MarkupWriter extends DTOWriter {
 //	}
 
 	@Override
-	public void write(String name, Object value) {
+	public void writeObject(String name, Object value) {
 		if (value == null)
 			return; // 为isNull的成员不输出, 这里有可能要升级是否为null的算法,todo
 		// 是否自定义

@@ -200,4 +200,29 @@ class MethodGeneratorTest {
 		}
 	}
 
+	@Test
+	void getField() {
+		try (var cg = ClassGenerator.define()) {
+
+			SampleClass obj = new SampleClass("小张", 2);
+
+			try (var mg = cg.defineMethodPublicStatic("getValue", int.class, (args) -> {
+				args.add("obj", SampleClass.class);
+			})) {
+				mg.loadField("obj", "index");
+			}
+
+			// 返回生成的字节码
+			var cls = cg.toClass();
+
+			var method = cls.getDeclaredMethod("getValue", SampleClass.class);
+			var index = method.invoke(null, obj);
+
+			assertEquals(index, obj.getIndex());
+
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
 }

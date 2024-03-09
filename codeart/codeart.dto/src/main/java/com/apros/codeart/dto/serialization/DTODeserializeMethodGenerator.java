@@ -4,6 +4,7 @@ import static com.apros.codeart.runtime.Util.propagate;
 
 import com.apros.codeart.bytecode.ClassGenerator;
 import com.apros.codeart.bytecode.MethodGenerator;
+import com.apros.codeart.dto.IDTOReader;
 import com.apros.codeart.util.StringUtil;
 
 final class DTODeserializeMethodGenerator {

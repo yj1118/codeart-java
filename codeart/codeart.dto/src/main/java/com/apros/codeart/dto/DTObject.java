@@ -886,14 +886,36 @@ public class DTObject implements AutoCloseable {
 	 * @return
 	 */
 	public static DTObject readonly(String schemaCode, Object target) {
+		return createImpl(schemaCode, target, true);
+	}
+
+	public static DTObject readonly(Object target) {
+		return createImpl(StringUtil.empty(), target, true);
+	}
+
+	public static DTObject editable(String schemaCode, Object target) {
+		return createImpl(schemaCode, target, false);
+	}
+
+	public static DTObject editable(Object target) {
+		return createImpl(StringUtil.empty(), target, true);
+	}
+
+	/**
+	 * 根据架构代码将对象的信息加载到dto中
+	 * 
+	 * @param schemaCode
+	 * @param target
+	 * @return
+	 */
+	public static DTObject createImpl(String schemaCode, Object target, boolean isReadonly) {
 		var dy = as(target, IDTOSerializable.class);
-		if (dy != null) {
-			return readonly(schemaCode, dy.getData());
-		}
+		if (dy != null)
+			target = dy.getData();
 
 		var dto = as(target, DTObject.class);
 		if (dto != null) {
-			DTObject result = DTObject.readonly();
+			DTObject result = isReadonly ? DTObject.readonly() : DTObject.editable();
 			result.load(schemaCode, dto);
 			return result;
 		}
@@ -981,7 +1003,7 @@ public class DTObject implements AutoCloseable {
 		if (StringUtil.isNullOrEmpty(schemaCode))
 			entities = target.getMembers();
 		else {
-			var schema = DTObject.editable(schemaCode);
+			var schema = DTObject.readonly(schemaCode); // 这里只是临时用用entities，所以readonly即可
 			entities = schema.getMembers();
 		}
 

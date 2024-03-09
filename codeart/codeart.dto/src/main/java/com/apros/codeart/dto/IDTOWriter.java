@@ -1,32 +1,35 @@
-package com.apros.codeart.dto.serialization;
+package com.apros.codeart.dto;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
-interface IDTOWriter {
+public interface IDTOWriter {
 
-	void write(String name, byte value);
+	void writeByte(String name, byte value);
 
-	void write(String name, short value);
+	void writeShort(String name, short value);
 
-	void write(String name, int value);
+	void writeInt(String name, int value);
 
-	void write(String name, long value);
+	void writeLong(String name, long value);
 
-	void write(String name, float value);
+	void writeFloat(String name, float value);
 
-	void write(String name, double value);
+	void writeDouble(String name, double value);
 
-	void write(String name, char value);
+	void writeChar(String name, char value);
 
-	void write(String name, boolean value);
+	void writeBoolean(String name, boolean value);
+
+	void writeLocalDateTime(String name, LocalDateTime value);
+
+	void writeInstant(String name, Instant value);
+
+	void writeString(String name, String value);
+
+	void writeObject(String name, Object value);
 
 	void writeElement(String name, Object telement);
-
-	void write(String name, Instant value);
-
-	void write(String name, String value);
-
-	void write(String name, Object value);
 
 	/// <summary>
 	/// 写入一个空数组
