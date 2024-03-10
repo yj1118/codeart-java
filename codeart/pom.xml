@@ -246,8 +246,7 @@
   </dependencies>
     
   <modules>
-  	<module>codeart.core</module>
-    <module>codeart.dto</module>
+  	<module>codeart</module>
   </modules>
   
 </project>
