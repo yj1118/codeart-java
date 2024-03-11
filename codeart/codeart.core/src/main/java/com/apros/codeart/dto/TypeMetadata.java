@@ -1,5 +1,12 @@
 package com.apros.codeart.dto;
 
+import java.util.ArrayList;
+
+import com.apros.codeart.i18n.Language;
+import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.ListUtil;
+import com.apros.codeart.util.StringUtil;
+
 public final class TypeMetadata {
 
 	private String _metadataCode;
@@ -8,9 +15,9 @@ public final class TypeMetadata {
 		return _metadataCode;
 	}
 
-	private ArrayList<TypeEntry> _entries;
+	private Iterable<TypeEntry> _entries;
 
-	public ArrayList<TypeEntry> getEntries() {
+	public Iterable<TypeEntry> getEntries() {
 		return _entries;
 	}
 
@@ -35,12 +42,9 @@ public final class TypeMetadata {
 		return _root;
 	}
 
-	public TypeEntry getEntry(String typeName)
-	  {
-	      TypeEntry entry = null;
-	      if (_index.TryGet(typeName, out entry)) return entry;
-	      return null;
-	  }
+	public TypeEntry getEntry(String typeName) {
+		return _index.get(typeName);
+	}
 
 	/// <summary>
 	/// 该构造是一切的起点
@@ -61,86 +65,80 @@ public final class TypeMetadata {
 		this._entries = parse(root);
 	}
 
-	internal TypeMetadata(ObjectEntry root, string metadataCode, TypeMetadata parent) {
-		this.Root = root;
-		this.MetadataCode = metadataCode;
-		this.Parent = parent;
-		this.Index = parent.Index;
-		var dto = DTObject.Create(metadataCode);
-		this.Entries = Parse(dto.GetRoot());
+	TypeMetadata(ObjectEntry root, String metadataCode, TypeMetadata parent) {
+		_root = root;
+		_metadataCode = metadataCode;
+		_parent = parent;
+		_index = parent.getIndex();
+		var dto = DTObject.readonly(metadataCode);
+		_entries = parse(dto.getRoot());
 	}
 
-	internal TypeMetadata(string metadataCode, TypeMetadata parent) {
-		this.MetadataCode = metadataCode;
-		this.Parent = parent;
-		this.Index = parent.Index;
-		this.Root = new ObjectEntry(this);
+	TypeMetadata(String metadataCode, TypeMetadata parent) {
+		_metadataCode = metadataCode;
+		_parent = parent;
+		_index = parent.getIndex();
+		_root = new ObjectEntry(this);
 
-		var dto = DTObject.Create(metadataCode);
-		this.Entries = parse(dto.GetRoot());
+		var dto = DTObject.readonly(metadataCode);
+		_entries = parse(dto.getRoot());
 	}
 
-	private ArrayList<TypeEntry> parse(DTEObject root)
-	  {
+	private ArrayList<TypeEntry> parse(DTEObject root) {
 		ArrayList<TypeEntry> entries = new ArrayList<TypeEntry>();
 
-	      var entities = root.getEntities();
-	      for (var entity : entities)
-	      {
-	          var value = entity as DTEValue;
-	          if (value != null)
-	          {
-	              entries.Add(createEntry(value));
-	              continue;
-	          }
+		var entities = root.getMembers();
+		for (var entity : entities) {
+			var value = TypeUtil.as(entity, DTEValue.class);
+			if (value != null) {
+				entries.add(createEntry(value));
+				continue;
+			}
 
-	          var obj = entity as DTEObject;
-	          if (obj != null)
-	          {
-	              entries.Add(createEntry(obj));
-	              continue;
-	          }
+			var obj = TypeUtil.as(entity, DTEObject.class);
+			if (obj != null) {
+				entries.add(createEntry(obj));
+				continue;
+			}
 
-	          var list = entity as DTEList;
-	          if(list != null)
-	          {
-	              entries.Add(createEntry(list));
-	              continue;
-	          }
+			var list = TypeUtil.as(entity, DTEList.class);
+			if (list != null) {
+				entries.add(createEntry(list));
+				continue;
+			}
+		}
 
-	      }
+		return entries;
+	}
 
-	      return entries;
-	  }
+	private TypeEntry createEntry(DTEValue e) {
+		var entryName = e.getName(); // 条目名称
+		String value = e.getString();
+		if (StringUtil.isNullOrEmpty(value))
+			throw new IllegalStateException(Language.strings("DTONotSpecifyType", getPathName(entryName)));
+		value = StringUtil.trim(value);
+		if (StringUtil.isNullOrEmpty(value))
+			throw new IllegalStateException(Language.strings("DTONotSpecifyType", getPathName(entryName)));
 
-	private TypeEntry createEntry(DTEValue e)
-	  {
-	      var entryName = e.getName(); //条目名称
-	      if (e.Value == null) throw new DTOException(string.Format(Strings.DTONotSpecifyType, GetPathName(entryName)));
-	      var valueCode = e.Value.ToString().Trim();
-	      if (valueCode.Length == 0) throw new DTOException(string.Format(Strings.DTONotSpecifyType, GetPathName(entryName)));
+		TypeEntry target = this.getIndex().get(value);
+		if (target != null) {
+			// valueCode是已有类型的名称
+			var entry = target.clone();
+			entry.setName(entryName);
+			entry.setTypeName(value);
+			entry.setOwner(this);
+			return entry;
+		} else {
+			var temp = StringUtil.trim(value.split(","));
 
-	      TypeEntry target = null;
-	      if (this.Index.TryGet(valueCode, out target))
-	      {
-	          //valueCode是已有类型的名称
-	          var entry = target.Clone();
-	          entry.Name = entryName;
-	          entry.TypeName = valueCode;
-	          entry.Owner = this;
-	          return entry;
-	      }
-	      else
-	      {
-	          var temp = valueCode.Split(',').Select((t) => t.Trim()).ToList();
-	          var typeName = temp[0]; //第一项作为类型名
-	          temp.RemoveAt(0);
-	          var descriptions = temp;
-	          return new ValueEntry(this, entryName, typeName, e.GetCode(false, true), descriptions);
-	      }
-	  }
+			var typeName = temp.get(0); // 第一项作为类型名
+			temp.remove(0);
+			var descriptions = temp;
+			return new ValueEntry(this, entryName, typeName, e.GetCode(false, true), descriptions);
+		}
+	}
 
-	private TypeEntry CreateEntry(DTEObject e) {
+	private TypeEntry createEntry(DTEObject e) {
 		var name = e.Name; // 条目名称
 		var metadataCode = e.GetCode(false, true);
 		string typeName = GetPathName(name);
@@ -151,7 +149,7 @@ public final class TypeMetadata {
 		return string.IsNullOrEmpty(this.Root.TypeName) ? name : string.Format("{0}.{1}", this.Root.TypeName, name);
 	}
 
-	private TypeEntry CreateEntry(DTEList e) {
+	private TypeEntry createEntry(DTEList e) {
 		var name = e.Name; // 条目名称
 		string typeName = GetPathName(name);
 		if (e.Items.Count == 0)

@@ -1,5 +1,6 @@
 package com.apros.codeart.util;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -77,6 +78,18 @@ public final class StringUtil {
 	public static String trim(String str, String trimValue) {
 		str = trimStart(str, trimValue);
 		return trimEnd(str, trimValue);
+	}
+
+	public static String trim(String str) {
+		return trim(" ");
+	}
+
+	public static ArrayList<String> trim(String[] strs) {
+		return ListUtil.<String, String>map(strs, (e) -> StringUtil.trim(e));
+	}
+
+	public static ArrayList<String> trim(Iterable<String> strs) {
+		return ListUtil.<String, String>map(strs, (e) -> StringUtil.trim(e));
 	}
 
 	/**

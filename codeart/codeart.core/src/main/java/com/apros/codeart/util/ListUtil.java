@@ -60,8 +60,16 @@ public final class ListUtil {
 		return null;
 	}
 
-	public static <T, R> Iterable<R> map(Iterable<T> source, Function<T, R> selector) {
+	public static <T, R> ArrayList<R> map(Iterable<T> source, Function<T, R> selector) {
 		ArrayList<R> list = new ArrayList<R>(Iterables.size(source));
+		for (T item : source) {
+			list.add(selector.apply(item));
+		}
+		return list;
+	}
+
+	public static <T, R> ArrayList<R> map(T[] source, Function<T, R> selector) {
+		ArrayList<R> list = new ArrayList<R>(source.length);
 		for (T item : source) {
 			list.add(selector.apply(item));
 		}

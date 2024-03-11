@@ -4,6 +4,8 @@ import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
+import com.apros.codeart.App;
+
 public class TestRunner implements BeforeAllCallback, AfterAllCallback {
 
 	@Override

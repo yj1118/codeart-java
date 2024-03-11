@@ -1,4 +1,4 @@
-package com.apros.codeart.core;
+package com.apros.codeart;
 
 public final class App {
 	private App() {
