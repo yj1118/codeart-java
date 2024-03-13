@@ -55,7 +55,7 @@ public final class StringUtil {
 	}
 
 	public static String substr(String source, int startIndex) {
-		return source.substring(startIndex, startIndex);
+		return source.substring(startIndex);
 	}
 
 	public static String trimStart(String str, String trimValue) {
@@ -81,7 +81,7 @@ public final class StringUtil {
 	}
 
 	public static String trim(String str) {
-		return trim(" ");
+		return trim(str, " ");
 	}
 
 	public static ArrayList<String> trim(String[] strs) {

@@ -1,10 +1,11 @@
 package com.apros.codeart.dto;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.TypeUtil;
-import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 
 public final class TypeMetadata {
@@ -15,9 +16,9 @@ public final class TypeMetadata {
 		return _metadataCode;
 	}
 
-	private Iterable<TypeEntry> _entries;
+	private List<TypeEntry> _entries;
 
-	public Iterable<TypeEntry> getEntries() {
+	public List<TypeEntry> getEntries() {
 		return _entries;
 	}
 
@@ -84,11 +85,11 @@ public final class TypeMetadata {
 		_entries = parse(dto.getRoot());
 	}
 
-	private ArrayList<TypeEntry> parse(DTEObject root) {
+	private List<TypeEntry> parse(DTEObject root) {
 		ArrayList<TypeEntry> entries = new ArrayList<TypeEntry>();
 
-		var entities = root.getMembers();
-		for (var entity : entities) {
+		var members = root.getMembers();
+		for (var entity : members) {
 			var value = TypeUtil.as(entity, DTEValue.class);
 			if (value != null) {
 				entries.add(createEntry(value));
@@ -108,7 +109,7 @@ public final class TypeMetadata {
 			}
 		}
 
-		return entries;
+		return Collections.unmodifiableList(entries);
 	}
 
 	private TypeEntry createEntry(DTEValue e) {
@@ -134,44 +135,41 @@ public final class TypeMetadata {
 			var typeName = temp.get(0); // 第一项作为类型名
 			temp.remove(0);
 			var descriptions = temp;
-			return new ValueEntry(this, entryName, typeName, e.GetCode(false, true), descriptions);
+			return new ValueEntry(this, entryName, typeName, e.getCode(false, true), descriptions);
 		}
 	}
 
 	private TypeEntry createEntry(DTEObject e) {
-		var name = e.Name; // 条目名称
-		var metadataCode = e.GetCode(false, true);
-		string typeName = GetPathName(name);
+		var name = e.getName(); // 条目名称
+		var metadataCode = e.getCode(false, true);
+		String typeName = getPathName(name);
 		return new ObjectEntry(this, name, typeName, metadataCode);
 	}
 
-	private string GetPathName(string name) {
-		return string.IsNullOrEmpty(this.Root.TypeName) ? name : string.Format("{0}.{1}", this.Root.TypeName, name);
+	private String getPathName(String name) {
+		return StringUtil.isNullOrEmpty(this.getRoot().getTypeName()) ? name
+				: String.format("%s.%s", this.getRoot().getTypeName(), name);
 	}
 
 	private TypeEntry createEntry(DTEList e) {
-		var name = e.Name; // 条目名称
-		string typeName = GetPathName(name);
-		if (e.Items.Count == 0)
-			throw new DTOException(string.Format(Strings.DTONotSpecifyType, typeName));
-		if (e.Items.Count > 1)
-			throw new DTOException(string.Format(Strings.DTOListTypeCountError, typeName));
+		var name = e.getName(); // 条目名称
+		String typeName = getPathName(name);
+		if (e.getItems().size() == 0)
+			throw new IllegalStateException(Language.strings("DTONotSpecifyType", typeName));
+		if (e.getItems().size() > 1)
+			throw new IllegalStateException(Language.strings("DTOListTypeCountError", typeName));
 
-		var metadataCode = GetItemMetadataCode(typeName, e.Items[0]);
+		var metadataCode = getItemMetadataCode(typeName, e.getItems().get(0));
 		return new ListEntry(this, name, typeName, metadataCode);
 	}
 
-	private string GetItemMetadataCode(string listTypeName, DTObject item)
-	  {
-	      using (var temp = StringPool.Borrow())
-	      {
-	          var code = temp.Item;
-	          code.Append("{");
-	          code.AppendFormat("{0}.item:", listTypeName);
-	          code.Append(item.GetCode(false, true));
-	          code.Append("}");
-	          return code.ToString();
-	      }
-	  }
+	private String getItemMetadataCode(String listTypeName, DTObject item) {
+		var code = new StringBuilder();
+		code.append("{");
+		code.append(String.format("%s.item:", listTypeName));
+		code.append(item.getCode(false, true));
+		code.append("}");
+		return code.toString();
+	}
 
 }

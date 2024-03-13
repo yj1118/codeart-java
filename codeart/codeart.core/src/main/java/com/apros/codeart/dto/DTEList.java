@@ -31,8 +31,8 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 
 	private AbstractList<DTObject> _items;
 
-	public Iterable<DTObject> getItems() {
-		return _items;
+	public List<DTObject> getItems() {
+		return Collections.unmodifiableList(_items);
 	}
 
 	private void addItem(DTObject item) {

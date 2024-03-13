@@ -15,6 +15,7 @@ import java.util.function.Function;
 import com.apros.codeart.context.ContextSession;
 import com.apros.codeart.dto.serialization.DTObjectMapper;
 import com.apros.codeart.dto.serialization.IDTOSerializable;
+import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
@@ -62,7 +63,7 @@ public class DTObject implements AutoCloseable {
 			throw new IllegalStateException(strings("DTOReadOnly"));
 	}
 
-	private DTObject(DTEObject root, boolean isReadOnly) {
+	DTObject(DTEObject root, boolean isReadOnly) {
 		_root = root;
 		_isReadOnly = isReadOnly;
 	}
@@ -97,11 +98,11 @@ public class DTObject implements AutoCloseable {
 		return (Long) this.getValue(findExp, defaultValue);
 	}
 
-	public Boolean BooleanRef(String findExp) {
+	public Boolean getBooleanRef(String findExp) {
 		return (Boolean) getValue(findExp, false, true);
 	}
 
-	public Boolean BooleanRef(String findExp, boolean defaultValue) {
+	public Boolean getBooleanRef(String findExp, boolean defaultValue) {
 		return (Boolean) getValue(findExp, defaultValue, false);
 	}
 
@@ -381,11 +382,29 @@ public class DTObject implements AutoCloseable {
 	// endregion
 
 	public void setLocalDateTime(String findExp, LocalDateTime value) {
-		setValueRef(findExp, value, true);
+		setValueRef(findExp, value, true); // 时间转换成json，会带""号，所以valueCodeIsString是true
 	}
 
 	public void setInstant(String findExp, Instant value) {
 		setValueRef(findExp, value, true);
+	}
+
+	private boolean getValueCodeIsString(Object value) {
+		var valueClass = value.getClass();
+		if (valueClass.equals(char.class))
+			return true;
+		boolean isPrimitive = valueClass.isPrimitive();
+		if (isPrimitive)
+			return false;
+		return true;
+	}
+
+	public void setValue(String findExp, Object value) {
+		setValueRef(findExp, value, getValueCodeIsString(value));
+	}
+
+	public void setValue(Object value) {
+		setValueRef(StringUtil.empty(), value, getValueCodeIsString(value));
 	}
 
 	private void setValueRef(String findExp, Object value, boolean valueCodeIsString) {
@@ -516,7 +535,7 @@ public class DTObject implements AutoCloseable {
 		return entity;
 	}
 
-	private Iterable<DTEntity> finds(String findExp, boolean throwError) {
+	Iterable<DTEntity> finds(String findExp, boolean throwError) {
 		var query = QueryExpression.create(findExp);
 
 		var es = _root.finds(query);
@@ -1028,6 +1047,66 @@ public class DTObject implements AutoCloseable {
 	public void load(Object target) {
 		load(StringUtil.empty(), target);
 	}
+
+	public static TypeMetadata getMetadata(String metadataCode) {
+		return new TypeMetadata(metadataCode);
+	}
+
+//	#region 转换
+
+	/// <summary>
+	/// 批量变换dto结构，语法：
+	/// <para>name=>newName 转换成员名称</para>
+	/// <para>value=newValue 赋值</para>
+	/// <para>!member 移除表达式对应的成员</para>
+	/// <para>~member 保留表达式对应的成员，其余的均移除</para>
+	/// 多个表达式可以用;号连接
+	/// </summary>
+	/// <param name="express">
+	/// findExp=>name;findExp=>name
+	/// </param>
+	public void transform(String express) {
+		var expresses = TransformExpressions.create(express);
+		for (var exp : expresses) {
+			exp.execute(this);
+		}
+	}
+
+	/// <summary>
+	/// 该方法主要用于更改成员值
+	/// </summary>
+	/// <param name="express">
+	/// findExp=valueFindExp
+	/// 说明：
+	/// valueFindExp 可以包含检索方式，默认的方式是在findExp检索出来的结果中所在的DTO对象中进行检索
+	/// 带“@”前缀，表示从根级开始检索
+	/// 带“*”前缀，表示返回值所在的对象
+	/// </param>
+	/// <param name="transformValue"></param>
+	public void transform(String express, Function<Object, Object> transformValue) {
+		AssignExpression exp = TypeUtil.as(AssignExpression.create(express), AssignExpression.class);
+		if (exp == null)
+			throw new IllegalArgumentException(Language.strings("ExpressionError", express));
+		exp.execute(this, transformValue);
+	}
+
+//	/// <summary>
+//	///
+//	/// </summary>
+//	/// <param name="listName"></param>
+//	/// <param name="action"></param>
+//	/// <param name="self">自身是否参与遍历</param>
+//	public void DeepEach(String listName, Action<DTObject> action, bool self = false)
+//	 {
+//	     this.Each(listName, (child) =>
+//	     {
+//	         child.DeepEach(listName, action);
+//	         action(child);
+//	     });
+//	     if (self) action(this);
+//	 }
+
+//	 #endregion
 
 //	#region 空对象
 

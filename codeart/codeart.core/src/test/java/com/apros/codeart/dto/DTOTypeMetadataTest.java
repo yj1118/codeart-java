@@ -1,181 +1,170 @@
 package com.apros.codeart.dto;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.junit.jupiter.api.Test;
+
+import com.apros.codeart.runtime.TypeUtil;
+import com.google.common.collect.Iterables;
 
 class DTOTypeMetadataTest {
 
 	@Test
 	public void ParseType1() {
-		// const string code =
-		// "{id:'int',name:'ascii,10',person:{name:'string,10',sex:'byte'},first:'person',menu:{person:{id,nam}},name:'string,10',parent:'menu',childs:['menu']},others:[{id:'int',name:'string',person:'menu.person'}]}";
 		final String code = "{id:'int',name:'ascii,10'}";
 		var metadata = DTObject.getMetadata(code);
 
-		var es = metadata.Entries.ToArray();
+		var es = metadata.getEntries();
 
-		AssertValue(es[0], "id", "int");
-		AssertValue(es[1], "name", "ascii", "10");
+		AssertValue(es.get(0), "id", "int");
+		AssertValue(es.get(1), "name", "ascii", "10");
 	}
 
-//	[TestMethod]
-//
-//	public void ParseType2()
-//			{
-//			    const string code = "{id:'int',name:'ascii,10',person:{name:'string,10',sex:'byte'}}";
-//			    var metadata = DTObject.GetMetadata(code);
-//
-//			    var es = metadata.Entries.ToArray();
-//
-//			    AssertValue(es[0], "id", "int");
-//			    AssertValue(es[1], "name", "ascii", "10");
-//			    AssertObject(es[2], "person", "person");
-//			}
-//
-//	[TestMethod]
-//
-//	public void ParseType3()
-//			{
-//			    const string code = "{id:'int',name:'ascii,10',person:{name:'string,10',sex:'byte'},first:'person',menu:{person:{id:'long',name:'string,5'},name:'string,10',parent:'menu',childs:['menu']},others:[{id:'int',name:'string',person:'menu.person'}],values:['string,10'],others2:'others'}";
-//			    var metadata = DTObject.GetMetadata(code);
-//
-//			    var es = metadata.Entries.ToArray();
-//
-//			    AssertValue(es[0], "id", "int");
-//			    AssertValue(es[1], "name", "ascii", "10");
-//
-//			    AssertObject(es[2], "person", "person");
-//			    var person = es[2] as ObjectEntry;
-//			    var personChilds = person.Childs.ToArray();
-//			    AssertValue(personChilds[0], "name", "string","10");
-//			    AssertValue(personChilds[1], "sex", "byte");
-//
-//			    AssertObject(es[3], "first", "person");
-//			    var first = es[3] as ObjectEntry;
-//			    var firstChilds = first.Childs.ToArray();
-//			    AssertValue(firstChilds[0], "name", "string", "10");
-//			    AssertValue(firstChilds[1], "sex", "byte");
-//
-//			    AssertMenu(es[4]);
-//
-//			    AssertOthers(es[5], "others", "others");
-//
-//			    AssertList(es[6], "values", "values");
-//			    var valuesItem = (es[6] as ListEntry).ItemEntry;
-//			    AssertValue(valuesItem, "values.item", "string", "10");
-//
-//			    AssertOthers(es[7], "others2", "others");
-//
-//			}
-//
-//	[TestMethod]
-//
-//	public void ParseType4()
-//			{
-//			    //const string code = "{id:'int',name:'ascii,10',person:{name:'string,10',sex:'byte'},first:'person',menu:{person:{id,nam}},name:'string,10',parent:'menu',childs:['menu']},others:[{id:'int',name:'string',person:'menu.person'}]}";
-//			    const string code = "user:{id:'int',name:'ascii,10',son:'user'}";
-//			    var metadata = DTObject.GetMetadata(code);
-//
-//			    var es = metadata.Entries.ToArray();
-//
-//			    AssertValue(es[0], "id", "int");
-//			    AssertValue(es[1], "name", "ascii", "10");
-//
-//
-//			    AssertObject(es[2], "son", "user");
-//			    var sonES = (es[2] as ObjectEntry).Childs.ToArray();
-//
-//			    AssertValue(sonES[0], "id", "int");
-//			    AssertValue(sonES[1], "name", "ascii", "10");
-//			    AssertObject(sonES[2], "son", "user");
-//			}
-//
-//	private void AssertOthers(TypeEntry entry, string name, string typeName)
-//			{
-//			    AssertList(entry, name, typeName);
-//			    var othersItemEntry = (entry as ListEntry).ItemEntry;
-//			    AssertObject(othersItemEntry, "others.item", "others.item");
-//			    var obj = othersItemEntry as ObjectEntry;
-//			    var childs = obj.Childs.ToArray();
-//
-//			    AssertValue(childs[0], "id", "int");
-//			    AssertValue(childs[1], "name", "string");
-//			    AssertMenuPerson(childs[2]);
-//			}
-//
-//	private void AssertMenu(TypeEntry entry)
-//			{
-//			    AssertObject(entry, "menu", "menu");
-//			    AssertMenuBase(entry);
-//
-//			    var menu = entry as ObjectEntry;
-//			    var menuChilds = menu.Childs.ToArray();
-//
-//			    //验证数组
-//			    AssertList(menuChilds[3], "childs", "menu.childs");
-//			    var menuChildsEntry = menuChilds[3] as ListEntry;
-//			    AssertObject(menuChildsEntry.ItemEntry, "menu.childs.item", "menu");
-//			    AssertMenuBase(menuChildsEntry.ItemEntry);
-//			}
-//
-//	private void AssertMenuBase(TypeEntry entry)
-//			{
-//			    var menu = entry as ObjectEntry;
-//			    var menuChilds = menu.Childs.ToArray();
-//
-//
-//			    AssertMenuPerson(menuChilds[0]);
-//			    AssertValue(menuChilds[1], "name", "string", "10");
-//
-//
-//			    AssertObject(menuChilds[2], "parent", "menu");
-//			    var menuParent = menuChilds[2] as ObjectEntry;
-//			    var menuParentChilds = menuParent.Childs.ToArray();
-//			    AssertMenuPerson(menuParentChilds[0]);
-//			    AssertValue(menuParentChilds[1], "name", "string", "10");
-//			}
-//
-//	private void AssertMenuPerson(TypeEntry entry)
-//			{
-//			    AssertObject(entry, "person", "menu.person");
-//			    var menuPerson = entry as ObjectEntry;
-//			    var menuPersonChilds = menuPerson.Childs.ToArray();
-//			    AssertValue(menuPersonChilds[0], "id", "long");
-//			    AssertValue(menuPersonChilds[1], "name", "string", "5");
-//			}
-//
-//	private void AssertValue(TypeEntry entry, string name, string typeName, params string[] descriptions)
-//			{
-//			    var value = entry as ValueEntry;
-//			    Assert.IsNotNull(value);
-//
-//			    Assert.AreEqual(value.Name, name);
-//			    Assert.AreEqual(value.TypeName, typeName);
-//
-//			    var actualDescriptions = value.Descriptions.ToArray();
-//			    Assert.AreEqual(descriptions.Length, actualDescriptions.Length);
-//
-//			    for (var i = 0; i < actualDescriptions.Length; i++)
-//			    {
-//			        Assert.AreEqual(descriptions[i], actualDescriptions[i]);
-//			    }
-//			}
-//
-//	private void AssertObject(TypeEntry entry, string name, string typeName)
-//			{
-//			    var obj = entry as ObjectEntry;
-//			    Assert.IsNotNull(obj);
-//
-//			    Assert.AreEqual(name, obj.Name);
-//			    Assert.AreEqual(typeName,obj.TypeName);
-//			}
-//
-//	private void AssertList(TypeEntry entry, string name, string typeName)
-//			{
-//			    var list = entry as ListEntry;
-//			    Assert.IsNotNull(list);
-//
-//			    Assert.AreEqual(list.Name, name);
-//			    Assert.AreEqual(list.TypeName, typeName);
-//			}
+	@Test
+	public void parseType2() {
+		final String code = "{id:'int',name:'ascii,10',person:{name:'string,10',sex:'byte'}}";
+		var metadata = DTObject.getMetadata(code);
+
+		var es = metadata.getEntries();
+
+		AssertValue(es.get(0), "id", "int");
+		AssertValue(es.get(1), "name", "ascii", "10");
+		AssertObject(es.get(2), "person", "person");
+	}
+
+	@Test
+	public void ParseType3() {
+		String code = "{id:'int',name:'ascii,10',person:{name:'string,10',sex:'byte'},first:'person',menu:{person:{id:'long',name:'string,5'},name:'string,10',parent:'menu',childs:['menu']},others:[{id:'int',name:'string',person:'menu.person'}],values:['string,10'],others2:'others'}";
+		var metadata = DTObject.getMetadata(code);
+
+		var es = metadata.getEntries();
+
+		AssertValue(es.get(0), "id", "int");
+		AssertValue(es.get(1), "name", "ascii", "10");
+
+		AssertObject(es.get(2), "person", "person");
+		var person = TypeUtil.as(es.get(2), ObjectEntry.class);
+		var personChilds = person.getChilds();
+		AssertValue(personChilds.get(0), "name", "string", "10");
+		AssertValue(personChilds.get(1), "sex", "byte");
+
+		AssertObject(es.get(3), "first", "person");
+		var first = TypeUtil.as(es.get(3), ObjectEntry.class);
+		var firstChilds = first.getChilds();
+		AssertValue(firstChilds.get(0), "name", "string", "10");
+		AssertValue(firstChilds.get(1), "sex", "byte");
+
+		AssertMenu(es.get(4));
+
+		AssertOthers(es.get(5), "others", "others");
+
+		AssertList(es.get(6), "values", "values");
+		var valuesItem = TypeUtil.as(es.get(6), ListEntry.class).getItemEntry();
+		AssertValue(valuesItem, "values.item", "string", "10");
+
+		AssertOthers(es.get(7), "others2", "others");
+
+	}
+
+	@Test
+	public void ParseType4() {
+		// const string code =
+		// "{id:'int',name:'ascii,10',person:{name:'string,10',sex:'byte'},first:'person',menu:{person:{id,nam}},name:'string,10',parent:'menu',childs:['menu']},others:[{id:'int',name:'string',person:'menu.person'}]}";
+		String code = "user:{id:'int',name:'ascii,10',son:'user'}";
+		var metadata = DTObject.getMetadata(code);
+
+		var es = metadata.getEntries();
+
+		AssertValue(es.get(0), "id", "int");
+		AssertValue(es.get(1), "name", "ascii", "10");
+
+		AssertObject(es.get(2), "son", "user");
+		var sonES = TypeUtil.as(es.get(2), ObjectEntry.class).getChilds();
+
+		AssertValue(sonES.get(0), "id", "int");
+		AssertValue(sonES.get(1), "name", "ascii", "10");
+		AssertObject(sonES.get(2), "son", "user");
+	}
+
+	private void AssertOthers(TypeEntry entry, String name, String typeName) {
+		AssertList(entry, name, typeName);
+		var othersItemEntry = TypeUtil.as(entry, ListEntry.class).getItemEntry();
+		AssertObject(othersItemEntry, "others.item", "others.item");
+		var obj = TypeUtil.as(othersItemEntry, ObjectEntry.class);
+		var childs = obj.getChilds();
+
+		AssertValue(childs.get(0), "id", "int");
+		AssertValue(childs.get(1), "name", "string");
+		AssertMenuPerson(childs.get(2));
+	}
+
+	private void AssertMenu(TypeEntry entry) {
+		AssertObject(entry, "menu", "menu");
+		AssertMenuBase(entry);
+
+		var menu = TypeUtil.as(entry, ObjectEntry.class);
+		var menuChilds = menu.getChilds();
+
+		// 验证数组
+		AssertList(menuChilds.get(3), "childs", "menu.childs");
+		var menuChildsEntry = TypeUtil.as(menuChilds.get(3), ListEntry.class);
+		AssertObject(menuChildsEntry.getItemEntry(), "menu.childs.item", "menu");
+		AssertMenuBase(menuChildsEntry.getItemEntry());
+	}
+
+	private void AssertMenuBase(TypeEntry entry) {
+		var menu = TypeUtil.as(entry, ObjectEntry.class);
+		var menuChilds = menu.getChilds();
+
+		AssertMenuPerson(menuChilds.get(0));
+		AssertValue(menuChilds.get(1), "name", "string", "10");
+
+		AssertObject(menuChilds.get(2), "parent", "menu");
+		var menuParent = TypeUtil.as(menuChilds.get(2), ObjectEntry.class);
+		var menuParentChilds = menuParent.getChilds();
+		AssertMenuPerson(menuParentChilds.get(0));
+		AssertValue(menuParentChilds.get(1), "name", "string", "10");
+	}
+
+	private void AssertMenuPerson(TypeEntry entry) {
+		AssertObject(entry, "person", "menu.person");
+		var menuPerson = TypeUtil.as(entry, ObjectEntry.class);
+		var menuPersonChilds = menuPerson.getChilds();
+		AssertValue(menuPersonChilds.get(0), "id", "long");
+		AssertValue(menuPersonChilds.get(1), "name", "string", "5");
+	}
+
+	private void AssertValue(TypeEntry entry, String name, String typeName, String... descriptions) {
+		var value = TypeUtil.as(entry, ValueEntry.class);
+		assertNotNull(value);
+
+		assertEquals(value.getName(), name);
+		assertEquals(value.getTypeName(), typeName);
+
+		var actualDescriptions = value.getDescriptions();
+		var size = Iterables.size(actualDescriptions);
+		assertEquals(descriptions.length, size);
+
+		for (var i = 0; i < size; i++) {
+			assertEquals(descriptions[i], Iterables.get(actualDescriptions, i));
+		}
+	}
+
+	private void AssertObject(TypeEntry entry, String name, String typeName) {
+		var obj = TypeUtil.as(entry, ObjectEntry.class);
+		assertNotNull(obj);
+
+		assertEquals(name, obj.getName());
+		assertEquals(typeName, obj.getTypeName());
+	}
+
+	private void AssertList(TypeEntry entry, String name, String typeName) {
+		var list = TypeUtil.as(entry, ListEntry.class);
+		assertNotNull(list);
+
+		assertEquals(list.getName(), name);
+		assertEquals(list.getTypeName(), typeName);
+	}
 
 }

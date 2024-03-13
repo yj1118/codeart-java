@@ -175,6 +175,12 @@ final class DTEValue extends DTEntity {
 		return;
 	}
 
+	public String getCode(boolean sequential, boolean outputName) {
+		StringBuilder code = new StringBuilder();
+		fillCode(code, sequential, outputName);
+		return code.toString();
+	}
+
 	@Override
 	public void fillSchemaCode(StringBuilder code, boolean sequential) {
 		code.append(this.getName());

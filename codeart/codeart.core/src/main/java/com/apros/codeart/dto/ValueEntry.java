@@ -1,35 +1,34 @@
 package com.apros.codeart.dto;
 
 public class ValueEntry extends TypeEntry {
+
+	private Iterable<String> _descriptions;
+
 	/// <summary>
 	/// 描述项的集合
 	/// </summary>
-	public IList<string> Descriptions
-	{
-	    get;
-	    private set;
+	public Iterable<String> getDescriptions() {
+		return _descriptions;
 	}
 
-	public override EntryCategory Category=>EntryCategory.Value;
-
-	public bool IsString
-	{
-	    get
-	    {
-	        return this.TypeName == "string" || this.TypeName == "ascii";
-	    }
+	@Override
+	public EntryCategory getCategory() {
+		return EntryCategory.Value;
 	}
 
-	public ValueEntry(TypeMetadata owner, string name, string typeName, string metadataCode, IList<string> descriptions)
-	    : base(owner, name, typeName, metadataCode)
-	{
-	    this.Descriptions = descriptions;
+	public boolean isString() {
+		return this.getTypeName().equals("string") || this.getTypeName().equals("ascii");
 	}
 
-	public override TypeEntry
+	public ValueEntry(TypeMetadata owner, String name, String typeName, String metadataCode,
+			Iterable<String> descriptions) {
+		super(owner, name, typeName, metadataCode);
+		_descriptions = descriptions;
+	}
 
-	Clone()
-	{
-	    return new ValueEntry(this.Owner, this.Name, this.TypeName, this.MetadataCode, this.Descriptions);
+	@Override
+	public TypeEntry clone() {
+		return new ValueEntry(this.getOwner(), this.getName(), this.getTypeName(), this.getMetadataCode(),
+				this.getDescriptions());
 	}
 }

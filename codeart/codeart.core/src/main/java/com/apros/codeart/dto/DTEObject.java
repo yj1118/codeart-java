@@ -242,6 +242,12 @@ public final class DTEObject extends DTEntity {
 		});
 	}
 
+	public String getCode(boolean sequential, boolean outputName) {
+		StringBuilder sb = new StringBuilder();
+		fillCode(sb, sequential, outputName);
+		return sb.toString();
+	}
+
 	@Override
 	public void fillSchemaCode(StringBuilder code, boolean sequential) {
 		fillCodeImpl(code, sequential, (c, name) -> {

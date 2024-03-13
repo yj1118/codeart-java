@@ -1,5 +1,7 @@
 package com.apros.codeart.dto;
 
+import java.util.List;
+
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 
@@ -15,7 +17,7 @@ public class ObjectEntry extends TypeEntry {
 		return _metadata;
 	}
 
-	public Iterable<TypeEntry> getChilds() {
+	public List<TypeEntry> getChilds() {
 		return this.getMetadata().getEntries();
 	}
 

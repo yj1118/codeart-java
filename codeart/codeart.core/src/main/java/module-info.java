@@ -5,7 +5,7 @@ module codeart {
 	exports com.apros.codeart;
 	exports com.apros.codeart.i18n;
 	exports com.apros.codeart.runtime;
-	exports com.apros.codeart.bytecode;
 	exports com.apros.codeart.context;
 	exports com.apros.codeart.util;
+	exports com.apros.codeart.dto;
 }
