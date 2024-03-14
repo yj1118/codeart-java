@@ -1,6 +1,7 @@
 package com.apros.codeart.dto.serialization;
 
 import com.apros.codeart.dto.DTObject;
+import com.apros.codeart.util.StringUtil;
 
 public class DTObjectMapper {
 	private DTObjectMapper() {
@@ -21,6 +22,10 @@ public class DTObjectMapper {
 		return typeInfo.deserialize(dto);
 	}
 
+	public static Object save(Class<?> instanceClass, DTObject dto) {
+		return save(instanceClass, dto);
+	}
+
 	/// <summary>
 	/// 根据架构代码，将dto的数据写入到新实例<paramref name="instanceType"/>中
 	/// </summary>
@@ -34,6 +39,10 @@ public class DTObjectMapper {
 			instance = dto.clone();
 		TypeSchemaCodeInfo typeInfo = TypeSchemaCodeInfo.getTypeInfo(instanceType, schemaCode);
 		typeInfo.deserialize(instance, dto);
+	}
+
+	public static void save(Object instance, DTObject dto) {
+		save(instance, StringUtil.empty(), dto);
 	}
 
 	/**
@@ -51,6 +60,10 @@ public class DTObjectMapper {
 			return (DTObject) instance;
 		TypeSchemaCodeInfo typeInfo = TypeSchemaCodeInfo.getTypeInfo(instanceType, schemaCode);
 		return typeInfo.serialize(instance);
+	}
+
+	public static DTObject load(Object instance) {
+		return load(StringUtil.empty(), instance);
 	}
 
 	/**

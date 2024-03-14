@@ -36,7 +36,7 @@ class MarkupWriter extends DTOWriter {
 			return;
 		}
 
-		var obj = DTObjectSerializer.Instance.serialize(value);
+		var obj = DTObjectMapper.load(value);
 		_dto.setObject(name, obj);
 	}
 }

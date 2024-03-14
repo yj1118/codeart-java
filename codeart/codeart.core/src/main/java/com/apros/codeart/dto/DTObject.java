@@ -227,6 +227,10 @@ public class DTObject implements AutoCloseable {
 		return getInt(findExp, 0, true);
 	}
 
+	public int getInt() {
+		return getInt(StringUtil.empty(), 0, true);
+	}
+
 	private int getInt(String findExp, int defaultValue, boolean throwError) {
 		DTEValue entity = find(DTEValue.class, findExp, throwError);
 		return entity == null ? defaultValue : entity.getInt();
@@ -320,6 +324,10 @@ public class DTObject implements AutoCloseable {
 
 	public void setShort(String findExp, short value) {
 		setValue(findExp, Short.toString(value), false);
+	}
+
+	public void setInt(int value) {
+		setValue(StringUtil.empty(), Integer.toString(value), false);
 	}
 
 	public void setInt(String findExp, int value) {
@@ -943,17 +951,6 @@ public class DTObject implements AutoCloseable {
 	}
 
 	/**
-	 * 根据架构代码，将dto的数据创建到新实例 instanceType 中
-	 * 
-	 * @param instanceType
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	public <T> T save(Class<T> instanceType) {
-		return (T) save(instanceType, StringUtil.empty());
-	}
-
-	/**
 	 * 根据架构代码，将dto中的数据全部保存到 obj 实例中
 	 * 
 	 * @param obj
@@ -963,26 +960,23 @@ public class DTObject implements AutoCloseable {
 		DTObjectMapper.save(obj, schemaCode, this);
 	}
 
-	/**
-	 * 将dto中的数据全部保存到 obj 实例中
-	 * 
-	 * @param obj
-	 */
-	public void save(Object obj) {
-		save(obj, StringUtil.empty());
+	/// <summary>
+	/// 将dto的内容保存到 instance 里
+	/// </summary>
+	/// <param name="instance"></param>
+	public void save(Object instance) {
+		DTObjectMapper.save(instance, this);
 	}
 
-//
-//	/// <summary>
-//	/// 将dto中的数据全部保存到类型为<typeparamref name="T"/>的实例中
-//	/// </summary>
-//	/// <typeparam name="T"></typeparam>
-//	/// <returns></returns>
-//	public T Save<T>()
-//	{
-//		return Save < T > (string.Empty);
-//	}
-//
+	// 将dto对象反序列化到一个实体对象中
+	public <T> T save(Class<T> cls) {
+		return DTObject.save(cls, this);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T save(Class<T> objectType, DTObject dto) {
+		return (T) DTObjectMapper.save(objectType, dto);
+	}
 
 	/**
 	 * 根据架构代码将对象的信息加载到dto中
@@ -1030,12 +1024,14 @@ public class DTObject implements AutoCloseable {
 		}
 	}
 
-	/// <summary>
-	/// 将<paramref name="target"/>里面的所有属性的值加载到dto中
-	/// </summary>
-	/// <param name="target"></param>
-	public void load(Object target) {
-		load(StringUtil.empty(), target);
+	/**
+	 * 将 obj 里面的所有属性的值加载到dto中
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	public static DTObject load(Object obj) {
+		return DTObjectMapper.load(obj);
 	}
 
 	public static TypeMetadata getMetadata(String metadataCode) {

@@ -129,13 +129,13 @@ final class SerializationMethodHelper {
 	public static int getParameterIndex(Method method, SerializationMethodType methodType) {
 		String typeName = method.getDeclaringClass().getName();
 		if (methodType == SerializationMethodType.Serialize) {
-			if (typeName == DTObjectSerializer.class.getName())
-				return SerializationArgs.SerializerIndex;
+//			if (typeName == DTObjectSerializer.class.getName())
+//				return SerializationArgs.SerializerIndex;
 			if (typeName == IDTOWriter.class.getName())
 				return SerializationArgs.WriterIndex;
 		} else {
-			if (typeName == DTObjectDeserializer.class.getName())
-				return SerializationArgs.DeserializerIndex;
+//			if (typeName == DTObjectDeserializer.class.getName())
+//				return SerializationArgs.DeserializerIndex;
 			if (typeName == IDTOReader.class.getName())
 				return SerializationArgs.ReaderIndex;
 		}

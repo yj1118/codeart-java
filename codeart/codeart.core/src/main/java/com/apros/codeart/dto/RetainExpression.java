@@ -48,10 +48,6 @@ class RetainExpression extends TransformExpression {
 			_isComplete = isComplete;
 		}
 
-		public boolean IsEmpty() {
-			return _entity == null;
-		}
-
 	}
 
 	private void retainEntities(DTObject dto, Iterable<String> findExps) {
@@ -94,7 +90,7 @@ class RetainExpression extends TransformExpression {
 				return t.getEntity().equals(member);
 			});
 
-			if (findItem.IsEmpty()) {
+			if (findItem == null) {
 				// 不在保留列表中，那么加入删除列表
 				removes.add(member);
 			} else {

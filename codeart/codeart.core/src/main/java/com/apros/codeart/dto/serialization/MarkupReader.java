@@ -20,9 +20,9 @@ class MarkupReader extends DTOReader {
 
 	@Override
 	public Object readObject(Class<?> objectType, String name) {
-		var dtoValue = _dto.getObject(name, null);
-		if (dtoValue == null)
+		var dto = _dto.getObject(name, null);
+		if (dto == null)
 			return null;
-		return DTObjectDeserializer.Instance.deserialize(objectType, dtoValue);
+		return DTObjectMapper.save(objectType, dto);
 	}
 }
