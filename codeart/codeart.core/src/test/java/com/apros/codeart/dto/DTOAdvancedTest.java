@@ -8,6 +8,22 @@ import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 
 public class DTOAdvancedTest {
+
+	@Test
+	public void assignCommon() {
+		var code = "{\"id\":13,\"markedCode\":\"test\",\"name\":\"测试\",person:{\"name\":\"张三\"},\"orderIndex\":1,\"config\":[],\"description\":\"类型描述\"}";
+		DTObject dto = DTObject.editable(code);
+		dto.transform("person.name=name", (name) -> {
+			return "李四";
+		});
+		dto.transform("id=id", (id) -> {
+			return 15;
+		});
+
+		assertEquals("李四", dto.getString("person.name"));
+		assertEquals(15, dto.getInt("id"));
+	}
+
 	private final String _code0 = "{\"name\":\"名称\",\"orderIndex\":\"1\",\"markedCode\":\"markedCode\",\"description\":\"这是一项描述\",\"attached\":[{\"name\":\"配置1\",\"type\":\"3\",\"required\":\"true\",\"options\":\"选项1\"},{\"name\":\"配置2\",\"type\":\"2\",\"required\":\"true\",\"options\":\"选项1，选项2\"},{\"name\":\"配置3\",\"type\":\"4\",\"required\":\"false\",\"options\":\"选项1，选项2，选项3\"}]}";
 
 	/// <summary>
@@ -29,13 +45,6 @@ public class DTOAdvancedTest {
 				"{\"attached\":[],\"description\":\"类型描述\",\"markedCode\":\"test\",\"name\":\"测试\",\"orderIndex\":1,\"typeId\":13}",
 				dto.getCode(true));
 	}
-
-	@Test
-	public void transformListIsNotEmpty() {
-		DTObject dto = DTObject.editable(_code0);
-
-	}
-
 //
 //	private const
 //

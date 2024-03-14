@@ -12,6 +12,9 @@ import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ISO8601;
 import com.apros.codeart.util.StringUtil;
 
+/**
+ * 
+ */
 final class DTEValue extends DTEntity {
 
 	@Override
@@ -32,31 +35,51 @@ final class DTEValue extends DTEntity {
 		return _value;
 	}
 
+	/**
+	 * 经过测试发现,xx.parse的运行的速度小于拆箱(xx)_value操作；
+	 * 
+	 * 时间消耗大概是1：3。
+	 */
+
 	public boolean getBoolean() {
+		if (_value != null)
+			return (boolean) _value;
 		return Boolean.parseBoolean(_valueCode);
 	}
 
 	public byte getByte() {
+		if (_value != null)
+			return (byte) _value;
 		return Byte.parseByte(_valueCode);
 	}
 
 	public short getShort() {
+		if (_value != null)
+			return (short) _value;
 		return Short.parseShort(_valueCode);
 	}
 
 	public int getInt() {
+		if (_value != null)
+			return (int) _value;
 		return Integer.parseInt(_valueCode);
 	}
 
 	public long getLong() {
+		if (_value != null)
+			return (long) _value;
 		return Long.parseLong(_valueCode);
 	}
 
 	public float getFloat() {
+		if (_value != null)
+			return (float) _value;
 		return Float.parseFloat(_valueCode);
 	}
 
 	public double getDouble() {
+		if (_value != null)
+			return (double) _value;
 		return Double.parseDouble(_valueCode);
 	}
 
@@ -73,10 +96,14 @@ final class DTEValue extends DTEntity {
 	}
 
 	public String getString() {
+		if (_value != null)
+			return (String) _value;
 		return _valueCode;
 	}
 
 	public char getChar() {
+		if (_value != null)
+			return (char) _value;
 		return _valueCode.charAt(0);
 	}
 

@@ -32,4 +32,16 @@ final class Util {
 
 	}
 
+	public static boolean getValueCodeIsString(Object value) {
+		var valueClass = value.getClass();
+		if (valueClass.equals(String.class) || valueClass.equals(char.class))
+			return true;
+		if (valueClass.equals(DTObject.class))
+			return false;
+		boolean isPrimitive = valueClass.isPrimitive();
+		if (isPrimitive)
+			return false;
+		return true;
+	}
+
 }

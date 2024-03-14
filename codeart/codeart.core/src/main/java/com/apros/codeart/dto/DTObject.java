@@ -389,22 +389,12 @@ public class DTObject implements AutoCloseable {
 		setValueRef(findExp, value, true);
 	}
 
-	private boolean getValueCodeIsString(Object value) {
-		var valueClass = value.getClass();
-		if (valueClass.equals(char.class))
-			return true;
-		boolean isPrimitive = valueClass.isPrimitive();
-		if (isPrimitive)
-			return false;
-		return true;
-	}
-
 	public void setValue(String findExp, Object value) {
-		setValueRef(findExp, value, getValueCodeIsString(value));
+		setValueRef(findExp, value, Util.getValueCodeIsString(value));
 	}
 
 	public void setValue(Object value) {
-		setValueRef(StringUtil.empty(), value, getValueCodeIsString(value));
+		setValueRef(StringUtil.empty(), value, Util.getValueCodeIsString(value));
 	}
 
 	private void setValueRef(String findExp, Object value, boolean valueCodeIsString) {

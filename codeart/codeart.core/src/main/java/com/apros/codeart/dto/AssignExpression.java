@@ -121,6 +121,12 @@ class AssignExpression extends TransformExpression {
 	}
 
 	private void setValue(DTEntity target, Object value, String findExp) {
+		var entityValue = TypeUtil.as(target, DTEValue.class);
+		if (entityValue != null) {
+			entityValue.setValueRef(value, Util.getValueCodeIsString(value));
+			return;
+		}
+
 		var parent = TypeUtil.as(target.getParent(), DTEObject.class);
 		if (parent == null)
 			throw new IllegalArgumentException(strings("ExpressionError", findExp));
