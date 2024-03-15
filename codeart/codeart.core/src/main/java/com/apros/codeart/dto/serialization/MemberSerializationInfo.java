@@ -3,6 +3,7 @@ package com.apros.codeart.dto.serialization;
 import java.lang.reflect.Field;
 import java.util.Map;
 
+import com.apros.codeart.bytecode.LogicOperator;
 import com.apros.codeart.bytecode.MethodGenerator;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
@@ -88,8 +89,24 @@ class MemberSerializationInfo {
 		return _field.getDeclaringClass(); // 申明该字段的类
 	}
 
-	public boolean isAbstract() {
-		return TypeUtil.isAbstract(_field.getType());
+	public boolean canWrite() {
+
+		if (this.isClassInfo()) {
+			return true;
+		} else {
+			return FieldUtil.canWrite(_field);
+		}
+
+	}
+
+	public boolean canRead() {
+
+		if (this.isClassInfo()) {
+			return true;
+		} else {
+			return FieldUtil.canRead(_field);
+		}
+
 	}
 
 //	#region 序列化的目标
@@ -145,8 +162,14 @@ class MemberSerializationInfo {
 	/// </summary>
 	/// <param name="g"></param>
 	public void generateDeserializeIL(MethodGenerator g) {
-		setMember(g, () -> {
-			SerializationMethodHelper.read(g, this.getDTOMemberName(), this.getTargetClass());
+
+		g.when(() -> {
+			SerializationMethodHelper.exist(g, this.getDTOMemberName(), this.getTargetClass());
+			return LogicOperator.IsTrue;
+		}, () -> {
+			setMember(g, () -> {
+				SerializationMethodHelper.read(g, this.getDTOMemberName(), this.getTargetClass());
+			});
 		});
 	}
 

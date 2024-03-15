@@ -25,6 +25,13 @@ public final class LogicOperator {
 	public static LogicOperator IsNull = new LogicOperator((g, label) -> {
 		StackAssert.assertRefs(g, 1);
 		g.visitor().visitJumpInsn(Opcodes.IFNULL, label);
+		g.evalStack().pop(); // 执行完了，弹出操作数
+	});
+
+	public static LogicOperator IsTrue = new LogicOperator((g, label) -> {
+		StackAssert.assertCount(g, 1);
+		g.visitor().visitJumpInsn(Opcodes.IFNE, label);
+		g.evalStack().pop(); // 执行完了，弹出操作数
 	});
 
 	public static LogicOperator AreEqual = new LogicOperator((g, label) -> {

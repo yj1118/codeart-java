@@ -6,13 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
 import com.apros.codeart.bytecode.ClassGenerator;
 import com.apros.codeart.bytecode.LogicOperator;
-import com.apros.codeart.core.TestRunner;
 
-@ExtendWith(TestRunner.class)
 class MethodGeneratorTest {
 
 	public static interface IOperater {
@@ -121,6 +118,39 @@ class MethodGeneratorTest {
 	}
 
 	@Test
+	void if_true() {
+		try (var cg = ClassGenerator.define()) {
+
+			try (var mg = cg.defineMethodPublicStatic("get", int.class, (args) -> {
+				args.add("value", int.class);
+			})) {
+				mg.when(() -> {
+					mg.load(true);
+					return LogicOperator.IsTrue;
+				}, () -> {
+					mg.load(1);
+					mg.exit();
+				}, () -> {
+					mg.load(0);
+					mg.exit();
+				});
+				mg.load(5);
+			}
+
+			// 返回生成的字节码
+			var cls = cg.toClass();
+
+			var method = cls.getDeclaredMethod("get", int.class);
+			var value = method.invoke(null, 1);
+
+			assertEquals(1, value);
+
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
+	@Test
 	void each() {
 		try (var cg = ClassGenerator.define()) {
 
@@ -165,6 +195,16 @@ class MethodGeneratorTest {
 			_index = value;
 		}
 
+		private String _name;
+
+		public String name() {
+			return _name;
+		}
+
+		public void name(String name) {
+			_name = name;
+		}
+
 		public setFieldTestObject(int index) {
 			_index = index;
 		}
@@ -182,9 +222,17 @@ class MethodGeneratorTest {
 				mg.assignField("test.index", () -> {
 					mg.load(index);
 				});
-			}
 
-//			cg.save();
+				mg.when(() -> {
+					mg.load(true);
+					return LogicOperator.IsTrue;
+				}, () -> {
+					mg.assignField("test.name", () -> {
+						mg.load("test");
+					});
+				});
+
+			}
 
 			// 返回生成的字节码
 			var cls = cg.toClass();
@@ -194,6 +242,7 @@ class MethodGeneratorTest {
 			method.invoke(null, test);
 
 			assertEquals(index, test.getIndex());
+			assertEquals("test", test.name());
 
 		} catch (Exception e) {
 			throw propagate(e);

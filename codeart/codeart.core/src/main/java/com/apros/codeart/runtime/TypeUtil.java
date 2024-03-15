@@ -1,5 +1,6 @@
 package com.apros.codeart.runtime;
 
+import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 
@@ -41,8 +42,17 @@ public final class TypeUtil {
 	}
 
 	public static boolean isAbstract(Class<?> cls) {
+		// 注意int等基类型在java里被标记成abstract,表示不能实例化
+		// 但是我们这里是要知道对方是否真的为抽象的，所以得自己写算法转换下
+		if (cls.isPrimitive())
+			return false;
 		int modifiers = cls.getModifiers();
 		return Modifier.isAbstract(modifiers);
+	}
+
+	public static boolean isPublic(Member member) {
+		int modifiers = member.getModifiers();
+		return !Modifier.isPrivate(modifiers);
 	}
 
 	@SuppressWarnings("unchecked")

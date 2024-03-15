@@ -4,6 +4,8 @@ import java.time.Instant;
 
 public interface IDTOReader {
 
+	boolean exist(String name);
+
 	boolean readBoolean(String name);
 
 	/**

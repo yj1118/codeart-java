@@ -28,7 +28,17 @@ final class SerializationMethodHelper {
 	private static final HashMap<Class<?>, Method> _deserializeMethods = new HashMap<Class<?>, Method>();
 
 	private static HashMap<Class<?>, Method> getMethods(SerializationMethodType methodType) {
-		return methodType == SerializationMethodType.Serialize ? _serializeMethods : _deserializeMethods;
+
+		switch (methodType) {
+		case SerializationMethodType.Serialize:
+			return _serializeMethods;
+		case SerializationMethodType.Deserialize:
+			return _deserializeMethods;
+		default:
+			break;
+		}
+
+		return _deserializeMethods;
 	}
 
 	private static final ReaderWriterLockSlim _typeMethodsLock = new ReaderWriterLockSlim();
@@ -53,47 +63,52 @@ final class SerializationMethodHelper {
 	private static Method getMethodBySimple(Class<?> type, SerializationMethodType methodType) {
 		Method method = null;
 		switch (methodType) {
-		case SerializationMethodType.Serialize:
-
+		case SerializationMethodType.Serialize: {
 			if (type.isEnum()) {
-				method = MethodUtil.resolveMemoized(IDTOWriter.class, "writeEnum", String.class, Enum.class);
+				method = MethodUtil.resolveSlimMemoized(IDTOWriter.class, "writeEnum", String.class, Enum.class);
 			} else {
 				String methodName = String.format("write%s", StringUtil.firstToUpper(type.getSimpleName()));
-				method = MethodUtil.resolveMemoized(IDTOWriter.class, methodName, String.class, type);
+				method = MethodUtil.resolveSlimMemoized(IDTOWriter.class, methodName, String.class, type);
 				if ((method == null) && (!type.isPrimitive())) {
 					// 如果不是int、long等基础类型，而有可能是自定义类型，那么用以下代码得到方法
-					method = MethodUtil.resolveMemoized(IDTOWriter.class, "writeObject", _writeObjectArgs);
+					method = MethodUtil.resolveSlimMemoized(IDTOWriter.class, "writeObject", _writeObjectArgs);
 				}
 			}
 
 			break;
-		case SerializationMethodType.Deserialize:
+		}
+		case SerializationMethodType.Deserialize: {
 			if (type.isEnum()) {
-				method = MethodUtil.resolveMemoized(IDTOReader.class, "readEnum", String.class);
+				method = MethodUtil.resolveSlimMemoized(IDTOReader.class, "readEnum", String.class);
 			} else {
 				String methodName = String.format("read%s", StringUtil.firstToUpper(type.getSimpleName()));
-				method = MethodUtil.resolveMemoized(IDTOReader.class, methodName, _readArgs);
+				method = MethodUtil.resolveSlimMemoized(IDTOReader.class, methodName, _readArgs);
 				if ((method == null) && (!type.isPrimitive())) {
 					// 如果不是int、long等基础类型，而有可能是自定义类型，那么用以下代码得到方法
 					// IDTOWriter.ReadObject<T>(string name);
-					method = MethodUtil.resolveMemoized(IDTOReader.class, "readObject", _readArgs);
+					method = MethodUtil.resolveSlimMemoized(IDTOReader.class, "readObject", _readArgs);
 				}
 			}
 
+			break;
+		}
+		default:
 			break;
 		}
 
 		if (method == null) {
 			throw new IllegalArgumentException(strings("NotFoundDTOSerializationMethod", TypeUtil.resolveName(type)));
 		}
-
 		return method;
+
 	}
 
 	private static final Class<?>[] _writeObjectArgs = new Class<?>[] { String.class, Object.class };
 	private static final Class<?>[] _readArgs = new Class<?>[] { String.class };
 
 //	#endregion
+
+	private static final Method existMethod = MethodUtil.resolveSlimMemoized(IDTOReader.class, "exist", String.class);
 
 	/// <summary>
 	/// 根据类型得到序列化方法
@@ -102,6 +117,8 @@ final class SerializationMethodHelper {
 	/// <param name="methodType"></param>
 	/// <returns></returns>
 	public static Method getTypeMethod(Class<?> type, SerializationMethodType methodType) {
+		if (methodType == SerializationMethodType.Exist)
+			return existMethod;
 		Method method = getMethodByCache(type, methodType);
 		if (method == null) {
 			// 对于枚举类型：根据基础类型找到适当的序列化器方法
@@ -190,7 +207,7 @@ final class SerializationMethodHelper {
 	}
 
 	public static void writeArray(MethodGenerator g, String dtoMemberName) {
-		var method = MethodUtil.resolveMemoized(IDTOWriter.class, "writeArray", String.class);
+		var method = MethodUtil.resolveSlimMemoized(IDTOWriter.class, "writeArray", String.class);
 		var prmIndex = SerializationArgs.WriterIndex;
 
 		g.invoke(prmIndex, method, () -> {
@@ -213,6 +230,14 @@ final class SerializationMethodHelper {
 	/// <param name="loadValue"></param>
 	public static void read(MethodGenerator g, String dtoMemberName, Class<?> valueType) {
 		var method = SerializationMethodHelper.getTypeMethod(valueType, SerializationMethodType.Deserialize);
+		var prmIndex = SerializationMethodHelper.getParameterIndex(method, SerializationMethodType.Deserialize);
+		g.invoke(prmIndex, method.getName(), () -> {
+			g.load(dtoMemberName);
+		});
+	}
+
+	public static void exist(MethodGenerator g, String dtoMemberName, Class<?> valueType) {
+		var method = SerializationMethodHelper.getTypeMethod(valueType, SerializationMethodType.Exist);
 		var prmIndex = SerializationMethodHelper.getParameterIndex(method, SerializationMethodType.Deserialize);
 		g.invoke(prmIndex, method.getName(), () -> {
 			g.load(dtoMemberName);

@@ -109,6 +109,11 @@ public class MethodGenerator implements AutoCloseable {
 		return local;
 	}
 
+	public void load(boolean value) {
+		_visitor.visitInsn(value ? Opcodes.ICONST_1 : Opcodes.ICONST_0);
+		_evalStack.push(boolean.class);
+	}
+
 	public void load(byte value) {
 		_visitor.visitLdcInsn(value);
 		_evalStack.push(byte.class);
@@ -273,7 +278,7 @@ public class MethodGenerator implements AutoCloseable {
 
 			loadValue.run();
 
-			var accessor = FieldUtil.getFieldWriterMemoized(objectType, fieldName);
+			var accessor = FieldUtil.getFieldSetterMemoized(objectType, fieldName);
 			if (accessor.isField()) {
 				var field = accessor.getField();
 				Class<?> fieldType = field.getType();

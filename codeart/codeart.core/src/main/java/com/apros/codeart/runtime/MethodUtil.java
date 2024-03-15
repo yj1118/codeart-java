@@ -9,6 +9,9 @@ import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 
+/**
+ * 
+ */
 public final class MethodUtil {
 	private MethodUtil() {
 	}
@@ -43,7 +46,41 @@ public final class MethodUtil {
 	 * @param parameterTypes
 	 * @return
 	 */
-	public static Method resolveMemoized(Class<?> objCls, String methodName, Class<?>... parameterTypes) {
+	public static Method resolveMemoized(Class<?> objCls, String methodName, Class<?>[] parameterTypes,
+			Class<?> returnType) {
+
+		var methods = _getMethods.apply(objCls).apply(methodName);
+
+		for (var method : methods) {
+			if (method.getParameterCount() != parameterTypes.length) {
+				continue;
+			}
+			var argTypes = method.getParameterTypes();
+			boolean finded = true;
+			for (var i = 0; i < argTypes.length; i++) {
+				if (!argTypes[i].equals(parameterTypes[i])) {
+					finded = false;
+					break;
+				}
+			}
+
+			if (!method.getReturnType().equals(returnType))
+				finded = false;
+			if (finded)
+				return method;
+		}
+		return null;
+	}
+
+	/**
+	 * 忽略返回值得到方法
+	 * 
+	 * @param objCls
+	 * @param methodName
+	 * @param parameterTypes
+	 * @return
+	 */
+	public static Method resolveSlimMemoized(Class<?> objCls, String methodName, Class<?>... parameterTypes) {
 
 		var methods = _getMethods.apply(objCls).apply(methodName);
 
@@ -64,5 +101,4 @@ public final class MethodUtil {
 		}
 		return null;
 	}
-
 }

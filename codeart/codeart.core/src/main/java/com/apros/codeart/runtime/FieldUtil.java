@@ -103,49 +103,79 @@ public final class FieldUtil {
 
 	}
 
+	private static Function<Field, Accesser> _getFieldGetter = LazyIndexer.init((field) -> {
+
+		if (TypeUtil.isPublic(field))
+			return new Accesser(field);
+		else {
+			// 如果没有访问权限，那么尝试用访问方法
+			var fieldName = field.getName();
+			var objClass = field.getDeclaringClass();
+			var name = getAgreeName(fieldName);
+
+			// getXXX
+			{
+				String methodName = String.format("get%s", StringUtil.firstToUpper(name));
+				var method = MethodUtil.resolveMemoized(objClass, methodName, new Class<?>[] {}, field.getType());
+
+				if (method != null && TypeUtil.isPublic(method))
+					return new Accesser(method);
+
+			}
+
+			// xxx()
+			{
+				String methodName = name;
+				var method = MethodUtil.resolveMemoized(objClass, methodName, new Class<?>[] {}, field.getType());
+
+				if (method != null && TypeUtil.isPublic(method))
+					return new Accesser(method);
+
+			}
+
+			return null;
+
+		}
+	});
+
+	public static Accesser getFieldGetterMemoized(Field field) {
+
+		return _getFieldGetter.apply(field);
+	}
+
 	/**
 	 * 得到约定读取字段的信息的方法
 	 */
 	public static Accesser getFieldGetterMemoized(Class<?> objClass, String fieldName) {
 
-		var field = getAgreeField(objClass, fieldName);
+		var field = _getAgreeField.apply(objClass).apply(fieldName);
+		return _getFieldGetter.apply(field);
 
-		if (canRead(field))
-			return new Accesser(field);
-		else {
-			// 如果没有访问权限，那么尝试用访问方法
-			var name = getAgreeName(fieldName);
-			String methodName = String.format("get%s", StringUtil.firstToUpper(name));
-			var method = MethodUtil.resolveMemoized(objClass, methodName);
-
-			if (method == null || !canRead(method))
-				throw new IllegalStateException(Language.strings("FieldNotFound", fieldName));
-
-			return new Accesser(method);
-		}
 	}
 
-	private static Field getAgreeField(Class<?> objClass, String fieldAgreeName) {
-		// 把类似 _name得名称，改为name
+	private static Function<Class<?>, Function<String, Field>> _getAgreeField = LazyIndexer.init((objClass) -> {
+		return LazyIndexer.init((fieldAgreeName) -> {
+			// 把类似 _name得名称，改为name
 
-		var fields = _getFields.apply(objClass);
-		var target = ListUtil.find(fields, (f) -> {
-			return f.getName().equalsIgnoreCase(fieldAgreeName);
-		});
-
-		if (target == null) {
-			// 再找一次 _name
-			var aName = String.format("_%s", fieldAgreeName);
-			target = ListUtil.find(fields, (f) -> {
-				return f.getName().equalsIgnoreCase(aName);
+			var fields = _getFields.apply(objClass);
+			var target = ListUtil.find(fields, (f) -> {
+				return f.getName().equalsIgnoreCase(fieldAgreeName);
 			});
-		}
 
-		if (target == null)
-			throw new IllegalStateException(Language.strings("FieldNotFound", fieldAgreeName));
+			if (target == null) {
+				// 再找一次 _name
+				var aName = String.format("_%s", fieldAgreeName);
+				target = ListUtil.find(fields, (f) -> {
+					return f.getName().equalsIgnoreCase(aName);
+				});
+			}
 
-		return target;
-	}
+			if (target == null)
+				throw new IllegalStateException(Language.strings("FieldNotFound", fieldAgreeName));
+
+			return target;
+		});
+	});
 
 	private static Function<String, String> _getAgreeName = LazyIndexer.init((fieldName) -> {
 		return fieldName.startsWith("_") ? fieldName.substring(1) : fieldName;
@@ -165,33 +195,62 @@ public final class FieldUtil {
 		return _getAgreeName.apply(field.getName());
 	}
 
-	public static Accesser getFieldWriterMemoized(Class<?> objClass, String fieldName) {
+	public static Accesser getFieldSetterMemoized(Field field) {
+		return getFieldSetterMemoized(field.getDeclaringClass(), field.getName());
+	}
 
-		var field = getAgreeField(objClass, fieldName);
+	private static Function<Field, Accesser> _getFieldSetter = LazyIndexer.init((field) -> {
 
-		if (canWrite(field))
+		if (selfCanWrite(field))
 			return new Accesser(field);
 		else {
 			// 如果没有访问权限，那么尝试用访问方法
+			var fieldName = field.getName();
+			var objClass = field.getDeclaringClass();
 			var name = getAgreeName(fieldName);
-			String methodName = String.format("set%s", StringUtil.firstToUpper(name));
-			var method = MethodUtil.resolveMemoized(objClass, methodName, field.getType());
+			// 先尝试获得getXXX的方法
+			{
+				String methodName = String.format("set%s", StringUtil.firstToUpper(name));
+				var method = MethodUtil.resolveMemoized(objClass, methodName, new Class<?>[] { field.getType() },
+						void.class);
+				if (method != null && TypeUtil.isPublic(method)) {
+					return new Accesser(method);
+				}
+			}
 
-			if (method == null || !canRead(method))
-				throw new IllegalStateException(Language.strings("FieldNotFound", fieldName));
+			// 再尝试获得xxx()的方法
+			{
+				String methodName = name;
+				var method = MethodUtil.resolveMemoized(objClass, methodName, new Class<?>[] { field.getType() },
+						void.class);
+				if (method != null && TypeUtil.isPublic(method)) {
+					return new Accesser(method);
+				}
+			}
 
-			return new Accesser(method);
+			return null;
 		}
+	});
+
+	public static Accesser getFieldSetterMemoized(Class<?> objClass, String fieldName) {
+		var field = _getAgreeField.apply(objClass).apply(fieldName);
+		return _getFieldSetter.apply(field);
 	}
 
-	public static boolean canRead(Member member) {
-		int modifiers = member.getModifiers();
-		return !Modifier.isPrivate(modifiers);
-	}
-
-	public static boolean canWrite(Member member) {
+	private static boolean selfCanWrite(Member member) {
 		int modifiers = member.getModifiers();
 		return !Modifier.isPrivate(modifiers) && !Modifier.isFinal(modifiers);
 	}
 
+	/**
+	 * @param field
+	 * @return
+	 */
+	public static boolean canRead(Field field) {
+		return getFieldGetterMemoized(field) != null;
+	}
+
+	public static boolean canWrite(Field field) {
+		return getFieldSetterMemoized(field) != null;
+	}
 }

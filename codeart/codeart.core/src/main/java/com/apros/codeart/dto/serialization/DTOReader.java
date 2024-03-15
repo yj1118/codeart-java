@@ -4,7 +4,6 @@ import java.time.Instant;
 
 import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.dto.IDTOReader;
-import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 
 abstract class DTOReader implements IDTOReader {
@@ -15,40 +14,44 @@ abstract class DTOReader implements IDTOReader {
 		_dto = dto;
 	}
 
+	public boolean exist(String name) {
+		return _dto.exist(name);
+	}
+
 	public boolean readBoolean(String name) {
-		return _dto.getBoolean(name, false);
+		return _dto.getBoolean(name);
 	}
 
 	public byte readByte(String name) {
-		return _dto.getByte(name, (byte) 0);
+		return _dto.getByte(name);
 	}
 
 	public char readChar(String name) {
-		return _dto.getChar(name, StringUtil.charEmpty());
+		return _dto.getChar(name);
 	}
 
 	public float readFloat(String name) {
-		return _dto.getFloat(name, (float) 0);
+		return _dto.getFloat(name);
 	}
 
 	public double readDouble(String name) {
-		return _dto.getDouble(name, (double) 0);
+		return _dto.getDouble(name);
 	}
 
 	public short readShort(String name) {
-		return _dto.getShort(name, (short) 0);
+		return _dto.getShort(name);
 	}
 
 	public int readInt(String name) {
-		return _dto.getInt(name, 0);
+		return _dto.getInt(name);
 	}
 
 	public long readLong(String name) {
-		return _dto.getLong(name, 0L);
+		return _dto.getLong(name);
 	}
 
 	public String readString(String name) {
-		return _dto.getString(name, StringUtil.empty());
+		return _dto.getString(name);
 	}
 
 	public Instant readInstant(String name) {

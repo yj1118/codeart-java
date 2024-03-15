@@ -108,6 +108,70 @@ public class DTOAdvancedTest {
 
 	}
 
+	public static class ObjectTest {
+
+		private int _id;
+
+		public int getId() {
+			return _id;
+		}
+
+		public void setId(int id) {
+			_id = id;
+		}
+
+		private String _name;
+
+		public String name() {
+			return _name;
+		}
+
+		public void name(String name) {
+			_name = name;
+		}
+
+		private int _index = 1;
+
+		public int index() {
+			return _index;
+		}
+
+		public void index(int index) {
+			_index = index;
+		}
+
+		private byte _sex;
+
+		public byte sex() {
+			return _sex;
+		}
+
+		public void sex(byte value) {
+			_sex = value;
+		}
+
+		public ObjectTest() {
+		}
+
+	}
+
+	@Test
+	public void saveToObject() {
+		var dto = DTObject.editable();
+		dto.setInt("id", 1);
+		dto.setString("name", "李四");
+		dto.setByte("sex", (byte) 1);
+
+		var obj = new ObjectTest();
+
+		dto.save(obj);
+
+		assertEquals(1, obj.getId());
+		assertEquals(1, obj.index()); // 由于dto里没有index的数据，所以不会赋值给obj
+		assertEquals("李四", obj.name());
+		assertEquals((byte) 1, obj.sex());
+	}
+
 //	/// <summary>
 //	/// 映射的对象内含有DTO成员
 //	/// </summary>

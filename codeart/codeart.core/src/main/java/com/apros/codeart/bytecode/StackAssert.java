@@ -41,6 +41,15 @@ final class StackAssert {
 	 * 
 	 * @param count
 	 */
+	public static void assertCount(MethodGenerator g, int expectedCount) {
+		assertCount(g.evalStack(), expectedCount);
+	}
+
+	/**
+	 * 检查栈顶至少值有多少个
+	 * 
+	 * @param count
+	 */
 	public static void assertCount(EvaluationStack evalStack, int expectedCount) {
 		evalStack.currentFrame().assertCount(expectedCount);
 	}
