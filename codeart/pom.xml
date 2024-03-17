@@ -247,6 +247,7 @@
     
   <modules>
   	<module>codeart</module>
+  	<module>codeart.ddd</module>
   </modules>
   
 </project>

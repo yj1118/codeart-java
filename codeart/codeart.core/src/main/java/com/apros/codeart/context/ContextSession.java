@@ -4,6 +4,7 @@ import static com.apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Method;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 import com.apros.codeart.pooling.Pool;
@@ -83,20 +84,6 @@ public final class ContextSession {
 			throws ClassNotFoundException, NoSuchMethodException, SecurityException {
 		_endHandles.add(MethodUtil.get(fullMethodName));
 	}
-
-//	private static IAppSession _current;
-
-//	private static IAppSession Current
-//	{
-//	    get
-//	    {
-//	        if (_current == null)
-//	        {
-//	            _current = _sessionByConfig ?? _sessionByRegister ?? ThreadSession.Instance;
-//	        }
-//	        return _current;
-//	    }
-//	}
 
 	private static IContextSession getCurrent() {
 		return ThreadSession.instance;
@@ -186,6 +173,50 @@ public final class ContextSession {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T getItem(String name) {
-		return (T) getCurrent().getItem(name);
+		var item = getCurrent().getItem(name);
+		if (item == null)
+			return null;
+		return (T) item;
 	}
+
+	public static String language() {
+		return locale().getLanguage();
+	}
+
+	public static void language(String language) {
+		locale(language);
+	}
+
+	public static Locale locale() {
+		Locale locale = getItem("locale");
+		if (locale == null)
+			locale = Locale.getDefault();
+		return locale;
+	}
+
+	/**
+	 * 设置当前会话上下文的语言
+	 * 
+	 * @param value1
+	 */
+	private static void locale(String language) {
+		Locale locale = Locale.ENGLISH;
+		switch (language) {
+		case "en":
+			locale = Locale.ENGLISH;
+			break;
+		case "ja":
+			locale = Locale.JAPANESE;
+			break;
+		case "zh-TW":
+			locale = Locale.TAIWAN;
+			break;
+		case "zh":
+			locale = Locale.CHINESE;
+			break;
+		}
+
+		setItem("locale", locale);
+	}
+
 }
