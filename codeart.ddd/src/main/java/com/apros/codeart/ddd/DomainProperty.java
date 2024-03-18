@@ -1,10 +1,12 @@
 package com.apros.codeart.ddd;
 
 import java.lang.reflect.Field;
+import java.util.function.BiFunction;
 
 import com.apros.codeart.runtime.TypeUtil;
+import com.google.common.base.Objects;
 
-public class DomainProperty {
+public class DomainProperty implements IDomainProperty {
 
 	private String _name;
 
@@ -124,48 +126,64 @@ public class DomainProperty {
 
 			var elementType = dynamicType != null ? dynamicType : TypeUtil.resolveElementType(propertyType);
 
-			if (DomainObject.IsAggregateRoot(elementType))
+			if (DomainObject.isAggregateRoot(elementType))
 				return DomainPropertyType.AggregateRootList;
-			if (DomainObject.IsEntityObject(elementType))
+			if (DomainObject.isEntityObject(elementType))
 				return DomainPropertyType.EntityObjectList;
-			if (DomainObject.IsValueObject(elementType))
+			if (DomainObject.isValueObject(elementType))
 				return DomainPropertyType.ValueObjectList;
 			return DomainPropertyType.PrimitiveList;
 		} else {
-			var targetType = dynamicType != null ? dynamicType : propertyType;
+//			var targetType = dynamicType != null ? dynamicType : propertyType;  .net版本代码有这个变量，但是.net里也没用上
 
-			if (DomainObject.IsAggregateRoot(propertyType))
+			if (DomainObject.isAggregateRoot(propertyType))
 				return DomainPropertyType.AggregateRoot;
-			if (DomainObject.IsEntityObject(propertyType))
+			if (DomainObject.isEntityObject(propertyType))
 				return DomainPropertyType.EntityObject;
-			if (DomainObject.IsValueObject(propertyType))
+			if (DomainObject.isValueObject(propertyType))
 				return DomainPropertyType.ValueObject;
 			return DomainPropertyType.Primitive;
 		}
 
 	}
-//
-//	/// <summary>
-//	/// 拥有该属性的类型
-//	/// </summary>
-//	public Type OwnerType
-//	{ get; protected set; }
-//
-//	///// <summary>
-//	///// 属性更改模式
-//	///// </summary>
-//	// public PropertyChangedMode ChangedMode { get; private set; }
-//
-//	public Func<object,object, bool> Compare
-//	{ get; private set; }
-//
-//	/// <summary>
-//	/// 获得属性的默认值,传入属性所在的对象和成员对应的属性定义
-//	/// </summary>
-//	/// <returns></returns>
-//	public Func<DomainObject, DomainProperty, object> GetDefaultValue
-//	{ get; private set; }
-//
+
+	/**
+	 * 拥有该属性的类型
+	 */
+	private Class<?> _declaringType;
+
+	public Class<?> getDeclaringType() {
+		return _declaringType;
+	}
+
+	void setDeclaringType(Class<?> value) {
+		_declaringType = value;
+	}
+
+	private BiFunction<Object, Object, Boolean> _compare;
+
+	public void setCompare(BiFunction<Object, Object, Boolean> value) {
+		_compare = value;
+	}
+
+	private Boolean compare(Object obj0, Object obj1) {
+		return _compare.apply(obj0, obj1);
+	}
+
+	private BiFunction<DomainObject, DomainProperty, Object> _getDefaultValue;
+
+	/**
+	 * 
+	 * 获得属性的默认值,传入属性所在的对象和成员对应的属性定义
+	 * 
+	 * @param obj
+	 * @param property
+	 * @return
+	 */
+	public Object getDefaultValue(DomainObject obj, DomainProperty property) {
+		return _getDefaultValue.apply(obj, property);
+	}
+
 //	/// <summary>
 //	/// 设置属性值的行为链
 //	/// </summary>
@@ -200,86 +218,63 @@ public class DomainProperty {
 //	        return this.ChangedChain.MethodsCount > 0; 
 //	    }
 //	}
-//
-//	#
-//	region 比较
-//
-//	internal bool
-//
-//	IsChanged(object oldValue, object newValue)
-//	{
-//	    if (this.Compare == null)
-//	    {
-//	        //默认比较
-//	        var propertyType = this.PropertyType;
-//	        //属性如果是集合、实体对象（引用对象），那么不用判断值，直接认为是被改变了
-//	        if (propertyType.IsList()
-//	            || propertyType.IsImplementOrEquals(typeof(IEntityObject)))
-//	            return true;
-//
-//	        //普通类型就用常规比较
-//	        return object.Equals(oldValue, newValue) ? false : true;
-//	    }
-//	    return this.Compare(oldValue, newValue);
-//	}
-//
+
+//	#region 比较
+
+	boolean isChanged(Object oldValue, Object newValue) {
+		if (this._compare == null) {
+			// 默认比较
+			// 属性如果是集合、实体对象（引用对象），那么不用判断值，直接认为是被改变了
+
+			if (TypeUtil.isCollection(_propertyType) || _propertyType.isAssignableFrom(IEntityObject.class))
+				return true;
+
+			// 普通类型就用常规比较
+			return !Objects.equal(oldValue, newValue);
+		}
+		return !this.compare(oldValue, newValue);
+	}
+
+//	#endregion
+
+	private String _id;
+
+	public String getId() {
+		return _id;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		var target = TypeUtil.as(obj, DomainProperty.class);
+		if (target == null)
+			return false;
+		return this.getId() == target.getId();
+	}
+
+	@Override
+	public int hashCode() {
+		return _id.hashCode();
+	}
+
+	/**
+	 * 属性验证器
+	 */
+	private Iterable<IPropertyValidator> _validators;
+
+	public Iterable<IPropertyValidator> getValidators() {
+		return _validators;
+	}
+
 //	#endregion
 //
-//	#
-//
-//	region 唯一性
-//
-//	public Guid Id
-//	{ get; private set; }
-//
-//	public override bool
-//
-//	Equals(object obj)
-//	{
-//	    var target = obj as DomainProperty;
-//	    if (target == null) return false;
-//	    return this.Id == target.Id;
-//	}
-//
-//	public override int GetHashCode()
-//	{
-//	    return this.Id.GetHashCode();
-//	}
-//
-//	public static bool operator==(
-//	DomainProperty property0, DomainProperty property1)
-//	{
-//		return object.Equals(property0, property1);
-//	}
-//
-//	public static bool operator!=(
-//	DomainProperty property0, DomainProperty property1)
-//	{
-//		return !object.Equals(property0, property1);
-//	}
-//
-//	#endregion
-//
-//	#
-//	region 属性验证器
-//
-//	public IEnumerable<IPropertyValidator> Validators
-//	{
-//	    get;
-//	    private set;
-//	}
-//
-//	#endregion
-//
-//	#
-//	region 属性仓储的定义
-//
-//	internal PropertyRepositoryAttribute RepositoryTip
-//	{
-//	    get;
-//	    private set;
-//	}
-//
+//	#region 属性仓储的定义
+
+	PropertyRepositoryAttribute RepositoryTip
+	{
+	    get;
+	    private set;
+	}
+
 //	#endregion
 //
 //	#

@@ -793,35 +793,23 @@ public abstract class DomainObject implements IDomainObject {
 		return type.isAssignableFrom(DomainObjectType);
 	}
 
-	internal
+	static boolean isValueObject(Class<?> type) {
+		return type.isAssignableFrom(ValueObjectType);
+	}
 
-	static bool IsValueObject(Type type)
-    {
-        return type.IsImplementOrEquals(ValueObjectType);
-    }
+	static boolean isAggregateRoot(Class<?> type) {
+		return type.isAssignableFrom(AggregateRootType);
+	}
 
-	internal
+	static boolean isEntityObject(Class<?> type) {
+		return type.isAssignableFrom(EntityObjectType);
+	}
 
-	static bool IsAggregateRoot(Type type)
-    {
-        return type.IsImplementOrEquals(AggregateRootType);
-    }
+	static boolean isDynamicObject(Class<?> type) {
+		return type.isAssignableFrom(DynamicObjectType);
+	}
 
-	internal
-
-	static bool IsEntityObject(Type type)
-    {
-        return type.IsImplementOrEquals(EntityObjectType);
-    }
-
-	internal
-
-	static bool IsDynamicObject(Type type)
-    {
-        return type.IsImplementOrEquals(DynamicObjectType);
-    }
-
-	#endregion
+//	#endregion
 //
 //	protected virtual void ReadOnlyCheckUp()
 //    {

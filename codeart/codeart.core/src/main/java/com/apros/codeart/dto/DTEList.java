@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.apros.codeart.context.ContextSession;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ListUtil;
 import com.google.common.collect.Iterables;
@@ -149,12 +148,12 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		return false;
 	}
 
-	@Override
-	public void close() throws Exception {
-		super.close();
-		_template = null;
-		_items = null; // 项会在会话结束后自动关闭
-	}
+//	@Override
+//	public void close() throws Exception {
+//		super.close();
+//		_template = null;
+//		_items = null; // 项会在会话结束后自动关闭
+//	}
 
 	@Override
 	public void clearData() {
@@ -349,10 +348,12 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	 * @return
 	 */
 	public static DTEList obtainEditable(String name) {
-		return ContextSession.registerItem(new DTEList(false, name, new LinkedList<DTObject>()));
+		return new DTEList(false, name, new LinkedList<DTObject>());
+//		return ContextSession.registerItem(new DTEList(false, name, new LinkedList<DTObject>()));
 	}
 
 	public static DTEList obtain(boolean isReadOnly, String name, AbstractList<DTObject> items) {
-		return ContextSession.registerItem(new DTEList(isReadOnly, name, items));
+		return new DTEList(isReadOnly, name, items);
+//		return ContextSession.registerItem(new DTEList(isReadOnly, name, items));
 	}
 }

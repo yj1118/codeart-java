@@ -108,13 +108,13 @@ public final class DTEObject extends DTEntity {
 
 	}
 
-	@Override
-	public void close() throws Exception {
-		super.close();
-		// 这里只用断开与数组的连接，不用清理members
-		// 因为members都被注册了，会话结束时会被清理
-		_members = null;
-	}
+//	@Override
+//	public void close() throws Exception {
+//		super.close();
+//		// 这里只用断开与数组的连接，不用清理members
+//		// 因为members都被注册了，会话结束时会被清理
+//		_members = null;
+//	}
 
 	@Override
 	public void clearData() {
@@ -329,11 +329,13 @@ public final class DTEObject extends DTEntity {
 	 * @return
 	 */
 	public static DTEObject obtainReadonlyEmpty(String name) {
-		return ContextSession.registerItem(new DTEObject(true, name, new ArrayList<DTEntity>()));
+		return new DTEObject(true, name, new ArrayList<DTEntity>());
+//		return ContextSession.registerItem(new DTEObject(true, name, new ArrayList<DTEntity>()));
 	}
 
 	public static DTEObject obtain(boolean readonly, String name, AbstractList<DTEntity> members) {
-		return ContextSession.registerItem(new DTEObject(readonly, name, members));
+		return new DTEObject(readonly, name, members);
+//		return ContextSession.registerItem(new DTEObject(readonly, name, members));
 	}
 
 }

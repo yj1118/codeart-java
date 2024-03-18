@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.function.Function;
 
-import com.apros.codeart.context.ContextSession;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ISO8601;
 import com.apros.codeart.util.StringUtil;
@@ -147,11 +146,11 @@ final class DTEValue extends DTEntity {
 		return obtain(this.getName(), _valueCode, _valueCodeIsString, _value);
 	}
 
-	@Override
-	public void close() throws Exception {
-		super.close();
-		this.clearData();
-	}
+//	@Override
+//	public void close() throws Exception {
+//		super.close();
+//		this.clearData();
+//	}
 
 	@Override
 	public void clearData() {
@@ -234,7 +233,8 @@ final class DTEValue extends DTEntity {
 	}
 
 	private static DTEValue obtain(String name, String valueCode, boolean valueCodeIsString, Object value) {
-		return ContextSession.registerItem(new DTEValue(name, valueCode, valueCodeIsString, value));
+		return new DTEValue(name, valueCode, valueCodeIsString, value);
+//		return ContextSession.registerItem(new DTEValue(name, valueCode, valueCodeIsString, value));
 	}
 
 	@Override

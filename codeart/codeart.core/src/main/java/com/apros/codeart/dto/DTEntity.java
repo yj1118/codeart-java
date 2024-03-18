@@ -8,7 +8,7 @@ import java.util.function.Function;
  * 
  * 会话结束后对象被关闭，切断引用的关联
  */
-public abstract class DTEntity implements AutoCloseable {
+public abstract class DTEntity {
 
 	private String _name;
 
@@ -101,12 +101,12 @@ public abstract class DTEntity implements AutoCloseable {
 		return sb.toString();
 	}
 
-	public void close() throws Exception {
-		// 接触引用，防止循环引用导致内存泄漏
-		_name = null;
-		_parent = null;
-		_selfAsEntities = null;
-	}
+//	public void close() throws Exception {
+//		// 解除引用，防止循环引用导致内存泄漏
+//		_name = null;
+//		_parent = null;
+//		_selfAsEntities = null;
+//	}
 
 	public abstract void clearData();
 
