@@ -7,10 +7,18 @@ import java.util.function.Function;
 
 import com.apros.codeart.bytecode.ClassGenerator;
 import com.apros.codeart.util.LazyIndexer;
-import com.apros.codeart.util.StringUtil;
 
-public final class ObjectUtil {
-	private ObjectUtil() {
+public final class Activator {
+	private Activator() {
+	}
+
+	public static Object createInstance(String className) {
+		try {
+			Class<?> clazz = Class.forName(className);
+			return createInstance(clazz);
+		} catch (Exception e) {
+			throw propagate(e);
+		}
 	}
 
 	/**
@@ -20,7 +28,7 @@ public final class ObjectUtil {
 	 */
 	public static Object createInstance(Class<?> instanceType) {
 		try {
-			var method = generateCreateInstanceMethod(instanceType);
+			var method = getCreateInstanceMethod.apply(instanceType);
 			return method.invoke(null, instanceType);
 		} catch (Exception e) {
 			throw propagate(e);
@@ -33,7 +41,7 @@ public final class ObjectUtil {
 
 	private static Method generateCreateInstanceMethod(Class<?> objectType) {
 
-		String methodName = String.format("createInstance_%s", StringUtil.uuid());
+		String methodName = String.format("createInstance_%s", objectType.getSimpleName());
 
 		try (var cg = ClassGenerator.define()) {
 

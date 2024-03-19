@@ -1,9 +1,12 @@
 package com.apros.codeart.ddd;
 
-import java.util.Optional;
+import java.util.function.Function;
 
-public class RepositoryFactory {
-//	#region 获取仓储实现的类型
+import com.apros.codeart.i18n.Language;
+import com.apros.codeart.runtime.Activator;
+import com.apros.codeart.util.LazyIndexer;
+
+class RepositoryFactory {
 
 	public static Class<?> getRepositoryType(Class<?> repositoryInterfaceType) {
 		var repository = getRepositoryTypeImpl(repositoryInterfaceType);
@@ -20,98 +23,60 @@ public class RepositoryFactory {
 	 * @return
 	 */
 	private static Class<?> getRepositoryTypeImpl(Class<?> repositoryInterfaceType) {
-
-		return Optional.ofNullable(getRepositoryTypeByConfig(repositoryInterfaceType)).orElseGet(() -> {
-			return getRepositoryTypeByRegister(repositoryInterfaceType);
-		});
-
-//	    return getRepositoryTypeByConfig(repositoryInterfaceType)
-//	            ?? getRepositoryTypeByRegister(repositoryInterfaceType);
-	}
-
-	private static Class<?> getRepositoryTypeByConfig(Class<?> repositoryInterfaceType) {
-		var config = DomainDrivenConfiguration.Current.RepositoryConfig;
-		if (config == null)
-			return null;
-		var mapper = config.RepositoryMapper;
-		if (mapper == null)
-			return null;
-		return mapper.GetInstanceType(repositoryInterfaceType);
+		var type = getRepositoryTypeByRegister(repositoryInterfaceType);
+		if (type == null) {
+			type = getRepositoryTypeByAgree(repositoryInterfaceType);
+		}
+		return type;
 	}
 
 	private static Class<?> getRepositoryTypeByRegister(Class<?> repositoryInterfaceType) {
-		return RepositoryRegistrar.GetRepositoryType(repositoryInterfaceType);
+		return RepositoryRegistrar.getRepositoryType(repositoryInterfaceType);
 	}
 
-	#endregion
-
-	/// <summary>
-	/// 创建一个仓储对象，所有仓储对象都是线程安全的，因此为单例创建
-	/// </summary>
-	/// <typeparam name="TRepository"></typeparam>
-	/// <typeparam name="TObject"></typeparam>
-	/// <returns></returns>
-	public static TRepository Create<TRepository>()
-	where TRepository:class,IRepository
-	{
-	    var repositoryInterfaceType = typeof(TRepository);
-	    object repository = _cache.Get(repositoryInterfaceType, (t) =>
-	    {
-	        repository = CreateRepositoryImpl<TRepository>();
-	        if (repository == null)
-	            throw new DomainDrivenException(string.Format(Strings.NotFoundRepository, repositoryInterfaceType.FullName));
-	        return repository;
-	    });
-	    return (TRepository)repository;
+	private static Class<?> getRepositoryTypeByAgree(Class<?> repositoryInterfaceType) {
+		// 例如：UserSubsytem.IUserRepository的仓储就是UserSubsytem.UserRepository
+		var repositoryName = String.format("%s.%s", repositoryInterfaceType.getPackageName(),
+				repositoryInterfaceType.getSimpleName().substring(1)); // substring(1) 是移除I
+		return Class.forName(repositoryInterfaceType.getModule(), repositoryName);
 	}
 
-	public static IRepository Create(Type repositoryInterfaceType)
-	{
-	    object repository = _cache.Get(repositoryInterfaceType, (t) =>
-	    {
-	        var repositoryType = GetRepositoryType(repositoryInterfaceType);
-	        return SafeAccessAttribute.CreateSingleton(repositoryType);
-	    });
-	    return (IRepository)repository;
+	/**
+	 * 创建一个仓储对象，所有仓储对象都是线程安全的，因此为单例创建
+	 * 
+	 * @param <T>
+	 * @param repositoryInterfaceType
+	 * @return
+	 */
+	public static Object create(Class<?> repositoryInterfaceType) {
+		return _cache.apply(repositoryInterfaceType);
 	}
 
-	private static LazyIndexer<Type, object> _cache = new LazyIndexer<Type, object>();
+	private static Function<Class<?>, Object> _cache = LazyIndexer.init((repositoryInterfaceType) -> {
+		var repository = createRepositoryImpl(repositoryInterfaceType);
+		if (repository == null)
+			throw new DomainDrivenException(Language.strings("NotFoundRepository", repositoryInterfaceType.getName()));
+		return repository;
+	});
 
-	#region 直接根据仓储配置得到实现
-
-	private static TRepository CreateRepositoryImpl<TRepository>()
-	where TRepository:class,IRepository
-	{
-	    return GetRepositoryByConfig<TRepository>() ?? GetRepositoryByRegister<TRepository>();
+	private static Object createRepositoryImpl(Class<?> repositoryInterfaceType) {
+		var repository = RepositoryRegistrar.getRepository(repositoryInterfaceType);
+		if (repository == null) {
+			// 没有在注册里找到，那么根据名称约定
+			var repositoryType = getRepositoryTypeByAgree(repositoryInterfaceType);
+			repository = Activator.createInstance(repositoryType);
+		}
+		return repository;
 	}
 
-	private static TRepository GetRepositoryByConfig<TRepository>()
-	where TRepository:class,IRepository
-	{
-	    var config = DomainDrivenConfiguration.Current.RepositoryConfig;
-	    if (config == null) return null;
-	    var mapper = config.RepositoryMapper;
-	    if (mapper == null) return null;
-	    return mapper.GetInstance<TRepository>();
+	/**
+	 * 注册单例仓储，请确保<paramref name="repository"/>是线程访问安全的
+	 * 
+	 * @param <T>
+	 * @param repositoryInterfaceType
+	 * @param repository
+	 */
+	public static <T extends IRepository> void register(Class<?> repositoryInterfaceType, T repository) {
+		RepositoryRegistrar.register(repositoryInterfaceType, repository);
 	}
-
-	private static TRepository GetRepositoryByRegister<TRepository>()
-	where TRepository:class,IRepository
-	{
-	    return RepositoryRegistrar.GetRepository(typeof(TRepository)) as TRepository;
-	}
-
-	/// <summary>
-	/// 注册单例仓储，请确保<paramref name="repository"/>是线程访问安全的
-	/// </summary>
-	/// <typeparam name="TRepository"></typeparam>
-	/// <typeparam name="TObject"></typeparam>
-	/// <param name="repository"></param>
-	public static void Register<TRepository>(IRepository repository)
-	where TRepository:IRepository
-	{
-	    RepositoryRegistrar.Register<TRepository>(repository);
-	}
-
-//	#endregion
 }

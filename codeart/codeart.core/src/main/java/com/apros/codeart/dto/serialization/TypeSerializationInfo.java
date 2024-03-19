@@ -4,15 +4,15 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 
 import com.apros.codeart.dto.DTObject;
-import com.apros.codeart.runtime.ObjectUtil;
+import com.apros.codeart.runtime.Activator;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.base.Preconditions;
 
 abstract class TypeSerializationInfo {
-	private DTOClassAnnotation _classAnn;
+	private DTOClassAnn _classAnn;
 
-	public DTOClassAnnotation getClassAnn() {
+	public DTOClassAnn getClassAnn() {
 		return _classAnn;
 	}
 
@@ -42,7 +42,7 @@ abstract class TypeSerializationInfo {
 		return TypeUtil.isCollection(_targetClass);
 	}
 
-	protected abstract DTOClassAnnotation getClassAnnotation(Class<?> classType);
+	protected abstract DTOClassAnn getClassAnnotation(Class<?> classType);
 
 	protected void initialize() {
 		if (this._classAnn != null)
@@ -58,7 +58,7 @@ abstract class TypeSerializationInfo {
 		}
 	}
 
-	protected abstract DTOMemberAnnotation getMemberAnnotation(Field field);
+	protected abstract DTOMemberAnn getMemberAnnotation(Field field);
 
 	private ArrayList<MemberSerializationInfo> buildMembers() {
 		var memberInfos = new ArrayList<MemberSerializationInfo>();
@@ -135,7 +135,7 @@ abstract class TypeSerializationInfo {
 	public abstract void serialize(Object instance, DTObject dto);
 
 	public Object deserialize(DTObject dto) {
-		var instance = ObjectUtil.createInstance(this.getTargetClass());
+		var instance = Activator.createInstance(this.getTargetClass());
 		deserialize(instance, dto);
 		return instance;
 	}

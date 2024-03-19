@@ -1,4 +1,4 @@
-module codeart {
+module codeart.core {
 	requires org.objectweb.asm;
 	requires com.google.common;
 

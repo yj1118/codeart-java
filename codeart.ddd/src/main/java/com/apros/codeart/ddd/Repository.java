@@ -2,56 +2,39 @@ package com.apros.codeart.ddd;
 
 import java.lang.reflect.Method;
 
+import com.apros.codeart.runtime.MethodUtil;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.base.Strings;
 
 public class Repository {
 
-//	/// <summary>
-//	/// 注册仓储，请确保<paramref name="repository"/>是线程访问安全的
-//	/// </summary>
-//	/// <typeparam name="TRepository"></typeparam>
-//	/// <param name="repository"></param>
-//	public static void Register<TRepository>(IRepository repository)
-//	where TRepository:IRepository
-//	{
-//	    RepositoryFactory.Register<TRepository>(repository);
-//	}
-//
-//	/// <summary>
-//	/// 创建一个仓储对象，同一类型的仓储对象会被缓存
-//	/// </summary>
-//	/// <typeparam name="TRepository"></typeparam>
-//	/// <returns></returns>
-//	public static TRepository Create<TRepository>()
-//	where TRepository:class,IRepository
-//	{
-//	    return RepositoryFactory.Create<TRepository>();
-//	}
-//
-//	/// <summary>
-//	/// 根据对象类型得到对象使用的仓储对象
-//	/// </summary>
-//	/// <param name="objectType"></param>
-//	/// <returns></returns>
-//	public static IRepository Create(Type objectType) {
-//		var objectTip = ObjectRepositoryAttribute.GetTip(objectType, true);
-//		return RepositoryFactory.Create(objectTip.RepositoryInterfaceType);
-//	}
-//
-//	/// <summary>
-//	/// 根据对象类型得到对象使用的存储对象，如果找不到返回null
-//	/// </summary>
-//	/// <param name="objectType"></param>
-//	/// <returns></returns>
-//	internal
-//
-//	static IRepository CreateWithNoCheckUp(Type objectType)
-//	{
-//	    var objectTip = ObjectRepositoryAttribute.GetTip(objectType, false);
-//	    if (objectTip == null) return null;
-//	    return RepositoryFactory.Create(objectTip.RepositoryInterfaceType);
-//	}
+	/**
+	 * 注册仓储，请确保<paramref name="repository"/>是线程访问安全的
+	 * 
+	 * @param <T>
+	 * @param repositoryInterfaceType
+	 * @param repository
+	 */
+	public static <T extends IRepository> void register(Class<?> repositoryInterfaceType, T repository) {
+		RepositoryFactory.register(repositoryInterfaceType, repository);
+	}
+
+	/// <summary>
+	/// 创建一个仓储对象，同一类型的仓储对象会被缓存
+	/// </summary>
+	/// <typeparam name="TRepository"></typeparam>
+	/// <returns></returns>
+	@SuppressWarnings("unchecked")
+	public static <T extends IRepository> T create(Class<?> repositoryInterfaceType) {
+		return (T) RepositoryFactory.create(repositoryInterfaceType);
+	}
+
+	static IRepository createBy(Class<?> objectType) {
+		var objectTip = ObjectRepositoryAnn.getTip(objectType, false);
+		if (objectTip == null)
+			return null;
+		return (IRepository) RepositoryFactory.create(objectTip.repositoryInterfaceType());
+	}
 
 	/**
 	 * 得到对象类型对应的仓储上定义的方法
@@ -63,12 +46,13 @@ public class Repository {
 	static Method getMethodFromRepository(Class<?> objectType, String methodName) {
 		if (StringUtil.isNullOrEmpty(methodName))
 			return null;
-		var objectTip = ObjectRepositoryAnnotation.getTip(objectType, true);
+		var objectTip = ObjectRepositoryAnn.getTip(objectType, true);
 		var repositoryType = RepositoryFactory.getRepositoryType(objectTip.repositoryInterfaceType());
-		var method = repositoryType.ResolveMethod(methodName);
+
+		var method = MethodUtil.resolveByNameMemoized(repositoryType, methodName);
 		if (method == null)
 			throw new DomainDrivenException(
-					string.Format(Strings.NoDefineMethodFromRepository, repositoryType.FullName, methodName));
+					String.format(Strings.NoDefineMethodFromRepository, repositoryType.FullName, methodName));
 		return method;
 	}
 

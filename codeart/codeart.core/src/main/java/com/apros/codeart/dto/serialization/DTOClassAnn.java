@@ -1,6 +1,6 @@
 package com.apros.codeart.dto.serialization;
 
-class DTOClassAnnotation {
+class DTOClassAnn {
 
 	private DTOSerializableMode _mode;
 
@@ -8,11 +8,11 @@ class DTOClassAnnotation {
 		return _mode;
 	}
 
-	private DTOClassAnnotation(DTOSerializableMode mode) {
+	private DTOClassAnn(DTOSerializableMode mode) {
 		_mode = mode;
 	}
 
-	private DTOClassAnnotation() {
+	private DTOClassAnn() {
 		this(DTOSerializableMode.General);
 	}
 
@@ -22,12 +22,12 @@ class DTOClassAnnotation {
 	 * @param type
 	 * @return
 	 */
-	public static DTOClassAnnotation get(Class<?> cls) {
+	public static DTOClassAnn get(Class<?> cls) {
 
 		var ann = cls.getAnnotation(DTOClass.class);
 
-		return ann != null ? new DTOClassAnnotation(ann.mode()) : Default;
+		return ann != null ? new DTOClassAnn(ann.mode()) : Default;
 	}
 
-	public static final DTOClassAnnotation Default = new DTOClassAnnotation();
+	public static final DTOClassAnn Default = new DTOClassAnn();
 }

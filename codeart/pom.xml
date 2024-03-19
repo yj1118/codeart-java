@@ -246,7 +246,7 @@
   </dependencies>
     
   <modules>
-  	<module>codeart</module>
+  	<module>codeart.core</module>
   	<module>codeart.ddd</module>
   </modules>
   

@@ -15,13 +15,13 @@ class TypeMakupInfo extends TypeSerializationInfo {
 	}
 
 	@Override
-	protected DTOClassAnnotation getClassAnnotation(Class<?> classType) {
-		return DTOClassAnnotation.get(classType);
+	protected DTOClassAnn getClassAnnotation(Class<?> classType) {
+		return DTOClassAnn.get(classType);
 	}
 
 	@Override
-	protected DTOMemberAnnotation getMemberAnnotation(Field field) {
-		return DTOMemberAnnotation.get(field);
+	protected DTOMemberAnn getMemberAnnotation(Field field) {
+		return DTOMemberAnn.get(field);
 	}
 
 	@Override

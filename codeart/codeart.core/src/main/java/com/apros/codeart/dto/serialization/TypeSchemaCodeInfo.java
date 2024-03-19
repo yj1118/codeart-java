@@ -17,15 +17,15 @@ class TypeSchemaCodeInfo extends TypeSerializationInfo {
 		this.initialize();
 	}
 
-	protected DTOClassAnnotation getClassAnnotation(Class<?> classType) {
-		return DTOClassAnnotation.Default;
+	protected DTOClassAnn getClassAnnotation(Class<?> classType) {
+		return DTOClassAnn.Default;
 	}
 
 	@Override
-	protected DTOMemberAnnotation getMemberAnnotation(Field field) {
+	protected DTOMemberAnn getMemberAnnotation(Field field) {
 		var name = FieldUtil.getAgreeName(field);
 		if (_schemaCodes.canMarkup(name))
-			return new DTOMemberAnnotation(name, DTOMemberType.General);
+			return new DTOMemberAnn(name, DTOMemberType.General);
 		return null;
 	}
 

@@ -101,4 +101,10 @@ public final class MethodUtil {
 		}
 		return null;
 	}
+
+	public static Method resolveByNameMemoized(Class<?> objCls, String methodName) {
+
+		var methods = _getMethods.apply(objCls).apply(methodName);
+		return ListUtil.first(methods);
+	}
 }

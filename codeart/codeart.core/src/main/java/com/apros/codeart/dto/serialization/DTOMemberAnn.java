@@ -2,7 +2,7 @@ package com.apros.codeart.dto.serialization;
 
 import java.lang.reflect.Field;
 
-class DTOMemberAnnotation {
+class DTOMemberAnn {
 
 	private String _name;
 
@@ -27,20 +27,20 @@ class DTOMemberAnnotation {
 		return _isBlob;
 	}
 
-	public DTOMemberAnnotation(String name, DTOMemberType type, boolean isBlob) {
+	public DTOMemberAnn(String name, DTOMemberType type, boolean isBlob) {
 		_name = name;
 		_type = type;
 		_isBlob = isBlob;
 	}
 
-	public DTOMemberAnnotation(String name, DTOMemberType type) {
+	public DTOMemberAnn(String name, DTOMemberType type) {
 		this(name, type, false);
 	}
 
-	public static DTOMemberAnnotation get(Field field) {
+	public static DTOMemberAnn get(Field field) {
 
 		var ann = field.getAnnotation(DTOMember.class);
 
-		return ann != null ? new DTOMemberAnnotation(ann.name(), ann.type(), ann.blob()) : null;
+		return ann != null ? new DTOMemberAnn(ann.name(), ann.type(), ann.blob()) : null;
 	}
 }

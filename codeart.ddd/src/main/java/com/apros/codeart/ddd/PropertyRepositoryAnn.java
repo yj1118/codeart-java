@@ -6,7 +6,7 @@ import java.util.function.Function;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.LazyIndexer;
 
-class PropertyRepositoryAnnotation {
+class PropertyRepositoryAnn {
 
 	/**
 	 * 属性信息
@@ -76,7 +76,7 @@ class PropertyRepositoryAnnotation {
 		return _loadMethod;
 	}
 
-	public PropertyRepositoryAnnotation(boolean lazy, String loadMethod) {
+	public PropertyRepositoryAnn(boolean lazy, String loadMethod) {
 		initDataAction();
 	}
 
