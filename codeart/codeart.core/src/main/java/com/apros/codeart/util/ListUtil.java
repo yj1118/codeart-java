@@ -1,10 +1,14 @@
 package com.apros.codeart.util;
 
+import static com.apros.codeart.runtime.Util.propagate;
+
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.apros.codeart.bytecode.ClassGenerator;
 import com.google.common.collect.Iterables;
 
 public final class ListUtil {
@@ -20,12 +24,15 @@ public final class ListUtil {
 	}
 
 	public static <T> Iterable<T> filter(Iterable<T> source, Function<T, Boolean> predicate) {
-		ArrayList<T> items = new ArrayList<T>();
+		ArrayList<T> items = null;
 		for (T item : source) {
-			if (predicate.apply(item))
+			if (predicate.apply(item)) {
+				if (items == null)
+					items = new ArrayList<T>();
 				items.add(item);
+			}
 		}
-		return items;
+		return items == null ? ListUtil.<T>empty() : items;
 	}
 
 	public static <T> T find(T[] source, Function<T, Boolean> predicate) {
@@ -39,15 +46,26 @@ public final class ListUtil {
 	public static <T> Iterable<T> filter(T[] source, Function<T, Boolean> predicate) {
 		ArrayList<T> items = new ArrayList<T>();
 		for (T item : source) {
-			if (predicate.apply(item))
+			if (predicate.apply(item)) {
+				if (items == null)
+					items = new ArrayList<T>();
 				items.add(item);
+			}
 		}
-		return items;
+		return items == null ? ListUtil.<T>empty() : items;
 	}
 
 	public static boolean contains(Iterable<Integer> source, Integer target) {
 		for (Integer item : source) {
 			if (item == target)
+				return true;
+		}
+		return false;
+	}
+
+	public static <T> boolean contains(Iterable<T> source, T value, BiFunction<T, T, Boolean> equals) {
+		for (T item : source) {
+			if (equals.apply(item, value))
 				return true;
 		}
 		return false;
@@ -76,28 +94,7 @@ public final class ListUtil {
 		return list;
 	}
 
-	/**
-	 * 删除满足条件的第一个项
-	 * 
-	 * @param <T>
-	 * @param source
-	 * @param predicate
-	 * @return
-	 * @throws Exception
-	 */
-	public static <T> T removeExable(Iterable<T> source, Function<T, Boolean> predicate) {
-		var iterator = source.iterator();
-		while (iterator.hasNext()) {
-			T item = iterator.next();
-			if (predicate.apply(item)) {
-				iterator.remove(); // 使用迭代器的 remove() 方法安全删除当前元素
-				return item;
-			}
-		}
-		return null;
-	}
-
-	public static <T> T remove(Iterable<T> source, Function<T, Boolean> predicate) {
+	public static <T> T removeFirst(Iterable<T> source, Function<T, Boolean> predicate) {
 		var iterator = source.iterator();
 		while (iterator.hasNext()) {
 			T item = iterator.next();
@@ -132,4 +129,32 @@ public final class ListUtil {
 			}
 		}
 	}
+
+	private static final Object Empty;
+
+	private static Object createEmpty() {
+		try (var cg = ClassGenerator.define()) {
+
+			try (var mg = cg.defineMethodPublicStatic("getList", ArrayList.class)) {
+				mg.newList();
+			}
+
+			var cls = cg.toClass();
+
+			var method = cls.getDeclaredMethod("getList");
+			return method.invoke(null);
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
+	static {
+		Empty = createEmpty();
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> Iterable<T> empty() {
+		return (Iterable<T>) Empty;
+	}
+
 }

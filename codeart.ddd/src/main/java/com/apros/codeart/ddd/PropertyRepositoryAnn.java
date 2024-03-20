@@ -61,13 +61,12 @@ class PropertyRepositoryAnn {
 
 	private void initPropertyType(DomainProperty property) {
 		_path = String.format("%s.%s", property.getDeclaringType().getName(), property.getName());
-		initEmptyable(property);
 	}
 
 	private boolean _lazy;
 
 	public boolean lazy() {
-		return _lazey;
+		return _lazy;
 	}
 
 	private String _loadMethod;
@@ -93,27 +92,27 @@ class PropertyRepositoryAnn {
 		});
 	}
 
-	/// <summary>
-	/// 使用自定义方法加载参数数据
-	/// </summary>
-	/// <param name="objectType">运行时的实际类型，有可能是派生类的类型</param>
-	/// <param name="data"></param>
-	/// <param name="value"></param>
-	/// <returns></returns>
-	public boolean tryLoadData(Type objectType, DynamicData data, QueryLevel level, out object value)
-	 {
-	     value = null;
-	     var method = _getLoadData(objectType);
-	     if (method == null) return false;
-
-	using (var temp = ArgsPool.Borrow2())
-	     {
-	         var args = temp.Item;
-	         args[0] = data;
-	         args[1] = level;
-	         value = method.Invoke(null, args);
-	     }
-	     return true;
-	 }
+//	/// <summary>
+//	/// 使用自定义方法加载参数数据
+//	/// </summary>
+//	/// <param name="objectType">运行时的实际类型，有可能是派生类的类型</param>
+//	/// <param name="data"></param>
+//	/// <param name="value"></param>
+//	/// <returns></returns>
+//	public boolean tryLoadData(Type objectType, DynamicData data, QueryLevel level, out object value)
+//	 {
+//	     value = null;
+//	     var method = _getLoadData(objectType);
+//	     if (method == null) return false;
+//
+//	using (var temp = ArgsPool.Borrow2())
+//	     {
+//	         var args = temp.Item;
+//	         args[0] = data;
+//	         args[1] = level;
+//	         value = method.Invoke(null, args);
+//	     }
+//	     return true;
+//	 }
 
 }

@@ -7,7 +7,7 @@ import com.apros.codeart.context.ContextSession;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.LazyIndexer;
 
-class PropertyLabelAnnotation {
+class PropertyLabelAnn {
 
 	private String _name;
 
@@ -21,7 +21,7 @@ class PropertyLabelAnnotation {
 		return _getValue.apply(ContextSession.locale()).apply(_name);
 	}
 
-	public PropertyLabelAnnotation(String name) {
+	public PropertyLabelAnn(String name) {
 		_name = name;
 	}
 

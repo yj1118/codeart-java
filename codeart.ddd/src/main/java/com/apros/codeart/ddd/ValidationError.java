@@ -32,7 +32,7 @@ public class ValidationError {
 	ValidationError() {
 	}
 
-	public Boolean IsEmpty() {
+	public boolean isEmpty() {
 		return StringUtil.isNullOrEmpty(this.getCode()) && StringUtil.isNullOrEmpty(this.getCode());
 	}
 

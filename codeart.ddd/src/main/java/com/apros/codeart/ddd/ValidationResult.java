@@ -47,7 +47,7 @@ public class ValidationResult {
 		if (this.isSatisfied())
 			return "success";
 		else {
-			return StringUtil.lines(errors, (error) -> error.getMessage());
+			return StringUtil.lines(_errors, (error) -> error.getMessage());
 		}
 	}
 

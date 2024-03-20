@@ -3,12 +3,10 @@ package com.apros.codeart.bytecode;
 import static com.apros.codeart.runtime.Util.propagate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.ArrayList;
+
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-import com.apros.codeart.core.TestRunner;
-
-@ExtendWith(TestRunner.class)
 class ConstructorTest {
 
 	public static class ConstructorTestObject { // 方法内部的局部类
@@ -57,17 +55,17 @@ class ConstructorTest {
 	}
 
 	@Test
-	void Arg0() {
+	public void Arg0() {
 		newObject(null);
 	}
 
 	@Test
-	void Arg1() {
+	public void Arg1() {
 		newObject("小李");
 	}
 
 	@Test
-	void arrayInt() {
+	public void arrayInt() {
 		try (var cg = ClassGenerator.define()) {
 
 			try (var mg = cg.defineMethodPublicStatic("test", int[].class)) {
@@ -90,7 +88,7 @@ class ConstructorTest {
 	}
 
 	@Test
-	void arrayString() {
+	public void arrayString() {
 		try (var cg = ClassGenerator.define()) {
 
 			try (var mg = cg.defineMethodPublicStatic("test", String[].class)) {
@@ -107,6 +105,31 @@ class ConstructorTest {
 
 			assertEquals(3, array.length);
 
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
+	@Test
+	public void newList() {
+		try (var cg = ClassGenerator.define()) {
+
+			try (var mg = cg.defineMethodPublicStatic("getList", ArrayList.class)) {
+				mg.newList();
+			}
+
+//			cg.save();
+
+			// 返回生成的字节码
+			var cls = cg.toClass();
+
+			var method = cls.getDeclaredMethod("getList");
+			var obj = method.invoke(null);
+
+			var list = (ArrayList<Integer>) obj;
+
+			list.add(1);
+			assertEquals(1, list.get(0));
 		} catch (Exception e) {
 			throw propagate(e);
 		}

@@ -3,7 +3,10 @@ package com.apros.codeart.i18n;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
-public class Language {
+public final class Language {
+
+	private Language() {
+	}
 
 	public static String strings(String key) {
 		ResourceBundle bundle = ResourceBundle.getBundle("strings");

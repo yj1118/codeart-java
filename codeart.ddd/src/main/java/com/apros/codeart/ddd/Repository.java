@@ -2,9 +2,9 @@ package com.apros.codeart.ddd;
 
 import java.lang.reflect.Method;
 
+import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.MethodUtil;
 import com.apros.codeart.util.StringUtil;
-import com.google.common.base.Strings;
 
 public class Repository {
 
@@ -52,7 +52,7 @@ public class Repository {
 		var method = MethodUtil.resolveByNameMemoized(repositoryType, methodName);
 		if (method == null)
 			throw new DomainDrivenException(
-					String.format(Strings.NoDefineMethodFromRepository, repositoryType.FullName, methodName));
+					Language.strings("NoDefineMethodFromRepository", repositoryType.getName(), methodName));
 		return method;
 	}
 

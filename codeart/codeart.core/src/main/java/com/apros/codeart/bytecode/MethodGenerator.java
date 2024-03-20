@@ -5,6 +5,7 @@ import static com.apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -827,6 +828,20 @@ public class MethodGenerator implements AutoCloseable {
 			_evalStack.pop(); // 弹出长度参数
 			_evalStack.push(arrayClass);
 		}
+		return this;
+	}
+
+	/**
+	 * 创建一个ArrayList
+	 * 
+	 * @return
+	 */
+	public MethodGenerator newList() {
+		// 实例化ArrayList
+		_visitor.visitTypeInsn(Opcodes.NEW, "java/util/ArrayList");
+		_visitor.visitInsn(Opcodes.DUP);
+		_visitor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/util/ArrayList", "<init>", "()V", false);
+		_evalStack.push(ArrayList.class);
 		return this;
 	}
 

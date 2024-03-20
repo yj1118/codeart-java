@@ -135,7 +135,7 @@ public final class DTEObject extends DTEntity {
 	}
 
 	public boolean remove(String memberName) {
-		return ListUtil.remove(_members, (t) -> t.getName().equalsIgnoreCase(memberName)) != null;
+		return ListUtil.removeFirst(_members, (t) -> t.getName().equalsIgnoreCase(memberName)) != null;
 	}
 
 	public DTEntity find(String memberName) {

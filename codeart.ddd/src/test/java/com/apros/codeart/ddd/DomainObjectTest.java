@@ -1,24 +1,22 @@
 package com.apros.codeart.ddd;
 
-import java.lang.reflect.Field;
-
 import org.junit.Test;
 
 public class DomainObjectTest {
 
 	public static class User {
 
-		@StringLength(0, 100)
-        @ASCIIString()
-		private static final DomainProperty NameProperty= DomainProperty.register<String,User>("name");
-
-		public String name() {
-			return getValue(NameProperty, String.class);
-		}
-
-		public String name(String value) {
-			return setValue(NameProperty, value);
-		}
+//		@StringLength(0, 100)
+//        @ASCIIString()
+//		private static final DomainProperty NameProperty= DomainProperty.register<String,User>("name");
+//
+//		public String name() {
+//			return getValue(NameProperty, String.class);
+//		}
+//
+//		public String name(String value) {
+//			return setValue(NameProperty, value);
+//		}
 
 //		public static final DomainProperty NameProperty= DomainProperty.register<String,User>("name");
 
