@@ -20,28 +20,28 @@ public class ValidationResult {
 		return _errors.size() == 0;
 	}
 
-	public void addError(IDomainProperty property, String code, String message) {
-		var error = createPropertyError(property.getName(), code, message);
-		_errors.add(error);
-	}
-
-	/// <summary>
-	/// 向验证结果中添加一个错误
-	/// </summary>
-	public void addError(String propertyName, String errorCode, String message) {
-		var error = createPropertyError(propertyName, errorCode, message);
-		_errors.add(error);
-	}
-
-	public void AddError(String message) {
-		var error = createError(string.Empty, message);
-		_errors.Add(error);
-	}
-
-	public void AddError(String errorCode, String message) {
-		var error = createError(errorCode, message);
-		_errors.add(error);
-	}
+//	public void addError(IDomainProperty property, String code, String message) {
+//		var error = createPropertyError(property.getName(), code, message);
+//		_errors.add(error);
+//	}
+//
+//	/// <summary>
+//	/// 向验证结果中添加一个错误
+//	/// </summary>
+//	public void addError(String propertyName, String errorCode, String message) {
+//		var error = createPropertyError(propertyName, errorCode, message);
+//		_errors.add(error);
+//	}
+//
+//	public void AddError(String message) {
+//		var error = createError(string.Empty, message);
+//		_errors.Add(error);
+//	}
+//
+//	public void AddError(String errorCode, String message) {
+//		var error = createError(errorCode, message);
+//		_errors.add(error);
+//	}
 
 	public String getMessage() {
 		if (this.isSatisfied())

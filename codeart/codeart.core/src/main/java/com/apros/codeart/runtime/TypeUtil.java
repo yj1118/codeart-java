@@ -1,9 +1,13 @@
 package com.apros.codeart.runtime;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
+import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.function.Function;
 
+import com.apros.codeart.util.LazyIndexer;
 import com.google.common.reflect.TypeToken;
 
 public final class TypeUtil {
@@ -77,4 +81,29 @@ public final class TypeUtil {
 	public static boolean is(Class<?> cls, Class<?> targetCls) {
 		return targetCls.isAssignableFrom(cls);
 	}
+
+	/// <summary>
+	/// 获得继承链
+	/// </summary>
+	/// <param name="type"></param>
+	/// <returns></returns>
+	public static Iterable<Class<?>> getInheriteds(Class<?> type) {
+		return _getInheriteds.apply(type);
+	}
+
+	private static Function<Class<?>, Iterable<Class<?>>> _getInheriteds = LazyIndexer.init((objectType) -> {
+		ArrayDeque<Class<?>> inheriteds = new ArrayDeque<>();
+
+		var type = objectType;
+		while (type.getSuperclass() != null) {
+			inheriteds.add(type.getSuperclass());
+			type = type.getSuperclass();
+		}
+		return inheriteds;
+	});
+
+	public static <A extends Annotation> boolean isDefined(Class<?> type, Class<A> annType) {
+		return type.getAnnotation(annType) != null;
+	}
+
 }

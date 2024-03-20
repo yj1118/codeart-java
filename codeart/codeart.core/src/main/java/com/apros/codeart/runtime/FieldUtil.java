@@ -6,6 +6,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
@@ -253,4 +254,40 @@ public final class FieldUtil {
 	public static boolean canWrite(Field field) {
 		return getFieldSetterMemoized(field) != null;
 	}
+
+	public static boolean isStatic(Field field) {
+		int modifiers = field.getModifiers();
+
+		return Modifier.isStatic(modifiers);
+	}
+
+	public static Iterable<Field> getStaticFields(Class<?> type) {
+		Field[] fields = _getFields.apply(type);
+		ArrayList<Field> staticFields = new ArrayList<Field>(fields.length);
+
+		for (Field field : fields) {
+			if (isStatic(field))
+				staticFields.add(field);
+		}
+
+		return staticFields;
+	}
+
+	/**
+	 * 
+	 * 获得类型的第一个静态字段
+	 * 
+	 * @param type
+	 * @return
+	 */
+	public static Field firstStaticField(Class<?> type) {
+		Field[] fields = _getFields.apply(type);
+
+		for (Field field : fields) {
+			if (isStatic(field))
+				return field;
+		}
+		return null;
+	}
+
 }

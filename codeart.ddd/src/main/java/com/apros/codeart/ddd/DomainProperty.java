@@ -1,9 +1,12 @@
 package com.apros.codeart.ddd;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.MapList;
 import com.google.common.base.Objects;
 
@@ -86,9 +89,9 @@ public class DomainProperty implements IDomainProperty {
 		return _accessLevelGet;
 	}
 
-	private PropertyLabelAnnotation _label;
+	private PropertyLabelAnn _label;
 
-	public PropertyLabelAnnotation getLabel() {
+	public PropertyLabelAnn getLabel() {
 		return _label;
 	}
 
@@ -295,25 +298,23 @@ public class DomainProperty implements IDomainProperty {
 	/// <summary>
 	/// 该方法可以获得一个类型包括继承链上所有的注册到的领域属性
 	/// </summary>
-	private static Function<Type, IEnumerable<DomainProperty>> _getProperties = LazyIndexer.Init<Type, IEnumerable<DomainProperty>>((objectType)=>
-	{
-	    //由于领域属性都是在静态构造中定义，如果对象类型从来没有被使用过，那么就不会构造，就不会产生领域属性
-	    DomainObject.StaticConstructor(objectType);
+	private static Function<Class<?>, Iterable<DomainProperty>> _getProperties = LazyIndexer.init((objectType) -> {
+		// 由于领域属性都是在静态构造中定义，如果对象类型从来没有被使用过，那么就不会构造，就不会产生领域属性
+		DomainObject.staticConstructor(objectType);
 
-	    List<DomainProperty> properties = new List<DomainProperty>();
-	    var types = objectType.GetInheriteds();
-	    foreach (var type in types)
-	    {
-	        properties.AddRange(_properties.GetValues(type));
-	    }
-	    properties.AddRange(_properties.GetValues(objectType));
+		ArrayList<DomainProperty> properties = new ArrayList<DomainProperty>();
+		var types = TypeUtil.getInheriteds(objectType);
 
-	    //排序
-	    return properties.OrderBy((p) =>
-	    {
-	        //让基类的属性在前
-	        return p.OwnerType.GetDepth();
-	    });
+		for (var type : types) {
+			properties.AddRange(_properties.GetValues(type));
+		}
+		properties.AddRange(_properties.GetValues(objectType));
+
+		// 排序
+		return properties.OrderBy((p) -> {
+			// 让基类的属性在前
+			return p.OwnerType.GetDepth();
+		});
 	});
 
 	internal
@@ -323,19 +324,17 @@ public class DomainProperty implements IDomainProperty {
 	    return _getPropertyByName(doType)(propertyName);
 	}
 
-	private static Func<Type, Func<string, DomainProperty>> _getPropertyByName = LazyIndexer.Init<Type, Func<string,DomainProperty>>((doType)=>
+	private static Func<Type, Func<string, DomainProperty>> _getPropertyByName = LazyIndexer.Init<Type, Func<string,DomainProperty>>((doType)=>{return LazyIndexer.Init<string,DomainProperty>((propertyName)=>
 	{
-	    return LazyIndexer.Init<string, DomainProperty>((propertyName) =>
-	    {
 	        var properies = GetProperties(doType);
 	        var dp = properies.FirstOrDefault((p) => p.Name.EqualsIgnoreCase(propertyName));
 	        if (dp == null)
 	            throw new DomainDrivenException("在类型" + doType.FullName + "和其继承链上没有找到领域属性" + propertyName + "的定义");
 	        return dp;
-	    });
-	});
+	    });});
 
-	#region 完整构造
+	#
+	region 完整构造
 
 	public static DomainProperty Register(string name, 
 	                                    Type propertyType,

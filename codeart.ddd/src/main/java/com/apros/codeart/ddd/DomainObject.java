@@ -1,5 +1,10 @@
 package com.apros.codeart.ddd;
 
+import static com.apros.codeart.runtime.Util.propagate;
+
+import com.apros.codeart.runtime.FieldUtil;
+import com.apros.codeart.runtime.TypeUtil;
+
 /// <summary>
 /// <para>我们保证领域对象的读操作是线程安全的,但是写操作（例如属性赋值等）不是线程安全的，如果需要并发控制请根据业务要求自行编写代码</para>
 /// <para>虽然写操作不是线程安全的，但是通过带锁查询可以有效的保证多线程安全，这包括以下约定：</para>
@@ -822,39 +827,53 @@ public abstract class DomainObject implements IDomainObject {
 //	#
 //
 //	region 辅助方法
-//
-//	private static readonly BindingFlags _flags=BindingFlags.Static|BindingFlags.NonPublic|BindingFlags.Public;
-//
-//	/// <summary>
-//	/// 通过调用一个静态成员，来模拟触发领域对象类型或扩展类型的静态构造函数
-//	/// <para>如果类型没有静态成员，那么就算不触发静态构造也不会影响，因为不需要注入领域属性和空对象</para>
-//	/// </summary>
-//	/// <param name="objectOrExtensionType"></param>
-//	internal
-//
-//	static void StaticConstructor(Type objectOrExtensionType) {
-//		// 当new一个实例时，静态构造会从基类依次执行,当时如果仅仅只是获得子类的静态成员，那么是不会触发基类的静态构造函数的
-//		// 因此，我们需要从基类开始，依次调用
-//		var types=objectOrExtensionType.GetInheriteds();foreach(var type in types){if(!type.IsImplementOrEquals(typeof(IDomainObject)))continue;
-//
-//		var member=type.GetPropertyAndFields(_flags).FirstOrDefault();if(member!=null)objectOrExtensionType.GetStaticValue(member.Name);}
-//
-//		// 再触发自身
-//		{var member=objectOrExtensionType.GetPropertyAndFields(_flags).FirstOrDefault();if(member!=null)objectOrExtensionType.GetStaticValue(member.Name);}
-//
-//	}
-//
-//	public static bool IsFrameworkDomainType(Type objectType) {
-//		if (IsDynamicObject(objectType))
-//			return true;
-//
-//		// 因为框架提供的基类没有标记ObjectRepositoryAttribute
-//		return IsDomainObject(objectType) && objectType.IsDefined(typeof(FrameworkDomainAttribute), false);
-//	}
-//
-//	public static bool IsMergeDomainType(Type objectType) {
-//		return objectType.IsDefined(typeof(MergeDomainAttribute), false);
-//	}
+
+	/**
+	 * 通过调用一个静态成员，来模拟触发领域对象类型的静态构造函数
+	 * 
+	 * 如果类型没有静态成员，那么就算不触发静态构造也不会影响，因为不需要注入领域属性和空对象
+	 * 
+	 * @param objectType
+	 */
+	static void staticConstructor(Class<?> objectType) {
+		try {
+			// 当new一个实例时，静态构造会从基类依次执行,但是如果仅仅只是获得子类的静态成员，那么是不会触发基类的静态构造函数的
+			// 因此，我们需要从基类开始，依次调用
+			var types = TypeUtil.getInheriteds(objectType);
+
+			for (var type : types) {
+				if (!type.isAssignableFrom(IDomainObject.class))
+					continue;
+
+				var field = FieldUtil.firstStaticField(type);
+				if (field != null)
+					field.get(null);// 获取一次静态值，触发静态构造
+			}
+
+			// 再触发自身
+			{
+				var field = FieldUtil.firstStaticField(objectType);
+				if (field != null)
+					field.get(null);
+			}
+
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+
+	}
+
+	public static boolean isFrameworkDomainType(Class<?> objectType) {
+		if (isDynamicObject(objectType))
+			return true;
+
+		// 因为框架提供的基类没有标记ObjectRepositoryAttribute
+		return isDomainObject(objectType) && TypeUtil.isDefined(objectType, FrameworkDomain.class);
+	}
+
+	public static boolean isMergeDomainType(Class<?> objectType) {
+		return TypeUtil.isDefined(objectType, MergeDomain.class);
+	}
 //
 //	/// <summary>
 //	/// 获取领域类型定义的空对象
