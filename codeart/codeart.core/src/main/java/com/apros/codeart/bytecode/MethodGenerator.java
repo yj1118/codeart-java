@@ -7,6 +7,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -842,6 +843,15 @@ public class MethodGenerator implements AutoCloseable {
 		_visitor.visitInsn(Opcodes.DUP);
 		_visitor.visitMethodInsn(Opcodes.INVOKESPECIAL, "java/util/ArrayList", "<init>", "()V", false);
 		_evalStack.push(ArrayList.class);
+		return this;
+	}
+
+	public MethodGenerator asReadonlyList() {
+		// 实例化ArrayList
+		_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/util/Collections", "unmodifiableList",
+				"(Ljava/util/List;)Ljava/util/List;", false);
+		_evalStack.pop();
+		_evalStack.push(List.class);
 		return this;
 	}
 

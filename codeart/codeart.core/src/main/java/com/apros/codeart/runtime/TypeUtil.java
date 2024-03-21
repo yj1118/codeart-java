@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.function.Function;
 
 import com.apros.codeart.util.LazyIndexer;
+import com.google.common.collect.Iterables;
 import com.google.common.reflect.TypeToken;
 
 public final class TypeUtil {
@@ -89,6 +90,16 @@ public final class TypeUtil {
 	/// <returns></returns>
 	public static Iterable<Class<?>> getInheriteds(Class<?> type) {
 		return _getInheriteds.apply(type);
+	}
+
+	/**
+	 * 类型的继承深度，直接从object继承而来的对象深度为1，每继承一个类，深度加1
+	 * 
+	 * @param type
+	 * @return
+	 */
+	public static int getDepth(Class<?> type) {
+		return Iterables.size(getInheriteds(type));
 	}
 
 	private static Function<Class<?>, Iterable<Class<?>>> _getInheriteds = LazyIndexer.init((objectType) -> {

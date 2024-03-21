@@ -376,54 +376,54 @@ public abstract class DomainObject implements IDomainObject {
 //
 //	#region 数据代理
 //
-//	private IDataProxy _dataProxy;
-//	public IDataProxy DataProxy
-//	{
-//        get
-//        {
-//            if (_dataProxy == null)
-//            {
-//                lock(_syncObject)
-//                {
-//                    if (_dataProxy == null)
-//                    {
-//                        _dataProxy = CodeArt.DomainDriven.DataProxy.CreateStorage(this);
-//                    }
-//                }
-//            }
-//            return _dataProxy;
-//        }
-//        set
-//        {
-//            if (_dataProxy != null && value != null) value.Copy(_dataProxy);
-//            _dataProxy = value;
-//            if (_dataProxy != null) _dataProxy.Owner = this;
-//        }
-//    }
-//
-//	public bool IsPropertyLoaded(DomainProperty property) {
-//		return this.DataProxy.IsLoaded(property);
-//	}
-//
-//	public bool IsPropertyLoaded(string propertyName) {
-//		var property = DomainProperty.GetProperty(this.ObjectType, propertyName);
-//		return this.DataProxy.IsLoaded(property);
-//	}
-//
-//	public int DataVersion
-//	{
-//        get
-//        {
-//            return this.DataProxy.Version;
-//        }
-//    }
-//
-//	/// <summary>
-//	/// 同步数据版本号，当确认对象是干净的情况下，你可以手动更新版本号，这在某些情况下很有用
-//	/// </summary>
-//	public void SyncDataVersion() {
-//		this.DataProxy.SyncVersion();
-//	}
+	private IDataProxy _dataProxy;
+	public IDataProxy DataProxy
+	{
+        get
+        {
+            if (_dataProxy == null)
+            {
+                lock(_syncObject)
+                {
+                    if (_dataProxy == null)
+                    {
+                        _dataProxy = CodeArt.DomainDriven.DataProxy.CreateStorage(this);
+                    }
+                }
+            }
+            return _dataProxy;
+        }
+        set
+        {
+            if (_dataProxy != null && value != null) value.Copy(_dataProxy);
+            _dataProxy = value;
+            if (_dataProxy != null) _dataProxy.Owner = this;
+        }
+    }
+
+	public bool IsPropertyLoaded(DomainProperty property) {
+		return this.DataProxy.IsLoaded(property);
+	}
+
+	public bool IsPropertyLoaded(string propertyName) {
+		var property = DomainProperty.GetProperty(this.ObjectType, propertyName);
+		return this.DataProxy.IsLoaded(property);
+	}
+
+	public int DataVersion
+	{
+        get
+        {
+            return this.DataProxy.Version;
+        }
+    }
+
+	/// <summary>
+	/// 同步数据版本号，当确认对象是干净的情况下，你可以手动更新版本号，这在某些情况下很有用
+	/// </summary>
+	public void SyncDataVersion() {
+		this.DataProxy.SyncVersion();
+	}
 //
 //	#endregion
 //
@@ -555,28 +555,31 @@ public abstract class DomainObject implements IDomainObject {
 //        }
 //    }
 //
-//	/// <summary>
-//	/// 该方法虽然是公开的，但是<paramref name="property"/>都是由类内部或者扩展类定义的，
-//	/// 所以获取值和设置值只能通过常规的属性操作，无法通过该方法
-//	/// </summary>
-//	/// <typeparam name="T"></typeparam>
-//	/// <param name="property"></param>
-//	/// <returns></returns>
-//	public T GetValue<T>(
-//	DomainProperty property)
-//	{
-//		var value = GetValue(property);
-//		if (value == null)
-//			throw new IsNullException(property.Name);
-//		// if(value is IEmptyable)
-//		// {
-//		// if(!typeof(T).ImplementInterface(typeof(IEmptyable)))
-//		// {
-//		// return (T)((value as IEmptyable)).GetValue();
-//		// }
-//		// }
-//		return (T) value;
-//	}
+
+	/**
+	 * 
+	 * 该方法虽然是公开的，但是 {@code property} 都是由类内部定义的，
+	 * 
+	 * 所以获取值和设置值只能通过常规的属性操作，无法通过该方法
+	 * 
+	 * @param <T>
+	 * @param property
+	 * @return
+	 */
+	public <T> T getValue(DomainProperty property) {
+		var value = GetValue(property);
+		if (value == null)
+			throw new IsNullException(property.Name);
+		// if(value is IEmptyable)
+		// {
+		// if(!typeof(T).ImplementInterface(typeof(IEmptyable)))
+		// {
+		// return (T)((value as IEmptyable)).GetValue();
+		// }
+		// }
+		return (T) value;
+	}
+
 //
 //	/// <summary>
 //	/// 当属性的值已经被加载，就获取数据，否则不获取
@@ -596,20 +599,16 @@ public abstract class DomainObject implements IDomainObject {
 //		return false;
 //	}
 //
-//	/// <summary>
-//	/// 我们保证领域对象的读操作是线程安全的
-//	/// 该方法虽然是公开的，但是<paramref name="property"/>都是由类内部或者扩展类定义的，
-//	/// 所以获取值和设置值只能通过常规的属性操作，无法通过该方法
-//	/// </summary>
-//	/// <param name="property"></param>
-//	/// <returns></returns>
-//	public virtual object
-//
-//	GetValue(DomainProperty property)
-//    {
-//        var ctx = GetRunContextFromAppSession(property.RuntimeGetId); //从当前应用程序会话中获取运行上下文，确保Get操作不会引起并发冲突
-//        return property.GetChain.Invoke(this, ctx);
-//    }
+
+	/**
+	 * 我们保证领域对象的读操作是线程安全的
+	 * 
+	 * @param property
+	 * @return
+	 */
+	public Object getValue(DomainProperty property) {
+		return this.DataProxy.Load(property);
+	}
 //
 //	/// <summary>
 //	/// 获得属性最后一次被更改前的值
@@ -620,13 +619,7 @@ public abstract class DomainObject implements IDomainObject {
 //		return this.DataProxy.LoadOld(property);
 //	}
 //
-//	internal object
-//
-//	GetValueLastStep(DomainProperty property)
-//    {
-//        return this.DataProxy.Load(property);
-//    }
-//
+
 //	/// <summary>
 //	/// 外界标记某个属性发生了变化，这常常是由于属性本身的成员发生了变化，而触发的属性变化
 //	/// 该方法会触发属性被改变的事件

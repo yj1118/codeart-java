@@ -4,6 +4,7 @@ import static com.apros.codeart.runtime.Util.propagate;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -135,8 +136,8 @@ public final class ListUtil {
 	private static Object createEmpty() {
 		try (var cg = ClassGenerator.define()) {
 
-			try (var mg = cg.defineMethodPublicStatic("getList", ArrayList.class)) {
-				mg.newList();
+			try (var mg = cg.defineMethodPublicStatic("getList", List.class)) {
+				mg.newList().asReadonlyList();
 			}
 
 			var cls = cg.toClass();

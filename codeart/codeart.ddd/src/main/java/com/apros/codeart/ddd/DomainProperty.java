@@ -1,11 +1,16 @@
 package com.apros.codeart.ddd;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
+import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.MapList;
 import com.google.common.base.Objects;
+import com.google.common.collect.Iterables;
 
 public class DomainProperty implements IDomainProperty {
 
@@ -40,17 +45,6 @@ public class DomainProperty implements IDomainProperty {
 	Field getFieldInfo() {
 		return _field;
 	}
-
-//	/// <summary>
-//	/// 指示属性是否为扩展的(java 里没有扩展的机制)
-//	/// </summary>
-//	public bool IsExtensions
-//	{
-//	    get
-//	    {
-//	        return this.PropertyInfo == null;
-//	    }
-//	}
 
 	private Class<?> _dynamicType;
 
@@ -278,135 +272,135 @@ public class DomainProperty implements IDomainProperty {
 
 	private static MapList<Class<?>, DomainProperty> _properties = new MapList<Class<?>, DomainProperty>(false);
 
-	@Override
-	public BiFunction<IDomainObject, IDomainProperty, Object> makeGetDefaultValue() {
-		// TODO Auto-generated method stub
-		return null;
+	/**
+	 * 获取类型 {@code doType} 的所有属性定义
+	 * 
+	 * @param doType
+	 * @return
+	 */
+	static Iterable<DomainProperty> getProperties(Class<?> doType) {
+		// 使用_getProperties方法，而不是直接使用_properties对象
+		// 是因为_properties记录的是对象类型Type上注册了哪些属性
+		// 但是在继承关系上，比如A继承了B，B有10个领域属性，而A类型就无法通过_properties的记录获取领域属性
+		// 因此需要用_getProperties方法
+		return _getProperties.apply(doType);
 	}
 
-//	/**
-//	 * 获取类型 {@code doType} 的所有属性定义
-//	 * 
-//	 * @param doType
-//	 * @return
-//	 */
-//	static Iterable<DomainProperty> getProperties(Class<?> doType) {
-//		// 使用_getProperties方法，而不是直接使用_properties对象
-//		// 是因为_properties记录的是对象类型Type上注册了哪些属性
-//		// 但是在继承关系上，比如A继承了B，B有10个领域属性，而A类型就无法通过_properties的记录获取领域属性
-//		// 因此需要用_getProperties方法
-//		return _getProperties(doType);
-//	}
+	/// <summary>
+	/// 该方法可以获得一个类型包括继承链上所有的注册到的领域属性
+	/// </summary>
+	private static Function<Class<?>, Iterable<DomainProperty>> _getProperties = LazyIndexer.init((objectType) -> {
+		// 由于领域属性都是在静态构造中定义，如果对象类型从来没有被使用过，那么就不会构造，就不会产生领域属性
+		DomainObject.staticConstructor(objectType);
 
-//	/// <summary>
-//	/// 该方法可以获得一个类型包括继承链上所有的注册到的领域属性
-//	/// </summary>
-//	private static Function<Class<?>, Iterable<DomainProperty>> _getProperties = LazyIndexer.init((objectType) -> {
-//		// 由于领域属性都是在静态构造中定义，如果对象类型从来没有被使用过，那么就不会构造，就不会产生领域属性
-//		DomainObject.staticConstructor(objectType);
-//
-//		ArrayList<DomainProperty> properties = new ArrayList<DomainProperty>();
-//		var types = TypeUtil.getInheriteds(objectType);
-//
-//		for (var type : types) {
-//			properties.AddRange(_properties.GetValues(type));
-//		}
-//		properties.AddRange(_properties.GetValues(objectType));
-//
-//		// 排序
-//		return properties.OrderBy((p) -> {
-//			// 让基类的属性在前
-//			return p.OwnerType.GetDepth();
-//		});
-//	});
-//
-//	internal
-//
-//	static DomainProperty GetProperty(Type doType, string propertyName)
-//	{
-//	    return _getPropertyByName(doType)(propertyName);
-//	}
-//
-//	private static Func<Type, Func<string, DomainProperty>> _getPropertyByName = LazyIndexer.Init<Type, Func<string,DomainProperty>>((doType)=>{return LazyIndexer.Init<string,DomainProperty>((propertyName)=>
-//	{
-//	        var properies = GetProperties(doType);
-//	        var dp = properies.FirstOrDefault((p) => p.Name.EqualsIgnoreCase(propertyName));
-//	        if (dp == null)
-//	            throw new DomainDrivenException("在类型" + doType.FullName + "和其继承链上没有找到领域属性" + propertyName + "的定义");
-//	        return dp;
-//	    });});
-//
-//	#
-//	region 完整构造
-//
-//	public static DomainProperty Register(string name, 
-//	                                    Type propertyType,
-//	                                    Type ownerType, 
-//	                                    Func<DomainObject, DomainProperty, object> getDefaultValue,
-//	                                    Func<object,object,bool> compare,
-//	                                    Type dynamicType = null)
-//	{
-//	    lock (_properties)
-//	    {
-//	        var target = _properties.GetValue(ownerType, (p) =>
-//	        {
-//	            return p.Name.EqualsIgnoreCase(name);
-//	        });
-//	        if (target != null)
-//	            throw new DomainDrivenException(string.Format(Strings.RepeatedDeclareProperty, ownerType.FullName, name));
-//
-//	        var validators = PropertyValidatorAttribute.GetValidators(ownerType, name);
-//	        var repositoryTip = GetAttribute<PropertyRepositoryAttribute>(ownerType, name);
-//	        var logableTip = GetAttribute<PropertyLogableAttribute>(ownerType, name);
-//	        var labelTip = GetAttribute<PropertyLabelAttribute>(ownerType, name);
-//
-//	        var property = new DomainProperty()
-//	        {
-//	            Id = Guid.NewGuid(),
-//	            Name = name,
-//	            PropertyType = propertyType,
-//	            OwnerType = ownerType,
-//	            GetDefaultValue = getDefaultValue,
-//	            Compare = compare,
-//	            Validators = validators,
-//	            RepositoryTip = repositoryTip,
-//	            LogableTip = logableTip,
-//	            PropertyInfo = ownerType.ResolveProperty(name),
-//	            DynamicType = dynamicType,
-//	            Label = labelTip
-//	        };
-//
-//	        if(repositoryTip != null)
-//	            repositoryTip.Property = property; //赋值
-//
-//	        {
-//	            //获取属性值的行为链
-//	            var chain = new PropertyGetChain(property);
-//	            chain.AddMethods(PropertyGetAttribute.GetMethods(ownerType, name));
-//	            property.GetChain = chain;
-//	        }
-//
-//	        {
-//	            //设置属性值的行为链
-//	            var chain = new PropertySetChain(property);
-//	            chain.AddMethods(PropertySetAttribute.GetMethods(ownerType, name));
-//	            property.SetChain = chain;
-//	        }
-//
-//
-//	        {
-//	            //更改属性值的行为链
-//	            var chain = new PropertyChangedChain(property);
-//	            chain.AddMethods(PropertyChangedAttribute.GetMethods(ownerType, name));
-//	            property.ChangedChain = chain;
-//	        }
-//
-//	        InitAccessLevel(property);
-//
-//	        _properties.Add(ownerType, property);
-//	        return property;
-//	    }
-//	}
+		ArrayList<DomainProperty> properties = new ArrayList<DomainProperty>();
+		var types = TypeUtil.getInheriteds(objectType);
+
+		for (var type : types) {
+			Iterables.addAll(properties, _properties.getValues(type));
+		}
+		Iterables.addAll(properties, _properties.getValues(objectType));
+
+		// 排序
+		properties.sort((o1, o2) -> {
+			// 让基类的属性在前
+			return Integer.compare(TypeUtil.getDepth(o1.getDeclaringType()), TypeUtil.getDepth(o2.getDeclaringType()));
+		});
+
+		return properties;
+	});
+
+	static DomainProperty getProperty(Class<?> doType, String propertyName) {
+		return _getPropertyByName.apply(doType).apply(propertyName);
+	}
+
+	private static Function<Class<?>, Function<String, DomainProperty>> _getPropertyByName = LazyIndexer
+			.init((doType) -> {
+				return LazyIndexer.<String, DomainProperty>init((propertyName) -> {
+					var properies = getProperties(doType);
+					var dp = Iterables.find(properies, (p) -> p.getName().equalsIgnoreCase(propertyName), null);
+					if (dp == null)
+						throw new DomainDrivenException(
+								Language.strings("NotFoundDomainProperty", doType.getName(), propertyName));
+					return dp;
+				});
+			});
+
+	public static DomainProperty register(String name, Class<?> propertyType, Class<?> declaringType,
+			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue,
+			BiFunction<Object, Object, Boolean> compare) {
+		return register(propertyType, propertyType, getDefaultValue, compare, null);
+	}
+
+	public static DomainProperty register(String name, 
+	                                    Class<?> propertyType,
+	                                    Class<?> declaringType, 
+	                                    BiFunction<DomainObject, DomainProperty, Object> getDefaultValue,
+	                                    BiFunction<Object,Object,Boolean> compare,
+	                                    Class<?> dynamicType)
+	{
+	    synchronized (_properties)
+	    {
+	        var target = _properties.getValue(declaringType, (p) ->
+	        {
+	            return p.getName().equalsIgnoreCase(name);
+	        });
+	        
+	        if (target != null)
+	            throw new DomainDrivenException(Language.strings("RepeatedDomainProperty", declaringType.getName(), name));
+
+	        var validators = PropertyValidatorAttribute.GetValidators(ownerType, name);
+	        var repositoryTip = GetAttribute<PropertyRepositoryAttribute>(ownerType, name);
+	        var logableTip = GetAttribute<PropertyLogableAttribute>(ownerType, name);
+	        var labelTip = GetAttribute<PropertyLabelAttribute>(ownerType, name);
+
+	        var property = new DomainProperty()
+	        {
+	            Id = Guid.NewGuid(),
+	            Name = name,
+	            PropertyType = propertyType,
+	            OwnerType = ownerType,
+	            GetDefaultValue = getDefaultValue,
+	            Compare = compare,
+	            Validators = validators,
+	            RepositoryTip = repositoryTip,
+	            LogableTip = logableTip,
+	            PropertyInfo = ownerType.ResolveProperty(name),
+	            DynamicType = dynamicType,
+	            Label = labelTip
+	        };
+
+	        if(repositoryTip != null)
+	            repositoryTip.Property = property; //赋值
+
+	        {
+	            //获取属性值的行为链
+	            var chain = new PropertyGetChain(property);
+	            chain.AddMethods(PropertyGetAttribute.GetMethods(ownerType, name));
+	            property.GetChain = chain;
+	        }
+
+	        {
+	            //设置属性值的行为链
+	            var chain = new PropertySetChain(property);
+	            chain.AddMethods(PropertySetAttribute.GetMethods(ownerType, name));
+	            property.SetChain = chain;
+	        }
+
+
+	        {
+	            //更改属性值的行为链
+	            var chain = new PropertyChangedChain(property);
+	            chain.AddMethods(PropertyChangedAttribute.GetMethods(ownerType, name));
+	            property.ChangedChain = chain;
+	        }
+
+	        InitAccessLevel(property);
+
+	        _properties.Add(ownerType, property);
+	        return property;
+	    }
+	}
 //
 //	private static void InitAccessLevel(DomainProperty property) {
 //		if (property.IsExtensions) {
