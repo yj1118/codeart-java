@@ -51,9 +51,9 @@ public interface IDataProxy extends INotNullObject {
 	/// <summary>
 	/// 数据版本号
 	/// </summary>
-	int version();
+	int getVersion();
 
-	void version(int value);
+	void setVersion(int value);
 
 	/**
 	 * 同步版本号

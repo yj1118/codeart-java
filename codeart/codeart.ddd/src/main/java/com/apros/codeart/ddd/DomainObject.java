@@ -57,18 +57,17 @@ public abstract class DomainObject implements IDomainObject {
 //        private set;
 //    }
 //
-//	/// <summary>
-//	/// 是否追踪属性变化的情况，该值为true，会记录属性更改前的值，这会消耗一部分内存
-//	/// </summary>
-//	public virtual bool TrackPropertyChange
-//	{
-//        get
-//        {
-//            //默认算法是，该对象需要写入日志，我们就追踪
-//            //程序员也可以根据需要，改变该属性的算法
-//            return ObjectLogableAttribute.GetTip(this.ObjectType) != null;
-//        }
-//    }
+
+	/**
+	 * 是否追踪属性变化的情况，该值为true，会记录属性更改前的值，这会消耗一部分内存
+	 * 
+	 * @return
+	 */
+	public boolean isTrackPropertyChange() {
+		// 这里要看属性是否绑定了改变事件，稍后补充
+		return ObjectLogableAttribute.GetTip(this.ObjectType) != null;
+	}
+
 //
 //	public DomainObject() {
 //		this.IsConstructing = true;

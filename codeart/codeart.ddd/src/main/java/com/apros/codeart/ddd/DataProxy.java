@@ -1,8 +1,9 @@
 package com.apros.codeart.ddd;
 
-import java.util.UUID;
+import java.util.HashMap;
+import java.util.Map;
 
-import com.apros.codeart.util.StringUtil;
+import com.apros.codeart.runtime.TypeUtil;
 
 /**
  * 我们将领域数据分为两部分存放 一部分是聚合模型内部的成员、另外一部分是引用的聚合根
@@ -12,418 +13,208 @@ import com.apros.codeart.util.StringUtil;
  */
 public abstract class DataProxy implements IDataProxy {
 
-	private String _uniqueKey;
+	private Map<String, Object> _data;
 
 	/**
-	 * 数据代理的唯一键
-	 * 
-	 * @return
+	 * 用于记录属性更改情况的数据
 	 */
-	public String uniqueKey() {
-		return _uniqueKey;
-	}
-
-	private String _appSessionDatasKey;
-
-	private String _appSessionOldDatasKey;
+	private Map<String, Object> _oldData;
 
 	public DataProxy() {
-		_uniqueKey = UUID.randomUUID().toString(); // 这里可以保证就算在同一个线程里，同一个编号但不同实例的领域对象的数据代理是不一样的
-		_appSessionDatasKey = String.format("%sDataProxyDatas", _uniqueKey);
-		_appSessionOldDatasKey = String.Format("%sDataProxyOldDatas", _uniqueKey);
+		_data = new HashMap<String, Object>();
+
+		if (this.isTrackPropertyChange())
+			_oldData = new HashMap<String, Object>();
 	}
 
-	public abstract bool IsSnapshot
-	{ get; }
+	public abstract boolean isSnapshot();
 
-	public abstract bool IsMirror
-	{ get; }
+	public abstract boolean isMirror();
 
-	public abstract bool IsFromSnapshot
-	{ get; }
+	public abstract int getVersion();
 
-	public abstract int Version
-	{ get; set; }
+	public abstract void setVersion(int version);
 
-	public abstract void SyncVersion();
+	public abstract void syncVersion();
 
 	/// <summary>
 	/// 因为数据代理可能包含一些线程公共资源，这些资源在对象过期后可以及时清除，腾出内存空间
 	/// 数据代理中AppSession就是典型的例子
 	/// </summary>
-	public void Clear() {
-		_shareDatas.Clear();
-		_shareOldDatas.Clear();
-		ClearDatasFromAppSession();
+	public void clear() {
+		_data.clear();
+		if (_oldData != null)
+			_oldData.clear();
 	}
 
-	/// <summary>
-	/// 共享数据，所有线程对该实例的操作共享此数据
-	/// </summary>
-	private Dictionary<string, object> _shareDatas = new Dictionary<string, object>();
-
-	/// <summary>
-	/// 用于记录属性更改情况的数据
-	/// </summary>
-	private Dictionary<string, object> _shareOldDatas = new Dictionary<string, object>();
-
-	private Dictionary<string, object> GetDatasFromAppSession()
-    {
-        return AppSession.GetOrAddItem(_appSessionDatasKey, () =>
-        {
-            var pool = DictionaryPool<string, object>.Instance;
-            return Symbiosis.TryMark<Dictionary<string, object>>(pool, () =>
-            {
-                return new Dictionary<string, object>();
-            });
-        });
-    }
-
-	private Dictionary<string, object> GetOldDatasFromAppSession()
-    {
-        return AppSession.GetOrAddItem(_appSessionOldDatasKey, () =>
-        {
-            var pool = DictionaryPool<string, object>.Instance;
-            return Symbiosis.TryMark<Dictionary<string, object>>(pool, () =>
-            {
-                return new Dictionary<string, object>();
-            });
-        });
-    }
-
-	private void ClearDatasFromAppSession() {
-		{
-			var data = GetDatasFromAppSession();
-			data.Clear();
-		}
-
-		{
-			var data = GetOldDatasFromAppSession();
-			data.Clear();
-		}
+	public Object load(DomainProperty property) {
+		return _data.get(property.getName());
 	}
 
-	/// <summary>
-	///
-	/// </summary>
-	/// <param name="property"></param>
-	/// <returns></returns>
-	public object Load(DomainProperty property) {
-		return property.IsQuoteAggreateRoot() ? LoadFromAppSession(property) : LoadFromShare(property);
+	public Object loadOld(DomainProperty property) {
+		if (_oldData == null)
+			return null;
+		return _oldData.get(property.getName());
 	}
 
-	public object LoadOld(DomainProperty property) {
-		return property.IsQuoteAggreateRoot() ? LoadOldFromAppSession(property) : LoadOldFromShare(property);
+	public boolean isEmpty() {
+		return false;
 	}
 
-	private object LoadFromShare(DomainProperty property)
-    {
-        object data = null;
-        if (!_shareDatas.TryGetValue(property.Name, out data))
-        {
-            lock (_shareDatas)  //由于引入了缓冲池机制，我们要保证多线程同时访问一个对象的并发安全
-            {
-                if (!_shareDatas.TryGetValue(property.Name, out data))
-                {
-                    data = LoadData(property);
-                    if (data == null) data = property.GetDefaultValue(this.Owner, property);
-                    _shareDatas.Add(property.Name, data);
-                }
-            }
-        }
-        return data;
-    }
-
-	private object LoadOldFromShare(DomainProperty property)
-    {
-        object data = null;
-        if (!_shareOldDatas.TryGetValue(property.Name, out data))
-        {
-        }
-        return data;
-    }
-
-	private object LoadFromAppSession(DomainProperty property)
-    {
-        object data = null;
-        var datas = GetDatasFromAppSession(); //由于使用了appSession，因此是线程安全的
-        if (!datas.TryGetValue(property.Name, out data))
-        {
-            data = LoadData(property);
-            if (data == null) data = property.GetDefaultValue(this.Owner, property);
-            datas.Add(property.Name, data);
-        }
-        return data;
-    }
-
-	private object LoadOldFromAppSession(DomainProperty property)
-    {
-        object data = null;
-        var datas = GetOldDatasFromAppSession(); //由于使用了appSession，因此是线程安全的
-        if (!datas.TryGetValue(property.Name, out data))
-        {
-
-        }
-        return data;
-    }
-
-	public virtual bool
-
-	IsEmpty()
-    {
-        return false;
-    }
-
-	public bool IsNull() {
-		return this.IsEmpty();
+	public void save(DomainProperty property, Object newValue, Object oldValue) {
+		_data.put(property.getName(), newValue);
+		if (this.isTrackPropertyChange())
+			_oldData.put(property.getName(), oldValue);
 	}
 
-	/// <summary>
-	/// 外界可以手工指定数据
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="name"></param>
-	/// <param name="value"></param>
-	public void Save(DomainProperty property, object newValue, object oldValue) {
-		if (property.IsQuoteAggreateRoot())
-			SaveToAppSession(property, newValue, oldValue);
-		else
-			SaveToShare(property, newValue, oldValue);
-	}
+	public void copy(IDataProxy target) {
+		var t = TypeUtil.as(target, DataProxy.class);
+		if (t == null)
+			return;
 
-	private void SaveToShare(DomainProperty property, object newValue, object oldValue) {
-		// 我们对外的承诺是保证Get的线程安全，但是不保证Set的线程安全，所以此处没有做同步处理
-		_shareDatas[property.Name] = newValue;
-		if (this.TrackPropertyChange)
-			_shareOldDatas[property.Name] = oldValue;
-	}
-
-	private void SaveToAppSession(DomainProperty property, object newValue, object oldValue) {
-		{
-			var datas = GetDatasFromAppSession();
-			datas[property.Name] = newValue;
-		}
-
-		{
-			if (this.TrackPropertyChange) {
-				var datas = GetOldDatasFromAppSession();
-				datas[property.Name] = oldValue;
+		for (var p : t._data.entrySet()) {
+			if (!_data.containsKey(p.getKey())) {
+				_data.put(p.getKey(), p.getValue());
 			}
 		}
+
+		if (this.isTrackPropertyChange()) {
+			for (var p : t._oldData.entrySet()) {
+				if (!_oldData.containsKey(p.getKey())) {
+					_oldData.put(p.getKey(), p.getValue());
+				}
+			}
+
+		}
 	}
 
-	public void Copy(IDataProxy target)
-    {
-        var t = target as DataProxy;
-        if (t == null) return;
-        foreach(var p in t._shareDatas)
-        {
-            if(!_shareDatas.ContainsKey(p.Key))
-            {
-                _shareDatas[p.Key] = p.Value;
-            }
-        }
+	/**
+	 * 加载数据
+	 * 
+	 * @param property
+	 * @return
+	 */
+	protected abstract Object loadData(DomainProperty property);
 
-        if(this.TrackPropertyChange)
-        {
-            foreach (var p in t._shareOldDatas)
-            {
-                if (!_shareOldDatas.ContainsKey(p.Key))
-                {
-                    _shareOldDatas[p.Key] = p.Value;
-                }
-            }
-        }
-
-
-        //注意，在拷贝数据代理数据时，我们不拷贝外部引用的根信息（这些信息是存在当前线程里的appSession）
-        //原因是，不同数据上下文对延迟加载外部根的算法不同，默认的数据上下文是不加载外部根的，只有ORM中的数据上下文才加载
-        //var asd = t.GetDatasFromAppSession();
-        //var localASD = this.GetDatasFromAppSession();
-        //foreach (var p in asd)
-        //{
-        //    if (!localASD.ContainsKey(p.Key))
-        //    {
-        //        localASD[p.Key] = p.Value;
-        //    }
-        //}
-    }
-
-	/// <summary>
-	/// 拷贝功效数据和当前线程数据，仅用于keep机制
-	/// </summary>
-	/// <param name="target"></param>
-	public void DeepCopy(IDataProxy target)
-    {
-        var t = target as DataProxy;
-        if (t == null) return;
-        foreach (var p in t._shareDatas)
-        {
-            if (!_shareDatas.ContainsKey(p.Key))
-            {
-                _shareDatas[p.Key] = p.Value;
-            }
-        }
-
-
-        foreach (var p in t._shareOldDatas)
-        {
-            if (!_shareOldDatas.ContainsKey(p.Key))
-            {
-                _shareOldDatas[p.Key] = p.Value;
-            }
-        }
-
-        {
-            var asd = t.GetDatasFromAppSession();
-            var localASD = this.GetDatasFromAppSession();
-            foreach (var p in asd)
-            {
-                if (!localASD.ContainsKey(p.Key))
-                {
-                    localASD[p.Key] = p.Value;
-                }
-            }
-        }
-
-        {
-            if (this.TrackPropertyChange)
-            {
-                var asd = t.GetOldDatasFromAppSession();
-                var localASD = this.GetOldDatasFromAppSession();
-                foreach (var p in asd)
-                {
-                    if (!localASD.ContainsKey(p.Key))
-                    {
-                        localASD[p.Key] = p.Value;
-                    }
-                }
-            }
-        }
-    }
-
-	/// <summary>
-	/// 加载数据
-	/// </summary>
-	/// <param name="name"></param>
-	/// <returns></returns>
-	protected abstract object LoadData(DomainProperty property);
-
-	public bool IsLoaded(DomainProperty property) {
-		return _shareDatas.ContainsKey(property.Name) || GetDatasFromAppSession().ContainsKey(property.Name);
+	public boolean isLoaded(DomainProperty property) {
+		return _data.containsKey(property.getName());
 	}
 
-	/// <summary>
-	/// 创建用于存储的数据代理（不能加载数据，只能存储数据）
-	/// </summary>
-	/// <returns></returns>
-	public static DataProxy CreateStorage(DomainObject owner) {
+	/**
+	 * 创建用于存储的数据代理（不能加载数据，只能存储数据）
+	 * 
+	 * @param owner
+	 * @return
+	 */
+	public static DataProxy createStorage(DomainObject owner) {
 		var proxy = new DataProxyStorage();
-		proxy.Owner = owner;
+		proxy.setOwner(owner);
 		return proxy;
 	}
 
-	/// <summary>
-	/// 获取该数据代理所属的领域对象实例
-	/// </summary>
-	public DomainObject Owner
-	{
-        get;
-        set;
-    }
+	/**
+	 * 
+	 * 获取该数据代理所属的领域对象实例
+	 * 
+	 */
+	private DomainObject _owner;
 
-	private bool TrackPropertyChange
-	{
-        get
-        {
-            return this.Owner == null ? false : this.Owner.TrackPropertyChange;
-        }
-    }
+	public DomainObject getOwner() {
+		return _owner;
+	}
 
-	private sealed class DataProxyStorage:DataProxy
-	{
+	public void setOwner(DomainObject owner) {
+		_owner = owner;
+	}
+
+	private boolean isTrackPropertyChange() {
+		return this._owner == null ? false : _owner.isTrackPropertyChange();
+	}
+
+	private static final class DataProxyStorage extends DataProxy {
 
 		public DataProxyStorage() {
 		}
 
-		protected override object
+		@Override
+		protected Object loadData(DomainProperty property) {
+			return null;
+		}
 
-		LoadData(DomainProperty property)
-        {
-            return null;
-        }
+		@Override
+		public boolean isSnapshot() {
+			return false;
+		}
 
-		public override bool IsSnapshot=>false;
+		@Override
+		public boolean isMirror() {
+			return false;
+		}
 
-		public override bool IsMirror=>false;
+		@Override
+		public int getVersion() {
+			return 0;
+		}
 
-		public override bool IsFromSnapshot=>false;
+		@Override
+		public void setVersion(int version) {
+			throw new IllegalStateException("setVersion");
+		}
 
-		public override
-		int Version
-		{
-            get
-            {
-                return 0;
-            }
-            set
-            {
-                throw new NotImplementedException("SetVersion");
-            }
-        }
+		@Override
+		public void syncVersion() {
 
-		public override void SyncVersion()
-        {
-            
-        }
+		}
 
 	}
 
-	// public virtual void Clear()
-	// {
-	// _datas.Clear();
-	// this.Owner = null;
-	// }
+	private static final class DataProxyEmpty extends DataProxy {
 
-}
+		private DataProxyEmpty() {
+		}
 
-public sealed class DataProxyEmpty:DataProxy
-{
+		@Override
+		public void save(DomainProperty property, Object newValue, Object oldValue) {
 
-	private DataProxyEmpty() {
+		}
+
+		@Override
+		protected Object loadData(DomainProperty property) {
+			return null;
+		}
+
+		@Override
+		public boolean isSnapshot() {
+			return false;
+		}
+
+		@Override
+		public boolean isMirror() {
+			return false;
+		}
+
+		@Override
+		public int getVersion() {
+			return 0;
+		}
+
+		@Override
+		public void setVersion(int version) {
+			throw new IllegalStateException("setVersion");
+		}
+
+		@Override
+		public void syncVersion() {
+
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return true;
+		}
+
 	}
 
-	protected override object
-
-	LoadData(DomainProperty property)
-    {
-        return null;
-    }
-
-	public override bool IsSnapshot=>false;
-
-	public override bool IsMirror=>false;
-
-	public override bool IsFromSnapshot=>false;
-
-	public static readonly DataProxy Instance=new DataProxyEmpty();
-
-	public override
-	int Version
-	{
-        get
-        {
-            return 0;
-        }
-        set
-        {
-            throw new NotImplementedException("SetVersion");
-        }
-    }
-
-	public override void SyncVersion()
-    {
-
-    }
+	public static final DataProxy Empty = new DataProxyEmpty();
 
 }
