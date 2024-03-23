@@ -108,6 +108,16 @@ public final class ListUtil {
 	}
 
 	public static <T> void addRange(AbstractList<T> source, Iterable<T> collection) {
+		if (collection == null)
+			return;
+		for (T item : collection) {
+			source.add(item);
+		}
+	}
+
+	public static <T> void addRange(AbstractList<T> source, T[] collection) {
+		if (collection == null)
+			return;
 		for (T item : collection) {
 			source.add(item);
 		}

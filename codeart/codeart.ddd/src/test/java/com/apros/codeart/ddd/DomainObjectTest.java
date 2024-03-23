@@ -8,7 +8,7 @@ public class DomainObjectTest {
 
 //		@StringLength(0, 100)
 //        @ASCIIString()
-//		private static final DomainProperty NameProperty= DomainProperty.register<String,User>("name");
+//		private static final DomainProperty NameProperty = DomainProperty.register<String,User>("name");
 //
 //		public String name() {
 //			return getValue(NameProperty, String.class);

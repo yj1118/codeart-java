@@ -1,18 +1,15 @@
 package com.apros.codeart.ddd;
 
 public class PropertyValidationError extends ValidationError {
-	public string PropertyName
-	{
-	    get;
-	    internal set;
+
+	private String _propertyName;
+
+	public String getPropertyName() {
+		return _propertyName;
 	}
 
-	PropertyValidationError() {
-	}
-
-	public override void Clear()
-	{
-	    base.Clear();
-	    this.PropertyName = string.Empty;
+	PropertyValidationError(String code, String message, String propertyName) {
+		super(code, message);
+		_propertyName = propertyName;
 	}
 }

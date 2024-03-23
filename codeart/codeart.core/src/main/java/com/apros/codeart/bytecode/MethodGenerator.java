@@ -222,7 +222,7 @@ public class MethodGenerator implements AutoCloseable {
 			var local = _scopeStack.getVar(varName);
 			Class<?> objectType = local.getType();
 
-			var accessor = FieldUtil.getFieldGetterMemoized(objectType, fieldName);
+			var accessor = FieldUtil.getFieldGetter(objectType, fieldName);
 
 			if (accessor.isField()) {
 				var field = objectType.getDeclaredField(fieldName);
@@ -280,7 +280,7 @@ public class MethodGenerator implements AutoCloseable {
 
 			loadValue.run();
 
-			var accessor = FieldUtil.getFieldSetterMemoized(objectType, fieldName);
+			var accessor = FieldUtil.getFieldSetter(objectType, fieldName);
 			if (accessor.isField()) {
 				var field = accessor.getField();
 				Class<?> fieldType = field.getType();

@@ -40,7 +40,7 @@ public class ValidationResult {
 	}
 
 	public void append(String message) {
-		var error = createError(string.Empty, message);
+		var error = createError(StringUtil.empty(), message);
 		append(error);
 	}
 
@@ -101,35 +101,22 @@ public class ValidationResult {
 
 	public static final ValidationResult Satisfied = new ValidationResult();
 
-	/// <summary>
-	/// 获得一个验证结果对象，该对象会与数据上下文共享生命周期
-	/// </summary>
-	/// <returns></returns>
+	/**
+	 * 
+	 * 获得一个验证结果对象，该对象会与数据上下文共享生命周期
+	 * 
+	 * @return
+	 */
 	public static ValidationResult create() {
 		return new ValidationResult();
 	}
 
-	private static PropertyValidationError CreatePropertyError(string propertyName, string errorCode, string message)
-	 {
-	     var error = Symbiosis.TryMark(_propertyErrorPool, () =>
-	     {
-	         return new PropertyValidationError();
-	     });
-	     error.PropertyName = propertyName;
-	     error.ErrorCode = errorCode;
-	     error.Message = message;
-	     return error;
-	 }
+	private static PropertyValidationError createPropertyError(String propertyName, String errorCode, String message) {
+		return new PropertyValidationError(message, message, propertyName);
+	}
 
-	private static ValidationError CreateError(string errorCode, string message)
-	 {
-	     var error = Symbiosis.TryMark(_errorPool, () =>
-	     {
-	         return new ValidationError();
-	     });
-	     error.ErrorCode = errorCode;
-	     error.Message = message;
-	     return error;
-	 }
+	private static ValidationError createError(String errorCode, String message) {
+		return new ValidationError(errorCode, message);
+	}
 
 }

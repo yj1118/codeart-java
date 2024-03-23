@@ -1,13 +1,19 @@
 package com.apros.codeart.ddd;
 
+import static com.apros.codeart.runtime.Util.propagate;
+
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import com.apros.codeart.i18n.Language;
+import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.Guid;
 import com.apros.codeart.util.LazyIndexer;
+import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.MapList;
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
@@ -29,6 +35,9 @@ public class DomainProperty implements IDomainProperty {
 		_name = value;
 	}
 
+	/**
+	 * 属性的类型，比如字符串/整型等
+	 */
 	private Class<?> _propertyType;
 
 	public Class<?> getPropertyType() {
@@ -99,10 +108,6 @@ public class DomainProperty implements IDomainProperty {
 
 	DomainPropertyType getDomainPropertyType() {
 		return _domainPropertyType;
-	}
-
-	private void setDomainPropertyType(DomainPropertyType value) {
-		_domainPropertyType = value;
 	}
 
 	/**
@@ -256,7 +261,7 @@ public class DomainProperty implements IDomainProperty {
 	 */
 	private Iterable<IPropertyValidator> _validators;
 
-	public Iterable<IPropertyValidator> getValidators() {
+	public Iterable<IPropertyValidator> validators() {
 		return _validators;
 	}
 
@@ -326,119 +331,65 @@ public class DomainProperty implements IDomainProperty {
 				});
 			});
 
+	public DomainProperty(String name, Class<?> propertyType, Class<?> declaringType,
+			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue,
+			BiFunction<Object, Object, Boolean> compare, Class<?> dynamicType) {
+		_id = Guid.compact();
+		_name = name;
+		_propertyType = propertyType;
+		_declaringType = declaringType;
+		_field = FieldUtil.getField(declaringType, name);
+		_getDefaultValue = getDefaultValue;
+		_compare = compare;
+		setDynamicType(dynamicType);
+		_validators = PropertyValidator.getValidators(declaringType, name);
+
+		{
+			var ann = getAnnotation(declaringType, name, PropertyRepository.class);
+			if (ann != null)
+				_repositoryTip = new PropertyRepositoryAnn(ann, this);
+		}
+
+		{
+
+			var ann = getAnnotation(declaringType, name, PropertyLabel.class);
+			if (ann != null)
+				_label = new PropertyLabelAnn(ann.name());
+		}
+		initAccessLevel();
+	}
+
+	private void initAccessLevel() {
+
+		if (this.isDynamic()) {
+			// 动态属性的访问是公开的
+			_accessLevelGet = PropertyAccessLevel.Public;
+			_accessLevelSet = PropertyAccessLevel.Public;
+		} else {
+			_accessLevelGet = FieldUtil.canRead(_field) ? PropertyAccessLevel.Public : PropertyAccessLevel.Private;
+			_accessLevelSet = FieldUtil.canWrite(_field) ? PropertyAccessLevel.Public : PropertyAccessLevel.Private;
+		}
+	}
+
 	public static DomainProperty register(String name, Class<?> propertyType, Class<?> declaringType,
 			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue,
-			BiFunction<Object, Object, Boolean> compare) {
-		return register(propertyType, propertyType, getDefaultValue, compare, null);
+			BiFunction<Object, Object, Boolean> compare, Class<?> dynamicType) {
+		synchronized (_properties) {
+			var target = _properties.getValue(declaringType, (p) -> {
+				return p.getName().equalsIgnoreCase(name);
+			});
+
+			if (target != null)
+				throw new DomainDrivenException(
+						Language.strings("RepeatedDomainProperty", declaringType.getName(), name));
+
+			var property = new DomainProperty(name, propertyType, declaringType, getDefaultValue, compare, dynamicType);
+
+			_properties.Add(ownerType, property);
+			return property;
+		}
 	}
 
-	public static DomainProperty register(String name, 
-	                                    Class<?> propertyType,
-	                                    Class<?> declaringType, 
-	                                    BiFunction<DomainObject, DomainProperty, Object> getDefaultValue,
-	                                    BiFunction<Object,Object,Boolean> compare,
-	                                    Class<?> dynamicType)
-	{
-	    synchronized (_properties)
-	    {
-	        var target = _properties.getValue(declaringType, (p) ->
-	        {
-	            return p.getName().equalsIgnoreCase(name);
-	        });
-	        
-	        if (target != null)
-	            throw new DomainDrivenException(Language.strings("RepeatedDomainProperty", declaringType.getName(), name));
-
-	        var validators = PropertyValidatorAttribute.GetValidators(ownerType, name);
-	        var repositoryTip = GetAttribute<PropertyRepositoryAttribute>(ownerType, name);
-	        var logableTip = GetAttribute<PropertyLogableAttribute>(ownerType, name);
-	        var labelTip = GetAttribute<PropertyLabelAttribute>(ownerType, name);
-
-	        var property = new DomainProperty()
-	        {
-	            Id = Guid.NewGuid(),
-	            Name = name,
-	            PropertyType = propertyType,
-	            OwnerType = ownerType,
-	            GetDefaultValue = getDefaultValue,
-	            Compare = compare,
-	            Validators = validators,
-	            RepositoryTip = repositoryTip,
-	            LogableTip = logableTip,
-	            PropertyInfo = ownerType.ResolveProperty(name),
-	            DynamicType = dynamicType,
-	            Label = labelTip
-	        };
-
-	        if(repositoryTip != null)
-	            repositoryTip.Property = property; //赋值
-
-	        {
-	            //获取属性值的行为链
-	            var chain = new PropertyGetChain(property);
-	            chain.AddMethods(PropertyGetAttribute.GetMethods(ownerType, name));
-	            property.GetChain = chain;
-	        }
-
-	        {
-	            //设置属性值的行为链
-	            var chain = new PropertySetChain(property);
-	            chain.AddMethods(PropertySetAttribute.GetMethods(ownerType, name));
-	            property.SetChain = chain;
-	        }
-
-
-	        {
-	            //更改属性值的行为链
-	            var chain = new PropertyChangedChain(property);
-	            chain.AddMethods(PropertyChangedAttribute.GetMethods(ownerType, name));
-	            property.ChangedChain = chain;
-	        }
-
-	        InitAccessLevel(property);
-
-	        _properties.Add(ownerType, property);
-	        return property;
-	    }
-	}
-//
-//	private static void InitAccessLevel(DomainProperty property) {
-//		if (property.IsExtensions) {
-//			var method = ExtendedClassAttribute.GetPropertyMethod(property.OwnerType, property.Name);
-//
-//			property.AccessLevelGet = GetAccessLevel(method.Get);
-//			property.AccessLevelSet = GetAccessLevel(method.Set);
-//		} else {
-//			var pi = property.PropertyInfo;
-//
-//			if (property.IsDynamic) {
-//				// 动态属性的访问是公开的
-//				property.AccessLevelGet = PropertyAccessLevel.Public;
-//				property.AccessLevelSet = PropertyAccessLevel.Public;
-//			} else {
-//				property.AccessLevelGet = GetAccessLevel(pi.GetMethod);
-//				property.AccessLevelSet = GetAccessLevel(pi.SetMethod);
-//			}
-//		}
-//	}
-//
-//	private static PropertyAccessLevel GetAccessLevel(MethodInfo method) {
-//		if (method == null || method.IsPrivate)
-//			return PropertyAccessLevel.Private;
-//		if (method.IsPublic)
-//			return PropertyAccessLevel.Public;
-//		return PropertyAccessLevel.Protected;
-//	}
-//
-//	public static DomainProperty Register<PT,OT>(
-//	string name, Func<DomainObject,DomainProperty,object>getDefaultValue,
-//	Func<object, object, bool> compare)
-//	{
-//		return Register(name, typeof(PT), typeof(OT), getDefaultValue, compare);
-//	}
-//
-//	#endregion
-//
 //	#
 //	region 直接设置默认值的注册属性的方法
 //
@@ -606,84 +557,55 @@ public class DomainProperty implements IDomainProperty {
 //
 //	#
 //	region 辅助方法
-//
-//	internal T GetAttribute<T>()
-//	where T:Attribute
-//	{
-//		return GetAttribute<T>(this.OwnerType,this.Name);
-//	}
-//
-//	/// <summary>
-//	/// 获取领域属性定义的特性，这些特性可以标记在对象属性上，也可以标记在静态的领域属性字段上
-//	/// </summary>
-//	/// <typeparam name="T"></typeparam>
-//	/// <param name="objectType"></param>
-//	/// <param name="propertyName"></param>
-//	/// <returns></returns>
-//	internal
-//	static T GetAttribute<T>(
-//	Type objectType, string propertyName)
-//	where T:Attribute
-//	{
-//		return GetAttributes<T>(objectType,propertyName).LastOrDefault(); // 用最后一个替代之前定义的
-//	}
-//
-//	/// <summary>
-//	/// 获取领域属性定义的特性，这些特性可以标记在对象属性上，也可以标记在静态的领域属性字段上
-//	/// </summary>
-//	/// <typeparam name="T"></typeparam>
-//	/// <param name="objectType"></param>
-//	/// <param name="propertyName"></param>
-//	/// <returns></returns>
-//	internal
-//	static IEnumerable<T> GetAttributes<T>(
-//	Type objectType, string propertyName)
-//	where T:Attribute
-//	{
-//		List<T>result=new List<T>();
-//
-//		// 在对象属性定义上查找特性
-//		result.AddRange(GetAttributesFromObjectProperty<T>(objectType,propertyName));
-//
-//		// 从对象内部定义的领域属性上查找
-//		result.AddRange(GetAttributesFromDomainProperty<T>(objectType,propertyName));
-//
-//		// 从扩展对象的领域属性上查找
-//		var extensionTypes=ExtendedClassAttribute.GetExtensionTypes(objectType);foreach(var extensionType in extensionTypes){result.AddRange(GetAttributesFromDomainProperty<T>(extensionType,propertyName));}
-//
-//		return result;
-//	}
-//
-//	/// <summary>
-//	/// 在对象属性定义上查找特性
-//	/// </summary>
-//	/// <typeparam name="T"></typeparam>
-//	/// <param name="objectType"></param>
-//	/// <param name="propertyName"></param>
-//	/// <returns></returns>
-//	private static IEnumerable<T> GetAttributesFromObjectProperty<T>(
-//	Type objectType, string propertyName)
-//	where T:Attribute
-//	{
-//		// 在属性定义上查找特性
-//		var propertyInfo=objectType.ResolveProperty(propertyName);if(propertyInfo!=null){var attributes=Attribute.GetCustomAttributes(propertyInfo,true).OfType<T>();// 会在继承链中查找
-//		foreach(var attr in attributes){var paa=attr as PropertyActionAttribute;if(paa!=null)paa.ObjectOrExtensionType=objectType;}return attributes;}return Array.Empty<T>();
-//	}
-//
-//	/// <summary>
-//	/// 在静态的领域属性定义的字段上查找特性
-//	/// </summary>
-//	/// <typeparam name="T"></typeparam>
-//	/// <param name="objectType"></param>
-//	/// <param name="propertyName"></param>
-//	/// <returns></returns>
-//	private static IEnumerable<T> GetAttributesFromDomainProperty<T>(
-//	Type reflectedType, string propertyName)
-//	where T:Attribute
-//	{
-//		var fieldInfo=reflectedType.ResolveField(string.Format("{0}Property",propertyName));if(fieldInfo!=null){var attributes=Attribute.GetCustomAttributes(fieldInfo,true).OfType<T>();// 会在继承链中查找
-//		foreach(var attr in attributes){var paa=attr as PropertyActionAttribute;if(paa!=null)paa.ObjectOrExtensionType=reflectedType;}return attributes;}return Array.Empty<T>();
-//	}
+
+	@SuppressWarnings("unchecked")
+	<T extends Annotation> T getAnnotation(Class<T> annType) {
+		return getAnnotation(_declaringType, _name, annType);
+	}
+
+	private static Function<Class<?>, Function<String, Iterable<Annotation>>> _getAnnotations = LazyIndexer
+			.init((objectType) -> {
+				return LazyIndexer.init((propertyName) -> {
+					ArrayList<Annotation> result = new ArrayList<>();
+
+					// 在对象属性定义上查找特性
+					ListUtil.addRange(result, getAnnotationsByStaticProperty(objectType, propertyName));
+
+					// 从外部配置中得到，todo...
+
+					return result;
+				});
+			});
+
+	/**
+	 * 获取领域属性定义的特性，这些特性可以标记在对象属性上，也可以标记在静态的领域属性字段上
+	 * 
+	 * @param objectType
+	 * @param propertyName
+	 * @return
+	 */
+	static Iterable<Annotation> getAnnotations(Class<?> objectType, String propertyName) {
+		return _getAnnotations.apply(objectType).apply(propertyName);
+	}
+
+	@SuppressWarnings({ "unchecked", "unlikely-arg-type" })
+	static <T extends Annotation> T getAnnotation(Class<?> objectType, String propertyName, Class<T> annType) {
+		return (T) ListUtil.find(getAnnotations(objectType, propertyName), (type) -> {
+			return annType.equals(type);
+		});
+	}
+
+	/**
+	 * 在静态的领域属性定义的字段上查找特性
+	 */
+	private static Annotation[] getAnnotationsByStaticProperty(Class<?> reflectedType, String propertyName) {
+		try {
+			Field field = reflectedType.getDeclaredField(String.format("%sProperty", propertyName));
+			return field == null ? null : field.getAnnotations();
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
 //
 //	/// <summary>
 //	/// 指示属性是用于扩展已有属性的

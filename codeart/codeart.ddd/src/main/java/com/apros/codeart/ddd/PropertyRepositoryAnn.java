@@ -1,5 +1,7 @@
 package com.apros.codeart.ddd;
 
+import static com.apros.codeart.runtime.Util.propagate;
+
 import java.lang.reflect.Method;
 import java.util.function.Function;
 
@@ -17,7 +19,7 @@ class PropertyRepositoryAnn {
 		return _property;
 	}
 
-	void setProperty(DomainProperty value) {
+	private void setProperty(DomainProperty value) {
 		_property = value;
 		initPropertyType(value);
 	}
@@ -75,7 +77,10 @@ class PropertyRepositoryAnn {
 		return _loadMethod;
 	}
 
-	public PropertyRepositoryAnn(boolean lazy, String loadMethod) {
+	public PropertyRepositoryAnn(PropertyRepository ann, DomainProperty property) {
+		_lazy = ann.lazy();
+		_loadMethod = ann.loadMethod();
+		setProperty(property);
 		initDataAction();
 	}
 
@@ -92,27 +97,26 @@ class PropertyRepositoryAnn {
 		});
 	}
 
-//	/// <summary>
-//	/// 使用自定义方法加载参数数据
-//	/// </summary>
-//	/// <param name="objectType">运行时的实际类型，有可能是派生类的类型</param>
-//	/// <param name="data"></param>
-//	/// <param name="value"></param>
-//	/// <returns></returns>
-//	public boolean tryLoadData(Type objectType, DynamicData data, QueryLevel level, out object value)
-//	 {
-//	     value = null;
-//	     var method = _getLoadData(objectType);
-//	     if (method == null) return false;
-//
-//	using (var temp = ArgsPool.Borrow2())
-//	     {
-//	         var args = temp.Item;
-//	         args[0] = data;
-//	         args[1] = level;
-//	         value = method.Invoke(null, args);
-//	     }
-//	     return true;
-//	 }
+	/**
+	 * 使用自定义方法加载参数数据
+	 * 
+	 * @param objectType
+	 * @param data
+	 * @param level
+	 * @return
+	 */
+	public Object loadData(Class<?> objectType, DynamicData data, QueryLevel level) {
+		try {
+			var method = _getLoadData.apply(objectType);
+			if (method == null)
+				return null;
+			var args = new Object[2];
+			args[0] = data;
+			args[1] = level;
+			return method.invoke(null, args);
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
 
 }

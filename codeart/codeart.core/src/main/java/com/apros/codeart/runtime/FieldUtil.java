@@ -13,28 +13,12 @@ import java.util.function.Function;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
+import com.apros.codeart.util.Memoized;
 import com.apros.codeart.util.StringUtil;
 import com.apros.codeart.util.ThreadSafe;
 
 public final class FieldUtil {
 	private FieldUtil() {
-	}
-
-	public static void each(Object obj, BiConsumer<String, Object> action) {
-		// 获取目标类的 Class 对象
-		Class<?> cls = obj.getClass();
-
-		// 获取类声明的所有字段
-		Field[] fields = cls.getDeclaredFields();
-
-		try {
-			// 遍历字段数组
-			for (Field field : fields) {
-				action.accept(field.getName(), field.get(obj));
-			}
-		} catch (Exception e) {
-			throw propagate(e);
-		}
 	}
 
 	/**
@@ -56,7 +40,8 @@ public final class FieldUtil {
 	 * @throws Exception
 	 */
 	@ThreadSafe
-	public static void eachMemoized(Object obj, BiConsumer<String, Object> action) {
+	@Memoized
+	public static void each(Object obj, BiConsumer<String, Object> action) {
 		// 获取目标类的 Class 对象
 		Class<?> cls = obj.getClass();
 
@@ -139,7 +124,8 @@ public final class FieldUtil {
 		}
 	});
 
-	public static Accesser getFieldGetterMemoized(Field field) {
+	@Memoized
+	public static Accesser getFieldGetter(Field field) {
 
 		return _getFieldGetter.apply(field);
 	}
@@ -147,7 +133,8 @@ public final class FieldUtil {
 	/**
 	 * 得到约定读取字段的信息的方法
 	 */
-	public static Accesser getFieldGetterMemoized(Class<?> objClass, String fieldName) {
+	@Memoized
+	public static Accesser getFieldGetter(Class<?> objClass, String fieldName) {
 
 		var field = _getAgreeField.apply(objClass).apply(fieldName);
 		return _getFieldGetter.apply(field);
@@ -196,8 +183,9 @@ public final class FieldUtil {
 		return _getAgreeName.apply(field.getName());
 	}
 
-	public static Accesser getFieldSetterMemoized(Field field) {
-		return getFieldSetterMemoized(field.getDeclaringClass(), field.getName());
+	@Memoized
+	public static Accesser getFieldSetter(Field field) {
+		return getFieldSetter(field.getDeclaringClass(), field.getName());
 	}
 
 	private static Function<Field, Accesser> _getFieldSetter = LazyIndexer.init((field) -> {
@@ -233,7 +221,8 @@ public final class FieldUtil {
 		}
 	});
 
-	public static Accesser getFieldSetterMemoized(Class<?> objClass, String fieldName) {
+	@Memoized
+	public static Accesser getFieldSetter(Class<?> objClass, String fieldName) {
 		var field = _getAgreeField.apply(objClass).apply(fieldName);
 		return _getFieldSetter.apply(field);
 	}
@@ -248,11 +237,11 @@ public final class FieldUtil {
 	 * @return
 	 */
 	public static boolean canRead(Field field) {
-		return getFieldGetterMemoized(field) != null;
+		return getFieldGetter(field) != null;
 	}
 
 	public static boolean canWrite(Field field) {
-		return getFieldSetterMemoized(field) != null;
+		return getFieldSetter(field) != null;
 	}
 
 	public static boolean isStatic(Field field) {
@@ -288,6 +277,15 @@ public final class FieldUtil {
 				return field;
 		}
 		return null;
+	}
+
+	public static Field getField(Class<?> type, String name) {
+
+		try {
+			return type.getDeclaredField(name);
+		} catch (Exception e) {
+			throw propagate(e);
+		}
 	}
 
 }

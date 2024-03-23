@@ -1,5 +1,7 @@
 package com.apros.codeart.runtime;
 
+import static com.apros.codeart.runtime.Util.propagate;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
@@ -115,6 +117,39 @@ public final class TypeUtil {
 
 	public static <A extends Annotation> boolean isDefined(Class<?> type, Class<A> annType) {
 		return type.getAnnotation(annType) != null;
+	}
+
+	public static boolean exists(String className, ClassLoader classLoader) {
+		String resourcePath = className.replace('.', '/') + ".class";
+		return classLoader.getResource(resourcePath) != null;
+	}
+
+	public static boolean exists(String className) {
+		return exists(className, getDefaultClassLoader());
+	}
+
+	public static ClassLoader getDefaultClassLoader() {
+		var loader = Thread.currentThread().getContextClassLoader();
+		if (loader == null) {
+			loader = ClassLoader.getSystemClassLoader();
+		}
+		return loader;
+	}
+
+	public static Class<?> getClass(String className) {
+
+		return getClass(className, getDefaultClassLoader());
+	}
+
+	public static Class<?> getClass(String className, ClassLoader classLoader) {
+
+		try {
+			if (!exists(className, classLoader))
+				return null;
+			return classLoader.loadClass(className);
+		} catch (Exception e) {
+			throw propagate(e);
+		}
 	}
 
 }

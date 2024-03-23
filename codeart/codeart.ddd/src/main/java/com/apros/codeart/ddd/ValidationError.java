@@ -29,15 +29,12 @@ public class ValidationError {
 		return _message;
 	}
 
-	ValidationError() {
+	ValidationError(String code, String message) {
+		_code = code;
+		_message = message;
 	}
 
 	public boolean isEmpty() {
 		return StringUtil.isNullOrEmpty(this.getCode()) && StringUtil.isNullOrEmpty(this.getCode());
-	}
-
-	public void Clear() {
-		this._code = StringUtil.empty();
-		this._message = StringUtil.empty();
 	}
 }

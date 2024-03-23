@@ -21,14 +21,14 @@ public class EmailValidator extends PropertyValidator {
 	}
 
 	@Override
-	protected void Validate(DomainObject domainObject, DomainProperty property, Object propertyValue,
+	protected void validate(DomainObject domainObject, DomainProperty property, Object propertyValue,
 			ValidationResult result) {
 		var value = (String) propertyValue;
 		if (StringUtil.isNullOrEmpty(value))
 			return; // 是否能为空的验证由别的验证器处理
 
 		if (!isMatch(value))
-			result.addError(property.getName(), "email", Language.strings("IncorrectEmailFormat", property.call()));
+			result.append(property.getName(), "email", Language.strings("IncorrectEmailFormat", property.call()));
 
 	}
 
