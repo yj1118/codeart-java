@@ -36,7 +36,7 @@ import com.google.common.collect.Iterables;
  * 
  * 但是要频繁的操作dto的同样的值，比如getInt("value")或者setInt("value")调用好几遍，那么建议用getIntRef这种引用系方法。
  */
-public class DTObject implements AutoCloseable {
+public class DTObject {
 
 	private DTEObject _root;
 
@@ -806,11 +806,6 @@ public class DTObject implements AutoCloseable {
 	 */
 	void forceClearData() {
 		_root.clearData();
-	}
-
-	@Override
-	public void close() throws Exception {
-		_root = null;
 	}
 
 	public void clearData() {

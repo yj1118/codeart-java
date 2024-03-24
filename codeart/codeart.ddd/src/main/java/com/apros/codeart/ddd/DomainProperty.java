@@ -8,6 +8,10 @@ import java.util.ArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.metadata.DomainPropertyCategory;
+import com.apros.codeart.ddd.metadata.ObjectMeta;
+import com.apros.codeart.ddd.metadata.PropertyAccessLevel;
+import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
@@ -15,84 +19,61 @@ import com.apros.codeart.util.Guid;
 import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.MapList;
+import com.apros.codeart.util.StringUtil;
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 
 public class DomainProperty implements IDomainProperty {
 
-	private String _name;
+	private PropertyMeta _meta;
 
 	/**
 	 * 属性名称
 	 * 
 	 * @return
 	 */
-	public String getName() {
-		return _name;
-	}
-
-	protected void setName(String value) {
-		_name = value;
+	public String name() {
+		return _meta.name();
 	}
 
 	/**
 	 * 属性的类型，比如字符串/整型等
 	 */
-	private Class<?> _propertyType;
+	private Class<?> _Type;
 
-	public Class<?> getPropertyType() {
-		return _propertyType;
+	public Class<?> Type() {
+		return _meta.Type();
 	}
 
-	protected void setPropertyType(Class<?> value) {
-		_propertyType = value;
-		_domainPropertyType = getDomainPropertyType(value, _dynamicType);
-	}
+//	private Class<?> _dynamicType;
+//
+//	/// <summary>
+//	/// 类型定义，当属性是动态生成的时候该值提供类型定义,
+//	/// 注意，当属性是基本类型是，DynamicType是真实类型
+//	/// 当属性是定义的动态对象类型时，DynamicType是元数据类型，即：RuntimeObjectType
+//	/// 当属性是定义的动态对象集合类型时，DynamicType是集合的成员元数据类型，即：RuntimeObjectType
+//	/// 当属性是定义的基本类型集合类型时，DynamicType是集合的成员真实类型
+//	/// </summary>
+//	public Class<?> getDynamicType() {
+//		return _dynamicType;
+//	}
 
-	private Field _field;
-
-	Field getFieldInfo() {
-		return _field;
-	}
-
-	private Class<?> _dynamicType;
-
-	/// <summary>
-	/// 类型定义，当属性是动态生成的时候该值提供类型定义,
-	/// 注意，当属性是基本类型是，DynamicType是真实类型
-	/// 当属性是定义的动态对象类型时，DynamicType是元数据类型，即：RuntimeObjectType
-	/// 当属性是定义的动态对象集合类型时，DynamicType是集合的成员元数据类型，即：RuntimeObjectType
-	/// 当属性是定义的基本类型集合类型时，DynamicType是集合的成员真实类型
-	/// </summary>
-	public Class<?> getDynamicType() {
-		return _dynamicType;
-	}
-
-	protected void setDynamicType(Class<?> value) {
-		_dynamicType = value;
-		_domainPropertyType = getDomainPropertyType(_propertyType, value);
-	}
+//	protected void setDynamicType(Class<?> value) {
+//		_dynamicType = value;
+//		_domainPropertyType = getDomainPropertyType(_propertyType, value);
+//	}
 
 	public boolean isDynamic() {
-		return _dynamicType != null;
+		return false;
+//		return _meta.isDynamic();
 	}
 
-	private PropertyAccessLevel _accessLevelSet;
-
-	public PropertyAccessLevel accessLevelSet() {
-		return _accessLevelSet;
+	PropertyAccessLevel accessSet() {
+		return _meta.accessSet();
 	}
 
-	private PropertyAccessLevel _accessLevelGet;
-
-	public PropertyAccessLevel accessLevelGet() {
-		return _accessLevelGet;
-	}
-
-	private PropertyLabelAnn _label;
-
-	public PropertyLabelAnn getLabel() {
-		return _label;
+	PropertyAccessLevel accessGet() {
+		return _meta.accessGet();
 	}
 
 	/**
@@ -101,50 +82,9 @@ public class DomainProperty implements IDomainProperty {
 	 * @return
 	 */
 	public String call() {
-		return _label == null ? this.getName() : _label.getValue();
-	}
-
-	private DomainPropertyType _domainPropertyType;
-
-	DomainPropertyType getDomainPropertyType() {
-		return _domainPropertyType;
-	}
-
-	/**
-	 * 属性是否引用的是内聚根（或内聚根集合）
-	 * 
-	 * @return
-	 */
-	boolean isQuoteAggreateRoot() {
-		return _domainPropertyType == DomainPropertyType.AggregateRoot
-				|| _domainPropertyType == DomainPropertyType.AggregateRootList;
-	}
-
-	static DomainPropertyType getDomainPropertyType(Class<?> propertyType, Class<?> dynamicType) {
-
-		if (TypeUtil.isCollection(propertyType)) {
-
-			var elementType = dynamicType != null ? dynamicType : TypeUtil.resolveElementType(propertyType);
-
-			if (DomainObject.isAggregateRoot(elementType))
-				return DomainPropertyType.AggregateRootList;
-			if (DomainObject.isEntityObject(elementType))
-				return DomainPropertyType.EntityObjectList;
-			if (DomainObject.isValueObject(elementType))
-				return DomainPropertyType.ValueObjectList;
-			return DomainPropertyType.PrimitiveList;
-		} else {
-//			var targetType = dynamicType != null ? dynamicType : propertyType;  .net版本代码有这个变量，但是.net里也没用上
-
-			if (DomainObject.isAggregateRoot(propertyType))
-				return DomainPropertyType.AggregateRoot;
-			if (DomainObject.isEntityObject(propertyType))
-				return DomainPropertyType.EntityObject;
-			if (DomainObject.isValueObject(propertyType))
-				return DomainPropertyType.ValueObject;
-			return DomainPropertyType.Primitive;
-		}
-
+		if (StringUtil.isNullOrEmpty(_meta.call()))
+			return this.name();
+		return PropertyLabelAnn.getValue(_meta.call());
 	}
 
 	/**
@@ -158,16 +98,6 @@ public class DomainProperty implements IDomainProperty {
 
 	void setDeclaringType(Class<?> value) {
 		_declaringType = value;
-	}
-
-	private BiFunction<Object, Object, Boolean> _compare;
-
-	public void setCompare(BiFunction<Object, Object, Boolean> value) {
-		_compare = value;
-	}
-
-	private Boolean compare(Object obj0, Object obj1) {
-		return _compare.apply(obj0, obj1);
 	}
 
 	private BiFunction<DomainObject, DomainProperty, Object> _getDefaultValue;
@@ -184,63 +114,19 @@ public class DomainProperty implements IDomainProperty {
 		return _getDefaultValue.apply(obj, property);
 	}
 
-//	/// <summary>
-//	/// 设置属性值的行为链
-//	/// </summary>
-//	internal PropertyGetChain GetChain
-//	{
-//	    get;
-//	    private set;
-//	}
-//
-//	/// <summary>
-//	/// 设置属性值的行为链
-//	/// </summary>
-//	internal PropertySetChain SetChain
-//	{
-//	    get;
-//	    private set;
-//	}
-//
-//	/// <summary>
-//	/// 更改属性值的行为链
-//	/// </summary>
-//	internal PropertyChangedChain ChangedChain
-//	{
-//	    get;
-//	    private set;
-//	}
-//
-//	public bool IsRegisteredChanged
-//	{
-//	    get
-//	    {
-//	        return this.ChangedChain.MethodsCount > 0; 
-//	    }
-//	}
-
-//	#region 比较
-
 	boolean isChanged(Object oldValue, Object newValue) {
-		if (this._compare == null) {
-			// 默认比较
-			// 属性如果是集合、实体对象（引用对象），那么不用判断值，直接认为是被改变了
+		// 属性如果是集合、实体对象（引用对象），那么不用判断值，直接认为是被改变了
+		if (TypeUtil.isCollection(this.propertyType()) || this.propertyType().isAssignableFrom(IEntityObject.class))
+			return true;
 
-			if (TypeUtil.isCollection(_propertyType) || _propertyType.isAssignableFrom(IEntityObject.class))
-				return true;
-
-			// 普通类型就用常规比较
-			return !Objects.equal(oldValue, newValue);
-		}
-		return !this.compare(oldValue, newValue);
+		// 普通类型就用常规比较
+		return !Objects.equal(oldValue, newValue);
 	}
 
 //	#endregion
 
-	private String _id;
-
-	public String getId() {
-		return _id;
+	public String id() {
+		return _meta.id();
 	}
 
 	@Override
@@ -248,12 +134,12 @@ public class DomainProperty implements IDomainProperty {
 		var target = TypeUtil.as(obj, DomainProperty.class);
 		if (target == null)
 			return false;
-		return this.getId() == target.getId();
+		return this.id() == target.id();
 	}
 
 	@Override
 	public int hashCode() {
-		return _id.hashCode();
+		return id().hashCode();
 	}
 
 	/**
@@ -331,77 +217,78 @@ public class DomainProperty implements IDomainProperty {
 				});
 			});
 
-	public DomainProperty(String name, Class<?> propertyType, Class<?> declaringType,
-			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue,
-			BiFunction<Object, Object, Boolean> compare, Class<?> dynamicType) {
-		_id = Guid.compact();
-		_name = name;
-		_propertyType = propertyType;
-		_declaringType = declaringType;
-		_field = FieldUtil.getField(declaringType, name);
-		_getDefaultValue = getDefaultValue;
-		_compare = compare;
-		setDynamicType(dynamicType);
-		_validators = PropertyValidator.getValidators(declaringType, name);
-
-		{
-			var ann = getAnnotation(declaringType, name, PropertyRepository.class);
-			if (ann != null)
-				_repositoryTip = new PropertyRepositoryAnn(ann, this);
-		}
-
-		{
-
-			var ann = getAnnotation(declaringType, name, PropertyLabel.class);
-			if (ann != null)
-				_label = new PropertyLabelAnn(ann.name());
-		}
-		initAccessLevel();
+	public DomainProperty(PropertyMeta meta) {
+		_meta = meta;
 	}
 
-	private void initAccessLevel() {
+	private static class AccessInfo {
+		public PropertyAccessLevel _accessGet;
+		public PropertyAccessLevel _accessSet;
 
-		if (this.isDynamic()) {
-			// 动态属性的访问是公开的
-			_accessLevelGet = PropertyAccessLevel.Public;
-			_accessLevelSet = PropertyAccessLevel.Public;
-		} else {
-			_accessLevelGet = FieldUtil.canRead(_field) ? PropertyAccessLevel.Public : PropertyAccessLevel.Private;
-			_accessLevelSet = FieldUtil.canWrite(_field) ? PropertyAccessLevel.Public : PropertyAccessLevel.Private;
+		public PropertyAccessLevel accessGet() {
+			return _accessGet;
 		}
+
+		public PropertyAccessLevel accessSet() {
+			return _accessSet;
+		}
+
+		public AccessInfo(PropertyAccessLevel accessGet, PropertyAccessLevel accessSet) {
+			_accessGet = accessGet;
+			_accessSet = accessSet;
+		}
+	}
+
+	private static AccessInfo getAccess(String propertyName, Class<?> declaringType) {
+		var field = FieldUtil.getField(declaringType, propertyName);
+
+		var accessGet = FieldUtil.canRead(field) ? PropertyAccessLevel.Public : PropertyAccessLevel.Private;
+		var accessSet = FieldUtil.canWrite(field) ? PropertyAccessLevel.Public : PropertyAccessLevel.Private;
+
+		return new AccessInfo(accessGet, accessSet);
+	}
+
+	private static String getCall(String propertyName, Class<?> declaringType) {
+		var ann = getAnnotation(declaringType, propertyName, PropertyLabel.class);
+		return ann != null ? ann.name() : null;
 	}
 
 	public static DomainProperty register(String name, Class<?> propertyType, Class<?> declaringType,
-			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue,
-			BiFunction<Object, Object, Boolean> compare, Class<?> dynamicType) {
-		synchronized (_properties) {
-			var target = _properties.getValue(declaringType, (p) -> {
-				return p.getName().equalsIgnoreCase(name);
-			});
+			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
 
-			if (target != null)
-				throw new DomainDrivenException(
-						Language.strings("RepeatedDomainProperty", declaringType.getName(), name));
+		// todo
+		/*
+		 * if (this.isDynamic()) { // 动态属性的访问是公开的 _accessLevelGet =
+		 * PropertyAccessLevel.Public; _accessLevelSet = PropertyAccessLevel.Public; }
+		 * else { _accessLevelGet = FieldUtil.canRead(_field) ?
+		 * PropertyAccessLevel.Public : PropertyAccessLevel.Private; _accessLevelSet =
+		 * FieldUtil.canWrite(_field) ? PropertyAccessLevel.Public :
+		 * PropertyAccessLevel.Private; }
+		 */
 
-			var property = new DomainProperty(name, propertyType, declaringType, getDefaultValue, compare, dynamicType);
+		var access = getAccess(name, declaringType);
+		var call = getCall(name, declaringType);
 
-			_properties.Add(ownerType, property);
-			return property;
-		}
+		var declaring = ObjectMeta.obtain(declaringType);
+
+		var meta = new PropertyMeta(name, propertyType, declaring, access.accessGet(), access.accessSet(), call,
+				getDefaultValue);
+
+		return new DomainProperty(meta);
 	}
 
 //	#
 //	region 直接设置默认值的注册属性的方法
-//
-//	public static DomainProperty Register<PT,OT>(
-//	string name, Func<object,object,bool>compare)
-//	where OT:DomainObject
-//	{
-//	    return Register<PT, OT>(name, (o, p) =>
-//	    {
-//	        return DetectDefaultValue<PT>(); //此处不能在Register<PT, OT>(name, (o, p) => 之前执行DetectDefaultValue<PT>(),因为在领域对象的代码里，有可能注册属性放在空对象的定义之前，导致空对象是null，具体可见菜单示例
-//	    }, compare);
-//	}
+
+	public static <PT,OT extends DomainObject> DomainProperty register(
+	String name, BiFunction<Object, Object, Boolean> compare)
+	{
+	    return Register<PT, OT>(name, (o, p) ->
+	    {
+	        return DetectDefaultValue<PT>(); //此处不能在Register<PT, OT>(name, (o, p) => 之前执行DetectDefaultValue<PT>(),因为在领域对象的代码里，有可能注册属性放在空对象的定义之前，导致空对象是null，具体可见菜单示例
+	    }, compare);
+	}
+
 //
 //	public static DomainProperty Register<PT,OT>(string name)
 //	where OT:DomainObject
@@ -412,21 +299,7 @@ public class DomainProperty implements IDomainProperty {
 //	    }, null);
 //	}
 //
-//	private static object DetectDefaultValue<PT>()
-//	{
-//		var type = typeof(PT);
-//		return _detectDefaultValue(type);
-//	}
-//
-//	private static Func<Type, object> _detectDefaultValue = LazyIndexer.Init<Type, object>((type)=>
-//	{
-//		if (type == typeof(string))
-//			return string.Empty;
-//		if (DomainObject.IsDomainObject(type)) {
-//			return DomainObject.GetEmpty(type);
-//		}
-//		return DataUtil.GetDefaultValue(type);
-//	});
+
 //
 //	/// <summary>
 //	///
@@ -606,25 +479,4 @@ public class DomainProperty implements IDomainProperty {
 			throw propagate(e);
 		}
 	}
-//
-//	/// <summary>
-//	/// 指示属性是用于扩展已有属性的
-//	/// </summary>
-//
-//	public static readonly DomainProperty Exists=new DomainProperty();
-//
-//	#endregion
-//
-//	#
-//	region 运行时编号
-//
-//	internal readonly
-//	Guid RuntimeGetId = Guid.NewGuid();
-//
-//	internal readonly
-//	Guid RuntimeSetId = Guid.NewGuid();
-//
-//	internal readonly
-//	Guid RuntimeChangedId = Guid.NewGuid();
-
 }

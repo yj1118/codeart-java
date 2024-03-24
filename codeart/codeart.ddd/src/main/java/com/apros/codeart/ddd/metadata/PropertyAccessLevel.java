@@ -1,4 +1,4 @@
-package com.apros.codeart.ddd;
+package com.apros.codeart.ddd.metadata;
 
 public enum PropertyAccessLevel {
 	Public, Protected, Private

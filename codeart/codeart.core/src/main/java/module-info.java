@@ -8,4 +8,6 @@ module codeart.core {
 	exports com.apros.codeart.context;
 	exports com.apros.codeart.util;
 	exports com.apros.codeart.dto;
+	exports com.apros.codeart.dto.serialization;
+
 }

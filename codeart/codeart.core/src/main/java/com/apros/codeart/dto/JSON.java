@@ -173,7 +173,7 @@ class JSON {
 
 		sb.append("{");
 
-		FieldUtil.eachMemoized(value, (n, v) -> {
+		FieldUtil.each(value, (n, v) -> {
 			sb.append(n);
 			sb.append(":");
 			writeValue(sb, v);

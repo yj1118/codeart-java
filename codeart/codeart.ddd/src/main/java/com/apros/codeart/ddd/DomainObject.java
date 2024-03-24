@@ -2,8 +2,16 @@ package com.apros.codeart.ddd;
 
 import static com.apros.codeart.runtime.Util.propagate;
 
+import java.util.function.Function;
+
+import com.apros.codeart.ddd.metadata.DomainDrivenException;
+import com.apros.codeart.ddd.metadata.Func;
+import com.apros.codeart.ddd.metadata.Type;
+import com.apros.codeart.ddd.metadata.as;
+import com.apros.codeart.ddd.metadata.object;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.LazyIndexer;
 
 /// <summary>
 /// <para>我们保证领域对象的读操作是线程安全的,但是写操作（例如属性赋值等）不是线程安全的，如果需要并发控制请根据业务要求自行编写代码</para>
@@ -778,35 +786,7 @@ public abstract class DomainObject implements IDomainObject {
 //
 //	#
 //
-	// #region 辅助
 
-	final static Class<?> ValueObjectType = IValueObject.class;
-	final static Class<?> AggregateRootType = IAggregateRoot.class;
-	final static Class<?> EntityObjectType = IEntityObject.class;
-	final static Class<?> DomainObjectType = IDomainObject.class;
-	final static Class<?> DynamicObjectType = IDynamicObject.class;
-
-	static boolean isDomainObject(Class<?> type) {
-		return type.isAssignableFrom(DomainObjectType);
-	}
-
-	static boolean isValueObject(Class<?> type) {
-		return type.isAssignableFrom(ValueObjectType);
-	}
-
-	static boolean isAggregateRoot(Class<?> type) {
-		return type.isAssignableFrom(AggregateRootType);
-	}
-
-	static boolean isEntityObject(Class<?> type) {
-		return type.isAssignableFrom(EntityObjectType);
-	}
-
-	static boolean isDynamicObject(Class<?> type) {
-		return type.isAssignableFrom(DynamicObjectType);
-	}
-
-//	#endregion
 //
 //	protected virtual void ReadOnlyCheckUp()
 //    {
@@ -866,19 +846,39 @@ public abstract class DomainObject implements IDomainObject {
 	public static boolean isMergeDomainType(Class<?> objectType) {
 		return TypeUtil.isDefined(objectType, MergeDomain.class);
 	}
-//
-//	/// <summary>
-//	/// 获取领域类型定义的空对象
-//	/// </summary>
-//	/// <param name="objectType"></param>
-//	/// <returns></returns>
-//	internal
-//
-//	static object GetEmpty(Type objectType) {
-//		var runtimeType=objectType as RuntimeObjectType;if(runtimeType!=null)return runtimeType.Define.EmptyInstance;
-//
-//		return _getObjectEmpty(objectType);
-//	}
+
+	/**
+	 * 获取领域类型定义的空对象
+	 * 
+	 * @param objectType
+	 * @return
+	 */
+	public static Object getEmpty(Class<?> objectType) {
+		// todo test
+//	    var runtimeType = objectType as RuntimeObjectType;
+//	    if (runtimeType != null) return runtimeType.Define.EmptyInstance;
+
+		return _getEmpty.apply(objectType);
+	}
+
+	private static Function<Class<?>, Object> _getEmpty = LazyIndexer.init((objectType) -> {
+
+		var empty = FieldUtil.getField(objectType, "Empty");
+		if (empty == null)
+			throw new DomainDrivenException(string.Format(Strings.NotFoundEmpty, objectType.FullName));
+		return empty;
+	});
+
+	/**
+	 * 
+	 * 判断类型是否表示一个空的领域对象
+	 * 
+	 * @param objectType
+	 * @return
+	 */
+	public static boolean isEmpty(Class<?> objectType) {
+		return objectType.getSimpleName().endsWith("Empty");// 为了不触发得到空对象带来的连锁构造，我们简单的认为空对象的名称末尾是 Empty即可，这也是CA的空对象定义约定
+	}
 //
 //	/// <summary>
 //	/// 判断类型是否表示一个空的领域对象

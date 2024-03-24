@@ -1,6 +1,6 @@
-package com.apros.codeart.ddd;
+package com.apros.codeart.ddd.metadata;
 
-enum DomainPropertyType {
+public enum DomainPropertyCategory {
 	/// <summary>
 	/// 基元类型
 	/// </summary>

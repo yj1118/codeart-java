@@ -9,20 +9,8 @@ import com.apros.codeart.util.LazyIndexer;
 
 class PropertyLabelAnn {
 
-	private String _name;
-
-	public String getName() {
-		return _name;
-	}
-
-	public String _value;
-
-	public String getValue() {
-		return _getValue.apply(ContextSession.locale()).apply(_name);
-	}
-
-	public PropertyLabelAnn(String name) {
-		_name = name;
+	public static String getValue(String name) {
+		return _getValue.apply(ContextSession.locale()).apply(name);
 	}
 
 	private static Function<Locale, Function<String, String>> _getValue = LazyIndexer.init((local) -> {

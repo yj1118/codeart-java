@@ -7,21 +7,21 @@ public interface IDomainProperty {
 	/**
 	 * 领域属性的名称
 	 */
-	String getName();
+	String name();
 
 	/**
 	 * 得到领域属性对应的值的类型信息
 	 * 
 	 * @return
 	 */
-	Class<?> getPropertyType();
+	Class<?> propertyType();
 
 	/**
 	 * 领域属性所属的领域对象的类型信息
 	 * 
 	 * @return
 	 */
-	Class<?> getDeclaringType();
+	Class<?> declaringType();
 
 	/**
 	 * 获得属性的默认值，传入属性所在的对象和成员对应的属性定义

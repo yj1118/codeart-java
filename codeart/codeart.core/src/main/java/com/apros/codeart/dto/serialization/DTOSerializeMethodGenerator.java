@@ -5,7 +5,7 @@ import static com.apros.codeart.runtime.Util.propagate;
 import com.apros.codeart.bytecode.ClassGenerator;
 import com.apros.codeart.bytecode.MethodGenerator;
 import com.apros.codeart.dto.IDTOWriter;
-import com.apros.codeart.util.StringUtil;
+import com.apros.codeart.util.Guid;
 
 /**
  * 序列化类型的动态方法生成器（自动序列化）
@@ -20,7 +20,7 @@ final class DTOSerializeMethodGenerator {
 	/// <param name="properties"></param>
 	public static SerializeMethod generateMethod(TypeSerializationInfo typeInfo) {
 
-		String methodName = String.format("DTOSerialize_%s", StringUtil.uuid());
+		String methodName = String.format("DTOSerialize_%s", Guid.compact());
 
 		try (var cg = ClassGenerator.define()) {
 
