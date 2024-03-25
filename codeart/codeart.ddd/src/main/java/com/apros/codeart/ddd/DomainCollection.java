@@ -1,9 +1,12 @@
 package com.apros.codeart.ddd;
 
+import java.util.ArrayList;
+
+import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.NotifyCollectionChangedEventArgs;
 import com.apros.codeart.util.ObservableCollection;
 
-public class DomainCollection<TMember> extends ObservableCollection<TMember> implements IDomainCollection {
+public class DomainCollection<E> extends ArrayList<E> implements IDomainCollection {
 
 	private DomainObject _parent;
 
@@ -41,6 +44,15 @@ public class DomainCollection<TMember> extends ObservableCollection<TMember> imp
 		this.addObserver(_observer);
 	}
 
+	@Override
+	public boolean add(E e) {
+		boolean added = super.add(e);
+		if (added) {
+			eventBus.post(new NotifyCollectionChangedEventArgs(this));
+		}
+		return added;
+	}
+
 	/**
 	 * 当集合发生改变时，通知父对象
 	 * 
@@ -48,7 +60,7 @@ public class DomainCollection<TMember> extends ObservableCollection<TMember> imp
 	 */
 	private void onCollectionChanged(NotifyCollectionChangedEventArgs e) {
 		markChanged();
-		SetMembersEvent(e);// 执行该代码后，成员对象发生改变，也会引起所在集合所在的属性发生改变的事件
+		setMembersEvent(e);// 执行该代码后，成员对象发生改变，也会引起所在集合所在的属性发生改变的事件
 	}
 
 	private void markChanged() {
@@ -57,6 +69,13 @@ public class DomainCollection<TMember> extends ObservableCollection<TMember> imp
 		if (this.getParent().isConstructing())
 			return; // 构造时不用标记
 		this.getParent().markPropertyChanged(_propertyInParent);
+	}
+
+	private void bindChanged(Object item) {
+		var obj = TypeUtil.as(item, DomainObject.class);
+		if (obj != null) {
+			obj.Changed += OnMemberChanged;
+		}
 	}
 
 	private static void setMembersEvent(NotifyCollectionChangedEventArgs e)
