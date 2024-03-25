@@ -800,41 +800,6 @@ public abstract class DomainObject implements IDomainObject {
 //
 //	region 辅助方法
 
-	/**
-	 * 通过调用一个静态成员，来模拟触发领域对象类型的静态构造函数
-	 * 
-	 * 如果类型没有静态成员，那么就算不触发静态构造也不会影响，因为不需要注入领域属性和空对象
-	 * 
-	 * @param objectType
-	 */
-	static void staticConstructor(Class<?> objectType) {
-		try {
-			// 当new一个实例时，静态构造会从基类依次执行,但是如果仅仅只是获得子类的静态成员，那么是不会触发基类的静态构造函数的
-			// 因此，我们需要从基类开始，依次调用
-			var types = TypeUtil.getInheriteds(objectType);
-
-			for (var type : types) {
-				if (!type.isAssignableFrom(IDomainObject.class))
-					continue;
-
-				var field = FieldUtil.firstStaticField(type);
-				if (field != null)
-					field.get(null);// 获取一次静态值，触发静态构造
-			}
-
-			// 再触发自身
-			{
-				var field = FieldUtil.firstStaticField(objectType);
-				if (field != null)
-					field.get(null);
-			}
-
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-
-	}
-
 	public static boolean isFrameworkDomainType(Class<?> objectType) {
 		if (isDynamicObject(objectType))
 			return true;
@@ -972,7 +937,7 @@ public abstract class DomainObject implements IDomainObject {
 //
 //	static void Initialize() {
 //		if(_initialized)return;_initialized=true;
-//
+
 //		// 以下代码执行顺序不能变
 //		TypeIndex=GetTypeIndex();
 //

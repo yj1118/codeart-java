@@ -1,18 +1,10 @@
 package com.apros.codeart.ddd.metadata;
 
-import java.time.LocalDate;
-import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.DomainProperty;
-import com.apros.codeart.ddd.Emptyable;
-import com.apros.codeart.ddd.IEmptyable;
 import com.apros.codeart.runtime.TypeUtil;
-import com.apros.codeart.util.Guid;
-import com.apros.codeart.util.LazyIndexer;
-import com.apros.codeart.util.StringUtil;
 
 public class PropertyMeta {
 
@@ -36,10 +28,10 @@ public class PropertyMeta {
 	/**
 	 * 属性的值的类型，比如字符串/整型等
 	 */
-	private Class<?> _type;
+	private ValueMeta _value;
 
-	public Class<?> Type() {
-		return _type;
+	public ValueMeta value() {
+		return _value;
 	}
 
 	private ObjectMeta _declaring;
@@ -97,19 +89,15 @@ public class PropertyMeta {
 				|| _category == DomainPropertyCategory.AggregateRootList;
 	}
 
-	public PropertyMeta(String name, Class<?> type, ObjectMeta declaring, PropertyAccessLevel accessGet,
-			PropertyAccessLevel accessSet, String call,
-			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
+	public PropertyMeta(String name, ValueMeta value, ObjectMeta declaring, PropertyAccessLevel accessGet,
+			PropertyAccessLevel accessSet, String call) {
 		_name = name;
-		_type = type;
+		_value = value;
 		_declaring = declaring;
-		_category = getCategory(type);
+		_category = getCategory(value);
 		_accessGet = accessGet;
 		_accessSet = accessSet;
 		_call = call; // call可以为空，空表示没有使用多语言
-		_getDefaultValue = getDefaultValue == null ? (obj, pro) -> {
-			return detectDefaultValue(type);
-		} : getDefaultValue;
 
 		declaring.addProperty(this); // 关联
 	}
@@ -127,17 +115,11 @@ public class PropertyMeta {
 		return _id.hashCode();
 	}
 
-	private static DomainPropertyCategory getCategory(Class<?> propertyType) {
+	private static DomainPropertyCategory getCategory(ValueMeta valueMeta) {
 
-		if (TypeUtil.isCollection(propertyType)) {
+		if (valueMeta.isList()) {
 
-			// 原始代码中是要传递 dynamicType的，做了以下判断，但是新版认为，动态类型本身救应该被兼容，这块需要升级设计
-			// todo
-			// var elementType = dynamicType != null ? dynamicType :
-			// TypeUtil.resolveElementType(propertyType);
-
-			var elementType = TypeUtil.resolveElementType(propertyType);
-
+			var elementType = valueMeta.monotype();
 			if (ObjectMeta.isAggregateRoot(elementType))
 				return DomainPropertyCategory.AggregateRootList;
 			if (ObjectMeta.isEntityObject(elementType))
@@ -145,55 +127,23 @@ public class PropertyMeta {
 			if (ObjectMeta.isValueObject(elementType))
 				return DomainPropertyCategory.ValueObjectList;
 			return DomainPropertyCategory.PrimitiveList;
+
 		} else {
 
-			if (ObjectMeta.isAggregateRoot(propertyType))
+			var objectType = valueMeta.monotype();
+			if (ObjectMeta.isAggregateRoot(objectType))
 				return DomainPropertyCategory.AggregateRoot;
-			if (ObjectMeta.isEntityObject(propertyType))
+			if (ObjectMeta.isEntityObject(objectType))
 				return DomainPropertyCategory.EntityObject;
-			if (ObjectMeta.isValueObject(propertyType))
+			if (ObjectMeta.isValueObject(objectType))
 				return DomainPropertyCategory.ValueObject;
 			return DomainPropertyCategory.Primitive;
 		}
 
 	}
 
-	private static Object detectDefaultValue(Class<?> propertyValueClass) {
-		return _detectDefaultValue.apply(propertyValueClass);
+	static PropertyMeta getProperty(Class<?> doType, String propertyName) {
+		var obj = ObjectMetaLoader.get(propertyName);
+		return obj.findProperty(propertyName);
 	}
-
-	private static Function<Class<?>, Object> _detectDefaultValue = LazyIndexer.init((type) -> {
-		if (type.equals(String.class))
-			return StringUtil.empty();
-		if (ObjectMeta.isDomainObject(type)) {
-			return DomainObject.getEmpty(type);
-		}
-		return getDefaultValue(type);
-	});
-
-	public static Object getDefaultValue(Class<?> valueType) {
-		if (valueType.equals(String.class))
-			return StringUtil.empty();
-
-		if (valueType.equals(UUID.class))
-			return Guid.Empty;
-
-		if (valueType.equals(LocalDate.class))
-			return LocalDate.MIN;
-
-		if (valueType.equals(int.class) || valueType.equals(Integer.class) || valueType.equals(long.class)
-				|| valueType.equals(byte.class) || valueType.equals(Byte.class) || valueType.equals(Long.class)
-				|| valueType.equals(float.class) || valueType.equals(Float.class) || valueType.equals(double.class)
-				|| valueType.equals(Double.class) || valueType.equals(short.class) || valueType.equals(Short.class))
-			return 0;
-
-		if (valueType.isAssignableFrom(IEmptyable.class))
-			return Emptyable.createEmpty();
-
-		if (valueType.equals(char.class))
-			return StringUtil.empty();
-
-		return null;
-	}
-
 }

@@ -8,20 +8,16 @@ import java.util.ArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import com.apros.codeart.ddd.metadata.DomainPropertyCategory;
-import com.apros.codeart.ddd.metadata.ObjectMeta;
+import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyAccessLevel;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
-import com.apros.codeart.i18n.Language;
+import com.apros.codeart.ddd.metadata.ValueMeta;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
-import com.apros.codeart.util.Guid;
 import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
-import com.apros.codeart.util.MapList;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.base.Objects;
-import com.google.common.collect.Iterables;
 
 public class DomainProperty implements IDomainProperty {
 
@@ -36,36 +32,12 @@ public class DomainProperty implements IDomainProperty {
 		return _meta.name();
 	}
 
-	/**
-	 * 属性的类型，比如字符串/整型等
-	 */
-	private Class<?> _Type;
-
-	public Class<?> Type() {
-		return _meta.Type();
+	public Class<?> propertyType() {
+		throw new IllegalArgumentException("todo");
 	}
 
-//	private Class<?> _dynamicType;
-//
-//	/// <summary>
-//	/// 类型定义，当属性是动态生成的时候该值提供类型定义,
-//	/// 注意，当属性是基本类型是，DynamicType是真实类型
-//	/// 当属性是定义的动态对象类型时，DynamicType是元数据类型，即：RuntimeObjectType
-//	/// 当属性是定义的动态对象集合类型时，DynamicType是集合的成员元数据类型，即：RuntimeObjectType
-//	/// 当属性是定义的基本类型集合类型时，DynamicType是集合的成员真实类型
-//	/// </summary>
-//	public Class<?> getDynamicType() {
-//		return _dynamicType;
-//	}
-
-//	protected void setDynamicType(Class<?> value) {
-//		_dynamicType = value;
-//		_domainPropertyType = getDomainPropertyType(_propertyType, value);
-//	}
-
 	public boolean isDynamic() {
-		return false;
-//		return _meta.isDynamic();
+		return _meta.isDynamic();
 	}
 
 	PropertyAccessLevel accessSet() {
@@ -161,63 +133,7 @@ public class DomainProperty implements IDomainProperty {
 		return _repositoryTip;
 	}
 
-	private static MapList<Class<?>, DomainProperty> _properties = new MapList<Class<?>, DomainProperty>(false);
-
-	/**
-	 * 获取类型 {@code doType} 的所有属性定义
-	 * 
-	 * @param doType
-	 * @return
-	 */
-	static Iterable<DomainProperty> getProperties(Class<?> doType) {
-		// 使用_getProperties方法，而不是直接使用_properties对象
-		// 是因为_properties记录的是对象类型Type上注册了哪些属性
-		// 但是在继承关系上，比如A继承了B，B有10个领域属性，而A类型就无法通过_properties的记录获取领域属性
-		// 因此需要用_getProperties方法
-		return _getProperties.apply(doType);
-	}
-
-	/// <summary>
-	/// 该方法可以获得一个类型包括继承链上所有的注册到的领域属性
-	/// </summary>
-	private static Function<Class<?>, Iterable<DomainProperty>> _getProperties = LazyIndexer.init((objectType) -> {
-		// 由于领域属性都是在静态构造中定义，如果对象类型从来没有被使用过，那么就不会构造，就不会产生领域属性
-		DomainObject.staticConstructor(objectType);
-
-		ArrayList<DomainProperty> properties = new ArrayList<DomainProperty>();
-		var types = TypeUtil.getInheriteds(objectType);
-
-		for (var type : types) {
-			Iterables.addAll(properties, _properties.getValues(type));
-		}
-		Iterables.addAll(properties, _properties.getValues(objectType));
-
-		// 排序
-		properties.sort((o1, o2) -> {
-			// 让基类的属性在前
-			return Integer.compare(TypeUtil.getDepth(o1.getDeclaringType()), TypeUtil.getDepth(o2.getDeclaringType()));
-		});
-
-		return properties;
-	});
-
-	static DomainProperty getProperty(Class<?> doType, String propertyName) {
-		return _getPropertyByName.apply(doType).apply(propertyName);
-	}
-
-	private static Function<Class<?>, Function<String, DomainProperty>> _getPropertyByName = LazyIndexer
-			.init((doType) -> {
-				return LazyIndexer.<String, DomainProperty>init((propertyName) -> {
-					var properies = getProperties(doType);
-					var dp = Iterables.find(properies, (p) -> p.getName().equalsIgnoreCase(propertyName), null);
-					if (dp == null)
-						throw new DomainDrivenException(
-								Language.strings("NotFoundDomainProperty", doType.getName(), propertyName));
-					return dp;
-				});
-			});
-
-	public DomainProperty(PropertyMeta meta) {
+	DomainProperty(PropertyMeta meta) {
 		_meta = meta;
 	}
 
@@ -225,11 +141,11 @@ public class DomainProperty implements IDomainProperty {
 		public PropertyAccessLevel _accessGet;
 		public PropertyAccessLevel _accessSet;
 
-		public PropertyAccessLevel accessGet() {
+		public PropertyAccessLevel get() {
 			return _accessGet;
 		}
 
-		public PropertyAccessLevel accessSet() {
+		public PropertyAccessLevel set() {
 			return _accessSet;
 		}
 
@@ -253,91 +169,50 @@ public class DomainProperty implements IDomainProperty {
 		return ann != null ? ann.name() : null;
 	}
 
-	public static DomainProperty register(String name, Class<?> propertyType, Class<?> declaringType,
-			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
-
-		// todo
-		/*
-		 * if (this.isDynamic()) { // 动态属性的访问是公开的 _accessLevelGet =
-		 * PropertyAccessLevel.Public; _accessLevelSet = PropertyAccessLevel.Public; }
-		 * else { _accessLevelGet = FieldUtil.canRead(_field) ?
-		 * PropertyAccessLevel.Public : PropertyAccessLevel.Private; _accessLevelSet =
-		 * FieldUtil.canWrite(_field) ? PropertyAccessLevel.Public :
-		 * PropertyAccessLevel.Private; }
-		 */
+	public static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
+			Class<?> declaringType, BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
 
 		var access = getAccess(name, declaringType);
 		var call = getCall(name, declaringType);
 
-		var declaring = ObjectMeta.obtain(declaringType);
+		var declaring = ObjectMetaLoader.get(declaringType);
 
-		var meta = new PropertyMeta(name, propertyType, declaring, access.accessGet(), access.accessSet(), call,
-				getDefaultValue);
+		var valueMeta = ValueMeta.createBy(propertyType, getDefaultValue);
+
+		var meta = new PropertyMeta(name, valueMeta, declaring, access.get(), access.set(), call);
 
 		return new DomainProperty(meta);
 	}
 
-//	#
-//	region 直接设置默认值的注册属性的方法
-
-	public static <PT,OT extends DomainObject> DomainProperty register(
-	String name, BiFunction<Object, Object, Boolean> compare)
-	{
-	    return Register<PT, OT>(name, (o, p) ->
-	    {
-	        return DetectDefaultValue<PT>(); //此处不能在Register<PT, OT>(name, (o, p) => 之前执行DetectDefaultValue<PT>(),因为在领域对象的代码里，有可能注册属性放在空对象的定义之前，导致空对象是null，具体可见菜单示例
-	    }, compare);
+	public static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
+			Class<?> declaringType) {
+		return register(name, isCollection, propertyType, declaringType, null);
 	}
 
-//
-//	public static DomainProperty Register<PT,OT>(string name)
-//	where OT:DomainObject
-//	{
-//	    return Register<PT, OT>(name, (o, p) =>
-//	    {
-//	        return DetectDefaultValue<PT>(); //此处不能在Register<PT, OT>(name, (o, p) => 之前执行DetectDefaultValue<PT>(),因为在领域对象的代码里，有可能注册属性放在空对象的定义之前，导致空对象是null，具体可见菜单示例
-//	    }, null);
-//	}
-//
+	public static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
+			Class<?> declaringType, Object defaultValue) {
+		return register(name, isCollection, propertyType, declaringType, (obj, pro) -> {
+			return defaultValue;
+		});
+	}
 
-//
-//	/// <summary>
-//	///
-//	/// </summary>
-//	/// <typeparam name="PT">属性的类型</typeparam>
-//	/// <typeparam name="OT">所属领域对象的类型</typeparam>
-//	/// <param name="name"></param>
-//	/// <param name="defaultValue"></param>
-//	/// <returns></returns>
-//	public static DomainProperty Register<PT,OT>(
-//	string name, PT defaultValue)
-//	where OT:DomainObject
-//	{
-//	    return Register<PT, OT>(name, (owner) => defaultValue);
-//	}
-//
-//	#endregion
-//
-//	#
-//	region 注册集合
-//
-//	/// <summary>
-//	/// 注册集合
-//	/// </summary>
-//	/// <typeparam name="MemberType"></typeparam>
-//	/// <typeparam name="OT"></typeparam>
-//	/// <param name="propertyName"></param>
-//	/// <returns></returns>
-//	public static DomainProperty RegisterCollection<MemberType,OT>(string propertyName)
-//	where OT:DomainObject
-//	{
-//	    return Register(propertyName, typeof(DomainCollection<MemberType>), typeof(OT), (owner, property) =>
-//	    {
-//	        var collection = new DomainCollection<MemberType>(property);
-//	        collection.Parent = owner;
-//	        return collection;
-//	    }, null);
-//	}
+	/**
+	 * 注册集合
+	 * 
+	 * @param name
+	 * @param elementType
+	 * @param declaringType
+	 * @return
+	 */
+	public static DomainProperty registerCollection(String name, Class<?> elementType, Class<?> declaringType)
+	{
+	    return register(propertyName, typeof(DomainCollection<MemberType>), declaringType, (owner, property) ->
+	    {
+	        var collection = new DomainCollection<MemberType>(property);
+	        collection.Parent = owner;
+	        return collection;
+	    }, null);
+	}
 //
 //	public static DomainProperty RegisterCollection<MemberType,OT>(
 //	string propertyName, Func<object,object,bool>compare)
@@ -403,37 +278,12 @@ public class DomainProperty implements IDomainProperty {
 //
 //	#endregion
 //
-//	/// <summary>
-//	///
-//	/// </summary>
-//	/// <typeparam name="PT"></typeparam>
-//	/// <typeparam name="OT"></typeparam>
-//	/// <param name="name"></param>
-//	/// <param name="getDefaultValue">由于引用对象作为默认值会被公用，互相受到影响，所以默认值以方法的形式提供</param>
-//	/// <returns></returns>
-//	public static DomainProperty Register<PT,OT>(
-//	string name, Func<OT,PT>getDefaultValue)
-//	where OT:DomainObject
-//	{
-//		return Register(name,typeof(PT),typeof(OT),(owner,property)=>{return getDefaultValue((OT)owner);},null);
-//	}
-//
-//	public static DomainProperty Register<PT,OT>(
-//	string name, Func<OT,PT>getDefaultValue,
-//	Func<object, object, bool> compare)
-//	where OT:DomainObject
-//	{
-//		return Register(name,typeof(PT),typeof(OT),(owner,property)=>{return getDefaultValue((OT)owner);},compare);
-//	}
-//
-//	#endregion
-//
-//	#
+
 //	region 辅助方法
 
 	@SuppressWarnings("unchecked")
 	<T extends Annotation> T getAnnotation(Class<T> annType) {
-		return getAnnotation(_declaringType, _name, annType);
+		return getAnnotation(_declaringType, this.name(), annType);
 	}
 
 	private static Function<Class<?>, Function<String, Iterable<Annotation>>> _getAnnotations = LazyIndexer

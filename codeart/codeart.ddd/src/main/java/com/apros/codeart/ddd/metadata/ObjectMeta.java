@@ -1,8 +1,6 @@
 package com.apros.codeart.ddd.metadata;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.IAggregateRoot;
@@ -15,10 +13,28 @@ import com.apros.codeart.util.ListUtil;
 
 public class ObjectMeta {
 
+	private DomainObjectCategory _category;
+
+	public DomainObjectCategory category() {
+		return _category;
+	}
+
 	private String _name;
 
 	public String name() {
 		return _name;
+	}
+
+	private Class<?> _objectType;
+
+	/**
+	 * 
+	 * 类型定义对应的实例类型（也就是真正需要创建的、实际存在内存中的对象类型）
+	 * 
+	 * @return
+	 */
+	public Class<?> objectType() {
+		return _objectType;
 	}
 
 	private ArrayList<PropertyMeta> _properties;
@@ -28,7 +44,10 @@ public class ObjectMeta {
 	}
 
 	public PropertyMeta findProperty(String propertyName) {
-		return ListUtil.find(_properties, (p) -> p.name().equalsIgnoreCase(propertyName));
+		var dp = ListUtil.find(_properties, (p) -> p.name().equalsIgnoreCase(propertyName));
+		if (dp == null)
+			throw new DomainDrivenException(Language.strings("NotFoundDomainProperty", _name, propertyName));
+		return dp;
 	}
 
 	void addProperty(PropertyMeta property) {
@@ -38,8 +57,10 @@ public class ObjectMeta {
 
 	}
 
-	public ObjectMeta(String name) {
+	ObjectMeta(String name, Class<?> objectType, DomainObjectCategory category) {
 		_name = name;
+		_objectType = objectType;
+		_category = category;
 		_properties = new ArrayList<PropertyMeta>();
 	}
 
@@ -71,37 +92,6 @@ public class ObjectMeta {
 		return type.isAssignableFrom(DynamicObjectType);
 	}
 
-//			#endregion
-
-	private static Map<String, ObjectMeta> _metas = new HashMap<>();
-
-	public static ObjectMeta obtain(String objectName) {
-		var meta = _metas.get(objectName);
-		if (meta == null) {
-			synchronized (_metas) {
-				meta = _metas.get(objectName);
-				if (meta == null) {
-					meta = new ObjectMeta(objectName);
-					_metas.put(objectName, meta);
-				}
-			}
-		}
-		return meta;
-	}
-
-	/**
-	 * 
-	 * 由于是初始化期间执行的obtain，初始化完毕后，才会执行get，所以不会有并发问题
-	 * 
-	 * @param objectName
-	 * @return
-	 */
-	public static ObjectMeta get(String objectName) {
-		return _metas.get(objectName);
-	}
-
-	public static ObjectMeta obtain(Class<?> objectType) {
-		return obtain(objectType.getSimpleName());
-	}
+	// #endregion
 
 }
