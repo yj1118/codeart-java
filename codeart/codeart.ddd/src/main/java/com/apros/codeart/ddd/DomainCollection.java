@@ -1,12 +1,19 @@
 package com.apros.codeart.ddd;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.function.Predicate;
 
 import com.apros.codeart.runtime.TypeUtil;
-import com.apros.codeart.util.NotifyCollectionChangedEventArgs;
-import com.apros.codeart.util.ObservableCollection;
+import com.apros.codeart.util.IEventObserver;
 
-public class DomainCollection<E> extends ArrayList<E> implements IDomainCollection {
+public class DomainCollection<E> extends ArrayList<E>
+		implements IDomainCollection, IEventObserver<DomainObjectChangedEventArgs> {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1243664948610752956L;
 
 	private DomainObject _parent;
 
@@ -29,38 +36,150 @@ public class DomainCollection<E> extends ArrayList<E> implements IDomainCollecti
 		return _propertyInParent;
 	}
 
-	private CollectionObserver _observer;
-
 	public DomainCollection(DomainProperty propertyInParent) {
 		this(propertyInParent, null);
 	}
 
-	public DomainCollection(DomainProperty propertyInParent, Iterable<TMember> items) {
-		super(items);
+	public DomainCollection(DomainProperty propertyInParent, Iterable<E> items) {
+		if (items != null) {
+			for (var item : items)
+				this.add(item);
+		}
 		_propertyInParent = propertyInParent;
-		_observer = new CollectionObserver((e) -> {
-			onCollectionChanged(e);
-		});
-		this.addObserver(_observer);
+	}
+
+	@Override
+	public Object clone() {
+		return new DomainCollection<E>(_propertyInParent, this);
+	}
+
+	@Override
+	public E set(int index, E element) {
+		var oldValue = super.set(index, element);
+		if (oldValue != null)
+			unbindChanged(element);
+		bindChanged(element);
+		return oldValue;
 	}
 
 	@Override
 	public boolean add(E e) {
 		boolean added = super.add(e);
 		if (added) {
-			eventBus.post(new NotifyCollectionChangedEventArgs(this));
+			bindChanged(e);
 		}
 		return added;
 	}
 
-	/**
-	 * 当集合发生改变时，通知父对象
-	 * 
-	 * @param e
-	 */
-	private void onCollectionChanged(NotifyCollectionChangedEventArgs e) {
-		markChanged();
-		setMembersEvent(e);// 执行该代码后，成员对象发生改变，也会引起所在集合所在的属性发生改变的事件
+	@Override
+	public void add(int index, E element) {
+		super.add(index, element);
+		bindChanged(element);
+	}
+
+	@Override
+	public E remove(int index) {
+		var oldValue = super.remove(index);
+		if (oldValue != null)
+			unbindChanged(oldValue);
+		return oldValue;
+	}
+
+	@Override
+	public E removeFirst() {
+		var oldValue = super.removeFirst();
+		if (oldValue != null)
+			unbindChanged(oldValue);
+		return oldValue;
+	}
+
+	@Override
+	public E removeLast() {
+		var oldValue = super.removeLast();
+		if (oldValue != null)
+			unbindChanged(oldValue);
+		return oldValue;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Override
+	public boolean remove(Object o) {
+		var removed = super.remove(o);
+		if (removed)
+			unbindChanged((E) o);
+		return removed;
+	}
+
+	@Override
+	public void clear() {
+		for (var o : this)
+			unbindChanged(o);
+		super.clear();
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends E> c) {
+		var added = super.addAll(c);
+		if (added) {
+			for (var o : this)
+				bindChanged(o);
+		}
+		return added;
+	}
+
+	@Override
+	public boolean addAll(int index, Collection<? extends E> c) {
+		var added = super.addAll(index, c);
+		if (added) {
+			for (var o : this)
+				bindChanged(o);
+		}
+		return added;
+	}
+
+	@Override
+	public boolean removeAll(Collection<?> c) {
+		var removed = super.removeAll(c);
+		if (removed) {
+			for (var o : this)
+				unbindChanged(o);
+		}
+		return removed;
+	}
+
+	@Override
+	public boolean retainAll(Collection<?> c) {
+		for (var o : this) {
+			if (!c.contains(o))
+				unbindChanged(o);
+		}
+
+		return super.retainAll(c);
+	}
+
+	@Override
+	public boolean removeIf(Predicate<? super E> filter) {
+
+		for (var o : this) {
+			if (filter.test(o))
+				unbindChanged(o);
+		}
+
+		return super.removeIf(filter);
+	}
+
+	private void bindChanged(E item) {
+		var obj = TypeUtil.as(item, DomainObject.class);
+		if (obj != null) {
+			obj.changed.add(this);
+		}
+	}
+
+	private void unbindChanged(E item) {
+		var obj = TypeUtil.as(item, DomainObject.class);
+		if (obj != null) {
+			obj.changed.remove(this);
+		}
 	}
 
 	private void markChanged() {
@@ -71,45 +190,9 @@ public class DomainCollection<E> extends ArrayList<E> implements IDomainCollecti
 		this.getParent().markPropertyChanged(_propertyInParent);
 	}
 
-	private void bindChanged(Object item) {
-		var obj = TypeUtil.as(item, DomainObject.class);
-		if (obj != null) {
-			obj.Changed += OnMemberChanged;
-		}
-	}
-
-	private static void setMembersEvent(NotifyCollectionChangedEventArgs e)
-	 {
-	     var oldItems = e.OldItems;
-	     if (oldItems != null)
-	     {
-	         foreach (var item in oldItems)
-	         {
-	             var obj = item as DomainObject;
-	             if (obj != null)
-	             {
-	                 obj.Changed -= OnMemberChanged;
-	             }
-	         }
-	     }
-
-	     var newItems = e.NewItems;
-	     if (newItems != null)
-	     {
-	         foreach (var item in newItems)
-	         {
-	             var obj = item as DomainObject;
-	             if (obj != null)
-	             {
-	                 obj.Changed -= OnMemberChanged;
-	                 obj.Changed += OnMemberChanged;
-	             }
-	         }
-	     }
-	 }
-
-	private void OnMemberChanged(object sender, DomainObjectChangedEventArgs e) {
-		MarkChanged();
+	@Override
+	public void handle(Object sender, DomainObjectChangedEventArgs args) {
+		markChanged();
 	}
 
 }

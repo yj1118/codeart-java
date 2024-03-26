@@ -11,6 +11,7 @@ import com.apros.codeart.ddd.metadata.as;
 import com.apros.codeart.ddd.metadata.object;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.EventHandler;
 import com.apros.codeart.util.LazyIndexer;
 
 /// <summary>
@@ -762,27 +763,24 @@ public abstract class DomainObject implements IDomainObject {
 //
 //	#endregion
 //
-//	public event DomainObjectChangedEventHandler Changed;
-//
-//	private void RaiseChangedEvent() {
-//		if (this.IsConstructing)
-//			return;// 构造时，不触发任何事件
-//		if (this.IsEmpty())
-//			return;// 空对象，不触发任何事件
-//
-//		OnChanged();
-//		// 执行边界事件
-//		StatusEvent.Execute(this.ObjectType, StatusEventType.Changed, this);
-//	}
-//
-//	protected virtual void OnChanged()
-//    {
-//        if (this.Changed != null)
-//        {
-//            var args = new DomainObjectChangedEventArgs(this);
-//            this.Changed(this, args);
-//        }
-//    }
+	public EventHandler<DomainObjectChangedEventArgs> changed = new EventHandler<DomainObjectChangedEventArgs>();
+
+	private void raiseChangedEvent() {
+		if (this.IsConstructing)
+			return;// 构造时，不触发任何事件
+		if (this.IsEmpty())
+			return;// 空对象，不触发任何事件
+
+		onChanged();
+		// 执行边界事件
+		StatusEvent.Execute(this.ObjectType, StatusEventType.Changed, this);
+	}
+
+	protected void onChanged() {
+		this.changed.raise(this, () -> {
+			return new DomainObjectChangedEventArgs(this);
+		});
+	}
 //
 //	#
 //
