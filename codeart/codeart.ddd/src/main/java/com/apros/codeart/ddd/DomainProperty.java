@@ -176,6 +176,19 @@ public class DomainProperty {
 		return ann != null ? ann.name() : null;
 	}
 
+	/**
+	 * 
+	 * 获得属性与仓储有关的配置
+	 * 
+	 * @param propertyName
+	 * @param declaringType
+	 * @return
+	 */
+	private static PropertyRepositoryAnn getRepository(String propertyName, Class<?> declaringType) {
+		var ann = getAnnotation(declaringType, propertyName, PropertyRepository.class);
+		return ann != null ? new PropertyRepositoryAnn(ann, declaringType) : PropertyRepositoryAnn.Default;
+	}
+
 	private static DomainProperty register(String name, boolean isCollection, Class<?> monotype, Class<?> declaringType,
 			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
 
@@ -188,9 +201,10 @@ public class DomainProperty {
 
 		var validators = PropertyValidator.getValidators(declaringType, name);
 
-		var meta = new PropertyMeta(name, valueMeta, declaring, access.get(), access.set(), call, validators);
-		
-        var repositoryTip = GetAttribute<PropertyRepositoryAttribute>(ownerType, name);
+		var repositoryTip = getRepository(name, declaringType);
+
+		var meta = new PropertyMeta(name, valueMeta, declaring, access.get(), access.set(), call, validators,
+				repositoryTip.lazy(), repositoryTip.loader());
 
 		return new DomainProperty(meta);
 	}

@@ -4,6 +4,7 @@ import java.util.function.BiFunction;
 
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.DomainProperty;
+import com.apros.codeart.ddd.IPropertyDataLoader;
 import com.apros.codeart.ddd.IPropertyValidator;
 import com.apros.codeart.runtime.TypeUtil;
 
@@ -103,8 +104,37 @@ public class PropertyMeta {
 		return _validators;
 	}
 
+	private boolean _lazy;
+
+	/**
+	 * 属性是否为懒惰加载
+	 * 
+	 * @return
+	 */
+	public boolean lazy() {
+		return _lazy;
+	}
+
+	private IPropertyDataLoader _dataLoader;
+
+	/**
+	 * 自定义加载器，大部分情况下不需要自定义加载器
+	 * 
+	 * @return
+	 */
+	public IPropertyDataLoader dataLoader() {
+		return _dataLoader;
+	}
+
+	private String _fullName;
+
+	public String fullName() {
+		return _fullName;
+	}
+
 	public PropertyMeta(String name, ValueMeta value, ObjectMeta declaring, PropertyAccessLevel accessGet,
-			PropertyAccessLevel accessSet, String call, Iterable<IPropertyValidator> validators) {
+			PropertyAccessLevel accessSet, String call, Iterable<IPropertyValidator> validators, boolean lazy,
+			IPropertyDataLoader dataLoader) {
 		_name = name;
 		_value = value;
 		_declaring = declaring;
@@ -114,7 +144,13 @@ public class PropertyMeta {
 		_call = call; // call可以为空，空表示没有使用多语言
 		_validators = validators;
 
+		_lazy = lazy;
+		_dataLoader = dataLoader;
+
 		declaring.addProperty(this); // 关联
+
+		_fullName = String.format("%s.%s", this.declaringType().getName(), this.name());
+
 	}
 
 	@Override
