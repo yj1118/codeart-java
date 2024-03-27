@@ -4,6 +4,7 @@ import java.util.function.BiFunction;
 
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.DomainProperty;
+import com.apros.codeart.ddd.IPropertyValidator;
 import com.apros.codeart.runtime.TypeUtil;
 
 public class PropertyMeta {
@@ -34,10 +35,27 @@ public class PropertyMeta {
 		return _value;
 	}
 
+	/**
+	 * 单体类型，这个类型的意思是，当类型为集合时，是成员element的类型，当不是集合时，那就是单体自身的类型
+	 * 
+	 * @return
+	 */
+	public Class<?> monotype() {
+		return _value.monotype();
+	}
+
+	public boolean isCollection() {
+		return _value.isCollection();
+	}
+
 	private ObjectMeta _declaring;
 
 	public ObjectMeta declaring() {
 		return _declaring;
+	}
+
+	public Class<?> declaringType() {
+		return _declaring.objectType();
 	}
 
 	private DomainPropertyCategory _category;
@@ -79,18 +97,14 @@ public class PropertyMeta {
 		return _getDefaultValue;
 	}
 
-	/**
-	 * 属性是否引用的是内聚根（或内聚根集合）
-	 * 
-	 * @return
-	 */
-	public boolean isQuoteAggreateRoot() {
-		return _category == DomainPropertyCategory.AggregateRoot
-				|| _category == DomainPropertyCategory.AggregateRootList;
+	private Iterable<IPropertyValidator> _validators;
+
+	public Iterable<IPropertyValidator> validators() {
+		return _validators;
 	}
 
 	public PropertyMeta(String name, ValueMeta value, ObjectMeta declaring, PropertyAccessLevel accessGet,
-			PropertyAccessLevel accessSet, String call) {
+			PropertyAccessLevel accessSet, String call, Iterable<IPropertyValidator> validators) {
 		_name = name;
 		_value = value;
 		_declaring = declaring;
@@ -98,6 +112,7 @@ public class PropertyMeta {
 		_accessGet = accessGet;
 		_accessSet = accessSet;
 		_call = call; // call可以为空，空表示没有使用多语言
+		_validators = validators;
 
 		declaring.addProperty(this); // 关联
 	}
@@ -117,7 +132,7 @@ public class PropertyMeta {
 
 	private static DomainPropertyCategory getCategory(ValueMeta valueMeta) {
 
-		if (valueMeta.isList()) {
+		if (valueMeta.isCollection()) {
 
 			var elementType = valueMeta.monotype();
 			if (ObjectMeta.isAggregateRoot(elementType))

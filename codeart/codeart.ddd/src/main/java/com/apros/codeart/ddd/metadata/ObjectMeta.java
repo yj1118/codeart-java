@@ -3,12 +3,15 @@ package com.apros.codeart.ddd.metadata;
 import java.util.ArrayList;
 
 import com.apros.codeart.ddd.DomainDrivenException;
+import com.apros.codeart.ddd.FrameworkDomain;
 import com.apros.codeart.ddd.IAggregateRoot;
 import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.ddd.IDynamicObject;
 import com.apros.codeart.ddd.IEntityObject;
 import com.apros.codeart.ddd.IValueObject;
+import com.apros.codeart.ddd.MergeDomain;
 import com.apros.codeart.i18n.Language;
+import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ListUtil;
 
 public class ObjectMeta {
@@ -90,6 +93,18 @@ public class ObjectMeta {
 
 	public static boolean isDynamicObject(Class<?> type) {
 		return type.isAssignableFrom(DynamicObjectType);
+	}
+
+	public static boolean isFrameworkDomainType(Class<?> objectType) {
+		if (isDynamicObject(objectType))
+			return true;
+
+		// 因为框架提供的基类没有标记ObjectRepositoryAttribute
+		return isDomainObject(objectType) && TypeUtil.isDefined(objectType, FrameworkDomain.class);
+	}
+
+	public static boolean isMergeDomainType(Class<?> objectType) {
+		return TypeUtil.isDefined(objectType, MergeDomain.class);
 	}
 
 	// #endregion

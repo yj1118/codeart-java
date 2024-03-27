@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.DomainCollection;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.DomainProperty;
 import com.apros.codeart.ddd.Emptyable;
@@ -57,8 +58,8 @@ public class ValueMeta {
 		_monoMeta = monoMeta;
 		_getDefaultValue = getDefaultValue == null ? (obj, pro) -> {
 			if (_isCollection) {
-				var collection = new DomainCollection(property, monotype);
-				collection.Parent = obj;
+				var collection = new DomainCollection<>(monotype, pro);
+				collection.setParent(obj);
 				return collection;
 			}
 			return _detectDefaultValue.apply(this);
@@ -104,8 +105,8 @@ public class ValueMeta {
 	 * @param valueType
 	 * @return
 	 */
-	public static ValueMeta createBy(boolean isCollection, Class<?> valueType,
+	public static ValueMeta createBy(boolean isCollection, Class<?> monotype,
 			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
-		return new ValueMeta(isCollection, valueType, ObjectMetaLoader.tryGet(valueType), getDefaultValue);
+		return new ValueMeta(isCollection, monotype, ObjectMetaLoader.tryGet(monotype), getDefaultValue);
 	}
 }

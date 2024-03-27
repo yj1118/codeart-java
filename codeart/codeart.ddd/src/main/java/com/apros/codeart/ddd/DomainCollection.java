@@ -15,6 +15,12 @@ public class DomainCollection<E> extends ArrayList<E>
 	 */
 	private static final long serialVersionUID = 1243664948610752956L;
 
+	private Class<E> _elementType;
+
+	public Class<E> elementType() {
+		return _elementType;
+	}
+
 	private DomainObject _parent;
 
 	public DomainObject getParent() {
@@ -36,21 +42,22 @@ public class DomainCollection<E> extends ArrayList<E>
 		return _propertyInParent;
 	}
 
-	public DomainCollection(DomainProperty propertyInParent) {
-		this(propertyInParent, null);
+	public DomainCollection(Class<E> elementType, DomainProperty propertyInParent) {
+		this(elementType, propertyInParent, null);
 	}
 
-	public DomainCollection(DomainProperty propertyInParent, Iterable<E> items) {
+	public DomainCollection(Class<E> elementType, DomainProperty propertyInParent, Iterable<E> items) {
 		if (items != null) {
 			for (var item : items)
 				this.add(item);
 		}
 		_propertyInParent = propertyInParent;
+		_elementType = elementType;
 	}
 
 	@Override
 	public Object clone() {
-		return new DomainCollection<E>(_propertyInParent, this);
+		return new DomainCollection<E>(_elementType, _propertyInParent, this);
 	}
 
 	@Override

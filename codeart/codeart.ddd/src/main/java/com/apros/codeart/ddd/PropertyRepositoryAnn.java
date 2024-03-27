@@ -5,7 +5,6 @@ import static com.apros.codeart.runtime.Util.propagate;
 import java.lang.reflect.Method;
 import java.util.function.Function;
 
-import com.apros.codeart.ddd.metadata.DomainPropertyType;
 import com.apros.codeart.ddd.metadata.PropertyAccessLevel;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.LazyIndexer;

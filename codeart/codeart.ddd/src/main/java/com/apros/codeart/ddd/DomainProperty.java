@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.metadata.DomainPropertyCategory;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyAccessLevel;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
@@ -19,7 +20,13 @@ import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.base.Objects;
 
-public class DomainProperty implements IDomainProperty {
+/**
+ * 注册属性元数据和使用元数据的职责
+ * 
+ * 但是不负责存放元数据
+ * 
+ */
+public class DomainProperty {
 
 	private PropertyMeta _meta;
 
@@ -32,12 +39,12 @@ public class DomainProperty implements IDomainProperty {
 		return _meta.name();
 	}
 
-	public Class<?> propertyType() {
-		throw new IllegalArgumentException("todo");
+	public Class<?> monotype() {
+		return _meta.monotype();
 	}
 
-	public boolean isDynamic() {
-		return _meta.isDynamic();
+	public boolean isCollection() {
+		return _meta.isCollection();
 	}
 
 	PropertyAccessLevel accessSet() {
@@ -62,17 +69,9 @@ public class DomainProperty implements IDomainProperty {
 	/**
 	 * 拥有该属性的类型
 	 */
-	private Class<?> _declaringType;
-
-	public Class<?> getDeclaringType() {
-		return _declaringType;
+	public Class<?> declaringType() {
+		return _meta.declaringType();
 	}
-
-	void setDeclaringType(Class<?> value) {
-		_declaringType = value;
-	}
-
-	private BiFunction<DomainObject, DomainProperty, Object> _getDefaultValue;
 
 	/**
 	 * 
@@ -83,19 +82,36 @@ public class DomainProperty implements IDomainProperty {
 	 * @return
 	 */
 	public Object getDefaultValue(DomainObject obj, DomainProperty property) {
-		return _getDefaultValue.apply(obj, property);
+		return _meta.getDefaultValue().apply(obj, property);
+	}
+
+	/**
+	 * 属性验证器
+	 * 
+	 * @return
+	 */
+	public Iterable<IPropertyValidator> validators() {
+		return _meta.validators();
+	}
+
+	/**
+	 * 属性是否引用的是内聚根（或内聚根集合）
+	 * 
+	 * @return
+	 */
+	public boolean isQuoteAggreateRoot() {
+		return _meta.category() == DomainPropertyCategory.AggregateRoot
+				|| _meta.category() == DomainPropertyCategory.AggregateRootList;
 	}
 
 	boolean isChanged(Object oldValue, Object newValue) {
-		// 属性如果是集合、实体对象（引用对象），那么不用判断值，直接认为是被改变了
-		if (TypeUtil.isCollection(this.propertyType()) || this.propertyType().isAssignableFrom(IEntityObject.class))
+		// 属性如果是集合、实体对象（引用对象），那么不用判断值，直接认为是被改变了 todo（该算法是否修复成更高效，更精准，稍后琢磨）
+		if (this.isCollection() || _meta.category() == DomainPropertyCategory.EntityObject)
 			return true;
 
 		// 普通类型就用常规比较
 		return !Objects.equal(oldValue, newValue);
 	}
-
-//	#endregion
 
 	public String id() {
 		return _meta.id();
@@ -112,15 +128,6 @@ public class DomainProperty implements IDomainProperty {
 	@Override
 	public int hashCode() {
 		return id().hashCode();
-	}
-
-	/**
-	 * 属性验证器
-	 */
-	private Iterable<IPropertyValidator> _validators;
-
-	public Iterable<IPropertyValidator> validators() {
-		return _validators;
 	}
 
 //	#endregion
@@ -169,27 +176,31 @@ public class DomainProperty implements IDomainProperty {
 		return ann != null ? ann.name() : null;
 	}
 
-	public static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
-			Class<?> declaringType, BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
+	private static DomainProperty register(String name, boolean isCollection, Class<?> monotype, Class<?> declaringType,
+			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
 
 		var access = getAccess(name, declaringType);
 		var call = getCall(name, declaringType);
 
 		var declaring = ObjectMetaLoader.get(declaringType);
 
-		var valueMeta = ValueMeta.createBy(propertyType, getDefaultValue);
+		var valueMeta = ValueMeta.createBy(isCollection, monotype, getDefaultValue);
 
-		var meta = new PropertyMeta(name, valueMeta, declaring, access.get(), access.set(), call);
+		var validators = PropertyValidator.getValidators(declaringType, name);
+
+		var meta = new PropertyMeta(name, valueMeta, declaring, access.get(), access.set(), call, validators);
+		
+        var repositoryTip = GetAttribute<PropertyRepositoryAttribute>(ownerType, name);
 
 		return new DomainProperty(meta);
 	}
 
-	public static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
+	private static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
 			Class<?> declaringType) {
 		return register(name, isCollection, propertyType, declaringType, null);
 	}
 
-	public static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
+	private static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
 			Class<?> declaringType, Object defaultValue) {
 		return register(name, isCollection, propertyType, declaringType, (obj, pro) -> {
 			return defaultValue;

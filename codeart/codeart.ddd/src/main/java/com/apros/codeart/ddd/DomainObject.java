@@ -4,11 +4,6 @@ import static com.apros.codeart.runtime.Util.propagate;
 
 import java.util.function.Function;
 
-import com.apros.codeart.ddd.metadata.DomainDrivenException;
-import com.apros.codeart.ddd.metadata.Func;
-import com.apros.codeart.ddd.metadata.Type;
-import com.apros.codeart.ddd.metadata.as;
-import com.apros.codeart.ddd.metadata.object;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.EventHandler;
@@ -148,13 +143,11 @@ public abstract class DomainObject implements IDomainObject {
 //
 //	#endregion
 //
-//	public virtual bool
-//
-//	IsEmpty()
-//    {
-//        //默认情况下领域对象是非空的
-//        return false;
-//    }
+	public boolean isEmpty() {
+		// 默认情况下领域对象是非空的
+		return false;
+	}
+
 //
 //	public bool IsNull() {
 //		return this.IsEmpty();
@@ -628,20 +621,19 @@ public abstract class DomainObject implements IDomainObject {
 //	}
 //
 
-//	/// <summary>
-//	/// 外界标记某个属性发生了变化，这常常是由于属性本身的成员发生了变化，而触发的属性变化
-//	/// 该方法会触发属性被改变的事件
-//	/// </summary>
-//	/// <typeparam name="T"></typeparam>
-//	/// <param name="property"></param>
-//	public void MarkPropertyChanged(DomainProperty property) {
-//		if (!this.IsPropertyLoaded(property))
-//			return;
-//
-//		this.SetPropertyChanged(property);
-//		var value = this.GetValue(property);
-//		HandlePropertyChanged(property, value, value);
-//	}
+	/**
+	 * 外界标记某个属性发生了变化，这常常是由于属性本身的成员发生了变化，而触发的属性变化 该方法会触发属性被改变的事件
+	 * 
+	 * @param property
+	 */
+	public void markPropertyChanged(DomainProperty property) {
+		if (!this.isPropertyLoaded(property))
+			return;
+
+		this.setPropertyChanged(property);
+		var value = this.getValue(property);
+		handlePropertyChanged(property, value, value);
+	}
 //
 //	/// <summary>
 //	/// 处理属性被改变时的行为
@@ -727,11 +719,13 @@ public abstract class DomainObject implements IDomainObject {
 //
 //	private int _constructedDepth;
 //
-//	public bool IsConstructing
-//	{
-//        get;
-//        private set;
-//    }
+
+	private boolean _isConstructing;
+
+	public boolean isConstructing() {
+		return _isConstructing;
+	}
+
 //
 //	/// <summary>
 //	/// 指示对象已完成构造，请务必在领域对象构造完成后调用此方法
@@ -766,14 +760,15 @@ public abstract class DomainObject implements IDomainObject {
 	public EventHandler<DomainObjectChangedEventArgs> changed = new EventHandler<DomainObjectChangedEventArgs>();
 
 	private void raiseChangedEvent() {
-		if (this.IsConstructing)
-			return;// 构造时，不触发任何事件
-		if (this.IsEmpty())
+		if (this.isEmpty())
 			return;// 空对象，不触发任何事件
 
+		if (this.isConstructing())
+			return;// 构造时，不触发任何事件
+
 		onChanged();
-		// 执行边界事件
-		StatusEvent.Execute(this.ObjectType, StatusEventType.Changed, this);
+		// 执行边界事件，todo,有可能考虑用代理对象来实现,另外该机制用的很少，可以暂时不考虑
+//		StatusEvent.Execute(this.ObjectType, StatusEventType.Changed, this);
 	}
 
 	protected void onChanged() {
@@ -797,18 +792,6 @@ public abstract class DomainObject implements IDomainObject {
 //	#
 //
 //	region 辅助方法
-
-	public static boolean isFrameworkDomainType(Class<?> objectType) {
-		if (isDynamicObject(objectType))
-			return true;
-
-		// 因为框架提供的基类没有标记ObjectRepositoryAttribute
-		return isDomainObject(objectType) && TypeUtil.isDefined(objectType, FrameworkDomain.class);
-	}
-
-	public static boolean isMergeDomainType(Class<?> objectType) {
-		return TypeUtil.isDefined(objectType, MergeDomain.class);
-	}
 
 	/**
 	 * 获取领域类型定义的空对象
@@ -842,18 +825,7 @@ public abstract class DomainObject implements IDomainObject {
 	public static boolean isEmpty(Class<?> objectType) {
 		return objectType.getSimpleName().endsWith("Empty");// 为了不触发得到空对象带来的连锁构造，我们简单的认为空对象的名称末尾是 Empty即可，这也是CA的空对象定义约定
 	}
-//
-//	/// <summary>
-//	/// 判断类型是否表示一个空的领域对象
-//	/// </summary>
-//	/// <param name="objectType"></param>
-//	/// <returns></returns>
-//	public static bool IsEmpty(Type objectType) {
-//		return objectType.Name.EndsWith("Empty");// 为了不触发得到空对象带来的连锁构造，我们简单的认为空对象的名称末尾是 Empty即可，这也是CA的空对象定义约定
-//		// objectType = RuntimeObjectType.GetDomainType(objectType);
-//		// return GetEmpty(objectType).GetType() == objectType;
-//	}
-//
+
 //	private static Func<Type, object> _getObjectEmpty = LazyIndexer.Init < Type, object>((objectType)=>
 //	{
 //		var empty = objectType.GetStaticValue("Empty");
