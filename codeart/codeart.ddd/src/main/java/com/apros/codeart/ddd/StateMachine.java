@@ -62,7 +62,7 @@ final class StateMachine {
 		this.isDirty(true);
 	}
 
-	public void MarkNew() {
+	public void markNew() {
 		this.isNew(true);
 	}
 

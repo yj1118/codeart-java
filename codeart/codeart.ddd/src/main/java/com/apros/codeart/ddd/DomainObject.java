@@ -12,6 +12,7 @@ import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.EventHandler;
 import com.apros.codeart.util.INullProxy;
 import com.apros.codeart.util.LazyIndexer;
+import com.google.common.base.Objects;
 
 /// <summary>
 /// <para>我们保证领域对象的读操作是线程安全的,但是写操作（例如属性赋值等）不是线程安全的，如果需要并发控制请根据业务要求自行编写代码</para>
@@ -152,86 +153,92 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 		_machine.markDirty();
 	}
 
-//
-//	public void MarkNew() {
-//		_machine.MarkNew();
-//	}
-//
-//	/// <summary>
-//	/// 设置对象为干净的
-//	/// </summary>
-//	public virtual void MarkClean()
-//    {
-//        _machine.MarkClean();
-//        //当对象为干净对象时，那么对象的所有内聚成员应该也是干净的
-//        MarkCleanProperties();
-//    }
-//
-//	private void MarkCleanProperties() {
-//		InvokeProperties((obj)=>{obj.MarkClean();});
-//	}
-//
-//	private StateMachine _backupMachine;
-//
-//	public void SaveState() {
-//		SaveStateProperties();
-//		if (_backupMachine == null) {
-//			_backupMachine = _machine.Clone();
-//		} else {
-//			_backupMachine.Combine(_machine);
-//		}
-//	}
-//
-//	private void SaveStateProperties() {
-//		InvokeProperties((obj)=>{obj.SaveState();});
-//	}
-//
-//	/// <summary>
-//	/// 加载备份的状态，此时备份会被删除
-//	/// </summary>
-//	public void LoadState() {
-//		LoadStateProperties();
-//		if (_backupMachine != null) {
-//			_machine = _backupMachine;
-//			_backupMachine = null; // 加载状态后，将备份给删除
-//		}
-//	}
-//
-//	private void LoadStateProperties() {
-//		InvokeProperties((obj)=>{obj.LoadState();});
-//	}
-//
-//	/// <summary>
-//	/// 当已存在状态备份时，如果有属性发生改变，那么需要同步状态的备份，这样才不会造成BUG
-//	/// </summary>
-//	/// <param name="propertyName"></param>
-//	private void DuplicateMachineSetPropertyChanged(string propertyName) {
-//		if (_backupMachine != null)
-//			_backupMachine.SetPropertyChanged(propertyName);
-//	}
-//
-//	private void DuplicateMachineClearPropertyChanged(string propertyName) {
-//		if (_backupMachine != null)
-//			_backupMachine.ClearPropertyChanged(propertyName);
-//	}
-//
-//	/// <summary>
-//	/// 根据对比结果，设置属性是否被更改
-//	/// </summary>
-//	/// <typeparam name="T"></typeparam>
-//	/// <param name="oldValue"></param>
-//	/// <param name="newValue"></param>
-//	/// <param name="propertyName"></param>
-//	/// <returns></returns>
-//	// private bool SetPropertyChanged<T>(DomainProperty property, T oldValue, T
-//	/// newValue)
-//	// {
-//	// //要用Equals判断
-//	// if (object.Equals(oldValue, newValue)) return false;
-//	// _machine.SetPropertyChanged(property.Name);
-//	// DuplicateMachineSetPropertyChanged(property.Name);
-//	// return true;
-//	// }
+	public void markNew() {
+		_machine.markNew();
+	}
+
+	/// <summary>
+	/// 设置对象为干净的
+	/// </summary>
+	public void markClean() {
+		_machine.markClean();
+		// 当对象为干净对象时，那么对象的所有内聚成员应该也是干净的
+		markCleanProperties();
+	}
+
+	private void markCleanProperties() {
+		invokeProperties((obj) -> {
+			obj.markClean();
+		});
+	}
+
+	private StateMachine _backupMachine;
+
+	public void SaveState() {
+		saveStateProperties();
+		if (_backupMachine == null) {
+			_backupMachine = _machine.clone();
+		} else {
+			_backupMachine.combine(_machine);
+		}
+	}
+
+	private void SaveStateProperties() {
+		InvokeProperties((obj) -> {
+			obj.saveState();
+		});
+	}
+
+	/// <summary>
+	/// 加载备份的状态，此时备份会被删除
+	/// </summary>
+	public void LoadState() {
+		loadStateProperties();
+		if (_backupMachine != null) {
+			_machine = _backupMachine;
+			_backupMachine = null; // 加载状态后，将备份给删除
+		}
+	}
+
+	private void LoadStateProperties() {
+		invokeProperties((obj) -> {
+			obj.LoadState();
+		});
+	}
+
+	/// <summary>
+	/// 当已存在状态备份时，如果有属性发生改变，那么需要同步状态的备份，这样才不会造成BUG
+	/// </summary>
+	/// <param name="propertyName"></param>
+	private void duplicateMachineSetPropertyChanged(String propertyName) {
+		if (_backupMachine != null)
+			_backupMachine.setPropertyChanged(propertyName);
+	}
+
+	private void duplicateMachineClearPropertyChanged(String propertyName) {
+		if (_backupMachine != null)
+			_backupMachine.clearPropertyChanged(propertyName);
+	}
+
+	/**
+	 * 
+	 * 根据对比结果，设置属性是否被更改
+	 * 
+	 * @param <T>
+	 * @param property
+	 * @param oldValue
+	 * @param newValue
+	 * @return
+	 */
+	private <T> boolean setPropertyChanged(DomainProperty property, T oldValue, T newValue) {
+		// 要用Equals判断
+		if (Objects.equal(oldValue, newValue))
+			return false;
+		_machine.setPropertyChanged(property.name());
+		duplicateMachineSetPropertyChanged(property.name());
+		return true;
+	}
+
 //
 //	/// <summary>
 //	/// 强制设置属性已被更改
