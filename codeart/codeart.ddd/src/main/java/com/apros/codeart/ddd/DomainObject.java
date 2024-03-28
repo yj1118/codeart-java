@@ -128,40 +128,30 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 	/// <summary>
 	/// 是否为脏对象
 	/// </summary>
-	public bool IsDirty
-	{
-        get
-        {
-            return _machine.IsDirty || HasDirtyProperty();
-        }
-    }
+	public boolean isDirty() {
+		return _machine.isDirty() || hasDirtyProperty();
+	}
 
-//	/// <summary>
-//	/// 内存中新创建的对象
-//	/// </summary>
-//	public bool IsNew
-//	{
-//        get
-//        {
-//            return _machine.IsNew;
-//        }
-//    }
-//
-//	/// <summary>
-//	/// 该对象是否被改变
-//	/// </summary>
-//	/// <returns></returns>
-//	public bool IsChanged
-//	{
-//        get
-//        {
-//            return _machine.IsChanged;
-//        }
-//    }
-//
-//	public void MarkDirty() {
-//		_machine.MarkDirty();
-//	}
+	/// <summary>
+	/// 内存中新创建的对象
+	/// </summary>
+	public boolean isNew() {
+		return _machine.isNew();
+	}
+
+	/**
+	 * 该对象是否被改变
+	 * 
+	 * @return
+	 */
+	public boolean isChanged() {
+		return _machine.isChanged();
+	}
+
+	public void markDirty() {
+		_machine.markDirty();
+	}
+
 //
 //	public void MarkNew() {
 //		_machine.MarkNew();
