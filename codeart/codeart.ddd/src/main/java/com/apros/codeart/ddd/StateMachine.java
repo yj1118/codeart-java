@@ -20,7 +20,7 @@ final class StateMachine {
 		return (_status & Status.Dirty.getValue()) == Status.Dirty.getValue();
 	}
 
-	private boolean isDirty(boolean value) {
+	private void isDirty(boolean value) {
 		_status &= ~Status.Dirty.getValue();
 		if (value)
 			_status |= Status.Dirty.getValue();
@@ -36,7 +36,7 @@ final class StateMachine {
 	 * @param value
 	 * @return
 	 */
-	private boolean isNew(boolean value) {
+	private void isNew(boolean value) {
 		_status &= ~Status.New.getValue();
 		if (value)
 			_status |= Status.New.getValue();
@@ -52,7 +52,7 @@ final class StateMachine {
 	 * @param value
 	 * @return
 	 */
-	private boolean isChanged(boolean value) {
+	private void isChanged(boolean value) {
 		_status &= ~Status.Changed.getValue();
 		if (value)
 			_status |= Status.Changed.getValue();
@@ -109,42 +109,43 @@ final class StateMachine {
 		return _propertyChangedRecord.containsKey(propertyName);
 	}
 
-	/// <summary>
-	/// 仅仅只是属性<paramref name="propertyName"/>发生了改变
-	/// </summary>
-	/// <param name="propertyName"></param>
-	/// <returns></returns>
-	public bool OnlyPropertyChanged(String propertyName) {
-		return _propertyChangedRecord.Count == 1 && this.IsPropertyChanged(propertyName);
+	/**
+	 * 
+	 * 仅仅只是属性 {@code propertyName} 发生了改变
+	 * 
+	 * @param propertyName
+	 * @return
+	 */
+	public boolean onlyPropertyChanged(String propertyName) {
+		return _propertyChangedRecord.size() == 1 && this.isPropertyChanged(propertyName);
 	}
-
-	#endregion
 
 	public StateMachine() {
 	}
 
-	private StateMachine(Status status, Dictionary<string, bool> changedRecord) {
+	private StateMachine(int status, Map<String, Boolean> changedRecord) {
 		_status = status;
 		_propertyChangedRecord = changedRecord;
 	}
 
-	public StateMachine Clone() {
-		return new StateMachine(_status, new Dictionary<string, bool>(_propertyChangedRecord));
+	@Override
+	public StateMachine clone() {
+		return new StateMachine(_status, new HashMap<String, Boolean>(_propertyChangedRecord));
 	}
 
-	/// <summary>
-	/// 合并状态，将目标已更改的属性更新到自身数据中
-	/// </summary>
-	/// <param name="target"></param>
-	public void Combine(StateMachine target)
-	{
-	    var record = target._propertyChangedRecord;
-	    foreach (var p in record)
-	    {
-	        var propertyName = p.Key;
-	        if (!this.IsPropertyChanged(propertyName))
-	            this.SetPropertyChanged(p.Key);
-	    }
+	/**
+	 * 
+	 * 合并状态，将目标已更改的属性更新到自身数据中
+	 * 
+	 * @param target
+	 */
+	public void combine(StateMachine target) {
+		var record = target._propertyChangedRecord;
+		for (var p : record.entrySet()) {
+			var propertyName = p.getKey();
+			if (!this.isPropertyChanged(propertyName))
+				this.setPropertyChanged(propertyName);
+		}
 	}
 
 	private static enum Status {
