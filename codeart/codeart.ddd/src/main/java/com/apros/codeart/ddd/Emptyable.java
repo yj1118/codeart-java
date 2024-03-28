@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.dto.serialization.IDTOSerializable;
+import com.apros.codeart.util.INullProxy;
 import com.apros.codeart.util.StringUtil;
 
 /**
@@ -11,7 +12,7 @@ import com.apros.codeart.util.StringUtil;
  * 
  * @param <T>
  */
-public class Emptyable<T> implements IEmptyable, IDTOSerializable {
+public class Emptyable<T> implements IEmptyable, IDTOSerializable, INullProxy {
 
 	private Optional<T> _value;
 
@@ -29,7 +30,7 @@ public class Emptyable<T> implements IEmptyable, IDTOSerializable {
 		return _value.isEmpty();
 	}
 
-	public boolean IsNull() {
+	public boolean isNull() {
 		return this.isEmpty();
 	}
 

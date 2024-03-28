@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.apros.codeart.runtime.FieldUtil;
+import com.apros.codeart.util.Common;
 import com.apros.codeart.util.ISO8601;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.primitives.Doubles;
@@ -29,7 +30,7 @@ class JSON {
 	}
 
 	public static void writeValue(StringBuilder sb, Object value) {
-		if (value == null) {
+		if (Common.isNull(value)) {
 			sb.append("null");
 			return;
 		}

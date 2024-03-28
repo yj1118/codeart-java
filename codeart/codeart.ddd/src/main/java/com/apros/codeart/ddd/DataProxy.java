@@ -48,13 +48,13 @@ public abstract class DataProxy implements IDataProxy {
 	}
 
 	public Object load(DomainProperty property) {
-		return _data.get(property.getName());
+		return _data.get(property.name());
 	}
 
 	public Object loadOld(DomainProperty property) {
 		if (_oldData == null)
 			return null;
-		return _oldData.get(property.getName());
+		return _oldData.get(property.name());
 	}
 
 	public boolean isEmpty() {
@@ -62,9 +62,9 @@ public abstract class DataProxy implements IDataProxy {
 	}
 
 	public void save(DomainProperty property, Object newValue, Object oldValue) {
-		_data.put(property.getName(), newValue);
+		_data.put(property.name(), newValue);
 		if (this.isTrackPropertyChange())
-			_oldData.put(property.getName(), oldValue);
+			_oldData.put(property.name(), oldValue);
 	}
 
 	public void copy(IDataProxy target) {
@@ -97,7 +97,7 @@ public abstract class DataProxy implements IDataProxy {
 	protected abstract Object loadData(DomainProperty property);
 
 	public boolean isLoaded(DomainProperty property) {
-		return _data.containsKey(property.getName());
+		return _data.containsKey(property.name());
 	}
 
 	/**

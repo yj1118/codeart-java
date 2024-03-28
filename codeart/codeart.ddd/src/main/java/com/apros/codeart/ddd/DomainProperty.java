@@ -6,7 +6,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import com.apros.codeart.ddd.metadata.DomainPropertyCategory;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
@@ -15,8 +14,8 @@ import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.ddd.metadata.ValueMeta;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
-import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
+import com.apros.codeart.util.SafeAccessAnn;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.base.Objects;
 
@@ -171,37 +170,22 @@ public class DomainProperty {
 		return new AccessInfo(accessGet, accessSet);
 	}
 
-	private static String getCall(String propertyName, Class<?> declaringType) {
-		var ann = getAnnotation(declaringType, propertyName, PropertyLabel.class);
-		return ann != null ? ann.name() : null;
-	}
-
-	/**
-	 * 
-	 * 获得属性与仓储有关的配置
-	 * 
-	 * @param propertyName
-	 * @param declaringType
-	 * @return
-	 */
-	private static PropertyRepositoryAnn getRepository(String propertyName, Class<?> declaringType) {
-		var ann = getAnnotation(declaringType, propertyName, PropertyRepository.class);
-		return ann != null ? new PropertyRepositoryAnn(ann, declaringType) : PropertyRepositoryAnn.Default;
-	}
-
 	private static DomainProperty register(String name, boolean isCollection, Class<?> monotype, Class<?> declaringType,
 			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
 
+		// 先获得属性上所有的特性标签
+		var anns = getAnnotations(declaringType, name);
+
 		var access = getAccess(name, declaringType);
-		var call = getCall(name, declaringType);
+		var call = getCall(anns);
 
 		var declaring = ObjectMetaLoader.get(declaringType);
 
 		var valueMeta = ValueMeta.createBy(isCollection, monotype, getDefaultValue);
 
-		var validators = PropertyValidator.getValidators(declaringType, name);
+		var validators = getValidators(anns);
 
-		var repositoryTip = getRepository(name, declaringType);
+		var repositoryTip = getRepository(anns, declaringType);
 
 		var meta = new PropertyMeta(name, valueMeta, declaring, access.get(), access.set(), call, validators,
 				repositoryTip.lazy(), repositoryTip.loader());
@@ -209,12 +193,12 @@ public class DomainProperty {
 		return new DomainProperty(meta);
 	}
 
-	private static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
+	public static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
 			Class<?> declaringType) {
 		return register(name, isCollection, propertyType, declaringType, null);
 	}
 
-	private static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
+	public static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
 			Class<?> declaringType, Object defaultValue) {
 		return register(name, isCollection, propertyType, declaringType, (obj, pro) -> {
 			return defaultValue;
@@ -229,24 +213,15 @@ public class DomainProperty {
 	 * @param declaringType
 	 * @return
 	 */
-	public static DomainProperty registerCollection(String name, Class<?> elementType, Class<?> declaringType)
-	{
-	    return register(propertyName, typeof(DomainCollection<MemberType>), declaringType, (owner, property) ->
-	    {
-	        var collection = new DomainCollection<MemberType>(property);
-	        collection.Parent = owner;
-	        return collection;
-	    }, null);
+	public static DomainProperty registerCollection(String name, Class<?> elementType, Class<?> declaringType) {
+		return register(name, true, elementType, declaringType);
 	}
-//
-//	public static DomainProperty RegisterCollection<MemberType,OT>(
-//	string propertyName, Func<object,object,bool>compare)
-//	where OT:DomainObject
-//	{
-//		return Register(propertyName,typeof(DomainCollection<MemberType>),typeof(OT),(owner,property)=>{var collection=new DomainCollection<MemberType>(property);collection.Parent=owner;return collection;},compare);
-//	}
-//
-//	#endregion
+
+	public static DomainProperty registerCollection(String name, Class<?> elementType, Class<?> declaringType,
+			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
+		return register(name, true, elementType, declaringType, getDefaultValue);
+	}
+
 //
 //	#
 //	region 注册动态属性
@@ -306,24 +281,58 @@ public class DomainProperty {
 
 //	region 辅助方法
 
-	@SuppressWarnings("unchecked")
-	<T extends Annotation> T getAnnotation(Class<T> annType) {
-		return getAnnotation(_declaringType, this.name(), annType);
+	private static String getCall(Iterable<Annotation> anns) {
+		var ann = getAnnotation(anns, PropertyLabel.class);
+		return ann != null ? ann.name() : null;
 	}
 
-	private static Function<Class<?>, Function<String, Iterable<Annotation>>> _getAnnotations = LazyIndexer
-			.init((objectType) -> {
-				return LazyIndexer.init((propertyName) -> {
-					ArrayList<Annotation> result = new ArrayList<>();
+	/**
+	 * @param declaringType
+	 * @param propertyName
+	 * @return
+	 */
+	private static Iterable<IPropertyValidator> getValidators(Iterable<Annotation> anns) {
 
-					// 在对象属性定义上查找特性
-					ListUtil.addRange(result, getAnnotationsByStaticProperty(objectType, propertyName));
+		ArrayList<IPropertyValidator> validators = new ArrayList<>();
 
-					// 从外部配置中得到，todo...
+		// 这里的规则是：
+		// 在领域属性上定义了的所有注解中，只要对应的注解上有 xxValidator的类，那么就是属性验证器
+		// 例如： Email 注解并且同时存在EmailValidator，那么我们就认为该属性需要通过EmailValidator验证
 
-					return result;
-				});
-			});
+		for (var ann : anns) {
+			var annName = ann.annotationType().getSimpleName();
+
+			var validatorType = TypeUtil.getClass(String.format("%sValidator", annName),
+					ann.annotationType().getClassLoader());
+			if (validatorType == null)
+				continue;
+
+			var validator = SafeAccessAnn.createSingleton(validatorType);
+			validators.add((IPropertyValidator) validator);
+		}
+
+		return validators;
+	}
+
+	/**
+	 * 
+	 * 获得属性与仓储有关的配置
+	 * 
+	 * @param propertyName
+	 * @param declaringType
+	 * @return
+	 */
+	private static PropertyRepositoryAnn getRepository(Iterable<Annotation> anns, Class<?> declaringType) {
+		var ann = getAnnotation(anns, PropertyRepository.class);
+		return ann != null ? new PropertyRepositoryAnn(ann, declaringType) : PropertyRepositoryAnn.Default;
+	}
+
+	@SuppressWarnings({ "unchecked", "unlikely-arg-type" })
+	static <T extends Annotation> T getAnnotation(Iterable<Annotation> anns, Class<T> annType) {
+		return (T) ListUtil.find(anns, (type) -> {
+			return annType.equals(type);
+		});
+	}
 
 	/**
 	 * 获取领域属性定义的特性，这些特性可以标记在对象属性上，也可以标记在静态的领域属性字段上
@@ -332,15 +341,15 @@ public class DomainProperty {
 	 * @param propertyName
 	 * @return
 	 */
-	static Iterable<Annotation> getAnnotations(Class<?> objectType, String propertyName) {
-		return _getAnnotations.apply(objectType).apply(propertyName);
-	}
+	private static Iterable<Annotation> getAnnotations(Class<?> objectType, String propertyName) {
+		ArrayList<Annotation> result = new ArrayList<>();
 
-	@SuppressWarnings({ "unchecked", "unlikely-arg-type" })
-	static <T extends Annotation> T getAnnotation(Class<?> objectType, String propertyName, Class<T> annType) {
-		return (T) ListUtil.find(getAnnotations(objectType, propertyName), (type) -> {
-			return annType.equals(type);
-		});
+		// 在对象属性定义上查找特性
+		ListUtil.addRange(result, getAnnotationsByStaticProperty(objectType, propertyName));
+
+		// 从外部配置中得到，todo...
+
+		return result;
 	}
 
 	/**

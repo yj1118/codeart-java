@@ -17,6 +17,7 @@ import com.apros.codeart.dto.serialization.DTObjectMapper;
 import com.apros.codeart.dto.serialization.IDTOSerializable;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.INullProxy;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
@@ -36,7 +37,7 @@ import com.google.common.collect.Iterables;
  * 
  * 但是要频繁的操作dto的同样的值，比如getInt("value")或者setInt("value")调用好几遍，那么建议用getIntRef这种引用系方法。
  */
-public class DTObject {
+public class DTObject implements INullProxy {
 
 	private DTEObject _root;
 
@@ -1097,6 +1098,10 @@ public class DTObject {
 
 	public boolean isEmpty() {
 		return this.getBoolean("__empty", false);
+	}
+
+	public boolean isNull() {
+		return this.isEmpty();
 	}
 
 //	#endregion

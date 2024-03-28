@@ -1,6 +1,7 @@
 package com.apros.codeart.dto.serialization;
 
 import com.apros.codeart.dto.DTObject;
+import com.apros.codeart.util.Common;
 import com.apros.codeart.util.StringUtil;
 
 public class DTObjectMapper {
@@ -33,7 +34,6 @@ public class DTObjectMapper {
 	/// <param name="schemaCode"></param>
 	/// <param name="dto"></param>
 	public static void save(Object instance, String schemaCode, DTObject dto) {
-		// if (instance.IsNull()) return;
 		var instanceType = instance.getClass();
 		if (instanceType.equals(DTObject.class))
 			instance = dto.clone();
@@ -53,7 +53,7 @@ public class DTObjectMapper {
 	 * @return
 	 */
 	public static DTObject load(String schemaCode, Object instance) {
-		if (instance == null)
+		if (Common.isNull(instance))
 			return DTObject.Empty;
 		var instanceType = instance.getClass();
 		if (instanceType.equals(DTObject.class))
@@ -74,7 +74,7 @@ public class DTObjectMapper {
 	 * @param instance
 	 */
 	public static void load(DTObject dto, String schemaCode, Object instance) {
-		if (instance == null)
+		if (Common.isNull(instance))
 			return;
 		var instanceType = instance.getClass();
 		if (instanceType.equals(DTObject.class))

@@ -4,9 +4,13 @@ import static com.apros.codeart.runtime.Util.propagate;
 
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.metadata.ObjectMeta;
+import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
+import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.EventHandler;
+import com.apros.codeart.util.INullProxy;
 import com.apros.codeart.util.LazyIndexer;
 
 /// <summary>
@@ -26,41 +30,85 @@ import com.apros.codeart.util.LazyIndexer;
 /// </para>
 /// </summary>
 //public abstract class DomainObject implements System.Dynamic.DynamicObject, IDomainObject, INullProxy {
-public abstract class DomainObject implements IDomainObject {
-//	/// <summary>
-//	/// 领域对象的类型，请注意，在动态领域对象下，该类型是对应的领域对象的类型，而不是DynamicRoot、DynamicValueObject等载体对象
-//	/// </summary>
-//	public Type ObjectType
-//	{
-//        get
-//        {
-//            return GetObjectType();
-//        }
-//    }
-//
-//	protected virtual Type
-//
-//	GetObjectType()
-//    {
-//        return this.InstanceType;//默认是实例的类型
-//    }
-//
-//	protected Type InstanceType
-//	{
-//        get;
-//        private set;
-//    }
-//
-//	/// <summary>
-//	/// 领域对象的继承深度（注意，仅从DomainObject基类开始算起）
-//	/// </summary>
-//	internal
-//	int TypeDepth
-//	{
-//        get;
-//        private set;
-//    }
-//
+/*
+ * 
+ * 在实践中发现，领域属性变更的实用性几乎没有。为了保持对象的构造简单明了，避免复杂的状态管理。新版框架取消了领域属性值变化时的事件写入，
+ * 改由具体的业务方法去更新属性，比如setChilds()内部执行相关逻辑。
+ * 另外，也可以在onSave,onAdd,onUpdate等仓储化事件里判断属性的变化，写相关逻辑
+ * 
+ * 
+ * 
+ */
+public abstract class DomainObject implements IDomainObject, INullProxy {
+
+	private ObjectMeta _meta;
+
+	/// <summary>
+	/// 领域对象的类型，请注意，在动态领域对象下，该类型是对应的领域对象的类型，而不是DynamicRoot、DynamicValueObject等载体对象
+	/// </summary>
+	public ObjectMeta meta() {
+		return _meta;
+	}
+
+	/**
+	 * 领域对象的继承深度（注意，仅从DomainObject基类开始算起）
+	 */
+	private int _typeDepth;
+
+	public DomainObject() {
+		_meta = ObjectMetaLoader.get(this.getClass());
+		_constructedDepth = 0;
+		_typeDepth = getTypeDepth();
+		this.onConstructed();
+	}
+
+	private int getTypeDepth() {
+		var depth = TypeUtil.getDepth(this.getClass());
+
+		var baseType = DomainObject.class.getSuperclass();
+		if (baseType == null)
+			return depth;
+		return depth - TypeUtil.getDepth(baseType);
+	}
+
+	/**
+	 * 
+	 * 对象是否为一个快照，如果该值为true，表示对象已经被仓储删除或者其属性值已被修改
+	 * 
+	 * @return
+	 */
+	public boolean isSnapshot() {
+		return this.DataProxy.isSnapshot(); // 通过数据代理我们得知数据是否为快照
+	}
+
+	/**
+	 * 
+	 * 对象是否为一个镜像
+	 * 
+	 * @return
+	 */
+	public boolean isMirror() {
+		return this.DataProxy.isMirror(); // 通过数据代理我们得知数据是否为快照
+	}
+
+	/**
+	 * 对象是否为无效的，对象无效的原因可能有很多（比如：是个快照对象，或者其成员属性是快照，导致自身无效化了）
+	 * 默认情况下，快照对象就是一个无效对象，可以通过重写该属性的算法，针对某些业务判定对象是无效的 无效的对象只能被删除，不能新增和修改
+	 * 
+	 * @return
+	 */
+	public boolean invalid() {
+		return this.isSnapshot();
+	}
+
+	public boolean isEmpty() {
+		// 默认情况下领域对象是非空的
+		return false;
+	}
+
+	public boolean isNull() {
+		return this.isEmpty();
+	}
 
 	/**
 	 * 是否追踪属性变化的情况，该值为true，会记录属性更改前的值，这会消耗一部分内存
@@ -73,101 +121,21 @@ public abstract class DomainObject implements IDomainObject {
 	}
 
 //
-//	public DomainObject() {
-//		this.IsConstructing = true;
-//		this.InstanceType = this.GetType();
-//		this.TypeDepth = GetTypeDepth();
-//		this.OnConstructed();
-//	}
-//
-//	private int GetTypeDepth() {
-//		var depth = this.InstanceType.GetDepth();
-//
-//		var baseType = typeof(DomainObject).BaseType;
-//		if (baseType == null)
-//			return depth;
-//		return depth - baseType.GetDepth();
-//	}
-//
-//	#region 对象快照
-//
-//	/// <summary>
-//	/// 对象是否为一个快照，如果该值为true，表示对象已经被仓储删除或者其属性值已被修改
-//	/// </summary>
-//	public bool IsSnapshot
-//	{
-//        get
-//        {
-//            return this.DataProxy.IsSnapshot; //通过数据代理我们得知数据是否为快照
-//        }
-//    }
-//
-//	/// <summary>
-//	/// 对象是否为一个镜像
-//	/// </summary>
-//	public bool IsMirror
-//	{
-//        get
-//        {
-//            return this.DataProxy.IsMirror;
-//        }
-//    }
-//
-//	/// <summary>
-//	/// 表示对象是否来自仓储中的快照区域，请注意该属性与IsSnapshot的区别：
-//	/// <para>一个对象有可能从仓储加载后，由于其他线程修改了它在仓储里对应的数据，导致这个对象由非快照状态变为快照</para>
-//	/// <para>这时候IsSnapshot为true，IsFromSnapshot为false</para>
-//	/// <para>也就是说，IsSnapshot比IsFromSnapshot更加严谨，是一定可以识别对象的快照状态的</para>
-//	/// <para>但是IsFromSnapshot的性能要比IsSnapshot好的多，它表示对象被删除后，加入到仓储的快照区域了，当对象再次被加载，它的IsSnapshot和IsFromSnapshot属性都被true</para>
-//	/// </summary>
-//	public bool IsFromSnapshot
-//	{
-//        get
-//        {
-//            return this.DataProxy.IsFromSnapshot; //通过数据代理我们得知数据是否为来自快照区域
-//        }
-//    }
-//
-//	/// <summary>
-//	/// 对象是否为无效的，对象无效的原因可能有很多（比如：是个快照对象，或者其成员属性是快照，导致自身无效化了）
-//	/// 默认情况下，快照对象就是一个无效对象，可以通过重写该属性的算法，针对某些业务判定对象是无效的
-//	/// 无效的对象只能被删除，不能新增和修改
-//	/// </summary>
-//	public virtual bool Invalid
-//	{
-//        get
-//        {
-//            return this.IsSnapshot;
-//        }
-//    }
-//
-//	#endregion
-//
-	public boolean isEmpty() {
-		// 默认情况下领域对象是非空的
-		return false;
-	}
-
-//
-//	public bool IsNull() {
-//		return this.IsEmpty();
-//	}
-//
 //	#region 状态
-//
-//	private StateMachine _machine = new StateMachine();
-//
-//	/// <summary>
-//	/// 是否为脏对象
-//	/// </summary>
-//	public bool IsDirty
-//	{
-//        get
-//        {
-//            return _machine.IsDirty || HasDirtyProperty();
-//        }
-//    }
-//
+
+	private StateMachine _machine = new StateMachine();
+
+	/// <summary>
+	/// 是否为脏对象
+	/// </summary>
+	public bool IsDirty
+	{
+        get
+        {
+            return _machine.IsDirty || HasDirtyProperty();
+        }
+    }
+
 //	/// <summary>
 //	/// 内存中新创建的对象
 //	/// </summary>
@@ -634,6 +602,7 @@ public abstract class DomainObject implements IDomainObject {
 		var value = this.getValue(property);
 		handlePropertyChanged(property, value, value);
 	}
+
 //
 //	/// <summary>
 //	/// 处理属性被改变时的行为
@@ -717,46 +686,23 @@ public abstract class DomainObject implements IDomainObject {
 //	/// </summary>
 //	public event DomainObjectConstructedEventHandler Constructed;
 //
-//	private int _constructedDepth;
-//
-
-	private boolean _isConstructing;
+	private int _constructedDepth;
 
 	public boolean isConstructing() {
-		return _isConstructing;
+		return _constructedDepth == _typeDepth;
 	}
 
-//
-//	/// <summary>
-//	/// 指示对象已完成构造，请务必在领域对象构造完成后调用此方法
-//	/// </summary>
-//	protected void OnConstructed() {
-//		_constructedDepth++;
-//
-//		if (_constructedDepth > this.TypeDepth) {
-//			throw new DomainDrivenException("构造对象发生未知的错误，构造层级大于对象实际类型层级");
-//		}
-//
-//		if (_constructedDepth == this.TypeDepth) // 已构造完毕
-//		{
-//			IsConstructing = false;
-//			this.RaiseConstructedEvent();
-//		}
-//	}
-//
-//	private void RaiseConstructedEvent() {
-//		if (this.IsEmpty())
-//			return;
-//		if (this.Constructed != null) {
-//			var args = new DomainObjectConstructedEventArgs(this);
-//			this.Constructed(this, args);
-//		}
-//		// 执行边界事件
-//		StatusEvent.Execute(this.ObjectType, StatusEventType.Constructed, this);
-//	}
-//
-//	#endregion
-//
+	/// <summary>
+	/// 指示对象已完成构造，请务必在领域对象构造完成后调用此方法
+	/// </summary>
+	protected void onConstructed() {
+		_constructedDepth++;
+
+		if (_constructedDepth > _typeDepth) {
+			throw new DomainDrivenException(Language.strings("ConstructedError"));
+		}
+	}
+
 	public EventHandler<DomainObjectChangedEventArgs> changed = new EventHandler<DomainObjectChangedEventArgs>();
 
 	private void raiseChangedEvent() {

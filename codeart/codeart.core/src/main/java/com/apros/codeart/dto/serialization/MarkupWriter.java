@@ -2,6 +2,7 @@ package com.apros.codeart.dto.serialization;
 
 import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.Common;
 
 class MarkupWriter extends DTOWriter {
 
@@ -27,7 +28,7 @@ class MarkupWriter extends DTOWriter {
 
 	@Override
 	public void writeObject(String name, Object value) {
-		if (value == null)
+		if (Common.isNull(value))
 			return; // 为isNull的成员不输出, 这里有可能要升级是否为null的算法,todo
 		// 是否自定义
 		var serializable = TypeUtil.as(value, IDTOSerializable.class);

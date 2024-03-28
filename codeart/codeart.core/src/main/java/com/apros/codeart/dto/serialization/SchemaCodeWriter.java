@@ -2,6 +2,7 @@ package com.apros.codeart.dto.serialization;
 
 import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.Common;
 
 class SchemaCodeWriter extends DTOWriter {
 
@@ -47,7 +48,7 @@ class SchemaCodeWriter extends DTOWriter {
 
 	@Override
 	public void writeObject(String name, Object value) {
-		if (value == null)
+		if (Common.isNull(value))
 			return; // 为isNull的成员不输出
 		// 是否自定义
 		var serializable = TypeUtil.as(value, IDTOSerializable.class);
