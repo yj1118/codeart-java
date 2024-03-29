@@ -8,6 +8,7 @@ import com.apros.codeart.ddd.IAggregateRoot;
 import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.ddd.IDynamicObject;
 import com.apros.codeart.ddd.IEntityObject;
+import com.apros.codeart.ddd.IObjectValidator;
 import com.apros.codeart.ddd.IValueObject;
 import com.apros.codeart.ddd.MergeDomain;
 import com.apros.codeart.i18n.Language;
@@ -60,11 +61,18 @@ public class ObjectMeta {
 
 	}
 
-	ObjectMeta(String name, Class<?> objectType, DomainObjectCategory category) {
+	private Iterable<IObjectValidator> _validators;
+
+	public Iterable<IObjectValidator> validators() {
+		return _validators;
+	}
+
+	ObjectMeta(String name, Class<?> objectType, DomainObjectCategory category, Iterable<IObjectValidator> validators) {
 		_name = name;
 		_objectType = objectType;
 		_category = category;
 		_properties = new ArrayList<PropertyMeta>();
+		_validators = validators;
 	}
 
 	// #region 辅助

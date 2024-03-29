@@ -1,9 +1,9 @@
 package com.apros.codeart.ddd;
 
-import static com.apros.codeart.runtime.Util.propagate;
-
+import java.util.function.Consumer;
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.metadata.DomainPropertyCategory;
 import com.apros.codeart.ddd.metadata.ObjectMeta;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.i18n.Language;
@@ -13,6 +13,7 @@ import com.apros.codeart.util.EventHandler;
 import com.apros.codeart.util.INullProxy;
 import com.apros.codeart.util.LazyIndexer;
 import com.google.common.base.Objects;
+import com.google.common.base.Strings;
 
 /// <summary>
 /// <para>我们保证领域对象的读操作是线程安全的,但是写操作（例如属性赋值等）不是线程安全的，如果需要并发控制请根据业务要求自行编写代码</para>
@@ -79,7 +80,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 	 * @return
 	 */
 	public boolean isSnapshot() {
-		return this.DataProxy.isSnapshot(); // 通过数据代理我们得知数据是否为快照
+		return this.dataProxy().isSnapshot(); // 通过数据代理我们得知数据是否为快照
 	}
 
 	/**
@@ -89,7 +90,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 	 * @return
 	 */
 	public boolean isMirror() {
-		return this.DataProxy.isMirror(); // 通过数据代理我们得知数据是否为快照
+		return this.dataProxy().isMirror(); // 通过数据代理我们得知数据是否为快照
 	}
 
 	/**
@@ -239,211 +240,229 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 		return true;
 	}
 
-//
-//	/// <summary>
-//	/// 强制设置属性已被更改
-//	/// </summary>
-//	/// <param name="propertyName"></param>
-//	internal
-//
-//	void SetPropertyChanged(DomainProperty property)
-//    {
-//        _machine.SetPropertyChanged(property.Name);
-//        DuplicateMachineSetPropertyChanged(property.Name);
-//    }
-//
-//	/// <summary>
-//	/// 清除属性被改变的状态
-//	/// </summary>
-//	/// <param name="property"></param>
-//	protected void ClearPropertyChanged(DomainProperty property) {
-//		_machine.ClearPropertyChanged(property.Name);
-//		DuplicateMachineClearPropertyChanged(property.Name);
-//	}
-//
-//	/// <summary>
-//	/// 判断属性是否被更改，对于领域对象属性是否改变的约定：
-//	/// 1.如果属性为普通类型（int、string等基础类型）,根据值是否发生了改变来判定属性是否改变
-//	/// 2.如果属性为值对象类型（ValueObject）,根据ValueObject的值是否发生了改变来判定属性是否改变
-//	/// 3.如果属性为实体对象类型（EntityObject,EntityObjectPro,Aggregate）,只要赋值，属性就会发生改变；
-//	/// 实体对象内部的属性发生改变，虽然引用关系没有变，但是我们认为属性还是发生变化了；
-//	/// 4.如果属性为实体对象类型的集合（ObjectCollection(EntityObject),ObjectCollection(EntityObjectPro),ObjectCollection(Aggregate)）,只要赋值，属性就会发生改变；
-//	/// 单个实体对象内部的属性发生改变，不影响外部属性的变化，因为他们的引用关系并没有被改变；
-//	/// 实体对象集合的成员发生了变化，那么属性被改变，因为集合代表的是引用对象和多个被对象之间的关系，集合成员变化了，代表引用关系也变化了
-//	/// </summary>
-//	/// <param name="propertyName"></param>
-//	/// <returns></returns>
-//	public bool IsPropertyChanged(DomainProperty property) {
-//		return _machine.IsPropertyChanged(property.Name);
-//	}
-//
-//	/// <summary>
-//	/// 仅仅只是属性<paramref name="property"/>发生了改变
-//	/// </summary>
-//	/// <param name="property"></param>
-//	/// <returns></returns>
-//	public bool OnlyPropertyChanged(DomainProperty property) {
-//		return _machine.OnlyPropertyChanged(property.Name);
-//	}
-//
-//	/// <summary>
-//	/// 判断属性是否被更改
-//	/// </summary>
-//	/// <param name="propertyName"></param>
-//	/// <returns></returns>
-//	public bool IsPropertyChanged(string propertyName) {
-//		var property = DomainProperty.GetProperty(this.ObjectType, propertyName);
-//		return IsPropertyChanged(property);
-//	}
-//
-//	/// <summary>
-//	/// 属性是否为脏的
-//	/// </summary>
-//	/// <param name="property"></param>
-//	/// <returns></returns>
-//	public bool IsPropertyDirty(DomainProperty property) {
-//		if(this.IsNew)return true; // 如果是新建对象，那么属性一定是脏的
-//		var isChanged=IsPropertyChanged(property);if(isChanged)return true; // 属性如果被改变，那么我们认为就是脏的，这是一种粗略的判断，因为就算属性改变了，有可能经过2次修改后变成与数据库一样的值，这样就不是脏的了，但是为了简单化处理，我们仅认为只要改变了就是脏的，这种判断不过可以满足100%应用
-//		// 如果属性没有被改变，那么我们需要进一步判断属性的成员是否发生改变
-//		switch(property.DomainPropertyType){case DomainPropertyType.ValueObject:case DomainPropertyType.EntityObject:{DomainObject obj=null;if(TryGetValue<DomainObject>(property,ref obj)){
-//		// 如果加载了，就进一步判断
-//		return obj.IsDirty;}}break;case DomainPropertyType.ValueObjectList:case DomainPropertyType.EntityObjectList:{IEnumerable list=null;if(TryGetValue<IEnumerable>(property,ref list)){
-//		// 如果加载了，就进一步判断
-//		foreach(DomainObject obj in list){if(obj.IsDirty)return true;}}}break;}
-//		// AggregateRoot和AggregateRootList
-//		// 只用根据IsPropertyChanged判断即可，因为他们是外部内聚根对象，是否变脏与本地内聚根没有关系
-//		return false;
-//	}
-//
-//	public bool IsPropertyDirty(string propertyName) {
-//		var property = DomainProperty.GetProperty(this.ObjectType, propertyName);
-//		return IsPropertyDirty(property);
-//	}
-//
-//	/// <summary>
-//	/// 是否有脏的属性
-//	/// </summary>
-//	/// <returns></returns>
-//	private bool HasDirtyProperty() {
-//		var properties=DomainProperty.GetProperties(this.ObjectType);foreach(var property in properties){if(IsPropertyDirty(property))return true;}return false;
-//	}
-//
-//	/// <summary>
-//	/// 在有效的属性对象上执行方法，只有被加载了的对象才执行
-//	/// </summary>
-//	/// <param name="action"></param>
-//	private void InvokeProperties(Action<DomainObject> action) {
-//		var properties=DomainProperty.GetProperties(this.ObjectType);foreach(var property in properties){switch(property.DomainPropertyType){case DomainPropertyType.EntityObject:case DomainPropertyType.ValueObject:{DomainObject obj=null;if(TryGetValue<DomainObject>(property,ref obj)){action(obj);}}break;case DomainPropertyType.EntityObjectList:case DomainPropertyType.ValueObjectList:{IEnumerable list=null;if(TryGetValue<IEnumerable>(property,ref list)){foreach(DomainObject obj in list){action(obj);}}}break;}}
-//	}
-//
-//	#endregion
-//
-//	private object _syncObject = new object();
-//
-//	#region 数据代理
-//
+	/**
+	 * 强制设置属性已被更改
+	 * 
+	 * @param property
+	 */
+	void setPropertyChanged(DomainProperty property) {
+		_machine.setPropertyChanged(property.name());
+		duplicateMachineSetPropertyChanged(property.name());
+	}
+
+	/**
+	 * 清除属性被改变的状态
+	 * 
+	 * @param property
+	 */
+	protected void clearPropertyChanged(DomainProperty property) {
+		_machine.clearPropertyChanged(property.name());
+		duplicateMachineClearPropertyChanged(property.name());
+	}
+
+	/**
+	 * 
+	 * 判断属性是否被更改，对于领域对象属性是否改变的约定：
+	 * 
+	 * 1.如果属性为普通类型（int、string等基础类型）,根据值是否发生了改变来判定属性是否改变
+	 * 2.如果属性为值对象类型（ValueObject）,根据ValueObject的值是否发生了改变来判定属性是否改变
+	 * 3.如果属性为实体对象类型（EntityObject,Aggregate）,只要赋值，属性就会发生改变；
+	 * 实体对象内部的属性发生改变，虽然引用关系没有变，但是我们认为属性还是发生变化了；
+	 * 4.如果属性为实体对象类型的集合（ObjectCollection(EntityObject),ObjectCollection(EntityObjectPro),ObjectCollection(Aggregate)）,只要赋值，属性就会发生改变；
+	 * 单个实体对象内部的属性发生改变，不影响外部属性的变化，因为他们的引用关系并没有被改变；
+	 * 实体对象集合的成员发生了变化，那么属性被改变，因为集合代表的是引用对象和多个被对象之间的关系，集合成员变化了，代表引用关系也变化了
+	 * 
+	 * @param property
+	 * @return
+	 */
+	public boolean isPropertyChanged(DomainProperty property) {
+		return isPropertyChanged(property.name());
+	}
+
+	/**
+	 * 仅仅只是属性 {@code property} 发生了改变
+	 * 
+	 * @param property
+	 * @return
+	 */
+	public boolean onlyPropertyChanged(DomainProperty property) {
+		return _machine.onlyPropertyChanged(property.name());
+	}
+
+	/**
+	 * 
+	 * 判断属性是否被更改
+	 * 
+	 * @param propertyName
+	 * @return
+	 */
+	public boolean isPropertyChanged(String propertyName) {
+		return _machine.isPropertyChanged(propertyName);
+	}
+
+	/**
+	 * 
+	 * 属性是否为脏的
+	 * 
+	 * @param property
+	 * @return
+	 */
+	public boolean isPropertyDirty(DomainProperty property) {
+		if (this.isNew())
+			return true; // 如果是新建对象，那么属性一定是脏的
+		var isChanged = isPropertyChanged(property);
+		if (isChanged)
+			return true; // 属性如果被改变，那么我们认为就是脏的，这是一种粗略的判断，因为就算属性改变了，有可能经过2次修改后变成与数据库一样的值，这样就不是脏的了，但是为了简单化处理，我们仅认为只要改变了就是脏的，这种判断不过可以满足100%应用
+		// 如果属性没有被改变，那么我们需要进一步判断属性的成员是否发生改变
+		switch (property.category()) {
+		case DomainPropertyCategory.ValueObject:
+		case DomainPropertyCategory.EntityObject: {
+			DomainObject obj = tryGetValue(property);
+			if (obj != null) {
+				// 如果加载了，就进一步判断
+				return obj.isDirty();
+			}
+		}
+			break;
+		case DomainPropertyCategory.ValueObjectList:
+		case DomainPropertyCategory.EntityObjectList: {
+			Iterable<?> list = tryGetValue(property);
+			if (list != null) {
+				// 如果加载了，就进一步判断
+				for (DomainObject obj : list) {
+					if (obj.isDirty())
+						return true;
+				}
+			}
+		}
+			break;
+		}
+		// AggregateRoot和AggregateRootList
+		// 只用根据IsPropertyChanged判断即可，因为他们是外部内聚根对象，是否变脏与本地内聚根没有关系
+		return false;
+	}
+
+	public boolean isPropertyDirty(String propertyName) {
+		var property = DomainProperty.getProperty(this.getClass(), propertyName);
+		return isPropertyDirty(property);
+	}
+
+	/**
+	 * 
+	 * 是否有脏的属性
+	 * 
+	 * @return
+	 */
+	private boolean hasDirtyProperty() {
+		var properties = DomainProperty.getProperties(this.getClass());
+		for (var property : properties) {
+			if (isPropertyDirty(property.name()))
+				return true;
+		}
+		return false;
+	}
+
+	/**
+	 * 
+	 * 在有效的属性对象上执行方法，只有被加载了的对象才执行
+	 * 
+	 * @param action
+	 */
+	private void invokeProperties(Consumer<DomainObject> action) {
+		var properties = DomainProperty.getProperties(this.getClass());
+		for (var property : properties) {
+			switch (property.category()) {
+			case DomainPropertyType.EntityObject:
+			case DomainPropertyType.ValueObject: {
+				DomainObject obj = tryGetValue(property);
+				if (obj != null) {
+					action.accept(obj);
+				}
+			}
+				break;
+			case DomainPropertyType.EntityObjectList:
+			case DomainPropertyType.ValueObjectList: {
+				Iterable<DomainObject> list = tryGetValue(property);
+				if (list != null) {
+					for (DomainObject obj : list) {
+						action.accept(obj);
+					}
+				}
+			}
+				break;
+			}
+		}
+	}
+
 	private IDataProxy _dataProxy;
-	public IDataProxy DataProxy
-	{
-        get
-        {
-            if (_dataProxy == null)
-            {
-                lock(_syncObject)
-                {
-                    if (_dataProxy == null)
-                    {
-                        _dataProxy = CodeArt.DomainDriven.DataProxy.CreateStorage(this);
-                    }
-                }
-            }
-            return _dataProxy;
-        }
-        set
-        {
-            if (_dataProxy != null && value != null) value.Copy(_dataProxy);
-            _dataProxy = value;
-            if (_dataProxy != null) _dataProxy.Owner = this;
-        }
-    }
 
-	public bool IsPropertyLoaded(DomainProperty property) {
-		return this.DataProxy.IsLoaded(property);
+	public IDataProxy dataProxy() {
+		if (_dataProxy == null) {
+			_dataProxy = DataProxy.createStorage(this);
+			// 以下是老版本代码，新版本中加载领域对象是各个会话加载各自的对象，不存在冲突，所以不用锁
+			// 但是为了保险起见，先保留老代码，以便参考
+//            lock(_syncObject)
+//            {
+//                if (_dataProxy == null)
+//                {
+//                    _dataProxy = CodeArt.DomainDriven.DataProxy.CreateStorage(this);
+//                }
+//            }
+		}
+		return _dataProxy;
 	}
 
-	public bool IsPropertyLoaded(string propertyName) {
-		var property = DomainProperty.GetProperty(this.ObjectType, propertyName);
-		return this.DataProxy.IsLoaded(property);
+	public void dataProxy(IDataProxy value) {
+		if (_dataProxy != null && value != null)
+			value.copy(_dataProxy);
+		_dataProxy = value;
+		if (_dataProxy != null)
+			_dataProxy.setOwner(this);
 	}
 
-	public int DataVersion
-	{
-        get
-        {
-            return this.DataProxy.Version;
-        }
-    }
+	public boolean isPropertyLoaded(DomainProperty property) {
+		return this.dataProxy().isLoaded(property);
+	}
+
+	public boolean isPropertyLoaded(String propertyName) {
+		var property = DomainProperty.getProperty(this.getClass(), propertyName);
+		return this.dataProxy().isLoaded(property);
+	}
+
+	public int dataVersion() {
+		return this.dataProxy().getVersion();
+	}
+
+	/**
+	 * 同步数据版本号，当确认对象是干净的情况下，你可以手动更新版本号，这在某些情况下很有用
+	 */
+	public void syncDataVersion() {
+		this.dataProxy().syncVersion();
+	}
+
+//	region 固定规则
 
 	/// <summary>
-	/// 同步数据版本号，当确认对象是干净的情况下，你可以手动更新版本号，这在某些情况下很有用
+	/// 固定规则
 	/// </summary>
-	public void SyncDataVersion() {
-		this.DataProxy.SyncVersion();
+	public IFixedRules fixedRules() {
+		return FixedRules.Instance;
 	}
-//
-//	#endregion
-//
-//	#
-//
-//	region 固定规则
-//
-//	/// <summary>
-//	/// 固定规则
-//	/// </summary>
-//	public IFixedRules FixedRules
-//	{
-//        get
-//        {
-//            return DomainDriven.FixedRules.Instance;
-//        }
-//    }
-//
-//	/// <summary>
-//	/// 验证固定规则
-//	/// </summary>
-//	/// <returns></returns>
-//	public virtual ValidationResult
-//
-//	Validate()
-//    {
-//        return this.FixedRules.Validate(this);
-//    }
-//
-//	private static Func<Type, IEnumerable<IObjectValidator>> _getValidators = LazyIndexer.Init<Type, IEnumerable<IObjectValidator>>((objectType)=>
-//	{
-//		return ObjectValidatorAttribute.GetValidators(objectType);
-//	});
-//
-//	private IEnumerable<IObjectValidator> _validators;
-//
-//	/// <summary>
-//	/// 对象验证器
-//	/// </summary>
-//	public IEnumerable<IObjectValidator> Validators
-//	{
-//        get
-//        {
-//            if (_validators == null)
-//            {
-//                _validators = _getValidators(this.ObjectType);
-//            }
-//            return _validators;
-//        }
-//    }
-//
-//	#endregion
-//
-//	#
+
+	/**
+	 * 验证固定规则
+	 */
+	public ValidationResult validate() {
+		return this.fixedRules().validate(this);
+	}
+
+	/**
+	 * 对象验证器
+	 */
+	public Iterable<IObjectValidator> validators() {
+		return _meta.validators();
+	}
+
 //	region 执行上下文
 //
 //	private Dictionary<Guid, RunContext> _ctxs = new Dictionary<Guid, RunContext>();
@@ -546,25 +565,20 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 		return (T) value;
 	}
 
-//
-//	/// <summary>
-//	/// 当属性的值已经被加载，就获取数据，否则不获取
-//	/// </summary>
-//	/// <typeparam name="T"></typeparam>
-//	/// <param name="property"></param>
-//	/// <returns></returns>
-//	private bool TryGetValue<T>(
-//	DomainProperty property, ref
-//	T value)
-//	where T:class
-//	{
-//		if (this.DataProxy.IsLoaded(property)) {
-//			value = GetValue < T > (property);
-//			return true;
-//		}
-//		return false;
-//	}
-//
+	/**
+	 * 
+	 * 当属性的值已经被加载，就获取数据，否则不获取
+	 * 
+	 * @param property
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private <T> T tryGetValue(DomainProperty property) {
+		if (this.dataProxy().isLoaded(property)) {
+			return (T) getValue(property);
+		}
+		return null;
+	}
 
 	/**
 	 * 我们保证领域对象的读操作是线程安全的

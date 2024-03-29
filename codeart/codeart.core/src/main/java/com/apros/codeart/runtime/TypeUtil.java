@@ -64,6 +64,8 @@ public final class TypeUtil {
 
 	@SuppressWarnings("unchecked")
 	public static <T> T as(Object obj, Class<T> cls) {
+		if (obj == null)
+			return null;
 		if (cls.isInstance(obj))
 			return (T) obj;
 		return null;

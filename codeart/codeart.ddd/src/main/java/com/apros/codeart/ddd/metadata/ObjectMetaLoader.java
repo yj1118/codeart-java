@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 
 import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.IDomainObject;
+import com.apros.codeart.ddd.ObjectValidatorImpl;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
@@ -113,8 +114,9 @@ public final class ObjectMetaLoader {
 	private static ObjectMeta createByClass(Class<?> objectType) {
 		var name = objectType.getSimpleName();
 		var category = getCategory(objectType);
+		var validators = ObjectValidatorImpl.getValidators(objectType);
 
-		return new ObjectMeta(name, objectType, category);
+		return new ObjectMeta(name, objectType, category, validators);
 	}
 
 	private static DomainObjectCategory getCategory(Class<?> objectType) {

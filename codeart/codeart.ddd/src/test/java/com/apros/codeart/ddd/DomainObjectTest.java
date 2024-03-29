@@ -4,6 +4,7 @@ import org.junit.Test;
 
 public class DomainObjectTest {
 
+	@ObjectValidator(UserSpec.class)
 	public static class User {
 
 //		@StringLength(0, 100)
@@ -37,6 +38,16 @@ public class DomainObjectTest {
 
 //		@Property
 //		private DomainCollection<UserTeam> _temas;
+
+	}
+
+	private static class UserSpec extends ObjectValidatorImpl {
+
+		@Override
+		public void validate(IDomainObject obj, ValidationResult result) {
+			// TODO Auto-generated method stub
+
+		}
 
 	}
 

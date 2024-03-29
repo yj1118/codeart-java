@@ -6,7 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface PropertyValidator {
-	Class<? extends IPropertyValidator>[] value() default {}; // 用value就可以成为默认得设置
+@Target(ElementType.TYPE)
+public @interface ObjectValidator {
+	Class<? extends IObjectValidator>[] value() default {}; // 用value就可以成为默认得设置
 }

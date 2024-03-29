@@ -4,12 +4,12 @@ import java.util.regex.Pattern;
 
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.DomainProperty;
-import com.apros.codeart.ddd.PropertyValidator;
+import com.apros.codeart.ddd.PropertyValidatorImpl;
 import com.apros.codeart.ddd.ValidationResult;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.StringUtil;
 
-public class EmailValidator extends PropertyValidator {
+public class EmailValidator extends PropertyValidatorImpl {
 	private EmailValidator() {
 	}
 

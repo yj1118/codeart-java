@@ -15,7 +15,7 @@ import com.apros.codeart.ddd.metadata.ValueMeta;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ListUtil;
-import com.apros.codeart.util.SafeAccessAnn;
+import com.apros.codeart.util.MapList;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.base.Objects;
 
@@ -70,6 +70,10 @@ public class DomainProperty {
 	 */
 	public Class<?> declaringType() {
 		return _meta.declaringType();
+	}
+
+	public DomainPropertyCategory category() {
+		return _meta.category();
 	}
 
 	/**
@@ -183,14 +187,16 @@ public class DomainProperty {
 
 		var valueMeta = ValueMeta.createBy(isCollection, monotype, getDefaultValue);
 
-		var validators = getValidators(anns);
+		var validators = PropertyValidatorImpl.getValidators(anns);
 
 		var repositoryTip = getRepository(anns, declaringType);
 
 		var meta = new PropertyMeta(name, valueMeta, declaring, access.get(), access.set(), call, validators,
 				repositoryTip.lazy(), repositoryTip.loader());
 
-		return new DomainProperty(meta);
+		var property = new DomainProperty(meta);
+		addProperty(property);
+		return property;
 	}
 
 	public static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
@@ -287,34 +293,6 @@ public class DomainProperty {
 	}
 
 	/**
-	 * @param declaringType
-	 * @param propertyName
-	 * @return
-	 */
-	private static Iterable<IPropertyValidator> getValidators(Iterable<Annotation> anns) {
-
-		ArrayList<IPropertyValidator> validators = new ArrayList<>();
-
-		// 这里的规则是：
-		// 在领域属性上定义了的所有注解中，只要对应的注解上有 xxValidator的类，那么就是属性验证器
-		// 例如： Email 注解并且同时存在EmailValidator，那么我们就认为该属性需要通过EmailValidator验证
-
-		for (var ann : anns) {
-			var annName = ann.annotationType().getSimpleName();
-
-			var validatorType = TypeUtil.getClass(String.format("%sValidator", annName),
-					ann.annotationType().getClassLoader());
-			if (validatorType == null)
-				continue;
-
-			var validator = SafeAccessAnn.createSingleton(validatorType);
-			validators.add((IPropertyValidator) validator);
-		}
-
-		return validators;
-	}
-
-	/**
 	 * 
 	 * 获得属性与仓储有关的配置
 	 * 
@@ -335,7 +313,7 @@ public class DomainProperty {
 	}
 
 	/**
-	 * 获取领域属性定义的特性，这些特性可以标记在对象属性上，也可以标记在静态的领域属性字段上
+	 * 获取领域属性定义的特性，标记在静态的领域属性字段上
 	 * 
 	 * @param objectType
 	 * @param propertyName
@@ -363,4 +341,28 @@ public class DomainProperty {
 			throw propagate(e);
 		}
 	}
+
+	private static final MapList<Class<?>, DomainProperty> _propertis = new MapList<>(false);
+
+	/**
+	 * 
+	 * 添加领域属性到数据集中，新版中我们要确保 {@code objectType} 一定等于 {@code property.declaringType()}
+	 * 
+	 * @param objectType
+	 * @param property
+	 */
+	private static void addProperty(DomainProperty property) {
+		_propertis.put(property.declaringType(), property);
+	}
+
+	public static Iterable<DomainProperty> getProperties(Class<?> objectType) {
+		return _propertis.getValues(objectType);
+	}
+
+	public static DomainProperty getProperty(Class<?> objectType, String propertyName) {
+		return _propertis.getValue(objectType, (p) -> {
+			return p.name().equalsIgnoreCase(propertyName);
+		});
+	}
+
 }
