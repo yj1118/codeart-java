@@ -7,6 +7,14 @@ import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.SafeAccessAnn;
 
+/**
+ * 属性验证器支持两种写法：
+ *
+ * 1.注解式(Email/EmailValiator)
+ *
+ * 2.验证器类定义(PropertyValidator(XXXSpection.class))
+ *
+ */
 public abstract class PropertyValidatorImpl implements IPropertyValidator {
 
 	public void validate(IDomainObject domainObject, DomainProperty property, ValidationResult result) {
