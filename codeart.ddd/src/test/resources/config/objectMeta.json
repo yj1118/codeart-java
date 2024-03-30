@@ -1,0 +1,10 @@
+{
+	"user": {
+		"name": {
+			"length": [0,50],
+			"ascii": true,
+			"required":false,
+			"remove":true
+		}
+	}
+}
