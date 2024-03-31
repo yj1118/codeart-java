@@ -28,6 +28,16 @@
       <artifactId>guava</artifactId>
       <version>33.0.0-jre</version>
     </dependency>
+	<dependency>
+		<groupId>com.apros.codeart</groupId>
+		<artifactId>codeart</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</dependency>
+		<dependency>
+		<groupId>com.apros.codeart</groupId>
+		<artifactId>codeart.ddd</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</dependency>
   </dependencies>
 
   <build>

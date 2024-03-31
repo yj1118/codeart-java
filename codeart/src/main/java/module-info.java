@@ -1,6 +1,7 @@
 module codeart {
 	requires org.objectweb.asm;
 	requires com.google.common;
+	requires org.reflections;
 
 	exports com.apros.codeart;
 	exports com.apros.codeart.i18n;

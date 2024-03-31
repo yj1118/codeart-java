@@ -3,10 +3,18 @@ package com.apros.codeart.runtime;
 import static com.apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Method;
+import java.util.Set;
 import java.util.function.Function;
+
+import org.reflections.Reflections;
+import org.reflections.scanners.Scanners;
+import org.reflections.scanners.SubTypesScanner;
+import org.reflections.util.ClasspathHelper;
+import org.reflections.util.ConfigurationBuilder;
 
 import com.apros.codeart.bytecode.ClassGenerator;
 import com.apros.codeart.util.LazyIndexer;
+import com.apros.codeart.util.ListUtil;
 
 public final class Activator {
 	private Activator() {
@@ -62,8 +70,32 @@ public final class Activator {
 		} catch (Exception e) {
 			throw propagate(e);
 		}
-
 	}
+	
+	
+	/**
+	 * 
+	 * 找到实现了某个接口或继承了哪个类的所有类的类型
+	 * 
+	 * @param <T>
+	 * @param superType
+	 * @param archives
+	 * @return
+	 */
+	public static <T> Set<Class<? extends T>> getSubTypesOf(Class<T> superType, String...archives){
+		
+		var urls = ListUtil.mapMany(archives, (archive)->{
+			return ClasspathHelper.forPackage(archive);
+		});
+		
+		// 创建一个Reflections实例，指定要扫描的包
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setUrls(urls)
+                .setScanners(Scanners.SubTypes));
+
+        return reflections.getSubTypesOf(superType);
+	}
+	
 
 //	/// <summary>
 //	/// 创建实例，IL的实现，高效率

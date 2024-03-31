@@ -94,7 +94,16 @@ public final class ListUtil {
 		}
 		return list;
 	}
-
+	
+	public static <T, R> ArrayList<R> mapMany(T[] source, Function<T, Iterable<R>> selector) {
+		ArrayList<R> list = new ArrayList<R>(source.length);
+		for (T item : source) {
+			var items = selector.apply(item);
+			addRange(list,items);
+		}
+		return list;
+	}
+	
 	public static <T> T removeFirst(Iterable<T> source, Function<T, Boolean> predicate) {
 		var iterator = source.iterator();
 		while (iterator.hasNext()) {
