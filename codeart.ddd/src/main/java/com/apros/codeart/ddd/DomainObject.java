@@ -17,24 +17,16 @@ import com.apros.codeart.util.LazyIndexer;
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
-/// <summary>
-/// <para>我们保证领域对象的读操作是线程安全的,但是写操作（例如属性赋值等）不是线程安全的，如果需要并发控制请根据业务要求自行编写代码</para>
-/// <para>虽然写操作不是线程安全的，但是通过带锁查询可以有效的保证多线程安全，这包括以下约定：</para>
-/// <para>用QueryLevel.None加载的对象，请不要做更改对象状态的操作，仅用于读操作</para>
-/// <para>用QueryLevel.Single和QueryLevel.HoldSingle加载的对象，由当前线程独占，其他线程不可访问，因此对于当前线程来说可以安全的读写，由于独占可能会引起性能的下降，也可能引起死锁</para>
-/// <para>用QueryLevel.Mirroring加载的对象属于当前线程独立的对象，与其他线程没有交集，对于当前线程是可以安全的读写，性能较高，当需要在一个事务中处理多个根对象时必须使用该加载方式</para>
-/// <para>对于领域对象属性是否改变的约定：
-/// 1.如果属性为普通类型（int、string等基础类型）,根据值是否发生了改变来判定属性是否改变
-/// 2.如果属性为值对象类型（ValueObject）,根据ValueObject的值是否发生了改变来判定属性是否改变
-/// 3.如果属性为实体对象类型（EntityObject,EntityObjectPro,Aggregate）,只要赋值，属性就会发生改变；
-///   实体对象内部的属性发生改变，不影响外部属性的变化，因为他们的引用关系并没有被改变；
-/// 4.如果属性为实体对象类型的集合（ObjectCollection(EntityObject),ObjectCollection(EntityObjectPro),ObjectCollection(Aggregate)）,只要赋值，属性就会发生改变；
-///   单个实体对象内部的属性发生改变，不影响外部属性的变化，因为他们的引用关系并没有被改变；
-///   实体对象集合的成员（数量或者成员被替换了）发生了变化，那么属性被改变，因为集合代表的是引用对象和多个被引用对象之间的关系，集合成员变化了，代表引用关系也变化了
-/// </para>
-/// </summary>
-//public abstract class DomainObject implements System.Dynamic.DynamicObject, IDomainObject, INullProxy {
 /*
+ * 
+ * 对于领域对象属性是否改变的约定：
+1.如果属性为普通类型（int、string等基础类型）,根据值是否发生了改变来判定属性是否改变
+2.如果属性为值对象类型（ValueObject）,根据ValueObject的值是否发生了改变来判定属性是否改变
+3.如果属性为实体对象类型（EntityObject,EntityObjectPro,Aggregate）,只要赋值，属性就会发生改变；
+   实体对象内部的属性发生改变，不影响外部属性的变化，因为他们的引用关系并没有被改变；
+ 4.如果属性为实体对象类型的集合（ObjectCollection(EntityObject),ObjectCollection(EntityObjectPro),ObjectCollection(Aggregate)）,只要赋值，属性就会发生改变；
+   单个实体对象内部的属性发生改变，不影响外部属性的变化，因为他们的引用关系并没有被改变；
+   实体对象集合的成员（数量或者成员被替换了）发生了变化，那么属性被改变，因为集合代表的是引用对象和多个被引用对象之间的关系，集合成员变化了，代表引用关系也变化了
  * 
  * 要截获属性的set方法，可以自行定义setXXX方法，在方法内部调用xxx(value)来更新属性，并扩展逻辑
  * 新版中不在支持ProerptySet标签，因为用途不大，且写法并不够优美，还会代码烦人的调用链跟踪
@@ -119,8 +111,9 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 	 * @return
 	 */
 	public boolean isTrackPropertyChange() {
+		return !this.propertyChanged.isEmpty();
 		// 这里要看属性是否绑定了改变事件，稍后补充
-		return ObjectLogableAttribute.GetTip(this.ObjectType) != null;
+//		return ObjectLogableAttribute.GetTip(this.ObjectType) != null;
 	}
 
 //
@@ -202,7 +195,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 		}
 	}
 
-	private void LoadStateProperties() {
+	private void loadStateProperties() {
 		invokeProperties((obj) -> {
 			obj.LoadState();
 		});
@@ -222,24 +215,24 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 			_backupMachine.clearPropertyChanged(propertyName);
 	}
 
-	/**
-	 * 
-	 * 根据对比结果，设置属性是否被更改
-	 * 
-	 * @param <T>
-	 * @param property
-	 * @param oldValue
-	 * @param newValue
-	 * @return
-	 */
-	private <T> boolean setPropertyChanged(DomainProperty property, T oldValue, T newValue) {
-		// 要用Equals判断
-		if (Objects.equal(oldValue, newValue))
-			return false;
-		_machine.setPropertyChanged(property.name());
-		duplicateMachineSetPropertyChanged(property.name());
-		return true;
-	}
+//	/**
+//	 * 
+//	 * 根据对比结果，设置属性是否被更改
+//	 * 
+//	 * @param <T>
+//	 * @param property
+//	 * @param oldValue
+//	 * @param newValue
+//	 * @return
+//	 */
+//	private <T> boolean setPropertyChanged(DomainProperty property, T oldValue, T newValue) {
+//		// 要用Equals判断
+//		if (Objects.equal(oldValue, newValue))
+//			return false;
+//		_machine.setPropertyChanged(property.name());
+//		duplicateMachineSetPropertyChanged(property.name());
+//		return true;
+//	}
 
 	/**
 	 * 强制设置属性已被更改
@@ -394,6 +387,8 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 				}
 			}
 				break;
+			default:
+				break;
 			}
 		}
 	}
@@ -473,8 +468,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 
 	/**
 	 * 
-	 * 请保证更改对象状态时的并发安全 该方法虽然是公开的，但是
-	 * {@code property}都是由类内部定义的，所以获取值和设置值只能通过常规的属性操作，无法通过该方法
+	 * 该方法虽然是公开的，但是 {@code property} 都是由类内部定义的，所以获取值和设置值只能通过常规的属性操作，无法通过该方法
 	 * 
 	 * @param property
 	 * @param value
@@ -677,9 +671,6 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 			return new DomainObjectChangedEventArgs(this);
 		});
 	}
-//
-//	#
-//
 
 	protected void readOnlyCheckUp() {
 		if (this.isConstructing())
