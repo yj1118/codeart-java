@@ -3,10 +3,12 @@ package com.apros.codeart.runtime;
 import static com.apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.function.Function;
 
 import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
+import com.apros.codeart.util.Memoized;
 import com.apros.codeart.util.StringUtil;
 
 /**
@@ -30,14 +32,18 @@ public final class MethodUtil {
 
 	private static Function<Class<?>, Function<String, Iterable<Method>>> _getMethods = LazyIndexer.init((objCls) -> {
 		return LazyIndexer.init((methodName) -> {
-			Method[] methods = objCls.getDeclaredMethods();
-
-			return ListUtil.filter(methods, (m) -> {
-				return m.getName().equals(methodName);
-			});
+			return findMethods(objCls,methodName);
 		});
 	});
+	
+	private static Iterable<Method> findMethods(Class<?> objCls,String methodName){
+		Method[] methods = objCls.getDeclaredMethods();
 
+		return ListUtil.filter(methods, (m) -> {
+			return m.getName().equals(methodName);
+		});
+	}
+	
 	/**
 	 * resolve得到的方法，如果没有，则返回null,不会报错
 	 * 
@@ -46,7 +52,8 @@ public final class MethodUtil {
 	 * @param parameterTypes
 	 * @return
 	 */
-	public static Method resolveMemoized(Class<?> objCls, String methodName, Class<?>[] parameterTypes,
+	@Memoized
+	public static Method resolve(Class<?> objCls, String methodName, Class<?>[] parameterTypes,
 			Class<?> returnType) {
 
 		var methods = _getMethods.apply(objCls).apply(methodName);
@@ -80,7 +87,8 @@ public final class MethodUtil {
 	 * @param parameterTypes
 	 * @return
 	 */
-	public static Method resolveSlimMemoized(Class<?> objCls, String methodName, Class<?>... parameterTypes) {
+	@Memoized
+	public static Method resolveSlim(Class<?> objCls, String methodName, Class<?>... parameterTypes) {
 
 		var methods = _getMethods.apply(objCls).apply(methodName);
 
@@ -102,9 +110,20 @@ public final class MethodUtil {
 		return null;
 	}
 
-	public static Method resolveByNameMemoized(Class<?> objCls, String methodName) {
+	@Memoized
+	public static Method resolveByName(Class<?> objCls, String methodName) {
 
 		var methods = _getMethods.apply(objCls).apply(methodName);
 		return ListUtil.first(methods);
 	}
+	
+	public static Method resolveByNameOnce(Class<?> objCls, String methodName) {
+		var methods = findMethods(objCls,methodName);
+		return ListUtil.first(methods);
+	}
+	
+	public static boolean isStatic(Method method) {
+		return Modifier.isStatic(method.getModifiers());
+	}
+	
 }

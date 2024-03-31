@@ -65,13 +65,13 @@ final class SerializationMethodHelper {
 		switch (methodType) {
 		case SerializationMethodType.Serialize: {
 			if (type.isEnum()) {
-				method = MethodUtil.resolveSlimMemoized(IDTOWriter.class, "writeEnum", String.class, Enum.class);
+				method = MethodUtil.resolveSlim(IDTOWriter.class, "writeEnum", String.class, Enum.class);
 			} else {
 				String methodName = String.format("write%s", StringUtil.firstToUpper(type.getSimpleName()));
-				method = MethodUtil.resolveSlimMemoized(IDTOWriter.class, methodName, String.class, type);
+				method = MethodUtil.resolveSlim(IDTOWriter.class, methodName, String.class, type);
 				if ((method == null) && (!type.isPrimitive())) {
 					// 如果不是int、long等基础类型，而有可能是自定义类型，那么用以下代码得到方法
-					method = MethodUtil.resolveSlimMemoized(IDTOWriter.class, "writeObject", _writeObjectArgs);
+					method = MethodUtil.resolveSlim(IDTOWriter.class, "writeObject", _writeObjectArgs);
 				}
 			}
 
@@ -79,14 +79,14 @@ final class SerializationMethodHelper {
 		}
 		case SerializationMethodType.Deserialize: {
 			if (type.isEnum()) {
-				method = MethodUtil.resolveSlimMemoized(IDTOReader.class, "readEnum", String.class);
+				method = MethodUtil.resolveSlim(IDTOReader.class, "readEnum", String.class);
 			} else {
 				String methodName = String.format("read%s", StringUtil.firstToUpper(type.getSimpleName()));
-				method = MethodUtil.resolveSlimMemoized(IDTOReader.class, methodName, _readArgs);
+				method = MethodUtil.resolveSlim(IDTOReader.class, methodName, _readArgs);
 				if ((method == null) && (!type.isPrimitive())) {
 					// 如果不是int、long等基础类型，而有可能是自定义类型，那么用以下代码得到方法
 					// IDTOWriter.ReadObject<T>(string name);
-					method = MethodUtil.resolveSlimMemoized(IDTOReader.class, "readObject", _readArgs);
+					method = MethodUtil.resolveSlim(IDTOReader.class, "readObject", _readArgs);
 				}
 			}
 
@@ -108,7 +108,7 @@ final class SerializationMethodHelper {
 
 //	#endregion
 
-	private static final Method existMethod = MethodUtil.resolveSlimMemoized(IDTOReader.class, "exist", String.class);
+	private static final Method existMethod = MethodUtil.resolveSlim(IDTOReader.class, "exist", String.class);
 
 	/// <summary>
 	/// 根据类型得到序列化方法
@@ -207,7 +207,7 @@ final class SerializationMethodHelper {
 	}
 
 	public static void writeArray(MethodGenerator g, String dtoMemberName) {
-		var method = MethodUtil.resolveSlimMemoized(IDTOWriter.class, "writeArray", String.class);
+		var method = MethodUtil.resolveSlim(IDTOWriter.class, "writeArray", String.class);
 		var prmIndex = SerializationArgs.WriterIndex;
 
 		g.invoke(prmIndex, method, () -> {

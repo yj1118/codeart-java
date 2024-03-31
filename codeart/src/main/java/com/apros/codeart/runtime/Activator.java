@@ -2,6 +2,7 @@ package com.apros.codeart.runtime;
 
 import static com.apros.codeart.runtime.Util.propagate;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.function.Function;
@@ -95,6 +96,21 @@ public final class Activator {
 
         return reflections.getSubTypesOf(superType);
 	}
+	
+	public static <T> Set<Class<?>> getAnnotatedTypesOf(Class<? extends Annotation> annotation, String...archives){
+		
+		var urls = ListUtil.mapMany(archives, (archive)->{
+			return ClasspathHelper.forPackage(archive);
+		});
+		
+		// 创建一个Reflections实例，指定要扫描的包
+        Reflections reflections = new Reflections(new ConfigurationBuilder()
+                .setUrls(urls)
+                .setScanners(Scanners.TypesAnnotated));
+
+        return reflections.getTypesAnnotatedWith(annotation);
+	}
+	
 	
 
 //	/// <summary>

@@ -49,7 +49,7 @@ public class Repository {
 		var objectTip = ObjectRepositoryAnn.getTip(objectType, true);
 		var repositoryType = RepositoryFactory.getRepositoryType(objectTip.repositoryInterfaceType());
 
-		var method = MethodUtil.resolveByNameMemoized(repositoryType, methodName);
+		var method = MethodUtil.resolveByName(repositoryType, methodName);
 		if (method == null)
 			throw new DomainDrivenException(
 					Language.strings("NoDefineMethodFromRepository", repositoryType.getName(), methodName));
