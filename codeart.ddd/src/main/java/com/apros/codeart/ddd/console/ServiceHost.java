@@ -1,37 +1,36 @@
 package com.apros.codeart.ddd.console;
 
+import com.apros.codeart.App;
+
 public class ServiceHost {
-	internal static bool IsEnabled
-	{
-	    get;
-	    set;
+
+	private static boolean _isEnabled;
+
+	public static boolean isEnabled() {
+		return _isEnabled;
 	}
 
-
-	public static void Start(Action initialize = null)
-	{
-	    IsEnabled = false;
+	public static void Start() {
+		_isEnabled = false;
 
 //	    RPCEvents.ServerOpened += OnServerOpened;
 //	    RPCEvents.ServerError += OnServerError;
 //	    RPCEvents.ServerClosed += OnServerClosed;
 
-	    AppInitializer.Initialize();
+		App.initialize();
 
-	    if (initialize != null)
-	        initialize();
+		App.initialized();
 
-	    AppInitializer.Initialized();
+		Console.WriteLine(MQ.Strings.CloseServiceHost);
 
-	    Console.WriteLine(MQ.Strings.CloseServiceHost);
+		_isEnabled = true;
+		Console.ReadLine();
 
-	    IsEnabled = true;
-	    Console.ReadLine();
+		App.dispose();
 
+		App.disposed();
 
-	    AppInitializer.Cleanup();
-
-	    IsEnabled = false;
+		_isEnabled = false;
 	}
 
 //	private static void OnServerError(object sender, RPCEvents.ServerErrorArgs arg)

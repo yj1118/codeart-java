@@ -1,6 +1,6 @@
 package com.apros.codeart;
 
-public enum ActionPriority {
+enum ActionPriority {
 
 	/**
 	 * 低优先级
