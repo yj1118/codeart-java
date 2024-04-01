@@ -32,18 +32,18 @@ public final class MethodUtil {
 
 	private static Function<Class<?>, Function<String, Iterable<Method>>> _getMethods = LazyIndexer.init((objCls) -> {
 		return LazyIndexer.init((methodName) -> {
-			return findMethods(objCls,methodName);
+			return findMethods(objCls, methodName);
 		});
 	});
-	
-	private static Iterable<Method> findMethods(Class<?> objCls,String methodName){
+
+	private static Iterable<Method> findMethods(Class<?> objCls, String methodName) {
 		Method[] methods = objCls.getDeclaredMethods();
 
 		return ListUtil.filter(methods, (m) -> {
 			return m.getName().equals(methodName);
 		});
 	}
-	
+
 	/**
 	 * resolve得到的方法，如果没有，则返回null,不会报错
 	 * 
@@ -53,8 +53,7 @@ public final class MethodUtil {
 	 * @return
 	 */
 	@Memoized
-	public static Method resolve(Class<?> objCls, String methodName, Class<?>[] parameterTypes,
-			Class<?> returnType) {
+	public static Method resolve(Class<?> objCls, String methodName, Class<?>[] parameterTypes, Class<?> returnType) {
 
 		var methods = _getMethods.apply(objCls).apply(methodName);
 
@@ -116,14 +115,18 @@ public final class MethodUtil {
 		var methods = _getMethods.apply(objCls).apply(methodName);
 		return ListUtil.first(methods);
 	}
-	
+
 	public static Method resolveByNameOnce(Class<?> objCls, String methodName) {
-		var methods = findMethods(objCls,methodName);
+		var methods = findMethods(objCls, methodName);
 		return ListUtil.first(methods);
 	}
-	
+
 	public static boolean isStatic(Method method) {
 		return Modifier.isStatic(method.getModifiers());
 	}
-	
+
+	public static boolean isPublic(Method method) {
+		return Modifier.isPublic(method.getModifiers());
+	}
+
 }

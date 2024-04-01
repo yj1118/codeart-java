@@ -1,12 +1,17 @@
-package com.apros.codeart.ddd;
+package com.apros.codeart.ddd.launcher;
 
-public final class DomainHost {
+import com.apros.codeart.ddd.DomainDrivenException;
+import com.apros.codeart.ddd.metadata.MetadataLoader;
+import com.apros.codeart.i18n.Language;
+
+final class DomainHost {
 
 	private DomainHost() {
-		
+
 	}
 
 	private static boolean _initialized = false;
+
 //
 //	/// <summary>
 //	/// <para>初始化与领域对象相关的行为，由于许多行为是第一次使用对象的时候才触发，这样会导致没有使用对象却需要一些额外特性的时候缺少数据</para>
@@ -14,8 +19,12 @@ public final class DomainHost {
 //	/// </summary>
 //	internal
 //
-//	static void Initialize() {
-//		if(_initialized)return;_initialized=true;
+	public static void initialize() {
+		if (_initialized)
+			return;
+		_initialized = true;
+
+		MetadataLoader.load();
 
 //		// 以下代码执行顺序不能变
 //		TypeIndex=GetTypeIndex();
@@ -38,7 +47,7 @@ public final class DomainHost {
 //
 //		// 领域事件宿主的初始化
 //		EventHost.Initialize();
-//	}
+	}
 //
 //	/// <summary>
 //	/// 初始化之后
@@ -57,15 +66,14 @@ public final class DomainHost {
 //		EventHost.Cleanup();
 //	}
 //
-//	/// <summary>
-//	/// 检查领域对象是否已被初始化了
-//	/// </summary>
-//	internal
-//
-//	static void CheckInitialized() {
-//		if (!_initialized) {
-//			throw new DomainDrivenException(Strings.UninitializedDomainObject);
-//		}
-//	}
-	
+
+	/**
+	 * 检查领域对象是否已被初始化了
+	 */
+	static void checkInitialized() {
+		if (!_initialized) {
+			throw new DomainDrivenException(Language.strings("codeart.ddd", "UninitializedDomainObject"));
+		}
+	}
+
 }

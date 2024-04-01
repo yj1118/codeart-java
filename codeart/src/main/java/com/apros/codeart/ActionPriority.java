@@ -1,19 +1,19 @@
 package com.apros.codeart;
 
-enum ActionPriority {
+public enum ActionPriority {
 
 	/**
 	 * 低优先级
 	 */
-	Low((byte)1),
+	Low((byte) 1),
 	/// <summary>
 	/// 用户使用的中等优先级
 	/// </summary>
-	User((byte)2),
+	User((byte) 2),
 	/// <summary>
 	/// 高优先级
 	/// </summary>
-	High((byte)3);
+	High((byte) 3);
 
 	private final byte _value;
 

@@ -29,7 +29,8 @@ public final class ServiceHost {
 //	    RPCEvents.ServerError += OnServerError;
 //	    RPCEvents.ServerClosed += OnServerClosed;
 
-		App.initialize("subsystem", "service");
+		// 要从框架/子系统/服务宿主 3大块里找定义
+		App.initialize("codeart", "subsystem", "service");
 
 		if (initialize != null)
 			initialize.run();
