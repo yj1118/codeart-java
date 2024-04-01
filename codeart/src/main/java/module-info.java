@@ -11,4 +11,5 @@ module codeart {
 	exports com.apros.codeart.dto;
 	exports com.apros.codeart.dto.serialization;
 
+	opens codeart;
 }

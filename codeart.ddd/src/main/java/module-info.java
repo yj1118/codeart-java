@@ -5,4 +5,6 @@ module codeart.ddd {
 	exports com.apros.codeart.ddd;
 	exports com.apros.codeart.ddd.launcher;
 	exports com.apros.codeart.ddd.console;
+
+	opens codeart.ddd;
 }
