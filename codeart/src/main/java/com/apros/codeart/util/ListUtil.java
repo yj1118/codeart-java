@@ -94,16 +94,16 @@ public final class ListUtil {
 		}
 		return list;
 	}
-	
+
 	public static <T, R> ArrayList<R> mapMany(T[] source, Function<T, Iterable<R>> selector) {
 		ArrayList<R> list = new ArrayList<R>(source.length);
 		for (T item : source) {
 			var items = selector.apply(item);
-			addRange(list,items);
+			addRange(list, items);
 		}
 		return list;
 	}
-	
+
 	public static <T> T removeFirst(Iterable<T> source, Function<T, Boolean> predicate) {
 		var iterator = source.iterator();
 		while (iterator.hasNext()) {
@@ -117,18 +117,41 @@ public final class ListUtil {
 	}
 
 	public static <T> void addRange(AbstractList<T> source, Iterable<T> collection) {
+		addRange(source, collection, false);
+	}
+
+	public static <T> void addRange(AbstractList<T> source, Iterable<T> collection, boolean distinct) {
 		if (collection == null)
 			return;
-		for (T item : collection) {
-			source.add(item);
+		if (distinct) {
+			for (T item : collection) {
+				if (!source.contains(item))
+					source.add(item);
+			}
+		} else {
+			for (T item : collection) {
+				source.add(item);
+			}
 		}
+
 	}
 
 	public static <T> void addRange(AbstractList<T> source, T[] collection) {
+		addRange(source, collection, false);
+	}
+
+	public static <T> void addRange(AbstractList<T> source, T[] collection, boolean distinct) {
 		if (collection == null)
 			return;
-		for (T item : collection) {
-			source.add(item);
+		if (distinct) {
+			for (T item : collection) {
+				if (!source.contains(item))
+					source.add(item);
+			}
+		} else {
+			for (T item : collection) {
+				source.add(item);
+			}
 		}
 	}
 

@@ -31,10 +31,9 @@ public final class App {
 			if (_process_pre_start_completed)
 				return;
 			_process_pre_start_completed = true;
-			_archives = archives;
+			_archives = AppConfig.mergeArchives(archives);
 			process_pre_start();
 		}
-
 	}
 
 	private static void process_pre_start() {

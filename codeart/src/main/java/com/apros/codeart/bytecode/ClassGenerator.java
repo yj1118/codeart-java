@@ -122,7 +122,6 @@ public final class ClassGenerator implements AutoCloseable {
 		try {
 			byte[] bytes = this.toBytes();
 			ClassLoaderImpl classLoader = new ClassLoaderImpl(bytes);
-//			var l = Thread.currentThread().getContextClassLoader();
 			return classLoader.loadClass(_className);
 		} catch (Exception e) {
 			throw propagate(e);

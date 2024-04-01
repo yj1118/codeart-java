@@ -107,6 +107,14 @@ public class DTObject implements INullProxy {
 		return (Boolean) getValue(findExp, defaultValue, false);
 	}
 
+	public Iterable<String> getStrings(String findExp) {
+		return this.getValues(String.class, findExp, null, false);
+	}
+
+	public Iterable<String> getStrings(String findExp, boolean throwError) {
+		return this.getValues(String.class, findExp, null, throwError);
+	}
+
 //	public Iterable<Long> getLongRefs(String findExp) {
 //		return this.getValues(Long.class, findExp);
 //	}
@@ -567,12 +575,12 @@ public class DTObject implements INullProxy {
 //		return getValues(itemClass, findExp, null, true);
 //	}
 //
-//	private <T> Iterable<T> getValues(Class<T> itemClass, String findExp, T itemDefaultValue, boolean throwError) {
-//		DTEList entity = find(DTEList.class, findExp, throwError);
-//		if (entity == null)
-//			return null;
-//		return entity.getValues(itemClass, itemDefaultValue, throwError);
-//	}
+	private <T> Iterable<T> getValues(Class<T> itemClass, String findExp, T itemDefaultValue, boolean throwError) {
+		DTEList entity = find(DTEList.class, findExp, throwError);
+		if (entity == null)
+			return ListUtil.empty();
+		return entity.getValues(itemClass, itemDefaultValue, throwError);
+	}
 
 	/**
 	 * 如果不存在findExp对应的列表，那么创建

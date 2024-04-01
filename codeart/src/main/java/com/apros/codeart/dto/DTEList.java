@@ -15,6 +15,7 @@ import java.util.function.Function;
 
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ListUtil;
+import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 
 final class DTEList extends DTEntity implements Iterable<DTObject> {
@@ -296,12 +297,12 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 		return Collections.unmodifiableList(_items);
 	}
 
-//	@SuppressWarnings("unchecked")
-//	public <T> Iterable<T> getValues(Class<T> cls, T defaultValue, boolean throwError) {
-//		return ListUtil.map(_items, (t) -> {
-//			return (T) t.getValue(StringUtil.empty(), defaultValue, throwError);
-//		});
-//	}
+	@SuppressWarnings("unchecked")
+	public <T> Iterable<T> getValues(Class<T> cls, T defaultValue, boolean throwError) {
+		return ListUtil.map(_items, (t) -> {
+			return (T) t.getValue(StringUtil.empty(), defaultValue, throwError);
+		});
+	}
 
 	public int size() {
 		return _items.size();
