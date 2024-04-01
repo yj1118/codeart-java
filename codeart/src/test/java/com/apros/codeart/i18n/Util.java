@@ -13,39 +13,39 @@ public class Util {
 		// 两种区域设置的英文
 		{
 			Locale.setDefault(Locale.ENGLISH);
-			assertEquals(en, strings(key));
+			assertEquals(en, strings("codeart", key));
 
 			Locale.setDefault(Locale.US);
-			assertEquals(en, strings(key));
+			assertEquals(en, strings("codeart", key));
 		}
 
 		// 两种区域设置的中文
 		{
 			Locale.setDefault(Locale.CHINESE);
-			assertEquals(zh, strings(key));
+			assertEquals(zh, strings("codeart", key));
 
 			Locale.setDefault(Locale.CHINA);
-			assertEquals(zh, strings(key));
+			assertEquals(zh, strings("codeart", key));
 		}
 
 		// 两种区域设置的日文
 		{
 			Locale.setDefault(Locale.JAPANESE);
-			assertEquals(ja, strings(key));
+			assertEquals(ja, strings("codeart", key));
 
 			Locale.setDefault(Locale.JAPAN);
-			assertEquals(ja, strings(key));
+			assertEquals(ja, strings("codeart", key));
 		}
 
 		// 测试默认的本地设置下，各种语言的指定读取是否正确
 		{
 			Locale.setDefault(current);
-			assertEquals(en, strings(Locale.ENGLISH, key));
-			assertEquals(en, strings(Locale.US, key));
-			assertEquals(zh, strings(Locale.CHINESE, key));
-			assertEquals(zh, strings(Locale.CHINA, key));
-			assertEquals(ja, strings(Locale.JAPANESE, key));
-			assertEquals(ja, strings(Locale.JAPAN, key));
+			assertEquals(en, strings(Locale.ENGLISH, "codeart", key));
+			assertEquals(en, strings(Locale.US, "codeart", key));
+			assertEquals(zh, strings(Locale.CHINESE, "codeart", key));
+			assertEquals(zh, strings(Locale.CHINA, "codeart", key));
+			assertEquals(ja, strings(Locale.JAPANESE, "codeart", key));
+			assertEquals(ja, strings(Locale.JAPAN, "codeart", key));
 		}
 	}
 
@@ -56,39 +56,39 @@ public class Util {
 		// 两种区域设置的英文
 		{
 			Locale.setDefault(Locale.ENGLISH);
-			assertEquals(en, strings(key, args));
+			assertEquals(en, strings("codeart", key, args));
 
 			Locale.setDefault(Locale.US);
-			assertEquals(en, strings(key, args));
+			assertEquals(en, strings("codeart", key, args));
 		}
 
 		// 两种区域设置的中文
 		{
 			Locale.setDefault(Locale.CHINESE);
-			assertEquals(zh, strings(key, args));
+			assertEquals(zh, strings("codeart", key, args));
 
 			Locale.setDefault(Locale.CHINA);
-			assertEquals(zh, strings(key, args));
+			assertEquals(zh, strings("codeart", key, args));
 		}
 
 		// 两种区域设置的日文
 		{
 			Locale.setDefault(Locale.JAPANESE);
-			assertEquals(ja, strings(key, args));
+			assertEquals(ja, strings("codeart", key, args));
 
 			Locale.setDefault(Locale.JAPAN);
-			assertEquals(ja, strings(key, args));
+			assertEquals(ja, strings("codeart", key, args));
 		}
 
 		// 测试默认的本地设置下，各种语言的指定读取是否正确
 		{
 			Locale.setDefault(current);
-			assertEquals(en, strings(Locale.ENGLISH, key, args));
-			assertEquals(en, strings(Locale.US, key, args));
-			assertEquals(zh, strings(Locale.CHINESE, key, args));
-			assertEquals(zh, strings(Locale.CHINA, key, args));
-			assertEquals(ja, strings(Locale.JAPANESE, key, args));
-			assertEquals(ja, strings(Locale.JAPAN, key, args));
+			assertEquals(en, strings(Locale.ENGLISH, "codeart", key, args));
+			assertEquals(en, strings(Locale.US, "codeart", key, args));
+			assertEquals(zh, strings(Locale.CHINESE, "codeart", key, args));
+			assertEquals(zh, strings(Locale.CHINA, "codeart", key, args));
+			assertEquals(ja, strings(Locale.JAPANESE, "codeart", key, args));
+			assertEquals(ja, strings(Locale.JAPAN, "codeart", key, args));
 		}
 	}
 }

@@ -108,7 +108,7 @@ final class ResidentItem<T> {
 	 */
 	IPoolItem<T> borrow(int poolVersion) throws PoolingException {
 		if (_isBorrowed)
-			throw new PoolingException(strings("RepeatBorrowingPoolItem", _owner.getClass().getName()));
+			throw new PoolingException(strings("codeart", "RepeatBorrowingPoolItem", _owner.getClass().getName()));
 
 		_isBorrowed = true;
 		setPoolVersionWhenBorrowed(poolVersion);
@@ -134,7 +134,7 @@ final class ResidentItem<T> {
 	 */
 	public void back() {
 		if (!_isBorrowed)
-			throw new PoolingException(strings("CannotReturnPoolItem", _owner.getClass().getName()));
+			throw new PoolingException(strings("codeart", "CannotReturnPoolItem", _owner.getClass().getName()));
 		_isBorrowed = false;
 		_lastUsedTime = Instant.now(); // 更新最后一次使用的时间
 		++_useCount;

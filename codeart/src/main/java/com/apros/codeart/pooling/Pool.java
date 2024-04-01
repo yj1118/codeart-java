@@ -164,7 +164,7 @@ public final class Pool<T> implements AutoCloseable {
 
 	private void checkDisposed() {
 		if (_isDisposed)
-			throw new IllegalStateException(strings("PoolDisposed", this.getClass().getName()));
+			throw new IllegalStateException(strings("codeart", "PoolDisposed", this.getClass().getName()));
 	}
 
 	public IPoolItem<T> borrow() {
@@ -212,10 +212,10 @@ public final class Pool<T> implements AutoCloseable {
 				return borrowedItem;
 			} catch (Exception e) {
 				decrementBorrowedCount();// 如果出错，则本次借出失败，减少一次借出的数量(因为之前++_borrowedCount)
-				throw new PoolingException(strings("BorrowPoolItemFailed", this.getClass().getName()), e);
+				throw new PoolingException(strings("codeart", "BorrowPoolItemFailed", this.getClass().getName()), e);
 			}
 		} catch (Exception e) {
-			throw new PoolingException(strings("BorrowPoolItemFailed", this.getClass().getName()), e);
+			throw new PoolingException(strings("codeart", "BorrowPoolItemFailed", this.getClass().getName()), e);
 		} finally {
 			if (expiredItems != null) {
 				for (var item : expiredItems) {
@@ -429,7 +429,7 @@ public final class Pool<T> implements AutoCloseable {
 			if (disposableObject != null)
 				disposableObject.close();
 		} catch (Exception e) {
-			throw new PoolingException(strings("DisposePoolItemFailed", this.getClass().getName()), e);
+			throw new PoolingException(strings("codeart", "DisposePoolItemFailed", this.getClass().getName()), e);
 		}
 	}
 

@@ -219,7 +219,8 @@ class EntityDeserializer {
 		public static boolean isList(StringSegment code) {
 			if (code.startsWith("[")) {
 				if (!code.endsWith("]"))
-					throw new CodeFormatErrorException(strings("JSONCodeBracketsError", code.toString(), "[", "]"));
+					throw new CodeFormatErrorException(
+							strings("codeart", "JSONCodeBracketsError", code.toString(), "[", "]"));
 				return true;
 			}
 			return false;
@@ -228,7 +229,8 @@ class EntityDeserializer {
 		public static boolean isObject(StringSegment code) {
 			if (code.startsWith("{")) {
 				if (!code.endsWith("}"))
-					throw new CodeFormatErrorException(strings("JSONCodeBracketsError", code.toString(), "{", "}"));
+					throw new CodeFormatErrorException(
+							strings("codeart", "JSONCodeBracketsError", code.toString(), "{", "}"));
 				return true;
 			}
 			return false;

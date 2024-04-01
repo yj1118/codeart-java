@@ -116,10 +116,10 @@ public final class TypeMetadata {
 		var entryName = e.getName(); // 条目名称
 		String value = e.getString();
 		if (StringUtil.isNullOrEmpty(value))
-			throw new IllegalStateException(Language.strings("DTONotSpecifyType", getPathName(entryName)));
+			throw new IllegalStateException(Language.strings("codeart", "DTONotSpecifyType", getPathName(entryName)));
 		value = StringUtil.trim(value);
 		if (StringUtil.isNullOrEmpty(value))
-			throw new IllegalStateException(Language.strings("DTONotSpecifyType", getPathName(entryName)));
+			throw new IllegalStateException(Language.strings("codeart", "DTONotSpecifyType", getPathName(entryName)));
 
 		TypeEntry target = this.getIndex().get(value);
 		if (target != null) {
@@ -155,9 +155,9 @@ public final class TypeMetadata {
 		var name = e.getName(); // 条目名称
 		String typeName = getPathName(name);
 		if (e.getItems().size() == 0)
-			throw new IllegalStateException(Language.strings("DTONotSpecifyType", typeName));
+			throw new IllegalStateException(Language.strings("codeart", "DTONotSpecifyType", typeName));
 		if (e.getItems().size() > 1)
-			throw new IllegalStateException(Language.strings("DTOListTypeCountError", typeName));
+			throw new IllegalStateException(Language.strings("codeart", "DTOListTypeCountError", typeName));
 
 		var metadataCode = getItemMetadataCode(typeName, e.getItems().get(0));
 		return new ListEntry(this, name, typeName, metadataCode);

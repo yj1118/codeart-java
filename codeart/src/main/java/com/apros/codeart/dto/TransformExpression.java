@@ -32,7 +32,7 @@ abstract class TransformExpression {
 			return new RetainExpression(transformString);
 		}
 
-		throw new IllegalArgumentException(Language.strings("TransformExpressionError"));
+		throw new IllegalArgumentException(Language.strings("codeart", "TransformExpressionError"));
 	});
 
 	public static TransformExpression create(String transformString) {

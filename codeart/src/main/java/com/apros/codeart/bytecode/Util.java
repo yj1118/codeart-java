@@ -23,7 +23,7 @@ final class Util {
 			else if (type == double.class)
 				return Opcodes.DLOAD;
 
-			throw new IllegalArgumentException(strings("UnknownException"));
+			throw new IllegalArgumentException(strings("codeart", "UnknownException"));
 		}
 	}
 }

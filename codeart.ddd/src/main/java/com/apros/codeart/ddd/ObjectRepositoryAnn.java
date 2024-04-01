@@ -35,8 +35,7 @@ class ObjectRepositoryAnn {
 		return _closeMultiTenancy;
 	}
 
-	public ObjectRepositoryAnn(Class<?> objectType, Class<?> repositoryInterfaceType,
-			boolean closeMultiTenancy) {
+	public ObjectRepositoryAnn(Class<?> objectType, Class<?> repositoryInterfaceType, boolean closeMultiTenancy) {
 		_objectType = objectType;
 		_repositoryInterfaceType = repositoryInterfaceType;
 		_closeMultiTenancy = closeMultiTenancy;
@@ -45,7 +44,8 @@ class ObjectRepositoryAnn {
 	public static ObjectRepositoryAnn getTip(Class<?> objectType, boolean checkUp) {
 		var attr = _getTip.apply(objectType);
 		if (attr == null && checkUp)
-			throw new DomainDrivenException(Language.strings("NotDefinedObjectRepository", objectType.getName()));
+			throw new DomainDrivenException(
+					Language.strings("codeart.ddd", "NotDefinedObjectRepository", objectType.getName()));
 		return attr;
 	}
 

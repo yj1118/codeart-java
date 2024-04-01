@@ -241,7 +241,7 @@ final class DTEValue extends DTEntity {
 	public void load(DTEntity entity) {
 		var dv = TypeUtil.as(entity, DTEValue.class);
 		if (dv == null)
-			throw new IllegalArgumentException(strings("TypeMismatch"));
+			throw new IllegalArgumentException(strings("codeart", "TypeMismatch"));
 		this._valueCode = dv._valueCode;
 		this._valueCodeIsString = dv._valueCodeIsString;
 		this._value = dv._value;

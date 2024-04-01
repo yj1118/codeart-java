@@ -61,7 +61,7 @@ public class DTObject implements INullProxy {
 
 	private void validateReadOnly() {
 		if (_isReadOnly)
-			throw new IllegalStateException(strings("DTOReadOnly"));
+			throw new IllegalStateException(strings("codeart", "DTOReadOnly"));
 	}
 
 	DTObject(DTEObject root, boolean isReadOnly) {
@@ -378,7 +378,7 @@ public class DTObject implements INullProxy {
 
 				var parent = as(e.getParent(), DTEObject.class);
 				if (parent == null)
-					throw new IllegalStateException(strings("DTOExpressionError", findExp));
+					throw new IllegalStateException(strings("codeart", "DTOExpressionError", findExp));
 
 				var query = QueryExpression.create(e.getName());
 				parent.setMember(query, (name) -> {
@@ -432,7 +432,7 @@ public class DTObject implements INullProxy {
 
 				var parent = as(e.getParent(), DTEObject.class);
 				if (parent == null)
-					throw new IllegalStateException(strings("DTOExpressionError", findExp));
+					throw new IllegalStateException(strings("codeart", "DTOExpressionError", findExp));
 
 				var query = QueryExpression.create(e.getName());
 				parent.setMember(query, (name) -> {
@@ -518,7 +518,7 @@ public class DTObject implements INullProxy {
 
 		if (entity == null) {
 			if (throwError)
-				throw new IllegalStateException(strings("DTOEntityNotFound", findExp));
+				throw new IllegalStateException(strings("codeart", "DTOEntityNotFound", findExp));
 			return null;
 		}
 		return entity;
@@ -530,7 +530,7 @@ public class DTObject implements INullProxy {
 			return null;
 		T entity = as(e, cls);
 		if (entity == null && throwError)
-			throw new IllegalStateException(strings("DTOMemberNotMatch", findExp, cls.getName()));
+			throw new IllegalStateException(strings("codeart", "DTOMemberNotMatch", findExp, cls.getName()));
 		return entity;
 	}
 
@@ -540,7 +540,7 @@ public class DTObject implements INullProxy {
 		var es = _root.finds(query);
 
 		if (Iterables.size(es) == 0 && throwError) {
-			throw new IllegalStateException(strings("DTOEntityNotFound", findExp));
+			throw new IllegalStateException(strings("codeart", "DTOEntityNotFound", findExp));
 		}
 		return es;
 	}
@@ -1068,7 +1068,7 @@ public class DTObject implements INullProxy {
 	public void transform(String express, Function<Object, Object> transformValue) {
 		AssignExpression exp = TypeUtil.as(AssignExpression.create(express), AssignExpression.class);
 		if (exp == null)
-			throw new IllegalArgumentException(Language.strings("ExpressionError", express));
+			throw new IllegalArgumentException(Language.strings("codeart", "ExpressionError", express));
 		exp.execute(this, transformValue);
 	}
 

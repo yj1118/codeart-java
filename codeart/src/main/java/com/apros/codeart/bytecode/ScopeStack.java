@@ -55,7 +55,7 @@ final class ScopeStack {
 
 	private CodeScope _enter() {
 		StackAssert.assertClean(_owner, () -> {
-			return strings("EnterScopeStackNotEmpty");
+			return strings("codeart", "EnterScopeStackNotEmpty");
 		});
 
 		var scope = new CodeScope(_owner);
@@ -70,7 +70,7 @@ final class ScopeStack {
 
 	public void exit() {
 		StackAssert.assertClean(_owner, () -> {
-			return strings("ExitScopeStackNotEmpty");
+			return strings("codeart", "ExitScopeStackNotEmpty");
 		});
 
 		_owner.visitor().visitLabel(_current.getEndLabel());
@@ -141,7 +141,7 @@ final class ScopeStack {
 			if (local != null)
 				return local;
 		}
-		throw new IllegalArgumentException(strings("VariableNotFound", name));
+		throw new IllegalArgumentException(strings("codeart", "VariableNotFound", name));
 	}
 
 	static class CodeScope implements AutoCloseable {

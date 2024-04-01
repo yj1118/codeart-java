@@ -23,7 +23,7 @@ final class StackAssert {
 	public static void assertClean(MethodGenerator g) {
 		if (g.evalStack().size() > 0) {
 			g.broken();
-			throw new IllegalArgumentException(Language.strings("StackNotEmpty"));
+			throw new IllegalArgumentException(Language.strings("codeart", "StackNotEmpty"));
 		}
 	}
 

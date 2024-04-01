@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 import org.reflections.Reflections;
 import org.reflections.scanners.Scanners;
-import org.reflections.scanners.SubTypesScanner;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
@@ -72,8 +71,7 @@ public final class Activator {
 			throw propagate(e);
 		}
 	}
-	
-	
+
 	/**
 	 * 
 	 * 找到实现了某个接口或继承了哪个类的所有类的类型
@@ -83,35 +81,31 @@ public final class Activator {
 	 * @param archives
 	 * @return
 	 */
-	public static <T> Set<Class<? extends T>> getSubTypesOf(Class<T> superType, String...archives){
-		
-		var urls = ListUtil.mapMany(archives, (archive)->{
+	public static <T> Set<Class<? extends T>> getSubTypesOf(Class<T> superType, String... archives) {
+
+		var urls = ListUtil.mapMany(archives, (archive) -> {
 			return ClasspathHelper.forPackage(archive);
 		});
-		
-		// 创建一个Reflections实例，指定要扫描的包
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .setUrls(urls)
-                .setScanners(Scanners.SubTypes));
 
-        return reflections.getSubTypesOf(superType);
+		// 创建一个Reflections实例，指定要扫描的包
+		Reflections reflections = new Reflections(
+				new ConfigurationBuilder().setUrls(urls).setScanners(Scanners.SubTypes));
+
+		return reflections.getSubTypesOf(superType);
 	}
-	
-	public static <T> Set<Class<?>> getAnnotatedTypesOf(Class<? extends Annotation> annotation, String...archives){
-		
-		var urls = ListUtil.mapMany(archives, (archive)->{
+
+	public static <T> Set<Class<?>> getAnnotatedTypesOf(Class<? extends Annotation> annotation, String... archives) {
+
+		var urls = ListUtil.mapMany(archives, (archive) -> {
 			return ClasspathHelper.forPackage(archive);
 		});
-		
-		// 创建一个Reflections实例，指定要扫描的包
-        Reflections reflections = new Reflections(new ConfigurationBuilder()
-                .setUrls(urls)
-                .setScanners(Scanners.TypesAnnotated));
 
-        return reflections.getTypesAnnotatedWith(annotation);
+		// 创建一个Reflections实例，指定要扫描的包
+		Reflections reflections = new Reflections(
+				new ConfigurationBuilder().setUrls(urls).setScanners(Scanners.TypesAnnotated));
+
+		return reflections.getTypesAnnotatedWith(annotation);
 	}
-	
-	
 
 //	/// <summary>
 //	/// 创建实例，IL的实现，高效率

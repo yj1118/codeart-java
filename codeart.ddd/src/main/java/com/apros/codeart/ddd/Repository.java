@@ -51,8 +51,8 @@ public class Repository {
 
 		var method = MethodUtil.resolveByName(repositoryType, methodName);
 		if (method == null)
-			throw new DomainDrivenException(
-					Language.strings("NoDefineMethodFromRepository", repositoryType.getName(), methodName));
+			throw new DomainDrivenException(Language.strings("codeart.ddd", "NoDefineMethodFromRepository",
+					repositoryType.getName(), methodName));
 		return method;
 	}
 

@@ -97,7 +97,8 @@ final class SerializationMethodHelper {
 		}
 
 		if (method == null) {
-			throw new IllegalArgumentException(strings("NotFoundDTOSerializationMethod", TypeUtil.resolveName(type)));
+			throw new IllegalArgumentException(
+					strings("codeart", "NotFoundDTOSerializationMethod", TypeUtil.resolveName(type)));
 		}
 		return method;
 
@@ -156,7 +157,7 @@ final class SerializationMethodHelper {
 			if (typeName == IDTOReader.class.getName())
 				return SerializationArgs.ReaderIndex;
 		}
-		throw new IllegalArgumentException(strings("NotFoundParameterIndex", typeName));
+		throw new IllegalArgumentException(strings("codeart", "NotFoundParameterIndex", typeName));
 	}
 
 	/// <summary>

@@ -63,7 +63,7 @@ public final class DTEObject extends DTEntity {
 	public void load(DTEntity entity) {
 		var o = TypeUtil.as(entity, DTEObject.class);
 		if (o == null)
-			throw new IllegalArgumentException(strings("TypeMismatch"));
+			throw new IllegalArgumentException(strings("codeart", "TypeMismatch"));
 
 		var targetMembers = o.getMembers();
 		var targetSize = Iterables.size(targetMembers);

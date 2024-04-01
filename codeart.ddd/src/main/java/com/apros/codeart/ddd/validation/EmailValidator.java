@@ -28,7 +28,8 @@ public class EmailValidator extends PropertyValidatorImpl {
 			return; // 是否能为空的验证由别的验证器处理
 
 		if (!isMatch(value))
-			result.append(property.name(), "email", Language.strings("IncorrectEmailFormat", property.call()));
+			result.append(property.name(), "email",
+					Language.strings("codeart.ddd", "IncorrectEmailFormat", property.call()));
 
 	}
 

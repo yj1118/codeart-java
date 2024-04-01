@@ -55,7 +55,8 @@ class RepositoryFactory {
 	private static Function<Class<?>, Object> _cache = LazyIndexer.init((repositoryInterfaceType) -> {
 		var repository = createRepositoryImpl(repositoryInterfaceType);
 		if (repository == null)
-			throw new DomainDrivenException(Language.strings("NotFoundRepository", repositoryInterfaceType.getName()));
+			throw new DomainDrivenException(
+					Language.strings("codeart.ddd", "NotFoundRepository", repositoryInterfaceType.getName()));
 		return repository;
 	});
 

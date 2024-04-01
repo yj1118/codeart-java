@@ -50,13 +50,15 @@ public class ObjectMeta {
 	public PropertyMeta findProperty(String propertyName) {
 		var dp = ListUtil.find(_properties, (p) -> p.name().equalsIgnoreCase(propertyName));
 		if (dp == null)
-			throw new DomainDrivenException(Language.strings("NotFoundDomainProperty", _name, propertyName));
+			throw new DomainDrivenException(
+					Language.strings("codeart.ddd", "NotFoundDomainProperty", _name, propertyName));
 		return dp;
 	}
 
 	void addProperty(PropertyMeta property) {
 		if (findProperty(property.name()) != null)
-			throw new DomainDrivenException(Language.strings("RepeatedDomainProperty", _name, property.name()));
+			throw new DomainDrivenException(
+					Language.strings("codeart.ddd", "RepeatedDomainProperty", _name, property.name()));
 		_properties.add(property);
 
 	}

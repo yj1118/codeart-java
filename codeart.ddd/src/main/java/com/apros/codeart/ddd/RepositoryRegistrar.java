@@ -51,11 +51,12 @@ final class RepositoryRegistrar {
 	public static <T extends IRepository> void register(Class<?> repositoryInterfaceType, T repository) {
 		var interfaceType = repositoryInterfaceType;
 		if (_singletons.containsKey(interfaceType))
-			throw new DomainDrivenException(Language.strings("RepeateRepository", repositoryInterfaceType.getName()));
+			throw new DomainDrivenException(
+					Language.strings("codeart.ddd", "RepeateRepository", repositoryInterfaceType.getName()));
 		synchronized (_syncObject) {
 			if (_singletons.containsKey(interfaceType))
 				throw new DomainDrivenException(
-						Language.strings("RepeateRepository", repositoryInterfaceType.getName()));
+						Language.strings("codeart.ddd", "RepeateRepository", repositoryInterfaceType.getName()));
 			if (!interfaceType.isInstance(repository))
 				throw new TypeMismatchException(interfaceType, repository.getClass());
 			SafeAccessAnn.checkUp(repository);

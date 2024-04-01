@@ -15,7 +15,7 @@ class PropertyLabelAnn {
 
 	private static Function<Locale, Function<String, String>> _getValue = LazyIndexer.init((local) -> {
 		return LazyIndexer.init((name) -> {
-			return Language.strings(local, name);
+			return Language.strings(local, "codeart.ddd", name);
 		});
 	});
 }

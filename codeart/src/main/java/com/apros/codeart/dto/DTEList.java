@@ -98,7 +98,7 @@ final class DTEList extends DTEntity implements Iterable<DTObject> {
 	public void load(DTEntity entity) {
 		var o = TypeUtil.as(entity, DTEList.class);
 		if (o == null)
-			throw new IllegalArgumentException(strings("TypeMismatch"));
+			throw new IllegalArgumentException(strings("codeart", "TypeMismatch"));
 
 		var targetSize = o.size();
 		var selfSize = this.size();

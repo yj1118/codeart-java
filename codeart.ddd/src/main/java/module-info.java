@@ -3,4 +3,5 @@ module codeart.ddd {
 	requires codeart;
 
 	exports com.apros.codeart.ddd;
+	exports com.apros.codeart.ddd.console;
 }

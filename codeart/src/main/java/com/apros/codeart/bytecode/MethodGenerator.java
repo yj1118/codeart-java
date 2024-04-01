@@ -82,7 +82,7 @@ public class MethodGenerator implements AutoCloseable {
 
 	public void loadThis() {
 		if (_isStatic)
-			throw new IllegalArgumentException(strings("CannotInvokeStatic"));
+			throw new IllegalArgumentException(strings("codeart", "CannotInvokeStatic"));
 		_visitor.visitVarInsn(Opcodes.ALOAD, 0);
 	}
 
@@ -561,7 +561,7 @@ public class MethodGenerator implements AutoCloseable {
 				else if (elementType == double.class)
 					_visitor.visitInsn(Opcodes.DLOAD);
 
-				throw new IllegalArgumentException(strings("UnknownException"));
+				throw new IllegalArgumentException(strings("codeart", "UnknownException"));
 			}
 
 		} else {
@@ -709,7 +709,7 @@ public class MethodGenerator implements AutoCloseable {
 			_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Char", "toString", "(C)Ljava/lang/String;",
 					false);
 		} else
-			throw new IllegalStateException(Language.strings("UnknownException"));
+			throw new IllegalStateException(Language.strings("codeart", "UnknownException"));
 
 		_evalStack.pop();
 		_evalStack.push(String.class);
@@ -740,7 +740,7 @@ public class MethodGenerator implements AutoCloseable {
 
 	public MethodGenerator newObject(Class<?> objectType, Runnable loadCtorPrms) {
 		if (objectType.isArray())
-			throw new IllegalArgumentException(Language.strings("UseNewArrayMethod"));
+			throw new IllegalArgumentException(Language.strings("codeart", "UseNewArrayMethod"));
 
 		StackAssert.assertCount(_evalStack, 0);
 
@@ -815,7 +815,7 @@ public class MethodGenerator implements AutoCloseable {
 				code = Opcodes.T_DOUBLE;
 				arrayClass = double[].class;
 			} else
-				throw new IllegalStateException(Language.strings("UnknownException"));
+				throw new IllegalStateException(Language.strings("codeart", "UnknownException"));
 
 			_visitor.visitIntInsn(Opcodes.NEWARRAY, code); // 创建整数数组
 
@@ -883,18 +883,18 @@ public class MethodGenerator implements AutoCloseable {
 		var size = _evalStack.size();
 		if (size == 0) {
 			if (_returnClass != void.class)
-				throw new IllegalArgumentException(strings("ReturnTypeMismatch"));
+				throw new IllegalArgumentException(strings("codeart", "ReturnTypeMismatch"));
 			_visitor.visitInsn(Opcodes.RETURN);
 			return;
 		}
 
 		if (size > 1) {
-			throw new IllegalArgumentException(strings("ReturnError"));
+			throw new IllegalArgumentException(strings("codeart", "ReturnError"));
 		}
 		var lastType = _evalStack.pop().getValueType(); // 返回就是弹出栈顶得值，给调用方用
 
 		if (lastType != _returnClass) {
-			throw new IllegalArgumentException(strings("ReturnTypeMismatch"));
+			throw new IllegalArgumentException(strings("codeart", "ReturnTypeMismatch"));
 		}
 
 		if (!lastType.isPrimitive()) {
@@ -917,7 +917,7 @@ public class MethodGenerator implements AutoCloseable {
 			_visitor.visitInsn(Opcodes.DRETURN);
 			return;
 		}
-		throw new IllegalArgumentException(strings("UnknownException"));
+		throw new IllegalArgumentException(strings("codeart", "UnknownException"));
 	}
 
 	public void close() {

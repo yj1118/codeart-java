@@ -15,6 +15,6 @@ public class TestRunner implements BeforeAllCallback, AfterAllCallback {
 
 	@Override
 	public void afterAll(ExtensionContext arg0) throws Exception {
-		App.cleanup();
+		App.dispose();
 	}
 }

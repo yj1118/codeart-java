@@ -141,7 +141,7 @@ class EvaluationStack {
 
 			for (StackItem item : _items) {
 				if (item.isPrimitive())
-					throw new IllegalArgumentException(strings("TypeMismatch"));
+					throw new IllegalArgumentException(strings("codeart", "TypeMismatch"));
 			}
 			return true;
 		}
@@ -153,7 +153,7 @@ class EvaluationStack {
 		 */
 		public void assertCount(int expectedCount) {
 			if (this.size() != expectedCount)
-				throw new IllegalArgumentException(strings("TypeMismatch"));
+				throw new IllegalArgumentException(strings("codeart", "TypeMismatch"));
 		}
 
 		/**
@@ -167,7 +167,7 @@ class EvaluationStack {
 			Class<?> targetType = _items.get(0).getValueType();
 			for (StackItem item : _items) {
 				if (targetType != item.getValueType())
-					throw new IllegalStateException(strings("TypeMismatch"));
+					throw new IllegalStateException(strings("codeart", "TypeMismatch"));
 			}
 			return targetType;
 		}

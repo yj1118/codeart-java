@@ -1,8 +1,14 @@
 package com.apros.codeart.ddd.console;
 
-import com.apros.codeart.App;
+import java.util.Scanner;
 
-public class ServiceHost {
+import com.apros.codeart.App;
+import com.apros.codeart.i18n.Language;
+
+public final class ServiceHost {
+
+	private ServiceHost() {
+	}
 
 	private static boolean _isEnabled;
 
@@ -10,27 +16,51 @@ public class ServiceHost {
 		return _isEnabled;
 	}
 
-	public static void Start() {
+	public static void start() {
+		start(null);
+	}
+
+	public static void start(Runnable initialize) {
 		_isEnabled = false;
+
+		System.out.println(Language.strings("codeart.ddd", "StartServiceHost"));
 
 //	    RPCEvents.ServerOpened += OnServerOpened;
 //	    RPCEvents.ServerError += OnServerError;
 //	    RPCEvents.ServerClosed += OnServerClosed;
 
-		App.initialize();
+		App.initialize("subsystem", "service");
+
+		if (initialize != null)
+			initialize.run();
 
 		App.initialized();
 
-		Console.WriteLine(MQ.Strings.CloseServiceHost);
+		System.out.println(Language.strings("codeart.ddd", "CloseServiceHost"));
 
 		_isEnabled = true;
-		Console.ReadLine();
+
+		readLine();
+
+		System.out.println(Language.strings("codeart.ddd", "CloseingServiceHost"));
 
 		App.dispose();
 
 		App.disposed();
 
+		System.out.println(Language.strings("codeart.ddd", "ClosedServiceHost"));
+
 		_isEnabled = false;
+	}
+
+	private static void readLine() {
+		Scanner scanner = new Scanner(System.in);
+
+		// 使用nextLine方法读取一行
+		scanner.nextLine();
+
+		// 关闭Scanner对象
+		scanner.close();
 	}
 
 //	private static void OnServerError(object sender, RPCEvents.ServerErrorArgs arg)
