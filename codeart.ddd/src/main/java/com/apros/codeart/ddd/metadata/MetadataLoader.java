@@ -23,21 +23,16 @@ public final class MetadataLoader {
 			return;
 		loaded = true;
 
+		// 先构建动态领域对象的类型 todo
+
 		// 在这里找出所有定义的领域对象
-		localNative();
+		var domainTypes = findDomainTypes();
+
+		// 加载
+		ObjectMetaLoader.load(domainTypes);
 	}
 
-	/**
-	 * 加载原生的领域对象信息
-	 */
-	private static void localNative() {
-		var domainTypes = findNativeDomainTypes();
-		for (var domainType : domainTypes) {
-			ObjectMetaLoader.load(domainType);
-		}
-	}
-
-	private static Iterable<Class<?>> findNativeDomainTypes() {
+	private static Iterable<Class<?>> findDomainTypes() {
 		var findedTypes = Activator.getSubTypesOf(DomainObject.class, AppConfig.mergeArchives("subsystem"));
 		ArrayList<Class<?>> domainTypes = new ArrayList<>();
 		for (var findedType : findedTypes) {

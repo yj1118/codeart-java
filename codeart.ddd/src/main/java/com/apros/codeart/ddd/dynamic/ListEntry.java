@@ -1,15 +1,15 @@
-package com.apros.codeart.dto;
+package com.apros.codeart.ddd.dynamic;
 
 import com.apros.codeart.util.ListUtil;
 
 public class ListEntry extends TypeEntry {
 
-	private TypeMetadata _itemMetadata;
+	private TypeDefine _itemMetadata;
 
 	/// <summary>
 	/// 对象的元数据
 	/// </summary>
-	public TypeMetadata getItemMetadata() {
+	public TypeDefine getItemMetadata() {
 		if (_itemMetadata == null)
 			init();
 		return _itemMetadata;
@@ -28,7 +28,7 @@ public class ListEntry extends TypeEntry {
 		return EntryCategory.List;
 	}
 
-	ListEntry(TypeMetadata owner, String name, String typeName, String metadataCode) {
+	ListEntry(TypeDefine owner, String name, String typeName, String metadataCode) {
 		super(owner, name, typeName, metadataCode);
 		if (this.getIndex().contains(typeName))
 			return; // 为了避免死循环，对于已经分析过的类型我们不再分析，但是当xx.Metadata的时候，依然会自动分析
@@ -38,7 +38,7 @@ public class ListEntry extends TypeEntry {
 	}
 
 	private void init() {
-		_itemMetadata = new TypeMetadata(this.getMetadataCode(), this.getOwner());
+		_itemMetadata = new TypeDefine(this.getMetadataCode(), this.getOwner());
 		_itemEntry = ListUtil.first(_itemMetadata.getEntries());
 	}
 

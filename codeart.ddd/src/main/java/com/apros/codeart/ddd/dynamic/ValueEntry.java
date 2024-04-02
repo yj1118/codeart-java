@@ -1,4 +1,4 @@
-package com.apros.codeart.dto;
+package com.apros.codeart.ddd.dynamic;
 
 public class ValueEntry extends TypeEntry {
 
@@ -20,7 +20,7 @@ public class ValueEntry extends TypeEntry {
 		return this.getTypeName().equals("string") || this.getTypeName().equals("ascii");
 	}
 
-	public ValueEntry(TypeMetadata owner, String name, String typeName, String metadataCode,
+	public ValueEntry(TypeDefine owner, String name, String typeName, String metadataCode,
 			Iterable<String> descriptions) {
 		super(owner, name, typeName, metadataCode);
 		_descriptions = descriptions;

@@ -1,4 +1,4 @@
-package com.apros.codeart.dto;
+package com.apros.codeart.ddd.dynamic;
 
 import java.util.List;
 
@@ -9,9 +9,9 @@ public class ObjectEntry extends TypeEntry {
 	/**
 	 * 对象的元数据
 	 */
-	private TypeMetadata _metadata;
+	private TypeDefine _metadata;
 
-	public TypeMetadata getMetadata() {
+	public TypeDefine getMetadata() {
 		if (_metadata == null)
 			_metadata = createMetadata();
 		return _metadata;
@@ -35,7 +35,7 @@ public class ObjectEntry extends TypeEntry {
 		return EntryCategory.Object;
 	}
 
-	ObjectEntry(TypeMetadata owner, String name, String typeName, String metadataCode) {
+	ObjectEntry(TypeDefine owner, String name, String typeName, String metadataCode) {
 
 		super(owner, name, typeName, metadataCode);
 
@@ -46,13 +46,13 @@ public class ObjectEntry extends TypeEntry {
 		_metadata = createMetadata();
 	}
 
-	ObjectEntry(TypeMetadata metadata) {
+	ObjectEntry(TypeDefine metadata) {
 		super(metadata, StringUtil.empty(), StringUtil.empty(), metadata.getMetadataCode());
 		_metadata = metadata;
 	}
 
-	private TypeMetadata createMetadata() {
-		return new TypeMetadata(this, this.getMetadataCode(), this.getOwner());
+	private TypeDefine createMetadata() {
+		return new TypeDefine(this, this.getMetadataCode(), this.getOwner());
 	}
 
 	@Override

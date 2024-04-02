@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
 
+import com.apros.codeart.ddd.dynamic.ListEntry;
+import com.apros.codeart.ddd.dynamic.ObjectEntry;
+import com.apros.codeart.ddd.dynamic.TypeEntry;
+import com.apros.codeart.ddd.dynamic.ValueEntry;
 import com.apros.codeart.runtime.TypeUtil;
 import com.google.common.collect.Iterables;
 

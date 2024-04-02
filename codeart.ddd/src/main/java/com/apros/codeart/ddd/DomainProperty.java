@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 
+import com.apros.codeart.ddd.dynamic.DynamicProperty;
 import com.apros.codeart.ddd.metadata.DomainPropertyCategory;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyAccessLevel;
@@ -325,6 +326,10 @@ public class DomainProperty {
 		ListUtil.addRange(result, getAnnotationsByStaticProperty(objectType, propertyName));
 
 		// 从外部配置中得到，todo...
+		// 获得objectMetaCode
+		String objectMetaCode = null;
+		if (objectMetaCode != null)
+			DynamicProperty.register(objectType, objectMetaCode);
 
 		return result;
 	}

@@ -53,6 +53,11 @@ public final class ObjectMetaLoader {
 		return obj;
 	}
 
+	public static boolean exists(String objectName) {
+		var obj = _metas.get(objectName);
+		return obj != null;
+	}
+
 	public static ObjectMeta get(Class<?> objectType) {
 		return get(objectType.getSimpleName());
 	}
@@ -64,21 +69,20 @@ public final class ObjectMetaLoader {
 		return null; // 非领域类型是没有元数据的
 	}
 
-	private static ObjectMeta obtain(Class<?> objectType) {
-		var objectName = objectType.getSimpleName();
-		return obtain(objectName, () -> {
-			return createByClass(objectType);
-		});
-	}
+	static void load(Iterable<Class<?>> domainTypes) {
 
-	/**
-	 * @param objectType
-	 * @return
-	 */
-	static ObjectMeta load(Class<?> objectType) {
-		var meta = obtain(objectType);
-		staticConstructor(objectType);
-		return meta;
+		// 为了防止循环引用导致的死循环，要先预加载（只加载类型，不加载属性信息）
+		for (var domainType : domainTypes) {
+			var objectName = domainType.getSimpleName();
+			obtain(objectName, () -> {
+				return createByClass(domainType);
+			});
+		}
+
+		// 再加载完整定义，即出发静态构造
+		for (var domainType : domainTypes) {
+			staticConstructor(domainType);
+		}
 	}
 
 	/**

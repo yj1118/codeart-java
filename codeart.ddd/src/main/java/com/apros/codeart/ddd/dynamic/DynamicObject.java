@@ -3,7 +3,10 @@ package com.apros.codeart.ddd.dynamic;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.FrameworkDomain;
 import com.apros.codeart.ddd.MergeDomain;
+import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
+import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.dto.DTObject;
+import com.apros.codeart.runtime.TypeUtil;
 
 @MergeDomain
 @FrameworkDomain
@@ -20,16 +23,16 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 	/// <param name="data"></param>
 	public void load(DTObject data)
 	 {
-	     var properties = this.Define.Properties;
-	     foreach (var property in properties)
+	     var meta = ObjectMetaLoader.get(this.getClass());
+	     for (var property : meta.properties())
 	     {
-	         var value = data.GetValue(property.Name, false);
+	         var value = data.getValue(property.name(), false);
 	         if (value == null) continue;
 
-	         var obj = value as DTObject;
+	         var obj = TypeUtil.as(value, DTObject.class);
 	         if (obj != null)
 	         {
-	             this.SetValue(property, GetObjectValue(property, obj));
+	             this.SetValue(property, getObjectValue(property, obj));
 	             continue;
 	         }
 
@@ -74,23 +77,19 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 	     return data;
 	 }
 
-	private object GetObjectValue(DomainProperty property, DTObject value)
-	 {
-	     switch (property.DomainPropertyType)
-	     {
-	         case DomainPropertyType.AggregateRoot:
-	         case DomainPropertyType.EntityObject:
-	         case DomainPropertyType.ValueObject:
-	             {
-	                 var objType = property.PropertyType as RuntimeObjectType;
-	                 if (objType == null) throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
-	                 var objDefine = objType.Define;
-	                 DynamicObject obj = objDefine.CreateInstance(value);
-	                 return obj;
-	             }
-	     }
-	     throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
-	 }
+	private Object getObjectValue(PropertyMeta property, DTObject value) {
+		switch (property.category()) {
+		case DomainPropertyCategory.AggregateRoot:
+		case DomainPropertyCategory.EntityObject:
+		case DomainPropertyCategory.ValueObject: {
+			var objType = property.monotype();
+			if (objType == null)
+				throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
+			return createInstance(objType, value);
+		}
+		}
+		throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
+	}
 
 	private object GetListValue(DomainProperty property, DTObjects values)
 	 {
@@ -132,6 +131,26 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 			return DataUtil.ToValue(value, property.PropertyType);
 		}
 		throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
+	}
+
+	/// <summary>
+	/// 以<paramref name="data"/>为数据格式创建前定义的类型的实例
+	/// </summary>
+	/// <param name="data"></param>
+	static DomainObject createInstance(Class<?> objectType, DTObject data)
+	{
+	    if (data.isEmpty()) return (DynamicObject)this.GetEmptyInstance();
+	    DynamicObject obj = null;
+	    using (var temp = ArgsPool.Borrow2())
+	    {
+	        var args = temp.Item;
+	        args[0] = this;
+	        args[1] = false;
+	        obj = (DynamicObject)this.Constructor.CreateInstance(args);
+	    }
+	    //加载数据
+	    obj.Load(data);
+	    return obj;
 	}
 
 	#endregion

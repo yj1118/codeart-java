@@ -1,4 +1,4 @@
-package com.apros.codeart.dto;
+package com.apros.codeart.ddd.dynamic;
 
 public abstract class TypeEntry {
 
@@ -53,13 +53,13 @@ public abstract class TypeEntry {
 	/**
 	 * 所属元数据
 	 */
-	private TypeMetadata _owner;
+	private TypeDefine _owner;
 
-	public TypeMetadata getOwner() {
+	public TypeDefine getOwner() {
 		return _owner;
 	}
 
-	void setOwner(TypeMetadata owner) {
+	void setOwner(TypeDefine owner) {
 		_owner = owner;
 	}
 
@@ -71,7 +71,7 @@ public abstract class TypeEntry {
 		return _owner.getRoot();
 	}
 
-	public TypeEntry(TypeMetadata owner, String name, String typeName, String metadataCode) {
+	public TypeEntry(TypeDefine owner, String name, String typeName, String metadataCode) {
 		_owner = owner;
 		_name = name;
 		_typeName = typeName;

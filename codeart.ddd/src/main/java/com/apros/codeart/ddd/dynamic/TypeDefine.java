@@ -1,14 +1,18 @@
-package com.apros.codeart.dto;
+package com.apros.codeart.ddd.dynamic;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.apros.codeart.dto.DTEList;
+import com.apros.codeart.dto.DTEObject;
+import com.apros.codeart.dto.DTEValue;
+import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.StringUtil;
 
-public final class TypeMetadata {
+public final class TypeDefine {
 
 	private String _metadataCode;
 
@@ -31,9 +35,9 @@ public final class TypeMetadata {
 	/**
 	 * 所属元数据
 	 */
-	private TypeMetadata _parent;
+	private TypeDefine _parent;
 
-	public TypeMetadata getParent() {
+	public TypeDefine getParent() {
 		return _parent;
 	}
 
@@ -51,7 +55,7 @@ public final class TypeMetadata {
 	/// 该构造是一切的起点
 	/// </summary>
 	/// <param name="metadataCode"></param>
-	TypeMetadata(String metadataCode) {
+	TypeDefine(String metadataCode) {
 		this._metadataCode = metadataCode;
 		this._index = new TypeIndex();
 		this._root = new ObjectEntry(this);
@@ -66,7 +70,7 @@ public final class TypeMetadata {
 		this._entries = parse(root);
 	}
 
-	TypeMetadata(ObjectEntry root, String metadataCode, TypeMetadata parent) {
+	TypeDefine(ObjectEntry root, String metadataCode, TypeDefine parent) {
 		_root = root;
 		_metadataCode = metadataCode;
 		_parent = parent;
@@ -75,7 +79,7 @@ public final class TypeMetadata {
 		_entries = parse(dto.getRoot());
 	}
 
-	TypeMetadata(String metadataCode, TypeMetadata parent) {
+	TypeDefine(String metadataCode, TypeDefine parent) {
 		_metadataCode = metadataCode;
 		_parent = parent;
 		_index = parent.getIndex();
@@ -170,6 +174,10 @@ public final class TypeMetadata {
 		code.append(item.getCode(false, true));
 		code.append("}");
 		return code.toString();
+	}
+
+	public static TypeDefine getMetadata(String metadataCode) {
+		return new TypeDefine(metadataCode);
 	}
 
 }

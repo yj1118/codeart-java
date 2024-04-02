@@ -18,7 +18,7 @@ import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 
-final class DTEList extends DTEntity implements Iterable<DTObject> {
+public final class DTEList extends DTEntity implements Iterable<DTObject> {
 
 	private boolean _isReadOnly;
 

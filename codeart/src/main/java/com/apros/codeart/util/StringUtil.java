@@ -152,4 +152,9 @@ public final class StringUtil {
 		return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, str);
 	}
 
+	public static boolean startsWithIgnoreCase(String str, String prefix) {
+		var start = substr(str, prefix.length());
+		return start.toLowerCase().startsWith(prefix.toLowerCase());
+	}
+
 }

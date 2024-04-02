@@ -14,7 +14,7 @@ import com.apros.codeart.util.StringUtil;
 /**
  * 
  */
-final class DTEValue extends DTEntity {
+public class DTEValue extends DTEntity {
 
 	@Override
 	public DTEntityType getType() {

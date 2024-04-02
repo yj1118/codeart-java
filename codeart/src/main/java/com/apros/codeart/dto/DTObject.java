@@ -1038,10 +1038,6 @@ public class DTObject implements INullProxy {
 		return DTObjectMapper.load(obj);
 	}
 
-	public static TypeMetadata getMetadata(String metadataCode) {
-		return new TypeMetadata(metadataCode);
-	}
-
 //	#region 转换
 
 	/// <summary>

@@ -1,4 +1,4 @@
-package com.apros.codeart.dto;
+package com.apros.codeart.ddd.dynamic;
 
 import java.util.HashMap;
 import java.util.function.Function;
