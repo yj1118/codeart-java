@@ -69,12 +69,25 @@ public class ObjectMeta {
 		return _validators;
 	}
 
-	ObjectMeta(String name, Class<?> objectType, DomainObjectCategory category, Iterable<IObjectValidator> validators) {
+	private boolean _remotable;
+
+	/**
+	 * 对象是否具有远程的能力
+	 * 
+	 * @return
+	 */
+	public boolean remotable() {
+		return _remotable;
+	}
+
+	ObjectMeta(String name, Class<?> objectType, DomainObjectCategory category, Iterable<IObjectValidator> validators,
+			boolean remotable) {
 		_name = name;
 		_objectType = objectType;
 		_category = category;
 		_properties = new ArrayList<PropertyMeta>();
 		_validators = validators;
+		_remotable = remotable;
 	}
 
 	// #region 辅助

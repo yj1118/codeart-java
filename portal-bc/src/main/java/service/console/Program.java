@@ -1,4 +1,4 @@
-package service.portal;
+package service.console;
 
 import com.apros.codeart.ddd.console.ServiceHost;
 

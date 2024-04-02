@@ -12,7 +12,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface ObjectRepository {
 
-	Class<?> repositoryInterfaceType();
+	// repositoryInterfaceType
+	Class<?> value() default Object.class;
 
 	boolean closeMultiTenancy() default true;
 }

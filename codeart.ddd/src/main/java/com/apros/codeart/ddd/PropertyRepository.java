@@ -22,7 +22,7 @@ public @interface PropertyRepository {
 	 * 
 	 * @return
 	 */
-	String loadMethod();
+	String loadMethod() default "";
 
 	/**
 	 * 指示属性是否为懒惰加载，即：当用到时才加载

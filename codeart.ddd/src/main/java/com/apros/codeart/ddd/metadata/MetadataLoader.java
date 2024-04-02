@@ -1,8 +1,13 @@
 package com.apros.codeart.ddd.metadata;
 
+import static com.apros.codeart.i18n.Language.strings;
+
+import java.util.ArrayList;
+
 import com.apros.codeart.AppConfig;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.runtime.Activator;
+import com.apros.codeart.util.ListUtil;
 
 public final class MetadataLoader {
 	private MetadataLoader() {
@@ -19,32 +24,37 @@ public final class MetadataLoader {
 		loaded = true;
 
 		// 在这里找出所有定义的领域对象
-		loadByClass();
-//		ObjectMetaLoader.load(null);
+		localNative();
 	}
 
 	/**
-	 * 从编码实现的领域对象里，加载对象信息
+	 * 加载原生的领域对象信息
 	 */
-	private static void loadByClass() {
+	private static void localNative() {
+		var domainTypes = findNativeDomainTypes();
+		for (var domainType : domainTypes) {
+			ObjectMetaLoader.load(domainType);
+		}
+	}
 
-		var domainTypes = Activator.getSubTypesOf(DomainObject.class, AppConfig.mergeArchives("subsystem"));
-//		List<Type> doTypes = new List<Type>();
-//		foreach (var type in types)
-//		{
-//		    if (!IsMergeDomainType(type))
-//		    {
-//		        var exists = doTypes.FirstOrDefault((t) =>
-//		        {
-//		            return t.Name == type.Name;
-//		        });
-//
-//		        if (exists != null)
-//		            throw new DomainDrivenException(string.Format("领域对象 {0} 和 {1} 重名", type.FullName, exists.FullName));
-//		        doTypes.Add(type);
-//		    }
-//		}
-//		return doTypes;
+	private static Iterable<Class<?>> findNativeDomainTypes() {
+		var findedTypes = Activator.getSubTypesOf(DomainObject.class, AppConfig.mergeArchives("subsystem"));
+		ArrayList<Class<?>> domainTypes = new ArrayList<>();
+		for (var findedType : findedTypes) {
+			if (ListUtil.contains(findedTypes, null))
+
+				if (!ObjectMeta.isMergeDomainType(findedType)) {
+					var exist = ListUtil.find(domainTypes, (t) -> {
+						return t.getSimpleName().equalsIgnoreCase(findedType.getSimpleName());
+					});
+					if (exist != null) {
+						throw new IllegalArgumentException(
+								strings("codeart.ddd", "DomainSameName", findedType.getName(), exist.getName()));
+					}
+					domainTypes.add(findedType);
+				}
+		}
+		return domainTypes;
 	}
 
 }

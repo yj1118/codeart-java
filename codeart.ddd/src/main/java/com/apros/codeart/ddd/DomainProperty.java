@@ -199,14 +199,13 @@ public class DomainProperty {
 		return property;
 	}
 
-	public static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
-			Class<?> declaringType) {
-		return register(name, isCollection, propertyType, declaringType, null);
+	public static DomainProperty register(String name, Class<?> propertyType, Class<?> declaringType) {
+		return register(name, false, propertyType, declaringType, null);
 	}
 
-	public static DomainProperty register(String name, boolean isCollection, Class<?> propertyType,
-			Class<?> declaringType, Object defaultValue) {
-		return register(name, isCollection, propertyType, declaringType, (obj, pro) -> {
+	public static DomainProperty register(String name, Class<?> propertyType, Class<?> declaringType,
+			Object defaultValue) {
+		return register(name, false, propertyType, declaringType, (obj, pro) -> {
 			return defaultValue;
 		});
 	}
@@ -220,7 +219,7 @@ public class DomainProperty {
 	 * @return
 	 */
 	public static DomainProperty registerCollection(String name, Class<?> elementType, Class<?> declaringType) {
-		return register(name, true, elementType, declaringType);
+		return register(name, true, elementType, declaringType, null);
 	}
 
 	public static DomainProperty registerCollection(String name, Class<?> elementType, Class<?> declaringType,
