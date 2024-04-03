@@ -1,5 +1,7 @@
 package com.apros.codeart.ddd;
 
+import com.apros.codeart.ddd.repository.PropertyRepository;
+
 @MergeDomain
 @FrameworkDomain
 public abstract class EntityObjectInt extends EntityObject {

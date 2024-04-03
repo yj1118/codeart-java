@@ -1,7 +1,9 @@
-package com.apros.codeart.ddd;
+package com.apros.codeart.ddd.repository;
 
 import java.lang.reflect.Method;
 
+import com.apros.codeart.ddd.IRepository;
+import com.apros.codeart.ddd.RepositoryFactory;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.MethodUtil;
 import com.apros.codeart.util.StringUtil;
@@ -30,7 +32,7 @@ public class Repository {
 	}
 
 	static IRepository createBy(Class<?> objectType) {
-		var objectTip = ObjectRepositoryAnn.getTip(objectType, false);
+		var objectTip = ObjectRepositoryImpl.getTip(objectType, false);
 		if (objectTip == null)
 			return null;
 		return (IRepository) RepositoryFactory.create(objectTip.repositoryInterfaceType());
@@ -46,7 +48,7 @@ public class Repository {
 	static Method getMethodFromRepository(Class<?> objectType, String methodName) {
 		if (StringUtil.isNullOrEmpty(methodName))
 			return null;
-		var objectTip = ObjectRepositoryAnn.getTip(objectType, true);
+		var objectTip = ObjectRepositoryImpl.getTip(objectType, true);
 		var repositoryType = RepositoryFactory.getRepositoryType(objectTip.repositoryInterfaceType());
 
 		var method = MethodUtil.resolveByName(repositoryType, methodName);

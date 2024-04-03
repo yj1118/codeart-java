@@ -13,6 +13,8 @@ import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyAccessLevel;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.ddd.metadata.ValueMeta;
+import com.apros.codeart.ddd.repository.PropertyRepository;
+import com.apros.codeart.ddd.repository.PropertyRepositoryImpl;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ListUtil;
@@ -138,9 +140,9 @@ public class DomainProperty {
 //
 //	#region 属性仓储的定义
 
-	PropertyRepositoryAnn _repositoryTip;
+	PropertyRepositoryImpl _repositoryTip;
 
-	PropertyRepositoryAnn getRepositoryTip() {
+	PropertyRepositoryImpl getRepositoryTip() {
 		return _repositoryTip;
 	}
 
@@ -300,9 +302,9 @@ public class DomainProperty {
 	 * @param declaringType
 	 * @return
 	 */
-	private static PropertyRepositoryAnn getRepository(Iterable<Annotation> anns, Class<?> declaringType) {
+	private static PropertyRepositoryImpl getRepository(Iterable<Annotation> anns, Class<?> declaringType) {
 		var ann = getAnnotation(anns, PropertyRepository.class);
-		return ann != null ? new PropertyRepositoryAnn(ann, declaringType) : PropertyRepositoryAnn.Default;
+		return ann != null ? new PropertyRepositoryImpl(ann, declaringType) : PropertyRepositoryImpl.Default;
 	}
 
 	@SuppressWarnings({ "unchecked", "unlikely-arg-type" })

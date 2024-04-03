@@ -1,12 +1,15 @@
-package com.apros.codeart.ddd;
+package com.apros.codeart.ddd.repository;
 
 import static com.apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Method;
 
+import com.apros.codeart.ddd.DynamicData;
+import com.apros.codeart.ddd.IPropertyDataLoader;
+import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.util.StringUtil;
 
-class PropertyRepositoryAnn {
+public class PropertyRepositoryImpl {
 
 	private boolean _lazy;
 
@@ -20,12 +23,12 @@ class PropertyRepositoryAnn {
 		return _loader;
 	}
 
-	public PropertyRepositoryAnn(PropertyRepository ann, Class<?> objectType) {
+	public PropertyRepositoryImpl(PropertyRepository ann, Class<?> objectType) {
 		_lazy = ann.lazy();
 		_loader = getLoader(objectType, ann.loadMethod());
 	}
 
-	private PropertyRepositoryAnn() {
+	private PropertyRepositoryImpl() {
 		_lazy = false;
 		_loader = null;
 	}
@@ -60,6 +63,6 @@ class PropertyRepositoryAnn {
 		}
 	}
 
-	static final PropertyRepositoryAnn Default = new PropertyRepositoryAnn();
+	public static final PropertyRepositoryImpl Default = new PropertyRepositoryImpl();
 
 }

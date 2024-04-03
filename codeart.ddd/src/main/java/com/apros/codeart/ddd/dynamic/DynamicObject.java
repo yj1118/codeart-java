@@ -1,11 +1,18 @@
 package com.apros.codeart.ddd.dynamic;
 
+import com.apros.codeart.ddd.DomainCollection;
+import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.DomainObject;
+import com.apros.codeart.ddd.DomainProperty;
 import com.apros.codeart.ddd.FrameworkDomain;
 import com.apros.codeart.ddd.MergeDomain;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
+import com.apros.codeart.ddd.metadata.DomainPropertyCategory;
+import com.apros.codeart.ddd.repository.ConstructorRepository;
 import com.apros.codeart.dto.DTObject;
+import com.apros.codeart.i18n.Language;
+import com.apros.codeart.runtime.Activator;
 import com.apros.codeart.runtime.TypeUtil;
 
 @MergeDomain
@@ -17,38 +24,34 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 		this.onConstructed();
 	}
 
-	/// <summary>
-	/// 从dto中加载数据
-	/// </summary>
-	/// <param name="data"></param>
-	public void load(DTObject data)
-	 {
-	     var meta = ObjectMetaLoader.get(this.getClass());
-	     for (var property : meta.properties())
-	     {
-	         var value = data.getValue(property.name(), false);
-	         if (value == null) continue;
+	/**
+	 * 从dto中加载数据
+	 */
+	public void load(DTObject data) {
+		var meta = ObjectMetaLoader.get(this.getClass());
+		for (var property : meta.properties()) {
+			var value = data.getValue(property.name(), false);
+			if (value == null)
+				continue;
 
-	         var obj = TypeUtil.as(value, DTObject.class);
-	         if (obj != null)
-	         {
-	             this.SetValue(property, getObjectValue(property, obj));
-	             continue;
-	         }
+			var obj = TypeUtil.as(value, DTObject.class);
+			if (obj != null) {
+				this.setValue(property.name(), getObjectValue(property, obj));
+				continue;
+			}
 
-	         var objs = value as DTObjects;
-	         if (objs != null)
-	         {
-	             this.SetValue(property, GetListValue(property, objs));
-	             continue;
-	         }
-	         this.SetValue(property, GetPrimitiveValue(property, value));
-	     }
-	 }
+			var objs = TypeUtil.as(value, Iterable<DTObject>.class);
+			if (objs != null) {
+				this.SetValue(property, getListValue(property, objs));
+				continue;
+			}
+			this.SetValue(property, GetPrimitiveValue(property, value));
+		}
+	}
 
 	public DTObject GetData()
 	 {
-	     var data = DTObject.Create();
+	     var data = DTObject.editable();
 	     var properties = this.Define.Properties;
 	     foreach (var property in properties)
 	     {
@@ -82,33 +85,30 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 		case DomainPropertyCategory.AggregateRoot:
 		case DomainPropertyCategory.EntityObject:
 		case DomainPropertyCategory.ValueObject: {
+
 			var objType = property.monotype();
-			if (objType == null)
-				throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
 			return createInstance(objType, value);
 		}
 		}
-		throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
+		throw new DomainDrivenException(Language.strings("DynamicObjectLoadError", this.getClass().getName()));
 	}
 
-	private object GetListValue(DomainProperty property, DTObjects values)
+	private Object getListValue(DomainProperty property, Iterable<DTObject> values)
 	 {
-	     IList list = property.PropertyType.CreateInstance() as IList;
-	     if (list == null) throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
-
-	     switch (property.DomainPropertyType)
+		var list = new DomainCollection(property.monotype(),property);
+		list.setParent(this);
+		
+	     switch (property.category())
 	     {
 	         case DomainPropertyType.AggregateRootList:
 	         case DomainPropertyType.EntityObjectList:
 	         case DomainPropertyType.ValueObjectList:
 	             {
-	                 var elementType = property.DynamicType as RuntimeObjectType;
-	                 if (elementType == null) throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
-	                 var objDefine = elementType.Define;
-	                 foreach (DTObject value in values)
+	                 var elementType = property.monotype();
+	                 for (DTObject value : values)
 	                 {
-	                     DynamicObject obj = objDefine.CreateInstance(value);
-	                     list.Add(obj);
+	                     var obj = createInstance(elementType,value);
+	                     list.add(obj);
 	                 }
 	                 return list;
 	             }

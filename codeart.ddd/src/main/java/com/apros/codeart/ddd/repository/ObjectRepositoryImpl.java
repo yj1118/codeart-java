@@ -1,11 +1,12 @@
-package com.apros.codeart.ddd;
+package com.apros.codeart.ddd.repository;
 
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.LazyIndexer;
 
-class ObjectRepositoryAnn {
+class ObjectRepositoryImpl {
 
 	/**
 	 * 该对象所用到的仓储接口的类型
@@ -35,13 +36,13 @@ class ObjectRepositoryAnn {
 		return _closeMultiTenancy;
 	}
 
-	public ObjectRepositoryAnn(Class<?> objectType, Class<?> repositoryInterfaceType, boolean closeMultiTenancy) {
+	public ObjectRepositoryImpl(Class<?> objectType, Class<?> repositoryInterfaceType, boolean closeMultiTenancy) {
 		_objectType = objectType;
 		_repositoryInterfaceType = repositoryInterfaceType;
 		_closeMultiTenancy = closeMultiTenancy;
 	}
 
-	public static ObjectRepositoryAnn getTip(Class<?> objectType, boolean checkUp) {
+	public static ObjectRepositoryImpl getTip(Class<?> objectType, boolean checkUp) {
 		var attr = _getTip.apply(objectType);
 		if (attr == null && checkUp)
 			throw new DomainDrivenException(
@@ -49,13 +50,13 @@ class ObjectRepositoryAnn {
 		return attr;
 	}
 
-	private static Function<Class<?>, ObjectRepositoryAnn> _getTip = LazyIndexer.init((objectType) -> {
+	private static Function<Class<?>, ObjectRepositoryImpl> _getTip = LazyIndexer.init((objectType) -> {
 
 		ObjectRepository annon = objectType.getAnnotation(ObjectRepository.class);
 
 		if (annon == null)
 			return null;
 
-		return new ObjectRepositoryAnn(objectType, annon.repositoryInterfaceType(), annon.closeMultiTenancy());
+		return new ObjectRepositoryImpl(objectType, annon.value(), annon.closeMultiTenancy());
 	});
 }

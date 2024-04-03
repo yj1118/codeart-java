@@ -2,6 +2,8 @@ package com.apros.codeart.ddd;
 
 import java.util.UUID;
 
+import com.apros.codeart.ddd.repository.PropertyRepository;
+
 @MergeDomain
 @FrameworkDomain
 public abstract class EntityObjectGuid extends EntityObject {
