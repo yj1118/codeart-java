@@ -1,14 +1,12 @@
 package com.apros.codeart.ddd.dynamic;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.DomainProperty;
 import com.apros.codeart.ddd.metadata.ObjectMeta;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.PrimitiveUtil;
 
 public final class DynamicProperty {
 
@@ -75,35 +73,11 @@ public final class DynamicProperty {
 	}
 
 	public static Class<?> getPrimitiveType(String typeName) {
-		switch (typeName.toLowerCase()) {
-		case "char":
-			return char.class;
-		case "bool":
-		case "boolean":
-			return boolean.class;
-		case "byte":
-			return byte.class;
-		case "datetime":
-			return LocalDateTime.class;
-		case "double":
-			return double.class;
-		case "short":
-			return short.class;
-		case "int":
-			return int.class;
-		case "single":
-		case "long":
-			return long.class;
-		case "float":
-			return float.class;
-		case "ascii":
-		case "string":
+
+		if (typeName.equalsIgnoreCase("ascii"))
 			return String.class;
-		case "guid":
-			return UUID.class;
-		default:
-			return null;
-		}
+
+		return PrimitiveUtil.getType(typeName);
 	}
 
 //	#endregion

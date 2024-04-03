@@ -5,6 +5,7 @@ import static com.apros.codeart.i18n.Language.strings;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.function.Function;
 
 import com.apros.codeart.runtime.TypeUtil;
@@ -104,6 +105,12 @@ public class DTEValue extends DTEntity {
 		if (_value != null)
 			return (char) _value;
 		return _valueCode.charAt(0);
+	}
+
+	public UUID getGuid() {
+		if (_value != null)
+			return (UUID) _value;
+		return UUID.fromString(_valueCode);
 	}
 
 	/**

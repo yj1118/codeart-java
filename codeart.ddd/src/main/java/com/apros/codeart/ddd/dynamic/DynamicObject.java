@@ -14,6 +14,7 @@ import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.Activator;
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.PrimitiveUtil;
 
 @MergeDomain
 @FrameworkDomain
@@ -40,7 +41,7 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 				continue;
 			}
 
-			var objs = TypeUtil.as(value, Iterable<DTObject>.class);
+			var objs = TypeUtil.as(value, Iterable.class);
 			if (objs != null) {
 				this.SetValue(property, getListValue(property, objs));
 				continue;
@@ -93,44 +94,41 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 		throw new DomainDrivenException(Language.strings("DynamicObjectLoadError", this.getClass().getName()));
 	}
 
-	private Object getListValue(DomainProperty property, Iterable<DTObject> values)
-	 {
-		var list = new DomainCollection(property.monotype(),property);
+	private Object getListValue(DomainProperty property, Iterable values) {
+		var list = new DomainCollection(property.monotype(), property);
 		list.setParent(this);
-		
-	     switch (property.category())
-	     {
-	         case DomainPropertyType.AggregateRootList:
-	         case DomainPropertyType.EntityObjectList:
-	         case DomainPropertyType.ValueObjectList:
-	             {
-	                 var elementType = property.monotype();
-	                 for (DTObject value : values)
-	                 {
-	                     var obj = createInstance(elementType,value);
-	                     list.add(obj);
-	                 }
-	                 return list;
-	             }
-	         case DomainPropertyType.PrimitiveList:
-	             {
-	                 foreach (DTObject value in values)
-	                 {
-	                     if (!value.IsSingleValue)
-	                         throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
-	                     list.Add(value.GetValue());
-	                 }
-	                 return list;
-	             }
-	     }
-	     throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
-	 }
 
-	private object GetPrimitiveValue(DomainProperty property, object value) {
-		if (property.DomainPropertyType == DomainPropertyType.Primitive) {
-			return DataUtil.ToValue(value, property.PropertyType);
+		switch (property.category()) {
+		case DomainPropertyCategory.AggregateRootList:
+		case DomainPropertyCategory.EntityObjectList:
+		case DomainPropertyCategory.ValueObjectList: {
+			var elementType = property.monotype();
+			for (Object temp : values) {
+				var value = (DTObject) temp;
+				var obj = createInstance(elementType, value);
+				list.add(obj);
+			}
+			return list;
 		}
-		throw new DomainDrivenException(string.Format(Strings.DynamicObjectLoadError, this.Define.TypeName));
+		case DomainPropertyCategory.PrimitiveList: {
+			for (Object temp : values) {
+				var value = (DTObject) temp;
+				if (!value.isSingleValue())
+					throw new DomainDrivenException(
+							Language.strings("DynamicObjectLoadError", this.getClass().getName()));
+				list.add(value.getValue());
+			}
+			return list;
+		}
+		}
+		throw new DomainDrivenException(Language.strings("DynamicObjectLoadError", this.getClass().getName()));
+	}
+
+	private Object getPrimitiveValue(DomainProperty property, Object value) {
+		if (property.category() == DomainPropertyCategory.Primitive) {
+			return PrimitiveUtil.convert(value, property.monotype());
+		}
+		throw new DomainDrivenException(Language.strings("DynamicObjectLoadError", this.getClass().getName()));
 	}
 
 	/// <summary>
