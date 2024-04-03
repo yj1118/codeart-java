@@ -1,6 +1,6 @@
 package com.apros.codeart.ddd;
 
-public interface IEntityObject {
+public interface IEntityObject extends IDomainObject {
 
 	/**
 	 * 获取对象唯一标示 在领域驱动思想中

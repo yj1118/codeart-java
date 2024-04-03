@@ -1,14 +1,10 @@
-package com.apros.codeart.ddd;
+package com.apros.codeart.ddd.repository;
+
+import com.apros.codeart.ddd.IAggregateRoot;
 
 public class RepositoryRollbackEventArgs {
-
 	private IAggregateRoot _target;
 
-	/**
-	 * 需要执行仓储操作的领域对象
-	 * 
-	 * @return
-	 */
 	public IAggregateRoot target() {
 		return _target;
 	}
@@ -27,7 +23,6 @@ public class RepositoryRollbackEventArgs {
 	private IPersistRepository _repository;
 
 	/**
-	 * 
 	 * 相关仓储
 	 * 
 	 * @return

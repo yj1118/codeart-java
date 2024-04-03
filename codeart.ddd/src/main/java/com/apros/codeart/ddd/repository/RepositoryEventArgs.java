@@ -1,4 +1,7 @@
-package com.apros.codeart.ddd;
+package com.apros.codeart.ddd.repository;
+
+import com.apros.codeart.ddd.IAggregateRoot;
+import com.apros.codeart.ddd.StatusEventType;
 
 public class RepositoryEventArgs {
 

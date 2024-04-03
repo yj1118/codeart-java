@@ -1,5 +1,7 @@
 package com.apros.codeart.ddd;
 
+import com.apros.codeart.ddd.repository.RepositoryEventArgs;
+import com.apros.codeart.ddd.repository.RepositoryRollbackEventArgs;
 import com.apros.codeart.util.EventHandler;
 
 /**
@@ -89,7 +91,7 @@ public interface IAggregateRoot extends IEntityObject {
 
 	EventHandler<RepositoryEventArgs> updatePreCommit();
 
-	void OnUpdatePreCommit();
+	void onUpdatePreCommit();
 
 	EventHandler<RepositoryEventArgs> updateCommitted();
 

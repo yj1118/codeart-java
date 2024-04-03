@@ -1,10 +1,11 @@
 package com.apros.codeart.ddd.dynamic;
 
+import com.apros.codeart.ddd.AggregateRootEventManager;
 import com.apros.codeart.ddd.ConstructorRepository;
 import com.apros.codeart.ddd.IAggregateRoot;
-import com.apros.codeart.ddd.RepositoryEventArgs;
 import com.apros.codeart.ddd.RepositoryRollbackEventArgs;
 import com.apros.codeart.ddd.UniqueKeyCalculator;
+import com.apros.codeart.ddd.repository.RepositoryEventArgs;
 import com.apros.codeart.util.EventHandler;
 
 public class DynamicRoot extends DynamicEntity implements IAggregateRoot {
@@ -136,10 +137,6 @@ public class DynamicRoot extends DynamicEntity implements IAggregateRoot {
 
 	public void onDeleteCommitted() {
 		_eventManager.onDeleteCommitted();
-	}
-
-	protected void onceRepositoryCallback(Runnable action) {
-		_eventManager.onceRepositoryCallback(action);
 	}
 
 //	public Iterable<(

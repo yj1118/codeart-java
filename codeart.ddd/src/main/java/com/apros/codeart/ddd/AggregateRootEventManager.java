@@ -2,6 +2,7 @@ package com.apros.codeart.ddd;
 
 import java.util.ArrayList;
 
+import com.apros.codeart.ddd.repository.RepositoryEventArgs;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.EventHandler;
 

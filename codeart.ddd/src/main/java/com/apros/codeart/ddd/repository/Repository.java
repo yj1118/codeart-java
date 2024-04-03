@@ -2,13 +2,16 @@ package com.apros.codeart.ddd.repository;
 
 import java.lang.reflect.Method;
 
+import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.IRepository;
-import com.apros.codeart.ddd.RepositoryFactory;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.MethodUtil;
 import com.apros.codeart.util.StringUtil;
 
-public class Repository {
+public final class Repository {
+
+	private Repository() {
+	}
 
 	/**
 	 * 注册仓储，请确保<paramref name="repository"/>是线程访问安全的
@@ -27,7 +30,7 @@ public class Repository {
 	/// <typeparam name="TRepository"></typeparam>
 	/// <returns></returns>
 	@SuppressWarnings("unchecked")
-	public static <T extends IRepository> T create(Class<?> repositoryInterfaceType) {
+	public static <T extends IRepository> T create(Class<T> repositoryInterfaceType) {
 		return (T) RepositoryFactory.create(repositoryInterfaceType);
 	}
 

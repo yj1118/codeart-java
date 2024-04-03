@@ -1,16 +1,16 @@
 package com.apros.codeart.ddd;
 
-import java.util.ArrayList;
-
-import com.apros.codeart.i18n.Language;
+import com.apros.codeart.ddd.repository.RepositoryEventArgs;
 import com.apros.codeart.util.EventHandler;
+import com.apros.codeart.util.IEventObserver;
 
 @MergeDomain
 @FrameworkDomain
-public abstract class AggregateRoot extends EntityObject implements IAggregateRoot {
-	
+public abstract class AggregateRoot extends EntityObject
+		implements IAggregateRoot, IEventObserver<RepositoryEventArgs> {
+
 	private AggregateRootEventManager _eventManager;
-	
+
 	public AggregateRoot() {
 		initRemotable();
 		_eventManager = new AggregateRootEventManager(this);
@@ -26,7 +26,6 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 		return _uniqueKey;
 	}
 
-
 	/**
 	 * 仓储操作回滚事件
 	 */
@@ -38,7 +37,6 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 		_eventManager.onRollback(sender, e);
 	}
 
-
 	public EventHandler<RepositoryEventArgs> preAdd() {
 		return _eventManager.preAdd();
 	}
@@ -46,7 +44,6 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 	public void onPreAdd() {
 		_eventManager.onPreAdd();
 	}
-
 
 	public EventHandler<RepositoryEventArgs> added() {
 		return _eventManager.added();
@@ -64,7 +61,6 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 		_eventManager.onAddPreCommit();
 	}
 
-
 	public EventHandler<RepositoryEventArgs> addCommitted() {
 		return _eventManager.addCommitted();
 	}
@@ -72,7 +68,6 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 	public void onAddCommitted() {
 		_eventManager.onAddCommitted();
 	}
-
 
 	public EventHandler<RepositoryEventArgs> preUpdate() {
 		return _eventManager.preUpdate();
@@ -90,7 +85,6 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 		_eventManager.onUpdated();
 	}
 
-
 	public EventHandler<RepositoryEventArgs> updatePreCommit() {
 		return _eventManager.updatePreCommit();
 	}
@@ -98,7 +92,6 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 	public void onUpdatePreCommit() {
 		_eventManager.onUpdatePreCommit();
 	}
-
 
 	public EventHandler<RepositoryEventArgs> updateCommitted() {
 		return _eventManager.updateCommitted();
@@ -108,7 +101,6 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 		_eventManager.onUpdateCommitted();
 	}
 
-	
 	public EventHandler<RepositoryEventArgs> preDelete() {
 		return _eventManager.preDelete();
 	}
@@ -116,7 +108,6 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 	public void onPreDelete() {
 		_eventManager.onPreDelete();
 	}
-
 
 	public EventHandler<RepositoryEventArgs> deleted() {
 		return _eventManager.deleted();
@@ -126,7 +117,6 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 		_eventManager.onDeleted();
 	}
 
-
 	public EventHandler<RepositoryEventArgs> deletePreCommit() {
 		return _eventManager.deletePreCommit();
 	}
@@ -134,7 +124,6 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 	public void onDeletePreCommit() {
 		_eventManager.onDeletePreCommit();
 	}
-
 
 	public EventHandler<RepositoryEventArgs> deleteCommitted() {
 		return _eventManager.deleteCommitted();
@@ -144,45 +133,55 @@ public abstract class AggregateRoot extends EntityObject implements IAggregateRo
 		_eventManager.onDeleteCommitted();
 	}
 
-	
 	protected void onceRepositoryCallback(Runnable action) {
 		_eventManager.onceRepositoryCallback(action);
 	}
 
 //	region 内聚根可以具有远程能力
 
-	private boolean _remotable;
-
 	public boolean remotable() {
-		return _remotable;
+		return this.meta().remotable();
 	}
 
 /// <summary>
 /// 初始化对象的远程能力
 /// </summary>
-	private void InitRemotable() {
-		if (this.RemotableTip != null) {
+	private void initRemotable() {
+		if (this.remotable()) {
 			// 指示了对象具备远程能力
-			this.UpdateCommitted += NotifyUpdated;
-			this.DeleteCommitted += NotifyDeleted;
+			this.updateCommitted().add(this);
+			this.deleteCommitted().add(this);
 		}
 	}
 
-	private void NotifyUpdated(object sender, RepositoryEventArgs e) {
-		RemotePortal.NotifyUpdated(this.RemoteType, e.Target.GetIdentity());
+	public void handle(Object sender, RepositoryEventArgs args) {
+		switch (args.eventType()) {
+
+		case StatusEventType.UpdateCommitted: {
+			notifyUpdated(sender, args);
+			break;
+		}
+
+		case StatusEventType.DeleteCommitted: {
+			notifyDeleted(sender, args);
+			break;
+		}
+
+		default:
+			break;
+
+		}
+
 	}
 
-	private void NotifyDeleted(object sender, RepositoryEventArgs e) {
-		RemotePortal.NotifyDeleted(this.RemoteType, e.Target.GetIdentity());
+	private static void notifyUpdated(Object sender, RepositoryEventArgs e) {
+		var target = e.target();
+		RemotePortal.notifyUpdated(target.getClass(), target.getIdentity());
 	}
 
-	#endregion
-
-	private static RemotableAttribute _remotableTip;
-
-	static()
-	{
-		var objectType = typeof(TObject);
-		_remotableTip = RemotableAttribute.GetTip(objectType);
+	private static void notifyDeleted(Object sender, RepositoryEventArgs e) {
+		var target = e.target();
+		RemotePortal.notifyDeleted(target.getClass(), target.getIdentity());
 	}
+
 }

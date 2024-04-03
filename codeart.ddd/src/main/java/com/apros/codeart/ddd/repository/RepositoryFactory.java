@@ -1,7 +1,9 @@
-package com.apros.codeart.ddd;
+package com.apros.codeart.ddd.repository;
 
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.DomainDrivenException;
+import com.apros.codeart.ddd.IRepository;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.Activator;
 import com.apros.codeart.util.LazyIndexer;
