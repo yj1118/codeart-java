@@ -168,7 +168,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 
 	private StateMachine _backupMachine;
 
-	public void SaveState() {
+	public void saveState() {
 		saveStateProperties();
 		if (_backupMachine == null) {
 			_backupMachine = _machine.clone();
@@ -186,7 +186,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 	/// <summary>
 	/// 加载备份的状态，此时备份会被删除
 	/// </summary>
-	public void LoadState() {
+	public void loadState() {
 		loadStateProperties();
 		if (_backupMachine != null) {
 			_machine = _backupMachine;
@@ -196,7 +196,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 
 	private void loadStateProperties() {
 		invokeProperties((obj) -> {
-			obj.LoadState();
+			obj.loadState();
 		});
 	}
 
@@ -656,7 +656,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 		}
 	}
 
-	public EventHandler<DomainObjectChangedEventArgs> changed = new EventHandler<DomainObjectChangedEventArgs>();
+	public final EventHandler<DomainObjectChangedEventArgs> changed = new EventHandler<DomainObjectChangedEventArgs>();
 
 	private void raiseChangedEvent() {
 		if (this.isEmpty())
@@ -693,20 +693,21 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 	 * @param objectType
 	 * @return
 	 */
-	public static Object getEmpty(Class<?> objectType) {
-		// todo test
-//	    var runtimeType = objectType as RuntimeObjectType;
-//	    if (runtimeType != null) return runtimeType.Define.EmptyInstance;
-
+	public static DomainObject getEmpty(Class<?> objectType) {
 		return _getEmpty.apply(objectType);
 	}
 
-	private static Function<Class<?>, Object> _getEmpty = LazyIndexer.init((objectType) -> {
+	private static Function<Class<?>, DomainObject> _getEmpty = LazyIndexer.init((objectType) -> {
 
 		var empty = FieldUtil.getField(objectType, "Empty");
 		if (empty == null)
 			throw new DomainDrivenException(Language.strings("codeart.ddd", "NotFoundEmpty", objectType.getName()));
-		return empty;
+
+		var objEmpty = TypeUtil.as(empty, DomainObject.class);
+		if (objEmpty == null)
+			throw new DomainDrivenException(
+					Language.strings("codeart.ddd", "TypeMismatchFor", empty.getClass(), DomainObject.class));
+		return objEmpty;
 	});
 
 	/**

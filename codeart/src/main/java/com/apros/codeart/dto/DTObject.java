@@ -900,6 +900,20 @@ public class DTObject implements INullProxy {
 	}
 
 	/**
+	 * 
+	 * 创建一个单值的dto
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static DTObject value(Object value) {
+		// todo 以后可以优化性能
+		var t = DTObject.editable();
+		t.setValue(value);
+		return t;
+	}
+
+	/**
 	 * 根据架构代码将对象的信息加载到dto中
 	 * 
 	 * @param schemaCode

@@ -1,5 +1,7 @@
 package com.apros.codeart.ddd.dynamic;
 
+import java.util.ArrayList;
+
 import com.apros.codeart.ddd.DomainCollection;
 import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.DomainObject;
@@ -14,74 +16,97 @@ import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.Activator;
 import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.PrimitiveUtil;
 
 @MergeDomain
 @FrameworkDomain
 public class DynamicObject extends DomainObject implements IDynamicObject {
 
+	private boolean _isEmpty;
+
+	public boolean isEmpty() {
+		return _isEmpty;
+	}
+
+	public DynamicObject(boolean isEmpty) {
+		_isEmpty = isEmpty;
+		this.onConstructed();
+	}
+
 	@ConstructorRepository
 	public DynamicObject() {
+		_isEmpty = false;
 		this.onConstructed();
+	}
+
+	private Iterable<DomainProperty> _properties;
+
+	public Iterable<DomainProperty> properties() {
+		if (_properties == null) {
+			var meta = ObjectMetaLoader.get(this.getClass());
+			_properties = ListUtil.map(meta.properties(), (propertyMeta) -> {
+				return DomainProperty.getProperty(this.getClass(), propertyMeta.name());
+			});
+		}
+		return _properties;
 	}
 
 	/**
 	 * 从dto中加载数据
 	 */
 	public void load(DTObject data) {
-		var meta = ObjectMetaLoader.get(this.getClass());
-		for (var property : meta.properties()) {
+		for (var property : this.properties()) {
 			var value = data.getValue(property.name(), false);
 			if (value == null)
 				continue;
 
 			var obj = TypeUtil.as(value, DTObject.class);
 			if (obj != null) {
-				this.setValue(property.name(), getObjectValue(property, obj));
+				this.setValue(property, getObjectValue(property, obj));
 				continue;
 			}
 
 			var objs = TypeUtil.as(value, Iterable.class);
 			if (objs != null) {
-				this.SetValue(property, getListValue(property, objs));
+				this.setValue(property, getListValue(property, objs));
 				continue;
 			}
-			this.SetValue(property, GetPrimitiveValue(property, value));
+			this.setValue(property, getPrimitiveValue(property, value));
 		}
 	}
 
-	public DTObject GetData()
-	 {
-	     var data = DTObject.editable();
-	     var properties = this.Define.Properties;
-	     foreach (var property in properties)
-	     {
-	         var value = this.GetValue(property);
-	         var obj = value as DynamicObject;
-	         if (obj != null)
-	         {
-	             value = obj.GetData();  //对象
-	             data.SetValue(property.Name, value);
-	             continue;
-	         }
+	@SuppressWarnings("unchecked")
+	public DTObject getData() {
+		var data = DTObject.editable();
+		for (var property : this.properties()) {
+			var value = this.getValue(property);
+			var obj = TypeUtil.as(value, DynamicObject.class);
+			if (obj != null) {
+				value = obj.getData(); // 对象
+				data.setValue(property.name(), value);
+				continue;
+			}
 
-	         var list = value as IEnumerable<DynamicObject>;
-	         if (list != null)
-	         {
-	             //集合
-	             data.Push(property.Name, list, (item) =>
-	              {
-	                  return item.GetData();
-	              });
-	             continue;
-	         }
+			var list = TypeUtil.as(value, Iterable.class);
+			if (list != null) {
+				// 集合
+				data.push(property.name(), list, (item) -> {
+					var o = TypeUtil.as(item, DynamicObject.class);
+					if (o != null)
+						return o.getData();
 
-	         data.SetValue(property.Name, value); //值
-	     }
-	     return data;
-	 }
+					return DTObject.value(item);
+				});
+				continue;
+			}
 
-	private Object getObjectValue(PropertyMeta property, DTObject value) {
+			data.setValue(property.name(), value); // 值
+		}
+		return data;
+	}
+
+	private Object getObjectValue(DomainProperty property, DTObject value) {
 		switch (property.category()) {
 		case DomainPropertyCategory.AggregateRoot:
 		case DomainPropertyCategory.EntityObject:
@@ -137,114 +162,84 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 	/// <param name="data"></param>
 	static DomainObject createInstance(Class<?> objectType, DTObject data)
 	{
-	    if (data.isEmpty()) return (DynamicObject)this.GetEmptyInstance();
-	    DynamicObject obj = null;
-	    using (var temp = ArgsPool.Borrow2())
-	    {
-	        var args = temp.Item;
-	        args[0] = this;
-	        args[1] = false;
-	        obj = (DynamicObject)this.Constructor.CreateInstance(args);
-	    }
+		if(!objectType.isAssignableFrom(IDynamicObject.class)) {
+			throw new DomainDrivenException(Language.strings("NotSupportRefNative"); 
+		}
+		
+	    if (data.isEmpty()) return DomainObject.getEmpty(objectType);
+	    DynamicObject obj = (DynamicObject)Activator.createInstance(objectType);
 	    //加载数据
-	    obj.Load(data);
+	    obj.load(data);
 	    return obj;
 	}
 
-	#endregion
+	/**
+	 * 将对象 {@target} 的数据同步到当前对象中
+	 * 
+	 * @param target
+	 */
+	void sync(DynamicObject target) {
+		for (var property : this.properties()) {
+			var value = target.getValue(property);
+			this.setValue(property, value);
+		}
+	}
 
-	#
-
-	region 同步对象
-
-	/// <summary>
-	/// 将对象<paramref name="target"/>的数据同步到当前对象中
-	/// </summary>
-	/// <param name="target"></param>
-	internal
-
-	void Sync(DynamicObject target)
+	/**
+	 * 从dto中加载数据
+	 */
+	public Iterable<DynamicRoot> getRoots()
 	 {
-	     var properties = this.Define.Properties;
-	     foreach (var property in properties)
+	     ArrayList<DynamicRoot> roots = new ArrayList<>();
+
+	     for (var property : this.properties())
 	     {
-	         var value = target.GetValue(property);
-	         this.SetValue(property, value);
-	     }
-	 }
-
-	/// <summary>
-	/// 标记为快照
-	/// </summary>
-	internal
-
-	void MarkSnapshot()
-	 {
-	     this.SetValue(this.Define.SnapshotProperty, true);
-	 }
-
-	#endregion
-
-	#
-
-	region 获取成员根对象
-
-	/// <summary>
-	/// 从dto中加载数据
-	/// </summary>
-	/// <param name="data"></param>
-	public IEnumerable<DynamicRoot> GetRoots()
-	 {
-	     List<DynamicRoot> roots = new List<DynamicRoot>();
-	     var properties = this.Define.Properties;
-	     foreach (var property in properties)
-	     {
-	         switch (property.DomainPropertyType)
+	         switch (property.category())
 	         {
-	             case DomainPropertyType.AggregateRoot:
+	             case DomainPropertyCategory.AggregateRoot:
 	                 {
-	                     var value = this.GetValue(property);
+	                     var value = this.getValue(property);
 	                     var root = (DynamicRoot)value;
-	                     if(!root.IsEmpty())
+	                     if(!root.isEmpty())
 	                     {
-	                         roots.Add(root);
-	                         roots.AddRange(root.GetRoots());
+	                         roots.add(root);
+	                         ListUtil.addRange(roots, root.getRoots());
 	                     }
 	                 }
 	                 break;
-	             case DomainPropertyType.EntityObject:
-	             case DomainPropertyType.ValueObject:
+	             case DomainPropertyCategory.EntityObject:
+	             case DomainPropertyCategory.ValueObject:
 	                 {
-	                     var value = this.GetValue(property);
+	                     var value = this.getValue(property);
 	                     var obj = (DynamicObject)value;
-	                     if (!obj.IsEmpty())
+	                     if (!obj.isEmpty())
 	                     {
-	                         roots.AddRange(obj.GetRoots());
+	                    	 ListUtil.addRange(roots, obj.getRoots());
 	                     }
 	                 }
 	                 break;
-	             case DomainPropertyType.AggregateRootList:
+	             case DomainPropertyCategory.AggregateRootList:
 	                 {
-	                     var list = (IEnumerable)this.GetValue(property);
-	                     foreach (DynamicRoot root in list)
+	                     var list = (Iterable)this.getValue(property);
+	                     for (DynamicRoot root : list)
 	                     {
-	                         if (!root.IsEmpty())
+	                         if (!root.isEmpty())
 	                         {
-	                             roots.Add(root);
-	                             roots.AddRange(root.GetRoots());
+	                             roots.add(root);
+	                             ListUtil.addRange(roots, root.getRoots());
 	                         }
 	                     }
 	                 }
 	                 break;
-	             case DomainPropertyType.EntityObjectList:
-	             case DomainPropertyType.ValueObjectList:
+	             case DomainPropertyCategory.EntityObjectList:
+	             case DomainPropertyCategory.ValueObjectList:
 	                 {
-	                     var list = (IEnumerable)this.GetValue(property);
-	                     foreach(DynamicObject obj in list)
+	                     var list = (Iterable)this.GetValue(property);
+	                     for(DynamicObject obj : list)
 	                     {
-	                         if (!obj.IsEmpty())
+	                         if (!obj.isEmpty())
 	                         {
-	                             roots.AddRange(obj.GetRoots());
+	                        	 ListUtil.addRange(roots, obj.getRoots());
 	                         }
 	                     }
 	                 }
