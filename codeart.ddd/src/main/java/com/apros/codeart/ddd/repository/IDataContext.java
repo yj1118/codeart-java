@@ -1,108 +1,106 @@
 package com.apros.codeart.ddd.repository;
 
-public interface IDataContext {
+import java.util.function.Supplier;
 
-	#
-	region 事务管理
-	/// <summary>
-	/// 表示当前数据上下文的实例是否正在事务模式中
-	/// </summary>
-	bool InTransaction
-	{ get; }
+import com.apros.codeart.ddd.IAggregateRoot;
+import com.apros.codeart.ddd.QueryLevel;
 
-	/// <summary>
-	/// 开始进入事务模式
-	/// </summary>
-	void BeginTransaction();
+public interface IDataContext extends AutoCloseable {
 
-	/// <summary>
-	/// 提交所有执行计划
-	/// </summary>
-	void Commit();
+//	region 事务管理
 
-	/// <summary>
-	/// 抛弃所有未提交的执行计划，并重置事务模式
-	/// </summary>
-	void Rollback();
+	/**
+	 * 
+	 * 表示当前数据上下文的实例是否正在事务模式中
+	 * 
+	 * @return
+	 */
+	boolean inTransaction();
 
-	/// <summary>
-	/// 注册回滚项，外界可以指定回滚内容
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="args"></param>
-	void RegisterRollback(RepositoryRollbackEventArgs e);
+	/**
+	 * 开始进入事务模式
+	 */
+	void beginTransaction();
 
-	/// <summary>
-	/// 执行计划中是否有未提交的单元
-	/// </summary>
-	bool IsDirty
-	{ get; }
+	/**
+	 * 提交所有执行计划
+	 */
+	void commit();
 
-	/// <summary>
-	/// 是否正在提交事务
-	/// </summary>
-	bool IsCommiting
-	{ get; }
+	/**
+	 * 抛弃所有未提交的执行计划，并重置事务模式
+	 */
+	void rollback();
 
-	#endregion
+	/**
+	 * 注册回滚项，外界可以指定回滚内容
+	 * 
+	 * @param e
+	 */
+	void registerRollback(RepositoryRollbackEventArgs e);
 
-	#
-	region 工作单元
+	/**
+	 * 执行计划中是否有未提交的单元
+	 * 
+	 * @return
+	 */
+	boolean isDirty();
 
-	void RegisterAdded<T>(
-	T item, IPersistRepository repository)
-	where T:IAggregateRoot;
+	/**
+	 * 是否正在提交事务
+	 * 
+	 * @return
+	 */
+	boolean isCommiting();
 
-	void RegisterUpdated<T>(
-	T item, IPersistRepository repository)
-	where T:IAggregateRoot;
+//	region 工作单元
 
-	void RegisterDeleted<T>(
-	T item, IPersistRepository repository)
-	where T:IAggregateRoot;
+	<T extends IAggregateRoot> void registerAdded(T item, IPersistRepository repository);
 
-	/// <summary>
-	/// 向数据上下文注册查询，该方法会控制锁和同步查询结果
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="level"></param>
-	/// <param name="persistQuery"></param>
-	/// <returns></returns>
-	T RegisterQueried<T>(
-	QueryLevel level, Func<T>persistQuery)
-	where T:IAggregateRoot;
+	<T extends IAggregateRoot> void registerUpdated(T item, IPersistRepository repository);
 
-	/// <summary>
-	/// 向数据上下文注册查询，该方法会控制锁和同步查询结果
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="level"></param>
-	/// <param name="persistQuery"></param>
-	/// <returns></returns>
-	IEnumerable<T> RegisterQueried<T>(QueryLevel level, Func<IEnumerable<T>>persistQuery)
-	where T:IAggregateRoot;
+	<T extends IAggregateRoot> void registerDeleted(T item, IPersistRepository repository);
 
-	/// <summary>
-	/// 向数据上下文注册查询，该方法会控制锁和同步查询结果
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="level"></param>
-	/// <param name="persistQuery"></param>
-	/// <returns></returns>
-	Page<T> RegisterQueried<T>(QueryLevel level, Func<Page<T>>persistQuery)
-	where T:IAggregateRoot;
+	/**
+	 * 
+	 * 向数据上下文注册查询，该方法会控制锁和同步查询结果
+	 * 
+	 * @param <T>
+	 * @param level
+	 * @param persistQuery
+	 * @return
+	 */
+	<T extends IAggregateRoot> T registerQueried(Class<T> objectType, QueryLevel level, Supplier<T> persistQuery);
 
-	#endregion
+	/**
+	 * 向数据上下文注册集合查询，该方法会控制锁和同步查询结果
+	 * 
+	 * @param <T>
+	 * @param level
+	 * @param persistQuery
+	 * @return
+	 */
+	<T extends IAggregateRoot> Iterable<T> registerCollectionQueried(Class<T> objectType, QueryLevel level,
+			Supplier<Iterable<T>> persistQuery);
 
-	#
-	region 锁
+	/**
+	 * 
+	 * 向数据上下文注册翻页查询，该方法会控制锁和同步查询结果
+	 * 
+	 * @param <T>
+	 * @param objectType
+	 * @param level
+	 * @param persistQuery
+	 * @return
+	 */
+	<T extends IAggregateRoot> Page<T> registerPageQueried(Class<T> objectType, QueryLevel level,
+			Supplier<Page<T>> persistQuery);
 
-	/// <summary>
-	/// 开启锁
-	/// </summary>
-	/// <param name="level"></param>
-	void OpenLock(QueryLevel level);
-
-	#endregion
+	/**
+	 * 开启锁
+	 * 
+	 * @param level
+	 */
+	void openLock(QueryLevel level);
 
 }
