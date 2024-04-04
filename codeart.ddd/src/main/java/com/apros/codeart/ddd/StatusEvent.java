@@ -11,7 +11,7 @@ import com.apros.codeart.util.ReaderWriterLockSlim;
 /**
  * 状态事件，与某一个领域对象的状态相关的事件
  */
-final class StatusEvent {
+public final class StatusEvent {
 
 	private StatusEvent() {
 	}
@@ -47,7 +47,9 @@ final class StatusEvent {
 
 //	region 执行状态事件
 
-	static void execute(Class<? extends IDomainObject> objectType, StatusEventType eventType, IDomainObject obj) {
+	public static void execute(StatusEventType eventType, IDomainObject obj) {
+
+		var objectType = obj.getClass();
 		{
 			// 先触发类型级别的事件
 			var args = getEventArgs(objectType);

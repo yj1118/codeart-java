@@ -7,7 +7,7 @@ import com.google.common.collect.Iterables;
 
 public final class LockManager {
 	public static void lock(Iterable<IAggregateRoot> roots) {
-		if (Iterables.size(roots) == 0)
+		if (roots == null || Iterables.size(roots) == 0)
 			return;
 
 		if (_manager == null)

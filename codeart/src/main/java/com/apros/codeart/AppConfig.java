@@ -41,6 +41,10 @@ public final class AppConfig {
 		return Iterables.toArray(result, String.class);
 	}
 
+	public static DTObject section(String path) {
+		return _config.getObject(path, null);
+	}
+
 	private static final DTObject _config;
 
 	static {
