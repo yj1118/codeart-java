@@ -1,7 +1,7 @@
 package com.apros.codeart.context;
 
-@ContextSessionAccess
-public final class ThreadSession implements IContextSession {
+@AppSessionAccess
+public final class ThreadSession implements IAppSession {
 	private static ThreadLocal<ContentEntries> local = new ThreadLocal<>();
 
 	private ThreadSession() {

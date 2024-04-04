@@ -11,7 +11,7 @@ import java.util.LinkedList;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-import com.apros.codeart.context.ContextSession;
+import com.apros.codeart.context.AppSession;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
@@ -318,7 +318,7 @@ public final class DTEObject extends DTEntity {
 	 * @return
 	 */
 	public static DTEObject obtainEditable(String name) {
-		return ContextSession.registerItem(new DTEObject(false, name, new LinkedList<DTEntity>()));
+		return AppSession.registerItem(new DTEObject(false, name, new LinkedList<DTEntity>()));
 	}
 
 	/**

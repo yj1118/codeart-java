@@ -2,7 +2,7 @@ package com.apros.codeart.context;
 
 import com.apros.codeart.pooling.IReusable;
 
-public interface IContextSession extends IReusable {
+public interface IAppSession extends IReusable {
 
 	/**
 	 * 指示会话是否有效

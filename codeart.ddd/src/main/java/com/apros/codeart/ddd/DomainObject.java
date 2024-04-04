@@ -666,8 +666,8 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 			return;// 构造时，不触发任何事件
 
 		onChanged();
-		// 执行边界事件，todo,有可能考虑用代理对象来实现,另外该机制用的很少，可以暂时不考虑
-//		StatusEvent.Execute(this.ObjectType, StatusEventType.Changed, this);
+
+		StatusEvent.execute(this.getClass(), StatusEventType.Changed, this);
 	}
 
 	protected void onChanged() {

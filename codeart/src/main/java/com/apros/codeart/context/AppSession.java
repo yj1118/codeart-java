@@ -14,8 +14,8 @@ import com.apros.codeart.runtime.MethodUtil;
  * 上下文程序会话，指的是在应用程序执行期间，不同的请求会拥有自己的appSession，该对象仅对当前用户负责
  * 不会有并发冲突，该对象内部的数据是当前用户独享的
  */
-public final class ContextSession {
-	private ContextSession() {
+public final class AppSession {
+	private AppSession() {
 	}
 
 	/**
@@ -85,7 +85,7 @@ public final class ContextSession {
 		_endHandles.add(MethodUtil.get(fullMethodName));
 	}
 
-	private static IContextSession getCurrent() {
+	private static IAppSession getCurrent() {
 		return ThreadSession.instance;
 	}
 

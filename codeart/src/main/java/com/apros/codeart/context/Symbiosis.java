@@ -51,7 +51,7 @@ final class Symbiosis implements IReusable {
 	 * @throws Exception
 	 */
 	public static Symbiosis getCurrent() {
-		return ContextSession.<Symbiosis>obtainItem(_sessionKey, _pool);
+		return AppSession.<Symbiosis>obtainItem(_sessionKey, _pool);
 	}
 
 	public static <T> T obtain(Pool<T> pool) {

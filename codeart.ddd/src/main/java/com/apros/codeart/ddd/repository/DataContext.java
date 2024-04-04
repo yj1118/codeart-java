@@ -1,8 +1,10 @@
 package com.apros.codeart.ddd.repository;
 
 import java.util.ArrayList;
+import java.util.function.Supplier;
 
 import com.apros.codeart.ddd.IAggregateRoot;
+import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.ListUtil;
 
@@ -98,111 +100,77 @@ public class DataContext implements IDataContext {
 
 //	region CUD
 
-	public void RegisterAdded<T>(
-	T item, IPersistRepository repository)
-	where T:IAggregateRoot
-	{
-		ProcessAction(ScheduledAction.Borrow(item, repository, ScheduledActionType.Create));
-		item.SaveState();
-		item.MarkClean();// 无论是延迟执行，还是立即执行，我们都需要提供统一的状态给领域层使用
+	public <T extends IAggregateRoot> void registerAdded(T item, IPersistRepository repository) {
+		processAction(new ScheduledAction(item, repository, ScheduledActionType.Create));
+		item.saveState();
+		item.markClean();// 无论是延迟执行，还是立即执行，我们都需要提供统一的状态给领域层使用
 	}
 
-	public void RegisterUpdated<T>(
-	T item, IPersistRepository repository)
-	where T:IAggregateRoot
-	{
-		ProcessAction(ScheduledAction.Borrow(item, repository, ScheduledActionType.Update));
-		item.SaveState();
-		item.MarkClean();// 无论是延迟执行，还是立即执行，我们都需要提供统一的状态给领域层使用
+	public <T extends IAggregateRoot> void registerUpdated(T item, IPersistRepository repository) {
+		processAction(ScheduledAction.Borrow(item, repository, ScheduledActionType.Update));
+		item.saveState();
+		item.markClean();// 无论是延迟执行，还是立即执行，我们都需要提供统一的状态给领域层使用
 	}
 
-	public void RegisterDeleted<T>(
-	T item, IPersistRepository repository)
-	where T:IAggregateRoot
-	{
-		ProcessAction(ScheduledAction.Borrow(item, repository, ScheduledActionType.Delete));
-		item.SaveState();
-		item.MarkDirty();// 无论是延迟执行，还是立即执行，我们都需要提供统一的状态给领域层使用
+	public <T extends IAggregateRoot> void registerDeleted(T item, IPersistRepository repository) {
+		processAction(ScheduledAction.Borrow(item, repository, ScheduledActionType.Delete));
+		item.saveState();
+		item.markDirty();// 无论是延迟执行，还是立即执行，我们都需要提供统一的状态给领域层使用
 	}
 
-	#endregion
+//	region 锁
 
-	#
-	region 锁
-
-	public void OpenLock(QueryLevel level) {
-		if (IsLockQuery(level))
-			OpenTimelyMode();
+	public void openLock(QueryLevel level) {
+		if (isLockQuery(level))
+			openTimelyMode();
 	}
 
-	private bool IsLockQuery(QueryLevel level) {
-		return level == QueryLevel.HoldSingle || level == QueryLevel.Single || level == QueryLevel.Share;
+	private boolean isLockQuery(QueryLevel level) {
+		return level.equals(QueryLevel.HoldSingle) || level.equals(QueryLevel.Single) || level.equals(QueryLevel.Share);
 	}
 
-	#endregion
+//	region 领域对象查询服务
 
-	#
-
-	region 领域对象查询服务
-
-	/// <summary>
-	/// 向数据上下文注册查询，该方法会控制锁和同步查询结果
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="result"></param>
-	public T RegisterQueried<T>(
-	QueryLevel level, Func<T>persistQuery)
-	where T:IAggregateRoot
-	{
-		this.OpenLock(level);
+	/**
+	 * 向数据上下文注册查询，该方法会控制锁和同步查询结果
+	 */
+	public <T extends IAggregateRoot> T registerQueried(Class<T> objectType, QueryLevel level,
+			Supplier<T> persistQuery) {
+		this.openLock(level);
 		return persistQuery();
 	}
 
-	/// <summary>
-	/// 向数据上下文注册查询，该方法会控制锁和同步查询结果
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="result"></param>
-	public IEnumerable<T> RegisterQueried<T>(QueryLevel level, Func<IEnumerable<T>>persistQuery)
-	where T:IAggregateRoot
-	{
-		this.OpenLock(level);
+	/**
+	 * 向数据上下文注册集合查询，该方法会控制锁和同步查询结果
+	 */
+	public <T extends IAggregateRoot> Iterable<T> registerCollectionQueried(Class<T> objectType, QueryLevel level,
+			Supplier<Iterable<T>> persistQuery) {
+		this.openLock(level);
 		return persistQuery();
 	}
 
-	/// <summary>
-	/// 向数据上下文注册查询，该方法会控制锁和同步查询结果
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="result"></param>
-	public Page<T> RegisterQueried<T>(QueryLevel level, Func<Page<T>>persistQuery)
-	where T:IAggregateRoot
-	{
-		this.OpenLock(level);
+	/**
+	 * 向数据上下文注册查询，该方法会控制锁和同步查询结果
+	 */
+	public <T extends IAggregateRoot> Page<T> registerPageQueried(Class<T> objectType, QueryLevel level,
+			Supplier<Page<T>> persistQuery) {
+		this.openLock(level);
 		return persistQuery();
 	}
 
-	#endregion
+//	region 执行计划
 
-	#
-	region 执行计划
+	private ArrayList<ScheduledAction> _actions;
 
-	private List<ScheduledAction> _actions;
-
-	private void InitializeSchedule() {
+	private void initializeSchedule() {
 		_actions = new List<ScheduledAction>();
 	}
 
-	private void DisposeSchedule() {
-		foreach(var action in _actions){ScheduledAction.Return(action);}_actions.Clear();
+	private void disposeSchedule() {
+		_actions.Clear();
 	}
 
-	/// <summary>
-	///
-	/// </summary>
-	/// <param name="action"></param>
-	/// <returns>如果延迟执行，返回true</returns>
-	private void ProcessAction(ScheduledAction action) {
+	private void processAction(ScheduledAction action) {
 		if (this._transactionStatus == TransactionStatus.Delay) {
 			_actions.Add(action);// 若处于延迟模式的事务中，那么将该操作暂存
 			return;
@@ -211,7 +179,7 @@ public class DataContext implements IDataContext {
 		if (this._transactionStatus == TransactionStatus.Timely) {
 			// 若已经开启全局事务，直接执行
 			_actions.Add(action); // 直接执行也要加入到actions集合中
-			ExecuteAction(action);
+			executeAction(action);
 			return;
 		}
 
@@ -219,43 +187,35 @@ public class DataContext implements IDataContext {
 			// 没有开启事务，立即执行
 			_conn.Begin();
 
-			ExecuteAction(action);
-			RaisePreCommit(action);
+			executeAction(action);
+			raisePreCommit(action);
 
 			_conn.Commit();
-			RaiseCommitted(action);
-			// using (ITransactionManager manager = GetTransactionManager())
-			// {
-			// manager.Begin();
-			// ExecuteAction(action);
-			// //提交事务
-			// RaisePreCommit(action);
-			// manager.Commit();
-			// RaiseCommitted(action);
-			// }
+			raiseCommitted(action);
+
 			return;
 		}
 	}
 
-	private void RaisePreCommit(ScheduledAction action) {
+	private void raisePreCommit(ScheduledAction action) {
 		switch (action.Type) {
 		case ScheduledActionType.Create:
 			action.Target.OnAddPreCommit();
-			StatusEventExecute(StatusEventType.AddPreCommit, action.Target);
+			statusEventExecute(StatusEventType.AddPreCommit, action.Target);
 			break;
 		case ScheduledActionType.Update:
 			action.Target.OnUpdatePreCommit();
-			StatusEventExecute(StatusEventType.UpdatePreCommit, action.Target);
+			statusEventExecute(StatusEventType.UpdatePreCommit, action.Target);
 			break;
 		case ScheduledActionType.Delete:
 			action.Target.OnDeletePreCommit();
-			StatusEventExecute(StatusEventType.DeletePreCommit, action.Target);
+			statusEventExecute(StatusEventType.DeletePreCommit, action.Target);
 			break;
 		}
 	}
 
-	private void StatusEventExecute(StatusEventType type, IAggregateRoot target) {
-		StatusEvent.Execute((target as DomainObject).ObjectType,type,target);
+	private void statusEventExecute(StatusEventType type, IAggregateRoot target) {
+		StatusEvent.execute((target as DomainObject).ObjectType,type,target);
 	}
 
 	private void RaiseCommitted(ScheduledAction action) {

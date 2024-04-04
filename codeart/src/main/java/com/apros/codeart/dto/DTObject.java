@@ -12,7 +12,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.apros.codeart.context.ContextSession;
+import com.apros.codeart.context.AppSession;
 import com.apros.codeart.dto.serialization.DTObjectMapper;
 import com.apros.codeart.dto.serialization.IDTOSerializable;
 import com.apros.codeart.i18n.Language;
@@ -1125,11 +1125,11 @@ public class DTObject implements INullProxy {
 //	#endregion
 
 	static DTObject obtain(DTEObject root, boolean readonly) {
-		return ContextSession.registerItem(new DTObject(root, readonly));
+		return AppSession.registerItem(new DTObject(root, readonly));
 	}
 
 	static DTObject obtain() {
-		return ContextSession.registerItem(new DTObject(DTEObject.obtainEditable(StringUtil.empty()), false));
+		return AppSession.registerItem(new DTObject(DTEObject.obtainEditable(StringUtil.empty()), false));
 	}
 
 }

@@ -2,6 +2,7 @@ package com.apros.codeart.ddd.repository;
 
 import com.apros.codeart.ddd.IAggregateRoot;
 import com.apros.codeart.ddd.QueryLevel;
+import com.apros.codeart.ddd.StatusEvent;
 
 public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends PersistRepository
 		implements IRepository {
