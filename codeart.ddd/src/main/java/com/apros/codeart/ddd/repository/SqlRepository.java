@@ -1,25 +1,28 @@
 package com.apros.codeart.ddd.repository;
 
+import java.util.function.Consumer;
+
+import com.apros.codeart.ddd.DynamicData;
 import com.apros.codeart.ddd.IAggregateRoot;
 import com.apros.codeart.ddd.QueryLevel;
 
-public class SqlRepository<TRoot extends IAggregateRoot> extends AbstractRepository<TRoot> {
+public abstract class SqlRepository<TRoot extends IAggregateRoot> extends AbstractRepository<TRoot> {
 
 //	#region 增删改
 
 	@Override
 	protected void persistAddRoot(TRoot obj)
 	 {
-	     DataContext.Using(() ->
+	     DataContext.using(() ->
 	     {
 	         DataPortal.Create(obj as DomainObject);
 	     });
 	 }
 
 	@Override
-	protected void PersistUpdateRoot(TRoot obj)
+	protected void persistUpdateRoot(TRoot obj)
 	 {
-	     DataContext.Using(() ->
+	     DataContext.using(() ->
 	     {
 	         DataPortal.Update(obj as DomainObject);
 	     });
@@ -48,15 +51,12 @@ public class SqlRepository<TRoot extends IAggregateRoot> extends AbstractReposit
 	/// <param name="expression"></param>
 	/// <param name="level"></param>
 	/// <returns></returns>
-	protected T QuerySingle<T>(
-	string expression, Action<DynamicData>fillArg,
-	QueryLevel level)
-	where T:class,IAggregateRoot
+	protected <T extends IAggregateRoot> T QuerySingle(String expression, Consumer<DynamicData> fillArg, QueryLevel level)
 	{
 	     T result = null;
-	     DataContext.Using(() =>
+	     DataContext.using((access) ->
 	     {
-	         result = DataContext.Current.QuerySingle<T>(expression, fillArg, level);
+	         result = access.querySingle<T>(expression, fillArg, level);
 	     });
 	     return result;
 	 }

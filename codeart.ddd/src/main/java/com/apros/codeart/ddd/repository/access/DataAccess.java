@@ -10,16 +10,14 @@ public final class DataAccess {
 		_conn = conn;
 	}
 
-	public Object executeScalar(String sql, object param, QueryLevel level) {
+	public Object executeScalar(String sql, Object[] params, QueryLevel level) {
 		sql = getLevelSql(sql, level);
-		return _conn.ExecuteScalar(sql, param, _tran);
+		return QueryRunner.executeScalar(_conn, sql, param);
 	}
 
-	public T ExecuteScalar<T>(
-	string sql, object param=null,
-	QueryLevel level = null)
+	public <T> executeScalar(String sql, Object param, QueryLevel level)
 	{
-	    sql = GetLevelSql(sql, level);
+	    sql = getLevelSql(sql, level);
 	    return _conn.ExecuteScalar<T>(sql, param, _tran);
 	}
 

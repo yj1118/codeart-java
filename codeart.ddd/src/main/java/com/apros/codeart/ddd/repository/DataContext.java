@@ -575,6 +575,10 @@ public class DataContext implements IDataContext {
 		}, timely);
 	}
 
+	public static void using(Consumer<DataAccess> action) {
+		using(action, false);
+	}
+
 	public static void using(Consumer<DataAccess> action, boolean timely) {
 		if (DataContext.existCurrent()) {
 			var dataContext = DataContext.getCurrent();

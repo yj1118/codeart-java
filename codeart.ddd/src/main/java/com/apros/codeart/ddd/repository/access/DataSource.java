@@ -63,4 +63,9 @@ final class DataSource {
 			throw propagate(e);
 		}
 	}
+
+	public static DatabaseType getDatabaseType() {
+		return DataSourceHolder.TYPE;
+	}
+
 }
