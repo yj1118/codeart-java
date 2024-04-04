@@ -1,6 +1,6 @@
 module codeart.ddd {
 	requires com.google.common;
-	requires java.sql;
+	requires transitive java.sql;
 	requires com.zaxxer.hikari;
 	requires codeart;
 
