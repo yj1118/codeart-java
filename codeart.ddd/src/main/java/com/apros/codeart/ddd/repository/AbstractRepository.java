@@ -3,6 +3,7 @@ package com.apros.codeart.ddd.repository;
 import com.apros.codeart.ddd.IAggregateRoot;
 import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.ddd.StatusEvent;
+import com.apros.codeart.ddd.StatusEventType;
 
 public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends PersistRepository
 		implements IRepository {
@@ -10,12 +11,12 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 	// #region 增加数据
 
 	protected void registerAdded(IAggregateRoot obj) {
-		DataContext.Current.RegisterAdded(obj, this);
+		DataContext.getCurrent().registerAdded(obj, this);
 	}
 
 	protected void registerRollbackAdd(IAggregateRoot obj) {
 		var args = new RepositoryRollbackEventArgs(obj, this, RepositoryAction.Add);
-		DataContext.Current.RegisterRollback(args);
+		DataContext.getCurrent().registerRollback(args);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -27,13 +28,13 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 		if (obj.isEmpty())
 			return;
 
-		DataContext.Using(() -> {
-			RegisterRollbackAdd(obj);
-			StatusEvent.Execute(StatusEventType.PreAdd, obj);
-			obj.OnPreAdd();
-			RegisterAdded(obj);
-			obj.OnAdded();
-			StatusEvent.Execute(StatusEventType.Added, obj);
+		DataContext.using(() -> {
+			registerRollbackAdd(obj);
+			StatusEvent.execute(StatusEventType.PreAdd, obj);
+			obj.onPreAdd();
+			registerAdded(obj);
+			obj.onAdded();
+			StatusEvent.execute(StatusEventType.Added, obj);
 		});
 	}
 
