@@ -14,11 +14,11 @@ public final class QueryLevel {
 		_code = code;
 	}
 
-	static final int NoneCode = 1;
-	static final int ShareCode = 2;
-	static final int SingleCode = 3;
-	static final int HoldSingleCode = 4;
-	static final int MirroringCode = 5;
+	public static final int NoneCode = 1;
+	public static final int ShareCode = 2;
+	public static final int SingleCode = 3;
+	public static final int HoldSingleCode = 4;
+	public static final int MirroringCode = 5;
 
 	/**
 	 * 无锁
@@ -64,17 +64,4 @@ public final class QueryLevel {
 	public int hashCode() {
 		return Integer.hashCode(this.code());
 	}
-
-//	public String GetMSSqlLockCode() {
-//		switch (this.Code) {
-//		case QueryLevel.ShareCode:
-//			return string.Empty;
-//		case QueryLevel.SingleCode:
-//			return " with(xlock,rowlock) ";
-//		case QueryLevel.HoldSingleCode:
-//			return " with(xlock,holdlock) ";
-//		default:
-//			return " with(nolock) "; // None和Mirror 都是无锁模式
-//		}
-//	}
 }

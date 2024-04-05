@@ -7,6 +7,7 @@ import java.sql.SQLException;
 
 import com.apros.codeart.AppConfig;
 import com.apros.codeart.ddd.DomainDrivenException;
+import com.apros.codeart.ddd.repository.sqlserver.SQLServerAgent;
 import com.apros.codeart.i18n.Language;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -19,6 +20,8 @@ final class DataSource {
 		private static final HikariDataSource INSTANCE;
 
 		private static final DatabaseType TYPE;
+
+		private static final IDatabaseAgent AGENT;
 
 		private static DatabaseType getType(String dbType) {
 			switch (dbType.toLowerCase()) {
@@ -34,11 +37,29 @@ final class DataSource {
 			throw new DomainDrivenException(Language.strings("codeart.ddd", "UnsupportedDatabase"));
 		}
 
+		private static IDatabaseAgent getAgent(DatabaseType dbType) {
+			switch (dbType) {
+//			case DatabaseType.MySql:
+//				return null;
+//			case DatabaseType.PostgreSql:
+//				return DatabaseType.PostgreSql;
+//			case DatabaseType.Oracle:
+//				return DatabaseType.Oracle;
+			case DatabaseType.SqlServer:
+				return SQLServerAgent.Instance;
+			default:
+				break;
+			}
+			throw new DomainDrivenException(Language.strings("codeart.ddd", "UnsupportedDatabase"));
+		}
+
 		static {
 
 			var db = AppConfig.section("db");
 			if (db != null) {
 				TYPE = getType(db.getString("type"));
+
+				AGENT = getAgent(TYPE);
 
 				// 创建HikariConfig配置对象
 				HikariConfig config = new HikariConfig();
@@ -52,6 +73,7 @@ final class DataSource {
 			} else {
 				INSTANCE = null;
 				TYPE = null;
+				AGENT = null;
 			}
 		}
 	}
@@ -66,6 +88,10 @@ final class DataSource {
 
 	public static DatabaseType getDatabaseType() {
 		return DataSourceHolder.TYPE;
+	}
+
+	public static IDatabaseAgent getAgent() {
+		return DataSourceHolder.AGENT;
 	}
 
 }

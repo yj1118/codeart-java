@@ -63,6 +63,25 @@ final class QueryFilter {
 		}
 	}
 
+	public static class ScalarLong implements IQueryFilter {
+
+		private long _result;
+
+		public long result() {
+			return _result;
+		}
+
+		public ScalarLong() {
+		}
+
+		@Override
+		public void extract(ResultSet rs) throws SQLException {
+			if (rs.next()) {
+				_result = rs.getLong(1);
+			}
+		}
+	}
+
 	public static class ScalarGuid implements IQueryFilter {
 
 		private UUID _result;

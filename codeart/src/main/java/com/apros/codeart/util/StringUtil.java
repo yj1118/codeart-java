@@ -83,6 +83,12 @@ public final class StringUtil {
 		return trim(str, " ");
 	}
 
+	public static String insert(String str, int offset, String value) {
+		var sb = new StringBuilder();
+		sb.insert(offset, value);
+		return sb.toString();
+	}
+
 	public static ArrayList<String> trim(String[] strs) {
 		return ListUtil.<String, String>map(strs, (e) -> StringUtil.trim(e));
 	}

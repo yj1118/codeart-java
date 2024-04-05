@@ -1,6 +1,11 @@
 package com.apros.codeart.ddd.repository.access;
 
 import java.sql.Connection;
+import java.util.UUID;
+
+import com.apros.codeart.ddd.Dictionary;
+import com.apros.codeart.ddd.QueryLevel;
+import com.apros.codeart.dto.DTObject;
 
 public final class DataAccess {
 
@@ -10,110 +15,77 @@ public final class DataAccess {
 		_conn = conn;
 	}
 
-	public Object executeScalar(String sql, Object[] params, QueryLevel level) {
-		sql = getLevelSql(sql, level);
-		return QueryRunner.executeScalar(_conn, sql, param);
+	public int execute(String sql, Dictionary param, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.execute(_conn, sql, param);
 	}
 
-	public <T> executeScalar(String sql, Object param, QueryLevel level)
-	{
-	    sql = getLevelSql(sql, level);
-	    return _conn.ExecuteScalar<T>(sql, param, _tran);
+	public Object queryScalar(String sql, Dictionary params, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryScalar(_conn, sql, params);
 	}
 
-	public int execute(string sql, object param = null, QueryLevel level = null)
-	{
-	    sql = GetLevelSql(sql, level);
-	    return _conn.Execute(sql, param, _tran);
+	public <T> T queryScalar(Class<T> valueType, String sql, Dictionary param, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryScalar(valueType, _conn, sql, param);
 	}
 
-	public IEnumerable<T> ExecuteScalars<T>(
-	string sql, object param=null,
-	QueryLevel level = null)
-	{
-	    sql = GetLevelSql(sql, level);
-	    return _conn.Query<T>(sql, param, _tran);
+	public int queryScalarInt(String sql, Dictionary params, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryScalarInt(_conn, sql, params);
 	}
 
-	public IDataReader ExecuteReader(string sql, object param = null, QueryLevel level = null)
-	{
-	    sql = GetLevelSql(sql, level);
-	    return _conn.ExecuteReader(sql, param, _tran);
+	public long queryScalarLong(String sql, Dictionary params, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryScalarLong(_conn, sql, params);
 	}
 
-	public T QuerySingle<T>(
-	string sql, object param=null,
-	QueryLevel level = null)
-	where T:IDataObject,new()
-	{
-	    sql = GetLevelSql(sql, level);
-	    var obj = new T();
-	    using (var reader = _conn.ExecuteReader(sql, param, _tran))
-	    {
-	        obj.Load(reader);
-	    }
-	    return obj;
+	public long queryScalarLong(String sql) {
+		return QueryRunner.queryScalarLong(_conn, sql, null);
 	}
 
-	public dynamic QuerySingle(string sql, object param = null, QueryLevel level = null)
-	{
-	    sql = GetLevelSql(sql, level);
-	    return _conn.QuerySingle(sql, param, _tran);
+	public UUID queryScalarGuid(String sql, Dictionary params, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryScalarGuid(_conn, sql, params);
 	}
 
-	public IEnumerable<T> Query<T>(
-	string sql, object param=null,
-	QueryLevel level = null)
-	where T:IDataObject,new()
-	{
-	    sql = GetLevelSql(sql, level);
-	    List<T> objs = new List<T>();
-	    using (var reader = _conn.ExecuteReader(sql, param, _tran))
-	    {
-	        while (true)
-	        {
-	            var obj = new T();
-	            obj.Load(reader);
-	            if (obj.IsEmpty()) break;
-	            objs.Add(obj);
-	        }
-	    }
-	    return objs;
+	public Iterable<Object> queryScalars(String sql, Dictionary params, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryScalars(_conn, sql, params);
 	}
 
-	public IEnumerable<dynamic> Query(string sql, object param = null, QueryLevel level = null)
-	{
-	    sql = GetLevelSql(sql, level);
-	    return _conn.Query(sql, param, _tran);
+	public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, Dictionary params, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryScalars(elementType, _conn, sql, params);
 	}
 
-	public dynamic QueryFirstOrDefault(string sql, object param = null, QueryLevel level = null)
-	{
-	    sql = GetLevelSql(sql, level);
-	    return _conn.QueryFirstOrDefault(sql, param, _tran);
+	public int[] queryScalarInts(String sql, Dictionary params, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryScalarInts(_conn, sql, params);
 	}
 
-	private static RegexPool _regexPool = new RegexPool(".+from[ ](.+?)(where|inner|left)", RegexOptions.IgnoreCase);
-
-	private static Func<string, Func<QueryLevel, string>> _getLevelSql = LazyIndexer.Init<string, Func<QueryLevel,string>>((sql)=>
-	{
-	     return LazyIndexer.Init<QueryLevel, string>((level) ->
-	     {
-	         using (var temp = _regexPool.Borrow())
-	         {
-	             var reg = temp.Item;
-	             var math = reg.Match(sql);
-	             if (!math.Success) throw new DomainEventException("解析level错误");
-	             var tableName = math.Groups[1].Value;
-	             var index = math.Groups[1].Index;
-	             return sql.Insert(index + tableName.Length, level.GetMSSqlLockCode());
-	         }
-	     });
-	 });
-
-	private static string GetLevelSql(string sql, QueryLevel level)
-	{
-	    if (level == null) return sql;
-	    return _getLevelSql(sql)(level);
+	public DTObject queryDTO(String sql, Dictionary params, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryDTO(_conn, sql, params);
 	}
+
+	public Iterable<DTObject> queryDTOs(String sql, Dictionary params, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryDTOs(_conn, sql, params);
+	}
+
+	public Dictionary queryRow(String sql, Dictionary params, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryRow(_conn, sql, params);
+	}
+
+	public Iterable<Dictionary> queryRows(String sql, Dictionary params, QueryLevel level) {
+		sql = supplementLock(sql, level);
+		return QueryRunner.queryRows(_conn, sql, params);
+	}
+
+	private static String supplementLock(String sql, QueryLevel level) {
+		return DataSource.getAgent().supplementLock(sql, level);
+	}
+
 }

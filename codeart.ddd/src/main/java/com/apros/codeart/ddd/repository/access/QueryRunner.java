@@ -51,6 +51,12 @@ public final class QueryRunner {
 		return filter.result();
 	}
 
+	public static long queryScalarLong(Connection conn, String sql, Dictionary param) {
+		var filter = new QueryFilter.ScalarLong();
+		query(conn, sql, param, filter);
+		return filter.result();
+	}
+
 	public static UUID queryScalarGuid(Connection conn, String sql, Dictionary param) {
 		var filter = new QueryFilter.ScalarGuid();
 		query(conn, sql, param, filter);
@@ -96,13 +102,13 @@ public final class QueryRunner {
 	 * @param param
 	 * @return
 	 */
-	public Dictionary queryRow(Connection conn, String sql, Dictionary param) {
+	public static Dictionary queryRow(Connection conn, String sql, Dictionary param) {
 		var filter = new Row();
 		query(conn, sql, param, filter);
 		return filter.result();
 	}
 
-	public Iterable<Dictionary> queryRows(Connection conn, String sql, Dictionary param) {
+	public static Iterable<Dictionary> queryRows(Connection conn, String sql, Dictionary param) {
 		var filter = new Rows();
 		query(conn, sql, param, filter);
 		return filter.result();
@@ -130,6 +136,9 @@ public final class QueryRunner {
 			return _sql;
 		}
 
+		/**
+		 * 每个项是一个参数名称，所在数组的序号+1就是他在sql里的参数序号
+		 */
 		private String[] _positions;
 
 		public QueryAdapter(String sql, String[] positions) {
@@ -145,6 +154,8 @@ public final class QueryRunner {
 		 * @return
 		 */
 		public void fillParams(PreparedStatement statement, Dictionary param) {
+			if (param == null)
+				return;
 			try {
 
 				for (var i = 0; i < _positions.length; i++) {
