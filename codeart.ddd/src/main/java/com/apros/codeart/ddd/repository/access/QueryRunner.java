@@ -7,9 +7,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.function.Function;
 
-import com.apros.codeart.ddd.DynamicData;
+import com.apros.codeart.ddd.Dictionary;
+import com.apros.codeart.ddd.repository.access.QueryFilter.IQueryFilter;
+import com.apros.codeart.ddd.repository.access.QueryFilter.Row;
+import com.apros.codeart.ddd.repository.access.QueryFilter.Rows;
+import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.util.LazyIndexer;
 import com.google.common.collect.Iterables;
 
@@ -18,10 +23,98 @@ public final class QueryRunner {
 
 	}
 
-	public static Object executeScalar(Connection conn, String sql, DynamicData param) {
-		var filter = new QueryScalar();
-		execute(conn, sql, param, filter);
+	public static int execute(Connection conn, String sql, Dictionary param) {
+
+		try (PreparedStatement pstmt = getStatement(conn, sql, param);) {
+			return pstmt.executeUpdate();
+		} catch (SQLException e) {
+			throw propagate(e);
+		}
+	}
+
+	public static Object queryScalar(Connection conn, String sql, Dictionary param) {
+		var filter = new QueryFilter.Scalar();
+		query(conn, sql, param, filter);
 		return filter.result();
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T queryScalar(Class<T> valueType, Connection conn, String sql, Dictionary param) {
+		var filter = new QueryFilter.Scalar();
+		query(conn, sql, param, filter);
+		return (T) filter.result();
+	}
+
+	public static int queryScalarInt(Connection conn, String sql, Dictionary param) {
+		var filter = new QueryFilter.ScalarInt();
+		query(conn, sql, param, filter);
+		return filter.result();
+	}
+
+	public static UUID queryScalarGuid(Connection conn, String sql, Dictionary param) {
+		var filter = new QueryFilter.ScalarGuid();
+		query(conn, sql, param, filter);
+		return filter.result();
+	}
+
+	public static Iterable<Object> queryScalars(Connection conn, String sql, Dictionary param) {
+		var filter = new QueryFilter.Scalars<Object>();
+		query(conn, sql, param, filter);
+		return filter.result();
+	}
+
+	public static <T> Iterable<T> queryScalars(Class<T> elementType, Connection conn, String sql, Dictionary param) {
+		var filter = new QueryFilter.Scalars<T>();
+		query(conn, sql, param, filter);
+		return filter.result();
+	}
+
+	public static int[] queryScalarInts(Connection conn, String sql, Dictionary param) {
+		var filter = new QueryFilter.ScalarInts();
+		query(conn, sql, param, filter);
+		return filter.result();
+	}
+
+	public static DTObject queryDTO(Connection conn, String sql, Dictionary param) {
+		var filter = new QueryFilter.DTO();
+		query(conn, sql, param, filter);
+		return filter.result();
+	}
+
+	public static Iterable<DTObject> queryDTOs(Connection conn, String sql, Dictionary param) {
+		var filter = new QueryFilter.DTOs();
+		query(conn, sql, param, filter);
+		return filter.result();
+	}
+
+	/**
+	 * 
+	 * 多行
+	 * 
+	 * @param conn
+	 * @param sql
+	 * @param param
+	 * @return
+	 */
+	public Dictionary queryRow(Connection conn, String sql, Dictionary param) {
+		var filter = new Row();
+		query(conn, sql, param, filter);
+		return filter.result();
+	}
+
+	public Iterable<Dictionary> queryRows(Connection conn, String sql, Dictionary param) {
+		var filter = new Rows();
+		query(conn, sql, param, filter);
+		return filter.result();
+	}
+
+	private static void query(Connection conn, String sql, Dictionary param, IQueryFilter filter) {
+
+		try (PreparedStatement pstmt = getStatement(conn, sql, param); ResultSet rs = pstmt.executeQuery()) {
+			filter.extract(rs);
+		} catch (SQLException e) {
+			throw propagate(e);
+		}
 	}
 
 	private static class QueryAdapter {
@@ -51,7 +144,7 @@ public final class QueryRunner {
 		 * @param param
 		 * @return
 		 */
-		public void fillParams(PreparedStatement statement, DynamicData param) {
+		public void fillParams(PreparedStatement statement, Dictionary param) {
 			try {
 
 				for (var i = 0; i < _positions.length; i++) {
@@ -103,44 +196,10 @@ public final class QueryRunner {
 		return QueryAdapter.parse(sql);
 	});
 
-	private static PreparedStatement getStatement(Connection conn, String sql, DynamicData param) throws SQLException {
+	private static PreparedStatement getStatement(Connection conn, String sql, Dictionary param) throws SQLException {
 		var adapter = _getAdapter.apply(sql);
 		PreparedStatement pstmt = conn.prepareStatement(adapter.sql());
 		adapter.fillParams(pstmt, param);
 		return pstmt;
 	}
-
-	private static void execute(Connection conn, String sql, DynamicData param, IQueryFilter filter) {
-
-		try (PreparedStatement pstmt = getStatement(conn, sql, param); ResultSet rs = pstmt.executeQuery()) {
-			filter.extract(rs);
-		} catch (SQLException e) {
-			throw propagate(e);
-		}
-	}
-
-	private static interface IQueryFilter {
-		void extract(ResultSet rs) throws SQLException;
-	}
-
-	private static class QueryScalar implements IQueryFilter {
-
-		private Object _result;
-
-		public Object result() {
-			return _result;
-		}
-
-		public QueryScalar() {
-		}
-
-		@Override
-		public void extract(ResultSet rs) throws SQLException {
-			if (rs.next()) {
-				_result = rs.getObject(1);
-			}
-		}
-
-	}
-
 }

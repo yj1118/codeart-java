@@ -21,7 +21,7 @@ public final class DataAccess {
 	    return _conn.ExecuteScalar<T>(sql, param, _tran);
 	}
 
-	public int Execute(string sql, object param = null, QueryLevel level = null)
+	public int execute(string sql, object param = null, QueryLevel level = null)
 	{
 	    sql = GetLevelSql(sql, level);
 	    return _conn.Execute(sql, param, _tran);

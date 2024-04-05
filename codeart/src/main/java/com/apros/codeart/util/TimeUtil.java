@@ -5,11 +5,21 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.function.Function;
 
 public final class TimeUtil {
 	private TimeUtil() {
 	};
+
+	public static LocalDateTime toLocalDateTime(Date date) {
+		// 将Date转换为Instant
+		Instant instant = date.toInstant();
+
+		// 将Instant转换为LocalDateTime，需要指定时区
+		ZoneId zoneId = ZoneId.systemDefault(); // 使用系统默认时区
+		return instant.atZone(zoneId).toLocalDateTime();
+	}
 
 	public static Instant toUTC(Instant value) {
 		ZonedDateTime utcZonedDateTimeFromInstant = value.atZone(ZoneId.of("UTC"));

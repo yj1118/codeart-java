@@ -4,7 +4,7 @@ import static com.apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Method;
 
-import com.apros.codeart.ddd.DynamicData;
+import com.apros.codeart.ddd.Dictionary;
 import com.apros.codeart.ddd.IPropertyDataLoader;
 import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.util.StringUtil;
@@ -52,7 +52,7 @@ public class PropertyRepositoryImpl {
 	 * @param level
 	 * @return
 	 */
-	private static Object loadData(Method method, DynamicData data, QueryLevel level) {
+	private static Object loadData(Method method, Dictionary data, QueryLevel level) {
 		try {
 			var args = new Object[2];
 			args[0] = data;

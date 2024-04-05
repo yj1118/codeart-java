@@ -195,13 +195,20 @@ public final class ListUtil {
 		}
 	}
 
+	private static final int[] EmptyInts;
+
 	static {
 		Empty = createEmpty();
+		EmptyInts = new int[] {};
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> Iterable<T> empty() {
 		return (Iterable<T>) Empty;
+	}
+
+	public static int[] emptyInts() {
+		return EmptyInts;
 	}
 
 }

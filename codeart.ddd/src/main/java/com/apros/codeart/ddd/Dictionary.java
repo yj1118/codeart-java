@@ -11,7 +11,7 @@ import com.apros.codeart.util.Guid;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 
-public class DynamicData implements Iterable<Map.Entry<String, Object>> {
+public class Dictionary implements Iterable<Map.Entry<String, Object>> {
 
 	// 保存对象动态定义的属性值
 	private HashMap<String, Object> _data;
@@ -52,14 +52,14 @@ public class DynamicData implements Iterable<Map.Entry<String, Object>> {
 		return _data.put(name, value);
 	}
 
-	public void combine(DynamicData data) {
+	public void combine(Dictionary data) {
 		for (var p : _data.entrySet()) {
 			if (!this.containsKey(p.getKey()))
 				this.put(p);
 		}
 	}
 
-	public void update(DynamicData data) {
+	public void update(Dictionary data) {
 		for (var p : _data.entrySet()) {
 			_data.put(p.getKey(), p.getValue());
 		}
@@ -73,7 +73,7 @@ public class DynamicData implements Iterable<Map.Entry<String, Object>> {
 		return _data.entrySet().iterator();
 	}
 
-	public DynamicData() {
+	public Dictionary() {
 		_data = new HashMap<String, Object>();
 	}
 
