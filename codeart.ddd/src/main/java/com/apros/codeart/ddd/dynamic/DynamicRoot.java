@@ -3,9 +3,9 @@ package com.apros.codeart.ddd.dynamic;
 import com.apros.codeart.ddd.AggregateRootEventManager;
 import com.apros.codeart.ddd.ConstructorRepository;
 import com.apros.codeart.ddd.IAggregateRoot;
-import com.apros.codeart.ddd.RepositoryRollbackEventArgs;
 import com.apros.codeart.ddd.UniqueKeyCalculator;
 import com.apros.codeart.ddd.repository.RepositoryEventArgs;
+import com.apros.codeart.ddd.repository.RepositoryRollbackEventArgs;
 import com.apros.codeart.util.EventHandler;
 
 public class DynamicRoot extends DynamicEntity implements IAggregateRoot {

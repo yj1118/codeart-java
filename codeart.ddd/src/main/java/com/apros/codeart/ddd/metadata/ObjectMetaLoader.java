@@ -5,7 +5,6 @@ import static com.apros.codeart.runtime.Util.propagate;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.IDomainObject;
@@ -22,18 +21,20 @@ public final class ObjectMetaLoader {
 
 	private static Map<String, ObjectMeta> _metas = new HashMap<>();
 
-	private static ObjectMeta obtain(String objectName, Supplier<ObjectMeta> create) {
-		var meta = _metas.get(objectName);
-		if (meta == null) {
-			synchronized (_metas) {
-				meta = _metas.get(objectName);
-				if (meta == null) {
-					meta = create.get();
-					_metas.put(objectName, meta);
-				}
-			}
-		}
+	private static ObjectMeta create(Class<?> domainType) {
+		var typeName = domainType.getSimpleName();
+		var meta = createByClass(domainType);
+		_metas.put(typeName, meta);
 		return meta;
+	}
+
+	private static ObjectMeta createByClass(Class<?> objectType) {
+		var name = objectType.getSimpleName();
+		var category = getCategory(objectType);
+		var validators = ObjectValidatorImpl.getValidators(objectType);
+		var remotable = RemotableImpl.has(objectType);
+
+		return new ObjectMeta(name, objectType, category, validators, remotable);
 	}
 
 	/**
@@ -73,10 +74,7 @@ public final class ObjectMetaLoader {
 
 		// 为了防止循环引用导致的死循环，要先预加载（只加载类型，不加载属性信息）
 		for (var domainType : domainTypes) {
-			var objectName = domainType.getSimpleName();
-			obtain(objectName, () -> {
-				return createByClass(domainType);
-			});
+			create(domainType);
 		}
 
 		// 再加载完整定义，即出发静态构造
@@ -118,15 +116,6 @@ public final class ObjectMetaLoader {
 			throw propagate(e);
 		}
 
-	}
-
-	private static ObjectMeta createByClass(Class<?> objectType) {
-		var name = objectType.getSimpleName();
-		var category = getCategory(objectType);
-		var validators = ObjectValidatorImpl.getValidators(objectType);
-		var remotable = RemotableImpl.has(objectType);
-
-		return new ObjectMeta(name, objectType, category, validators, remotable);
 	}
 
 	private static DomainObjectCategory getCategory(Class<?> objectType) {

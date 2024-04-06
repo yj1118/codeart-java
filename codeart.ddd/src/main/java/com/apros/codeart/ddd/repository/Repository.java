@@ -34,7 +34,7 @@ public final class Repository {
 		return (T) RepositoryFactory.create(repositoryInterfaceType);
 	}
 
-	static IRepository createBy(Class<?> objectType) {
+	public static IRepository createByObjectType(Class<?> objectType) {
 		var objectTip = ObjectRepositoryImpl.getTip(objectType, false);
 		if (objectTip == null)
 			return null;

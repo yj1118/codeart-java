@@ -633,16 +633,19 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 //	#
 //
 //	region 构造
-//// 该方法似乎没什么用，所以不提供了，todo
-//	/// <summary>
-//	/// 对象构造完毕后的事件
-//	/// </summary>
-//	public event DomainObjectConstructedEventHandler Constructed;
-//
+
+	private EventHandler<DomainObjectConstructedEventArgs> _constructed;
+
+	public EventHandler<DomainObjectConstructedEventArgs> constructed() {
+		if (_constructed == null)
+			_constructed = new EventHandler<DomainObjectConstructedEventArgs>();
+		return _constructed;
+	}
+
 	private int _constructedDepth;
 
 	public boolean isConstructing() {
-		return _constructedDepth == _typeDepth;
+		return _constructedDepth != _typeDepth;
 	}
 
 	/// <summary>
@@ -654,9 +657,30 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 		if (_constructedDepth > _typeDepth) {
 			throw new DomainDrivenException(Language.strings("codeart.ddd", "ConstructedError"));
 		}
+
+		if (!this.isConstructing()) // 已构造完毕
+		{
+			this.raiseConstructedEvent();
+		}
 	}
 
-	public final EventHandler<DomainObjectChangedEventArgs> changed = new EventHandler<DomainObjectChangedEventArgs>();
+	private void raiseConstructedEvent() {
+		if (this.isEmpty())
+			return;
+		if (_constructed != null) {
+			_constructed.raise(this, () -> new DomainObjectConstructedEventArgs(this));
+		}
+		// 执行边界事件
+		StatusEvent.execute(StatusEventType.Constructed, this);
+	}
+
+	public EventHandler<DomainObjectChangedEventArgs> _changed = new EventHandler<DomainObjectChangedEventArgs>();
+
+	public EventHandler<DomainObjectChangedEventArgs> changed() {
+		if (_changed == null)
+			_changed = new EventHandler<DomainObjectChangedEventArgs>();
+		return _changed;
+	}
 
 	private void raiseChangedEvent() {
 		if (this.isEmpty())
@@ -667,11 +691,14 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 
 		onChanged();
 
-		StatusEvent.execute(this.getClass(), StatusEventType.Changed, this);
+		StatusEvent.execute(StatusEventType.Changed, this);
 	}
 
 	protected void onChanged() {
-		this.changed.raise(this, () -> {
+		if (_changed == null)
+			return;
+
+		this._changed.raise(this, () -> {
 			return new DomainObjectChangedEventArgs(this);
 		});
 	}

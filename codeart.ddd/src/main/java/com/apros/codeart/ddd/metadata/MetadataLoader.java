@@ -15,21 +15,31 @@ public final class MetadataLoader {
 
 	private static boolean loaded = false;
 
+	private static Iterable<Class<?>> _domainTypes;
+
+	public Iterable<Class<?>> domainTypes() {
+		if (!loaded)
+			throw new IllegalArgumentException(strings("codeart.ddd", "MetadataNotInitialized"));
+		return _domainTypes;
+	}
+
 	/**
 	 * 加载所有领域对象的元数据
 	 */
-	public static void load() {
+	public static Iterable<Class<?>> load() {
 		if (loaded)
-			return;
+			return _domainTypes;
 		loaded = true;
 
 		// 先构建动态领域对象的类型 todo
 
 		// 在这里找出所有定义的领域对象
-		var domainTypes = findDomainTypes();
+		_domainTypes = findDomainTypes();
 
 		// 加载
-		ObjectMetaLoader.load(domainTypes);
+		ObjectMetaLoader.load(_domainTypes);
+
+		return _domainTypes;
 	}
 
 	private static Iterable<Class<?>> findDomainTypes() {

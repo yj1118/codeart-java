@@ -90,6 +90,19 @@ public class ObjectMeta {
 		_remotable = remotable;
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		var target = TypeUtil.as(obj, ObjectMeta.class);
+		if (target == null)
+			return false;
+		return this.objectType().equals(target.objectType());
+	}
+
+	@Override
+	public int hashCode() {
+		return _objectType.hashCode();
+	}
+
 	// #region 辅助
 
 	final static Class<?> ValueObjectType = IValueObject.class;

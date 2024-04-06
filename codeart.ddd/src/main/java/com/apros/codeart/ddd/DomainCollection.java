@@ -178,14 +178,14 @@ public class DomainCollection<E> extends ArrayList<E>
 	private void bindChanged(E item) {
 		var obj = TypeUtil.as(item, DomainObject.class);
 		if (obj != null) {
-			obj.changed.add(this);
+			obj.changed().add(this);
 		}
 	}
 
 	private void unbindChanged(E item) {
 		var obj = TypeUtil.as(item, DomainObject.class);
 		if (obj != null) {
-			obj.changed.remove(this);
+			obj.changed().remove(this);
 		}
 	}
 

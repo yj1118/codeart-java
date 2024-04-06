@@ -2,6 +2,7 @@ package com.apros.codeart.ddd.launcher;
 
 import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.metadata.MetadataLoader;
+import com.apros.codeart.ddd.repository.access.DataModelLoader;
 import com.apros.codeart.i18n.Language;
 
 final class DomainHost {
@@ -24,9 +25,13 @@ final class DomainHost {
 			return;
 		_initialized = true;
 
-		MetadataLoader.load();
+		// 以下代码执行顺序不能变
 
-//		// 以下代码执行顺序不能变
+		var domainTypes = MetadataLoader.load();
+
+		DataModelLoader.load(domainTypes);
+
+//		
 //		TypeIndex=GetTypeIndex();
 //
 //		// 指定动态类型的定义

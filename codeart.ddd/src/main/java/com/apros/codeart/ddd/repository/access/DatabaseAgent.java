@@ -2,7 +2,7 @@ package com.apros.codeart.ddd.repository.access;
 
 import com.apros.codeart.ddd.QueryLevel;
 
-public class DatabaseAgent implements IDatabaseAgent {
+public abstract class DatabaseAgent implements IDatabaseAgent {
 
 	@Override
 	public String supplementLock(String sql, QueryLevel level) {
