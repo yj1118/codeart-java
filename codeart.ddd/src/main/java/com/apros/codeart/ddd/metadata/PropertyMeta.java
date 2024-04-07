@@ -201,7 +201,7 @@ public class PropertyMeta {
 
 	}
 
-	static PropertyMeta getProperty(Class<?> doType, String propertyName) {
+	public static PropertyMeta getProperty(Class<?> doType, String propertyName) {
 		var obj = ObjectMetaLoader.get(propertyName);
 		return obj.findProperty(propertyName);
 	}

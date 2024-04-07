@@ -14,4 +14,5 @@ public class EmptyableDateTime extends Emptyable<LocalDateTime> {
 
 	public final static Class<?> ValueType = LocalDateTime.class;
 
+	public final static EmptyableDateTime Empty = new EmptyableDateTime(null);
 }

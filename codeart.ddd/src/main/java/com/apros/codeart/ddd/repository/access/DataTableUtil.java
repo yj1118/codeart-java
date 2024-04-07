@@ -7,12 +7,18 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 import com.apros.codeart.ddd.Emptyable;
+import com.apros.codeart.ddd.EntityObject;
+import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.runtime.EnumUtil;
 import com.apros.codeart.runtime.FieldUtil;
+import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.StringUtil;
+import com.google.common.collect.Iterables;
 
 final class DataTableUtil {
 	private DataTableUtil() {
@@ -40,28 +46,59 @@ final class DataTableUtil {
 	 */
 	public static Iterable<IDataField> getTableFields(Iterable<IDataField> objectFields) {
 		ArrayList<IDataField> fields = new ArrayList<IDataField>();
-		for (var i = 0; i < objectFields.Count; i++) {
-			var objectField = objectFields[i];
+		for (var objectField : objectFields)
 			fillFields(fields, objectField);
+	}return fields;
+
+	}
+
+	private static void fillFields(ArrayList<IDataField> fields, IDataField current) {
+		String name = current.name();
+		switch (current.fieldType()) {
+		case DataFieldType.GeneratedField: {
+			fields.add(current); // 对于生成的键，直接追加
 		}
-		return fields;
+		case DataFieldType.Value: {
+			var valueField = TypeUtil.as(current, ValueField.class);
+			// 存值
+			var field = new ValueField(current.tip(), Iterables.toArray(valueField.dbFieldTypes(), DbFieldType.class));
+
+			field.name(name);
+			field.parentMemberField(current.parentMemberField());
+
+			fields.add(field);
+		}
+		case DataFieldType.EntityObject:
+		case DataFieldType.AggregateRoot: {
+			// 存外键即可
+
+			var meta = ObjectMetaLoader.get(current.tip().monotype());
+
+			var idTip = PropertyMeta.getProperty(current.tip().monotype(), EntityObject.IdPropertyName);
+
+			var field = new ValueField(idTip);
+			field.name(getIdName(name));
+			field.parentMemberField(current);
+
+			fields.add(field);
+		}
+		case DataFieldType.ValueObject: {
+			var primaryKey = GeneratedField.CreateValueObjectPrimaryKey(current.Tip.PropertyType);
+			var field = new ValueField(primaryKey.Tip);
+			field.name(getIdName(name));
+			field.parentMemberField(current);
+
+			fields.add(field);
+			return true;
+		}
+		default:
+
+		{
+			break;
+		}
+		}
+		return false;
 	}
-
-	private static void fillFields(List<IDataField> fields, IDataField current) {
-		String name=current.name();switch(current.FieldType){case DataFieldType.GeneratedField:{fields.Add(current); // 对于生成的键，直接追加
-		}case DataFieldType.Value:{var valueField=current as ValueField;
-		// 存值
-		var field=new ValueField(current.Tip,valueField.DbFieldTypes.ToArray()){Name=name,ParentMemberField=current.ParentMemberField};fields.Add(field);return true;}case DataFieldType.EntityObject:case DataFieldType.EntityObjectPro:case DataFieldType.AggregateRoot:{
-		// 存外键即可
-		var idAttr=DomainProperty.GetProperty(current.Tip.PropertyType,EntityObject.IdPropertyName).RepositoryTip;
-
-		var field=new ValueField(idAttr){Name=_getIdName(name),ParentMemberField=current};fields.Add(field);return true;}case DataFieldType.ValueObject:{var primaryKey=GeneratedField.CreateValueObjectPrimaryKey(current.Tip.PropertyType);var field=new ValueField(primaryKey.Tip){Name=_getIdName(name),ParentMemberField=current};fields.Add(field);return true;
-	}default:
-
-	{
-		break;
-	}
-	}return false;}
 
 	public static DbType getDbType(PropertyMeta meta) {
 		Class<?> dataType = meta.monotype();
@@ -111,5 +148,20 @@ final class DataTableUtil {
 		_typeMap.put(UUID.class, DbType.Guid);
 		_typeMap.put(LocalDateTime.class, DbType.DateTime);
 	}
+
+	/**
+	 * 
+	 * 获得外键名称
+	 * 
+	 * @param name 属性名称
+	 * @return
+	 */
+	public static String getIdName(String name) {
+		return _getIdName.apply(name);
+	}
+
+	private static Function<String, String> _getIdName = LazyIndexer.init((name) -> {
+		return String.format("%s%s", name, EntityObject.IdPropertyName);
+	});
 
 }

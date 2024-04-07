@@ -89,7 +89,7 @@ public class ValueMeta {
 			return 0;
 
 		if (valueType.isAssignableFrom(IEmptyable.class))
-			return Emptyable.createEmpty();
+			return Emptyable.createEmpty(valueType);
 
 		if (valueType.equals(char.class))
 			return StringUtil.empty();
@@ -109,4 +109,15 @@ public class ValueMeta {
 			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
 		return new ValueMeta(isCollection, monotype, ObjectMetaLoader.tryGet(monotype), getDefaultValue);
 	}
+
+	/**
+	 * 创建非集合类型得值的元数据
+	 * 
+	 * @param monotype
+	 * @return
+	 */
+	public static ValueMeta createBy(Class<?> monotype) {
+		return createBy(false, monotype, null);
+	}
+
 }

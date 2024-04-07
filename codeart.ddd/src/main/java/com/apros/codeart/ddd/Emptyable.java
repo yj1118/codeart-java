@@ -1,13 +1,11 @@
 package com.apros.codeart.ddd;
 
 import static com.apros.codeart.i18n.Language.strings;
-import static com.apros.codeart.runtime.Util.propagate;
 
 import java.util.Optional;
 
 import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.dto.serialization.IDTOSerializable;
-import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.util.INullProxy;
 import com.apros.codeart.util.StringUtil;
 
@@ -70,16 +68,32 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, INul
 		return _value.get().toString();
 	}
 
+	public static Object createEmpty(Class<?> emptyableType) {
+
+		if (emptyableType.equals(EmptyableDateTime.class))
+			return EmptyableDateTime.Empty;
+
+		if (emptyableType.equals(EmptyableInt.class))
+			return EmptyableInt.Empty;
+
+		if (emptyableType.equals(EmptyableLong.class))
+			return EmptyableLong.Empty;
+
+		throw new IllegalStateException(strings("codeart.ddd", "DidNotFindEmpty", emptyableType.getName()));
+
+	}
+
 	public static Class<?> getValueType(Class<?> emptyableType) {
-		try {
-			var field = FieldUtil.getField(emptyableType, "ValueType");
-			if (field == null) {
-				throw new IllegalStateException(strings("codeart.ddd", "DidNotFindValueType"));
-			}
-			return (Class<?>) field.get(null);
-		} catch (Exception e) {
-			throw propagate(e);
-		}
+		if (emptyableType.equals(EmptyableDateTime.class))
+			return EmptyableDateTime.ValueType;
+
+		if (emptyableType.equals(EmptyableInt.class))
+			return EmptyableInt.ValueType;
+
+		if (emptyableType.equals(EmptyableLong.class))
+			return EmptyableLong.ValueType;
+
+		throw new IllegalStateException(strings("codeart.ddd", "DidNotFindValueType", emptyableType.getName()));
 	}
 
 }

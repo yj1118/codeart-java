@@ -11,4 +11,6 @@ public class EmptyableLong extends Emptyable<Long> {
 	}
 
 	public final static Class<?> ValueType = long.class;
+
+	public final static EmptyableLong Empty = new EmptyableLong(null);
 }
