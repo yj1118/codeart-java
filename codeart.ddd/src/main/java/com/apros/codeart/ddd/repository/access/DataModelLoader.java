@@ -1,9 +1,11 @@
 package com.apros.codeart.ddd.repository.access;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.function.Function;
 
+import com.apros.codeart.ddd.IAggregateRoot;
+import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
+import com.apros.codeart.util.LazyIndexer;
 
 final class DataModelLoader {
 
@@ -11,38 +13,20 @@ final class DataModelLoader {
 
 	}
 
-	public static void load(Iterable<Class<?>> domainTypes) {
+	public static void load(Iterable<Class<? extends IDomainObject>> domainTypes) {
+		DataTableLoader.load(domainTypes);
 
-		// 为了防止循环引用导致的死循环，要先预加载数据表定义
-		for (var domainType : domainTypes) {
-			obtain(domainType);
-		}
-
-		// 再加载完整定义
-		for (var domainType : domainTypes) {
-			staticConstructor(domainType);
-		}
 	}
 
-	private static Map<Class<?>, DataModel> _models = new HashMap<>();
+	private static Function<Class<? extends IAggregateRoot>, DataModel> _getModel = LazyIndexer.init((objectType) -> {
 
-	static DataModel obtain(Class<?> objectType) {
-		var model = _models.get(objectType);
-		if (model == null) {
-			model = create(objectType);
-			_models.put(objectType, model);
-		}
-		return model;
-	}
+		var meta = ObjectMetaLoader.get(objectType);
+		var root = DataTableLoader.getRoot(objectType);
+		return new DataModel(meta, root);
+	});
 
-	static DataModel create(Class<?> objectType) {
-		var objectMeta = ObjectMetaLoader.get(objectType);
-		var mapper = DataMapperFactory.create(objectMeta);
-
-		var objectFields = mapper.GetObjectFields(objectType, false);
-		var root = DataTable.create(objectType, objectFields);
-
-		return new DataModel(objectType, root);
+	public DataModel get(Class<? extends IAggregateRoot> objectType) {
+		return _getModel.apply(objectType);
 	}
 
 }

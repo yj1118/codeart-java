@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.apros.codeart.ddd.DomainObject;
+import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.ddd.metadata.DomainObjectCategory;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 
@@ -13,57 +14,47 @@ public final class DataTableLoader {
 
 	}
 
-	public static void load(Iterable<Class<?>> domainTypes) {
+	public static void load(Iterable<Class<? extends IDomainObject>> domainTypes) {
 
-		// 为了防止循环引用导致的死循环，要先预加载数据表定义（注意，相关的中间表以下代码尚未创建）
+		// 先将起点表创建
 		for (var domainType : domainTypes) {
-			createByDomainType(domainType);
+			var objectMeta = ObjectMetaLoader.get(domainType);
+			if (objectMeta.category() == DomainObjectCategory.AggregateRoot) {
+				createRoot(domainType);
+			}
 		}
 
 		// 再加载完整定义（这时候会根据对象关系创建中间表和建立各个表之间的连接）
 		for (var domainType : domainTypes) {
-			var table = get(domainType);
-			if (table.type() == DataTableType.AggregateRoot) {
-				loadOrigin(table);
-			}
+			var table = getRoot(domainType);
+			loadRoot(table);
 		}
 	}
 
-	private static Map<Class<?>, DataTable> _tables = new HashMap<>();
+	private static Map<Class<?>, DataTable> _roots = new HashMap<>();
 
 	/**
 	 * 
-	 * 根据领域类型创建表
+	 * 创建起点表（由领域类型映射的表）
 	 * 
 	 * @param domainType
 	 * @return
 	 */
-	static DataTable createByDomainType(Class<?> domainType) {
+	private static DataTable createRoot(Class<?> domainType) {
 		var objectMeta = ObjectMetaLoader.get(domainType);
 		var name = domainType.getSimpleName();
 
 		var tableType = DataTableType.AggregateRoot;
 
-		switch (objectMeta.category()) {
-		case DomainObjectCategory.AggregateRoot:
-			tableType = DataTableType.AggregateRoot;
-			break;
-		case DomainObjectCategory.EntityObject:
-			tableType = DataTableType.EntityObject;
-			break;
-		case DomainObjectCategory.ValueObject:
-			tableType = DataTableType.ValueObject;
-			break;
-		}
-
-		var table = new DataTable(domainType, tableType, name);
-		_tables.put(domainType, table);
+		var id = name; // 起始表的编号就是表名
+		var table = new DataTable(id, domainType, tableType, name);
+		_roots.put(domainType, table);
 
 		return table;
 	}
 
-	static DataTable get(Class<?> objectType) {
-		return _tables.get(objectType);
+	static DataTable getRoot(Class<?> objectType) {
+		return _roots.get(objectType);
 	}
 
 	/**
@@ -71,13 +62,15 @@ public final class DataTableLoader {
 	 * 
 	 * @param table
 	 */
-	static void loadOrigin(DataTable table) {
+	static void loadRoot(DataTable table) {
 		var objectType = table.objectType();
 		var objectMeta = ObjectMetaLoader.get(objectType);
 		var mapper = DataMapperFactory.create(objectMeta);
 		var objectFields = mapper.getObjectFields(objectMeta);
 
-		var uniqueKey = table.name(); // 起始表的唯一表示就是表名
+		table.setChain(ObjectChain.Empty);
+
+		_tables.put(table.id(), table);
 
 	}
 
@@ -197,5 +190,7 @@ table = new DataTable(objectType,
             memberField);
 return table;
 }
+
+	private static Map<String, DataTable> _tables = new HashMap<>();
 
 }

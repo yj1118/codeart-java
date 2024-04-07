@@ -36,7 +36,7 @@ final class DataModel {
 		return _objectMeta;
 	}
 
-	private DataModel(ObjectMeta objectMeta, DataTable root) {
+	DataModel(ObjectMeta objectMeta, DataTable root) {
 		_objectMeta = objectMeta;
 		_root = root;
 	}

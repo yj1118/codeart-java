@@ -7,6 +7,7 @@ module codeart.ddd {
 	exports com.apros.codeart.ddd;
 	exports com.apros.codeart.ddd.repository;
 	exports com.apros.codeart.ddd.repository.access;
+	exports com.apros.codeart.ddd.metadata;
 	exports com.apros.codeart.ddd.launcher;
 	exports com.apros.codeart.ddd.console;
 

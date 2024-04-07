@@ -1,6 +1,6 @@
 package com.apros.codeart.ddd.repository.access;
 
-enum DbFieldType {
+public enum DbFieldType {
 	/// <summary>
 	/// 主键
 	/// </summary>

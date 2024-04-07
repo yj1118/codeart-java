@@ -4,6 +4,7 @@ import java.util.function.BiFunction;
 
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.DomainProperty;
+import com.apros.codeart.ddd.IEmptyable;
 import com.apros.codeart.ddd.IPropertyDataLoader;
 import com.apros.codeart.ddd.IPropertyValidator;
 import com.apros.codeart.runtime.TypeUtil;
@@ -132,6 +133,12 @@ public class PropertyMeta {
 		return _fullName;
 	}
 
+	private boolean _isEmptyable;
+
+	public boolean isEmptyable() {
+		return _isEmptyable;
+	}
+
 	public PropertyMeta(String name, ValueMeta value, ObjectMeta declaring, PropertyAccessLevel accessGet,
 			PropertyAccessLevel accessSet, String call, Iterable<IPropertyValidator> validators, boolean lazy,
 			IPropertyDataLoader dataLoader) {
@@ -151,6 +158,7 @@ public class PropertyMeta {
 
 		_fullName = String.format("%s.%s", this.declaringType().getName(), this.name());
 
+		_isEmptyable = this.monotype().isAssignableFrom(IEmptyable.class);
 	}
 
 	@Override

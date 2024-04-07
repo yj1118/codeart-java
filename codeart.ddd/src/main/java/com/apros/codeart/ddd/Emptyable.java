@@ -1,9 +1,13 @@
 package com.apros.codeart.ddd;
 
+import static com.apros.codeart.i18n.Language.strings;
+import static com.apros.codeart.runtime.Util.propagate;
+
 import java.util.Optional;
 
 import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.dto.serialization.IDTOSerializable;
+import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.util.INullProxy;
 import com.apros.codeart.util.StringUtil;
 
@@ -12,7 +16,7 @@ import com.apros.codeart.util.StringUtil;
  * 
  * @param <T>
  */
-public class Emptyable<T> implements IEmptyable, IDTOSerializable, INullProxy {
+public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, INullProxy {
 
 	private Optional<T> _value;
 
@@ -66,7 +70,16 @@ public class Emptyable<T> implements IEmptyable, IDTOSerializable, INullProxy {
 		return _value.get().toString();
 	}
 
-	public static <T> Emptyable<T> createEmpty() {
-		return new Emptyable<T>(null);
+	public static Class<?> getValueType(Class<?> emptyableType) {
+		try {
+			var field = FieldUtil.getField(emptyableType, "ValueType");
+			if (field == null) {
+				throw new IllegalStateException(strings("codeart.ddd", "DidNotFindValueType"));
+			}
+			return (Class<?>) field.get(null);
+		} catch (Exception e) {
+			throw propagate(e);
+		}
 	}
+
 }

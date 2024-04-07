@@ -4,6 +4,8 @@ import static com.apros.codeart.runtime.Util.propagate;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -157,6 +159,12 @@ public final class ListUtil {
 				source.add(item);
 			}
 		}
+	}
+
+	public static <T> LinkedList<T> reverse(LinkedList<T> source) {
+		LinkedList<T> temp = new LinkedList<>(source);
+		Collections.reverse(temp);
+		return temp;
 	}
 
 	/**

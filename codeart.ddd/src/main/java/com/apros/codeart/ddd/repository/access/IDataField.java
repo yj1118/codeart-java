@@ -1,114 +1,114 @@
 package com.apros.codeart.ddd.repository.access;
 
+import com.apros.codeart.ddd.metadata.PropertyMeta;
+
 public interface IDataField {
-	/// <summary>
-	/// 字段名称
-	/// </summary>
-	string Name
-	{
-	    get;
-	    set;
-	}
 
-	/// <summary>
-	/// 字段是否为附加的，这意味着不是从领域对象中分析出来的，而是通过数据映射器手工添加的字段,这类字段一般用于性能优化
-	/// 这类字段不影响对象数据版本号，也不会在领域层中使用（所以不会出现在数据代理DataProxyPro的OriginalData中）
-	/// 附加字段的维护由程序员通过自定义数据映射器负责
-	/// </summary>
-	bool IsAdditional
-	{
-	    get;
-	    set;
-	}
+	/**
+	 * 字段名称
+	 * 
+	 * @return
+	 */
+	String name();
 
-	/// <summary>
-	/// 字段类型
-	/// </summary>
-	DataFieldType FieldType
-	{
-	    get;
-	}
+	void name(String value);
 
-	/// <summary>
-	/// 字段对应的数据库类型
-	/// </summary>
-	DbType DbType
-	{
-	    get;
-	}
+	/**
+	 * 
+	 * 字段是否为附加的，这意味着不是从领域对象中分析出来的，而是通过数据映射器手工添加的字段,这类字段一般用于性能优化
+	 * 这类字段不影响对象数据版本号，也不会在领域层中使用（所以不会出现在数据代理DataProxyPro的OriginalData中）
+	 * 附加字段的维护由程序员通过自定义数据映射器负责
+	 * 
+	 * @return
+	 */
+	boolean isAdditional();
 
-	/// <summary>
-	/// 是否为主键
-	/// </summary>
-	bool IsPrimaryKey
-	{
-	    get;
-	}
+	void isAdditional(boolean value);
 
-	/// <summary>
-	/// 是否为聚集索引
-	/// </summary>
-	bool IsClusteredIndex
-	{
-	    get;
-	}
+	/**
+	 * 字段类型
+	 * 
+	 * @return
+	 */
+	DataFieldType fieldType();
 
-	/// <summary>
-	/// 是否为非聚集索引
-	/// </summary>
-	bool IsNonclusteredIndex
-	{
-	    get;
-	}
+	/**
+	 * 
+	 * 字段对应的数据库类型
+	 * 
+	 * @return
+	 */
+	DbType dbType();
 
-	/// <summary>
-	/// 定义的仓储特性
-	/// </summary>
-	PropertyRepositoryAttribute Tip
-	{
-	    get;
-	}
+	/**
+	 * 是否为主键
+	 * 
+	 * @return
+	 */
+	boolean isPrimaryKey();
 
-	/// <summary>
-	/// 所属父成员字段，例如book.category.cover
-	/// 对于字段cover(BookCover表)的MemberField字段就是cover，BookCover表的ParentMemberField就是category
-	/// </summary>
-	IDataField ParentMemberField
-	{
-	    get;
-	    set;
-	}
+	/**
+	 * 是否为聚集索引
+	 * 
+	 * @return
+	 */
+	boolean isClusteredIndex();
 
-	/// <summary>
-	/// 字段所在的表
-	/// </summary>
-	DataTable Table
-	{
-	    get;
-	    set;
-	}
+	/**
+	 * 是否为非聚集索引
+	 * 
+	 * @return
+	 */
+	boolean isNonclusteredIndex();
 
-	/// <summary>
-	/// 由于memberField会先建立，然后创建对应的表，所以再这个期间，
-	/// memberField的Table为null,因此我们会记录TableName,以便别的对象使用
-	/// </summary>
-	string TableName
-	{
-	    get;
-	    set;
-	}
+	/**
+	 * 对应的属性的元数据
+	 * 
+	 * @return
+	 */
+	PropertyMeta tip();
 
-	string MasterTableName
-	{
-	    get;
-	    set;
-	}
+	String propertyName();
 
-	/// <summary>
-	/// 表示该字段指示的是否为多行数据（集合）
-	/// </summary>
-	bool IsMultiple
-	{
-	    get;
-	}
+	/**
+	 * 
+	 * 所属父成员字段，例如book.category.cover
+	 * 对于字段cover(BookCover表)的MemberField字段就是cover，BookCover表的ParentMemberField就是category
+	 * 
+	 * @return
+	 */
+	IDataField parentMemberField();
+
+	void parentMemberField(IDataField value);
+
+	/**
+	 * 字段所在的表
+	 * 
+	 * @return
+	 */
+	DataTable table();
+
+	void table(DataTable value);
+
+	/**
+	 * 
+	 * 由于memberField会先建立，然后创建对应的表，所以再这个期间，
+	 * memberField的Table为null,因此我们会记录TableName,以便别的对象使用
+	 * 
+	 * @return
+	 */
+	String tableName();
+
+	void tableName(String value);
+
+	String masterTableName();
+
+	void masterTableName(String value);
+
+	/**
+	 * 表示该字段指示的是否为多行数据（集合）
+	 * 
+	 * @return
+	 */
+	boolean isMultiple();
 }
