@@ -13,11 +13,11 @@ import com.apros.codeart.ddd.Emptyable;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
+import com.apros.codeart.ddd.validation.ASCIIStringValidator;
+import com.apros.codeart.ddd.validation.StringLengthValidator;
 import com.apros.codeart.runtime.EnumUtil;
-import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.LazyIndexer;
-import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 
 final class DataTableUtil {
@@ -48,8 +48,7 @@ final class DataTableUtil {
 		ArrayList<IDataField> fields = new ArrayList<IDataField>();
 		for (var objectField : objectFields)
 			fillFields(fields, objectField);
-	}return fields;
-
+		return fields;
 	}
 
 	private static void fillFields(ArrayList<IDataField> fields, IDataField current) {
@@ -83,21 +82,17 @@ final class DataTableUtil {
 			fields.add(field);
 		}
 		case DataFieldType.ValueObject: {
-			var primaryKey = GeneratedField.CreateValueObjectPrimaryKey(current.Tip.PropertyType);
-			var field = new ValueField(primaryKey.Tip);
+			var primaryKey = GeneratedField.createValueObjectPrimaryKey(current.tip().monotype());
+			var field = new ValueField(primaryKey.tip());
 			field.name(getIdName(name));
 			field.parentMemberField(current);
 
 			fields.add(field);
-			return true;
 		}
-		default:
-
-		{
+		default: {
 			break;
 		}
 		}
-		return false;
 	}
 
 	public static DbType getDbType(PropertyMeta meta) {
@@ -116,6 +111,46 @@ final class DataTableUtil {
 			return dbType;
 
 		throw new IllegalStateException(strings("codeart.ddd", "DataTypeNotSupported", dataType.getName()));
+	}
+
+	public static int getMaxLength(PropertyMeta meta) {
+		var stringMeta = TypeUtil.as(meta, GeneratedField.StringMeta.class);
+		if (stringMeta != null) {
+			return stringMeta.maxLength();
+		} else {
+			var sl = meta.findValidator(StringLengthValidator.class);
+			return sl == null ? 0 : sl.max();
+		}
+	}
+
+	public static boolean isASCIIString(PropertyMeta meta) {
+		var stringMeta = TypeUtil.as(meta, GeneratedField.StringMeta.class);
+		if (stringMeta != null) {
+			return stringMeta.ascii();
+		} else {
+			return meta.findValidator(ASCIIStringValidator.class) != null;
+		}
+	}
+
+	public static ValueField getForeignKey(DataTable table, GeneratedFieldType keyType, DbFieldType... dbFieldTypes) {
+		if (table.IdField == null)
+			throw new InvalidOperationException("表" + table.Name + "没有id字段无法获得以它为主表的外键信息");
+		string name = table.TableIdName;
+		switch (keyType) {
+		case GeneratedFieldType.RootKey: {
+			name = GeneratedField.RootIdName;
+		}
+			break;
+		case GeneratedFieldType.MasterKey: {
+			name = GeneratedField.MasterIdName;
+		}
+			break;
+		case GeneratedFieldType.SlaveKey: {
+			name = GeneratedField.SlaveIdName;
+		}
+			break;
+		}
+		return new GeneratedField(table.IdField.Tip, name, keyType, dbFieldTypes);
 	}
 
 	private final static Map<Class<?>, DbType> _typeMap = new HashMap<Class<?>, DbType>();

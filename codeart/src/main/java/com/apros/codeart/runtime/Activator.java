@@ -20,10 +20,10 @@ public final class Activator {
 	private Activator() {
 	}
 
-	public static Object createInstance(String className) {
+	public static Object createInstance(String className, Object... args) {
 		try {
 			Class<?> clazz = Class.forName(className);
-			return createInstance(clazz);
+			return createInstance(clazz, args);
 		} catch (Exception e) {
 			throw propagate(e);
 		}
@@ -34,10 +34,10 @@ public final class Activator {
 	 * 
 	 * @return
 	 */
-	public static Object createInstance(Class<?> instanceType) {
+	public static Object createInstance(Class<?> instanceType, Object... args) {
 		try {
 			var method = getCreateInstanceMethod.apply(instanceType);
-			return method.invoke(null, instanceType);
+			return method.invoke(null, instanceType, args);
 		} catch (Exception e) {
 			throw propagate(e);
 		}

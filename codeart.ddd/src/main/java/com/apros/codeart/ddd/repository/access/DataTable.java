@@ -1,5 +1,13 @@
 package com.apros.codeart.ddd.repository.access;
 
+import java.util.ArrayList;
+
+import com.apros.codeart.ddd.metadata.ObjectMeta;
+import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
+import com.apros.codeart.ddd.metadata.ObjectRepositoryTip;
+import com.apros.codeart.ddd.metadata.PropertyMeta;
+import com.apros.codeart.util.ListUtil;
+
 public class DataTable {
 
 	private String _id;
@@ -24,6 +32,12 @@ public class DataTable {
 	 */
 	public Class<?> objectType() {
 		return _objectType;
+	}
+
+	private ObjectRepositoryTip _repositoryTip;
+
+	public ObjectRepositoryTip repositoryTip() {
+		return _repositoryTip;
 	}
 
 	private DataTableType _type;
@@ -128,28 +142,86 @@ public class DataTable {
 		_chain = chain;
 	}
 
-	static DataTable createRoot(Class<?> objectType, DataTableType type, String name,
-			Iterable<IDataField> objectFields) {
-		return new DataTable();
+	private Iterable<IDataField> _fields;
+
+	public Iterable<IDataField> fields() {
+		return _fields;
 	}
 
-	DataTable(Class<?> objectType, DataTableType type, String name, DataTable chainRoot, DataTable master,
-			Iterable<IDataField> tableFields, Iterable<IDataField> objectFields, IDataField memberField) {
+	private Iterable<IDataField> getFields(Iterable<IDataField> objectFields) {
+		var fields = DataTableUtil.getTableFields(objectFields);
+
+		// 我们要保证rootId在第一列，Id在第二列
+		// 这样不仅符合人们的操作习惯，在建立索引时，也会以rootId作为第一位，提高查询性能
+		if (_type == DataTableType.AggregateRoot || _type == DataTableType.Middle)
+			return fields;
+
+		if (_type == DataTableType.ValueObject || _type == DataTableType.EntityObject) {
+			// 需要补充根键，因为我们只有在内部得到了实际的root后才能算出根键
+			// 根编号要放在最前面，方便优化索引性能
+			var rootKey = DataTableUtil.getForeignKey(this.root(), GeneratedFieldType.RootKey, DbFieldType.PrimaryKey);
+			var temp = new ArrayList<IDataField>();
+			temp.add(rootKey);
+			ListUtil.addRange(temp, fields);
+			return temp;
+		}
+
+		return fields;
+	}
+
+	private DataTable findActualRoot(DataTable root) {
+		if (_type == DataTableType.AggregateRoot && this.memberField() == null)
+			return this;
+		var master = this.master();
+		while (master != null) {
+			if (master.type() == DataTableType.AggregateRoot)
+				return master;
+			master = master.master();
+		}
+		return null;
+	}
+
+	static DataTable createRoot(Class<?> objectType, DataTableType type, String name,
+			Iterable<IDataField> objectFields) {
+		return new DataTable(objectType, type, name, objectFields, null, null, null);
+	}
+
+	private void initObjectType(Class<?> objectType, PropertyMeta tip) {
+		_objectType = objectType;
+		if (_type == DataTableType.Middle) {
+			_elementType = tip.monotype();
+		} else if (_type == DataTableType.AggregateRoot) {
+			var meta = ObjectMetaLoader.get(objectType);
+			_repositoryTip = meta.repositoryTip();
+		} else {
+			var meta = ObjectMetaLoader.get(objectType);
+			// 对于值对象和引用对象，如果没有定义ObjectRepositoryAttribute，那么使用根的ObjectRepositoryAttribute
+			if (meta == null || meta.repositoryTip() == null) {
+				_repositoryTip = this.root().repositoryTip();
+			} else {
+				_repositoryTip = meta.repositoryTip();
+			}
+		}
+	}
+
+	DataTable(Class<?> objectType, DataTableType type, String name, Iterable<IDataField> objectFields, DataTable chainRoot, DataTable master,
+			IDataField memberField) {
+		
 		_id = DataTableUtil.getId(memberField, chainRoot, name);
 		_objectType = objectType;
 		_type = type;
 		_name = name;
 		
-		 if(memberField != null) memberField.table(this);
-		 
-		 this._chainRoot = chainRoot;
-		 
-		 this._master = master;
-		 
-		 
+		_fields = getFields(objectFields);
 
-		 this.MemberField = memberField;
-		 this.Root = FindActualRoot(chainRoot);
+		 
+		 _chainRoot = chainRoot;
+		 _master = master;
+		 
+		 if(memberField != null) memberField.table(this);
+		 _memberField = memberField;
+
+		 _root = findActualRoot(chainRoot);
 		 InitObjectType(objectType, memberField?.Tip);
 
 		 this.Chain = this.MemberField == null ? ObjectChain.Empty : new ObjectChain(this.MemberField);

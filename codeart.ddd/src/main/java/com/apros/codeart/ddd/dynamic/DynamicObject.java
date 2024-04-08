@@ -2,6 +2,7 @@ package com.apros.codeart.ddd.dynamic;
 
 import java.util.ArrayList;
 
+import com.apros.codeart.ddd.DDDConfig;
 import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.DomainProperty;
@@ -238,6 +239,18 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 			}
 		}
 		return roots;
+	}
+
+	/**
+	 * 
+	 * 获取通过配置文件得到的对象元数据
+	 * 
+	 * @param objectName
+	 * @return
+	 */
+	public static DTObject getMetadata(String objectName) {
+		var meta = DDDConfig.objectMeta();
+		return meta.getObject(objectName, null);
 	}
 
 }

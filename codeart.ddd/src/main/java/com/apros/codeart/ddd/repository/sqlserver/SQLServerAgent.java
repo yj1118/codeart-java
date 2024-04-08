@@ -15,5 +15,4 @@ public class SQLServerAgent extends DatabaseAgent {
 	}
 
 	public static final IDatabaseAgent Instance = new DatabaseAgent();
-
 }

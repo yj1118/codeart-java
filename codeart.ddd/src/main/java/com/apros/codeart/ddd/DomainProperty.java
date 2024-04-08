@@ -7,7 +7,6 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 
-import com.apros.codeart.ddd.dynamic.DynamicProperty;
 import com.apros.codeart.ddd.metadata.DomainPropertyCategory;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyAccessLevel;
@@ -325,13 +324,8 @@ public class DomainProperty {
 		ArrayList<Annotation> result = new ArrayList<>();
 
 		// 在对象属性定义上查找特性
+		// 自定义注解在动态创建类或者动态改写现有类时已经实现了对象属性的重写，不需要再额外处理
 		ListUtil.addRange(result, getAnnotationsByStaticProperty(objectType, propertyName));
-
-		// 从外部配置中得到，todo...
-		// 获得objectMetaCode
-		String objectMetaCode = null;
-		if (objectMetaCode != null)
-			DynamicProperty.register(objectType, objectMetaCode);
 
 		return result;
 	}

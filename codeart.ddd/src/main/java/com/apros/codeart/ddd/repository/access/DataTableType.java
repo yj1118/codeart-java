@@ -1,5 +1,5 @@
 package com.apros.codeart.ddd.repository.access;
 
-enum DataTableType {
+public enum DataTableType {
 	ValueObject, AggregateRoot, EntityObject, Middle // 中间表
 }

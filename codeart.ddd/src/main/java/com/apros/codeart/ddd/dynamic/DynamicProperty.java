@@ -4,6 +4,7 @@ import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.DomainProperty;
 import com.apros.codeart.ddd.metadata.ObjectMeta;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
+import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.PrimitiveUtil;
@@ -22,6 +23,10 @@ public final class DynamicProperty {
 	public static void register(Class<?> declaringType, String objectMetaCode) {
 		var define = TypeDefine.getMetadata(objectMetaCode);
 		registerProperies(declaringType, define);
+	}
+
+	public static void register(Class<?> declaringType, DTObject objectMeta) {
+		register(declaringType, objectMeta.getCode());
 	}
 
 	/**

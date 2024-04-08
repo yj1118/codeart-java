@@ -4,9 +4,9 @@ import java.util.function.Function;
 
 import com.apros.codeart.runtime.Activator;
 
-public final class SafeAccessAnn {
+public final class SafeAccessImpl {
 
-	private SafeAccessAnn() {
+	private SafeAccessImpl() {
 	}
 
 	/**

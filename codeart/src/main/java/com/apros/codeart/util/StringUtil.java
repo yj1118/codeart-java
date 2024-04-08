@@ -48,6 +48,20 @@ public final class StringUtil {
 		return '\u0000';
 	}
 
+	public static boolean isAscii(String str) {
+		if (str == null) {
+			return false;
+		}
+
+		for (int i = 0; i < str.length(); i++) {
+			if (str.charAt(i) > 127) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	public static String substr(String source, int startIndex, int length) {
 		int endIndex = startIndex + length;
 		return source.substring(startIndex, endIndex);

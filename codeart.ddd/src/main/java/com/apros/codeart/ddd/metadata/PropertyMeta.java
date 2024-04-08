@@ -105,6 +105,15 @@ public class PropertyMeta {
 		return _validators;
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T extends IPropertyValidator> T findValidator(Class<T> validatorType) {
+		for (var validator : _validators) {
+			if (validator.getClass().equals(validatorType))
+				return (T) validator;
+		}
+		return null;
+	}
+
 	private boolean _lazy;
 
 	/**

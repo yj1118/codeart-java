@@ -7,7 +7,7 @@ import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 
-class ObjectChain {
+public class ObjectChain {
 
 	private LinkedList<IDataField> _fields;
 
@@ -31,7 +31,7 @@ class ObjectChain {
 		for (var item : this.reverseFields()) {
 			if (item.equals(parent.memberField()))
 				break;
-			code.insert(0, String.format("%s_", item.getPropertyName()));
+			code.insert(0, String.format("%s_", item.propertyName()));
 		}
 		if (code.length() > 0)
 			StringUtil.removeLast(code);
@@ -78,7 +78,7 @@ class ObjectChain {
 		if (a == b)
 			return false; // a == b表示两者是同一个field，但不是重复的引用点
 		// 如果成员字段对应的属性名、成员字段对应的表名、成员字段所在的表的名称相同，那么我们认为是同一个引用点
-		return a.getPropertyName().equals(b.getPropertyName()) && a.tableName().equals(b.tableName())
+		return a.propertyName().equals(b.propertyName()) && a.tableName().equals(b.tableName())
 				&& a.masterTableName().equals(b.masterTableName());
 	}
 
@@ -104,7 +104,7 @@ class ObjectChain {
 	private String getPath() {
 		StringBuilder code = new StringBuilder();
 		for (var item : _fields) {
-			code.append(String.format("%s_", item.getPropertyName()));
+			code.append(String.format("%s_", item.propertyName()));
 		}
 		if (code.length() > 0)
 			StringUtil.removeLast(code);

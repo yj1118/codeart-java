@@ -85,6 +85,10 @@ public abstract class DataField implements IDataField {
 		return _parentMemberField;
 	}
 
+	public void parentMemberField(IDataField value) {
+		_parentMemberField = value;
+	}
+
 	private DataTable _table;
 
 	public DataTable table() {

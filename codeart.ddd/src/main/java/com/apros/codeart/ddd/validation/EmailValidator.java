@@ -10,7 +10,8 @@ import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.StringUtil;
 
 public class EmailValidator extends PropertyValidatorImpl {
-	private EmailValidator() {
+	private EmailValidator(Email tip) {
+		super(tip);
 	}
 
 	private static Pattern pattern = Pattern
@@ -32,7 +33,4 @@ public class EmailValidator extends PropertyValidatorImpl {
 					Language.strings("codeart.ddd", "IncorrectEmailFormat", property.call()));
 
 	}
-
-	public static final EmailValidator Instance = new EmailValidator();
-
 }

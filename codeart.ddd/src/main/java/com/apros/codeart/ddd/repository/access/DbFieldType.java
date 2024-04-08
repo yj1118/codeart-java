@@ -9,12 +9,14 @@ public enum DbFieldType {
 	/// 聚集索引
 	/// </summary>
 	ClusteredIndex,
-	/// <summary>
-	/// 非聚集索引
-	/// </summary>
+
+	/**
+	 * 非聚集索引
+	 */
 	NonclusteredIndex,
-	/// <summary>
-	/// 普通的键
-	/// </summary>
+
+	/**
+	 * 普通的键
+	 */
 	Common
 }

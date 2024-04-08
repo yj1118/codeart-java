@@ -24,4 +24,11 @@ public interface IDatabaseAgent {
 	 */
 	String getIncrIdSql(String tableName);
 
+	/**
+	 * 能创建索引的字符串的最大长度
+	 * 
+	 * @return
+	 */
+	int getStringIndexableMaxLength();
+
 }

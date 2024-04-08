@@ -80,14 +80,21 @@ public class ObjectMeta {
 		return _remotable;
 	}
 
+	private ObjectRepositoryTip _repositoryTip;
+
+	public ObjectRepositoryTip repositoryTip() {
+		return _repositoryTip;
+	}
+
 	ObjectMeta(String name, Class<?> objectType, DomainObjectCategory category, Iterable<IObjectValidator> validators,
-			boolean remotable) {
+			boolean remotable, ObjectRepositoryTip repositoryTip) {
 		_name = name;
 		_objectType = objectType;
 		_category = category;
 		_properties = new ArrayList<PropertyMeta>();
 		_validators = validators;
 		_remotable = remotable;
+		_repositoryTip = repositoryTip;
 	}
 
 	@Override

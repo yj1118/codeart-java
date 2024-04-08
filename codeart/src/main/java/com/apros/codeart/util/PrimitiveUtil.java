@@ -66,6 +66,8 @@ public final class PrimitiveUtil {
 	 * 
 	 * 获得基类型的类型
 	 * 
+	 * 注意，我们把时间作为基础类型处理
+	 * 
 	 * @param typeName
 	 * @return
 	 */
@@ -98,6 +100,19 @@ public final class PrimitiveUtil {
 		default:
 			return null;
 		}
+	}
+
+	/**
+	 * 注意，我们把时间作为基础类型处理
+	 * 
+	 * @param valueType
+	 * @return
+	 */
+	public static boolean is(Class<?> valueType) {
+
+		if (valueType.isPrimitive() || valueType.equals(LocalDateTime.class) || valueType.equals(UUID.class))
+			return true;
+		return false;
 	}
 
 }

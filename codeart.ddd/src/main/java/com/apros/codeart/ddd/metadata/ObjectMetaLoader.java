@@ -10,6 +10,7 @@ import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.ddd.ObjectValidatorImpl;
 import com.apros.codeart.ddd.remotable.RemotableImpl;
+import com.apros.codeart.ddd.repository.ObjectRepositoryImpl;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.FieldUtil;
 import com.apros.codeart.runtime.TypeUtil;
@@ -34,7 +35,14 @@ public final class ObjectMetaLoader {
 		var validators = ObjectValidatorImpl.getValidators(objectType);
 		var remotable = RemotableImpl.has(objectType);
 
-		return new ObjectMeta(name, objectType, category, validators, remotable);
+		ObjectRepositoryTip repositoryTip = null;
+		var repository = ObjectRepositoryImpl.getTip(objectType, false);
+		if (repository != null) {
+			repositoryTip = new ObjectRepositoryTip(repository.repositoryInterfaceType(),
+					repository.closeMultiTenancy());
+		}
+
+		return new ObjectMeta(name, objectType, category, validators, remotable, repositoryTip);
 	}
 
 	/**

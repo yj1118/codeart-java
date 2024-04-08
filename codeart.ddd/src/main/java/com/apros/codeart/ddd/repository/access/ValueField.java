@@ -1,7 +1,9 @@
 package com.apros.codeart.ddd.repository.access;
 
+import static com.apros.codeart.i18n.Language.strings;
+
 import com.apros.codeart.ddd.metadata.PropertyMeta;
-import com.google.common.base.Strings;
+import com.apros.codeart.util.PrimitiveUtil;
 
 public class ValueField extends DataField {
 
@@ -17,13 +19,14 @@ public class ValueField extends DataField {
 
 	public ValueField(PropertyMeta tip, DbFieldType... dbFieldTypes) {
 		super(tip, DataTableUtil.getDbType(tip), dbFieldTypes);
-		ValidateType(attribute);
+		validateType(tip);
 	}
 
-	private void ValidateType(PropertyRepositoryAttribute attribute) {
-		if (!DataUtil.IsPrimitiveType(attribute.PropertyType) && !attribute.IsEmptyable) {
-			throw new DomainDesignException(Strings.DomainObjectTypeWrong);
-		}
+	private void validateType(PropertyMeta tip) {
+
+		if (!PrimitiveUtil.is(tip.monotype()) && !tip.isEmptyable())
+			throw new IllegalStateException(strings("codeart.ddd", "DomainObjectTypeWrong"));
+
 	}
 
 }

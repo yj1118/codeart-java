@@ -8,7 +8,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Collectors;
 
-import com.apros.codeart.i18n.Language;
+import com.apros.codeart.dto.DTObject;
 
 public final class ResourceUtil {
 
@@ -27,7 +27,7 @@ public final class ResourceUtil {
 		try (InputStream inputStream = classLoader.getResourceAsStream(path)) {
 
 			if (inputStream == null) {
-				throw new IllegalArgumentException(Language.strings("codeart", "FileNotFound", path));
+				return null;
 			} else {
 				try (BufferedReader reader = new BufferedReader(
 						new InputStreamReader(inputStream, StandardCharsets.UTF_8))) {
@@ -37,7 +37,13 @@ public final class ResourceUtil {
 		} catch (Exception e) {
 			throw propagate(e);
 		}
+	}
 
+	public static DTObject loadJSON(String path) {
+		var code = ResourceUtil.load(path);
+		if (code == null)
+			return DTObject.Empty;
+		return DTObject.readonly(code);
 	}
 
 }

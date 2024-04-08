@@ -3,9 +3,10 @@ package com.apros.codeart.ddd;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 
+import com.apros.codeart.runtime.Activator;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ListUtil;
-import com.apros.codeart.util.SafeAccessAnn;
+import com.apros.codeart.util.SafeAccessImpl;
 
 /**
  * 属性验证器支持两种写法：
@@ -16,6 +17,17 @@ import com.apros.codeart.util.SafeAccessAnn;
  *
  */
 public abstract class PropertyValidatorImpl implements IPropertyValidator {
+
+	private Annotation _tip;
+
+	@SuppressWarnings("unchecked")
+	public <T extends Annotation> T getTip(Class<T> annType) {
+		return (T) _tip;
+	}
+
+	public PropertyValidatorImpl(Annotation tip) {
+		_tip = tip;
+	}
 
 	public void validate(IDomainObject domainObject, DomainProperty property, ValidationResult result) {
 		var obj = (DomainObject) domainObject;
@@ -56,7 +68,10 @@ public abstract class PropertyValidatorImpl implements IPropertyValidator {
 			if (validatorType == null)
 				continue;
 
-			var validator = SafeAccessAnn.createSingleton(validatorType);
+			SafeAccessImpl.checkUp(validatorType);
+
+			// 将标记的注解作为构造函数的参数传入
+			var validator = Activator.createInstance(validatorType, ann);
 			validators.add((IPropertyValidator) validator);
 		}
 	}
@@ -81,7 +96,7 @@ public abstract class PropertyValidatorImpl implements IPropertyValidator {
 	}
 
 	private static IPropertyValidator createValidator(Class<? extends IPropertyValidator> validatorType) {
-		return SafeAccessAnn.createSingleton(validatorType);
+		return SafeAccessImpl.createSingleton(validatorType);
 	}
 
 }

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ListUtil;
-import com.apros.codeart.util.SafeAccessAnn;
+import com.apros.codeart.util.SafeAccessImpl;
 import com.apros.codeart.util.TypeMismatchException;
 
 public abstract class ObjectValidatorImpl implements IObjectValidator {
@@ -42,7 +42,7 @@ public abstract class ObjectValidatorImpl implements IObjectValidator {
 	}
 
 	private static IObjectValidator createValidator(Class<? extends IObjectValidator> validatorType) {
-		return SafeAccessAnn.createSingleton(validatorType);
+		return SafeAccessImpl.createSingleton(validatorType);
 	}
 
 }

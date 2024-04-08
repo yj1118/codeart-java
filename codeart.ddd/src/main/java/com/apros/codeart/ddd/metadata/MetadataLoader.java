@@ -33,6 +33,13 @@ public final class MetadataLoader {
 
 		// 先构建动态领域对象的类型 todo
 
+		// 之前些的代码，稍后构建动态领域对象类型可以用到，另外，除了动态构建领域对象外，还要根据配置，对已经存在的对象进行修改
+//		// 从外部配置中得到
+//		// 获得objectMetaCode
+//		var objectMeta = DynamicObject.getMetadata(objectType.getSimpleName());
+//		if (objectMeta != null)
+//			DynamicProperty.register(objectType, objectMeta);
+
 		// 在这里找出所有定义的领域对象
 		_domainTypes = findDomainTypes();
 

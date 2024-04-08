@@ -8,7 +8,7 @@ import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.IRepository;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.LazyIndexer;
-import com.apros.codeart.util.SafeAccessAnn;
+import com.apros.codeart.util.SafeAccessImpl;
 import com.apros.codeart.util.TypeMismatchException;
 
 /**
@@ -61,7 +61,7 @@ final class RepositoryRegistrar {
 						Language.strings("codeart.ddd", "RepeateRepository", repositoryInterfaceType.getName()));
 			if (!interfaceType.isInstance(repository))
 				throw new TypeMismatchException(interfaceType, repository.getClass());
-			SafeAccessAnn.checkUp(repository);
+			SafeAccessImpl.checkUp(repository);
 			_singletons.put(interfaceType, repository);
 		}
 	}

@@ -6,7 +6,7 @@ import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.LazyIndexer;
 
-class ObjectRepositoryImpl {
+public class ObjectRepositoryImpl {
 
 	/**
 	 * 该对象所用到的仓储接口的类型

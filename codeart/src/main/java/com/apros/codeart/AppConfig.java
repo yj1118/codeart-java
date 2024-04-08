@@ -48,8 +48,6 @@ public final class AppConfig {
 	private static final DTObject _config;
 
 	static {
-		var configCode = ResourceUtil.load("config/app.json");
-		_config = DTObject.readonly(configCode);
+		_config = ResourceUtil.loadJSON("config/app.json");
 	}
-
 }
