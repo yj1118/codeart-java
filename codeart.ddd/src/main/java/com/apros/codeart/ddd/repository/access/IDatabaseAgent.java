@@ -39,4 +39,14 @@ public interface IDatabaseAgent {
 	 */
 	<T extends IQueryBuilder> T getQueryBuilder(Class<T> qbClass);
 
+	/**
+	 * 
+	 * 注册查询器
+	 * 
+	 * @param <T>
+	 * @param qbClass
+	 * @param builder
+	 */
+	<T> void registerQueryBuilder(Class<? extends IQueryBuilder> qbClass, IQueryBuilder builder)
+
 }
