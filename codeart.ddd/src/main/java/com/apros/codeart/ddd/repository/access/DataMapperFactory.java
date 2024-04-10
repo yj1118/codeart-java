@@ -3,20 +3,29 @@ package com.apros.codeart.ddd.repository.access;
 import java.util.function.Function;
 
 import com.apros.codeart.ddd.metadata.ObjectMeta;
+import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.repository.Repository;
+import com.apros.codeart.util.LazyIndexer;
 
 final class DataMapperFactory {
 
 	private DataMapperFactory() {
 	}
 
+	public static IDataMapper create(Class<?> objectType) {
+		var meta = ObjectMetaLoader.get(objectType);
+		return _getMapper.apply(meta);
+	}
+
 	public static IDataMapper create(ObjectMeta meta) {
 		return _getMapper.apply(meta);
 	}
 
-	private static Function<Class<?>, IDataMapper> _getMapper = LazyIndexer.init((objectType)->
-	{
-	    return getByRepository(objectType) ?? DataMapper.Instance;
+	private static Function<ObjectMeta, IDataMapper> _getMapper = LazyIndexer.init((meta) -> {
+		var mapper = getByRepository(meta);
+		if (mapper != null)
+			return mapper;
+		return DataMapper.Instance;
 	});
 
 	/**

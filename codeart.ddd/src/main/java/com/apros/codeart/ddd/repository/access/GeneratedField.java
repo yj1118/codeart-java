@@ -76,7 +76,7 @@ class GeneratedField extends ValueField {
 	/// </summary>
 	/// <param name="reflectedType"></param>
 	/// <returns></returns>
-	public static GeneratedField CreateOrderIndex(Class<?> reflectedType, DbFieldType... types) {
+	public static GeneratedField createOrderIndex(Class<?> reflectedType, DbFieldType... types) {
 		var tip = new IntMeta(OrderIndexName, reflectedType);
 		return new GeneratedField(tip, OrderIndexName, GeneratedFieldType.Index, types);
 	}

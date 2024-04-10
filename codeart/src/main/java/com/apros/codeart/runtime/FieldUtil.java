@@ -10,10 +10,10 @@ import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
+import com.apros.codeart.Memoized;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
-import com.apros.codeart.util.Memoized;
 import com.apros.codeart.util.StringUtil;
 import com.apros.codeart.util.ThreadSafe;
 

@@ -70,6 +70,10 @@ public interface IDataField {
 
 	String propertyName();
 
+	Class<?> propertyType();
+
+	Class<?> reflectedType();
+
 	/**
 	 * 
 	 * 所属父成员字段，例如book.category.cover

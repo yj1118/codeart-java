@@ -6,9 +6,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.function.Function;
 
+import com.apros.codeart.Memoized;
 import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
-import com.apros.codeart.util.Memoized;
 import com.apros.codeart.util.StringUtil;
 
 /**

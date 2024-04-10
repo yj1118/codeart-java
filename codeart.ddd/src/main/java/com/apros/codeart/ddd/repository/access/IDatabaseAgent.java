@@ -31,4 +31,12 @@ public interface IDatabaseAgent {
 	 */
 	int getStringIndexableMaxLength();
 
+	/**
+	 * 
+	 * 获得查询器的实现
+	 * 
+	 * @return
+	 */
+	<T extends IQueryBuilder> T getQueryBuilder(Class<T> qbClass);
+
 }

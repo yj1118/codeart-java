@@ -23,6 +23,31 @@ public final class QueryRunner {
 
 	}
 
+	/**
+	 * 
+	 * 用于执行不带返回值的sql
+	 * 
+	 * @param conn
+	 * @param sql
+	 */
+	public static void execute(Connection conn, String sql) {
+
+		try (var stmt = conn.createStatement()) {
+			stmt.execute(sql);
+		} catch (SQLException e) {
+			throw propagate(e);
+		}
+	}
+
+	/**
+	 * 
+	 * 用于执行insert,update,delete的语句
+	 * 
+	 * @param conn
+	 * @param sql
+	 * @param param
+	 * @return
+	 */
 	public static int execute(Connection conn, String sql, Dictionary param) {
 
 		try (PreparedStatement pstmt = getStatement(conn, sql, param);) {

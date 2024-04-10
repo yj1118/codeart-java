@@ -15,7 +15,7 @@ final class DataModelLoader {
 
 	public static void load(Iterable<Class<? extends IDomainObject>> domainTypes) {
 		DataTableLoader.load(domainTypes);
-
+		DataTableLoader.dispose();
 	}
 
 	private static Function<Class<? extends IAggregateRoot>, DataModel> _getModel = LazyIndexer.init((objectType) -> {

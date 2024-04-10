@@ -34,6 +34,14 @@ public abstract class DataField implements IDataField {
 		return this.tip().name();
 	}
 
+	public Class<?> propertyType() {
+		return this.tip().monotype();
+	}
+
+	public Class<?> reflectedType() {
+		return this.tip().declaringType();
+	}
+
 	public abstract DataFieldType fieldType();
 
 	public abstract boolean isMultiple();

@@ -15,6 +15,7 @@ import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.ddd.validation.ASCIIStringValidator;
 import com.apros.codeart.ddd.validation.StringLengthValidator;
+import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.EnumUtil;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.LazyIndexer;
@@ -70,9 +71,6 @@ final class DataTableUtil {
 		case DataFieldType.EntityObject:
 		case DataFieldType.AggregateRoot: {
 			// 存外键即可
-
-			var meta = ObjectMetaLoader.get(current.tip().monotype());
-
 			var idTip = PropertyMeta.getProperty(current.tip().monotype(), EntityObject.IdPropertyName);
 
 			var field = new ValueField(idTip);
@@ -133,9 +131,9 @@ final class DataTableUtil {
 	}
 
 	public static ValueField getForeignKey(DataTable table, GeneratedFieldType keyType, DbFieldType... dbFieldTypes) {
-		if (table.IdField == null)
-			throw new InvalidOperationException("表" + table.Name + "没有id字段无法获得以它为主表的外键信息");
-		string name = table.TableIdName;
+		if (table.idField() == null)
+			throw new IllegalStateException(Language.strings("codeart.ddd", "TableNotId", table.name()));
+		String name = table.tableIdName();
 		switch (keyType) {
 		case GeneratedFieldType.RootKey: {
 			name = GeneratedField.RootIdName;
@@ -149,8 +147,10 @@ final class DataTableUtil {
 			name = GeneratedField.SlaveIdName;
 		}
 			break;
+		default:
+			break;
 		}
-		return new GeneratedField(table.IdField.Tip, name, keyType, dbFieldTypes);
+		return new GeneratedField(table.idField().tip(), name, keyType, dbFieldTypes);
 	}
 
 	private final static Map<Class<?>, DbType> _typeMap = new HashMap<Class<?>, DbType>();
@@ -199,4 +199,9 @@ final class DataTableUtil {
 		return String.format("%s%s", name, EntityObject.IdPropertyName);
 	});
 
+	public static Iterable<IDataField> getObjectFields(Class<?> objectType) {
+		var objectMeta = ObjectMetaLoader.get(objectType);
+		var mapper = DataMapperFactory.create(objectMeta);
+		return mapper.getObjectFields(objectMeta);
+	}
 }

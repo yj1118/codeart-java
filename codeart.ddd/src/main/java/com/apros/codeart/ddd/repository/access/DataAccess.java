@@ -15,8 +15,11 @@ public final class DataAccess {
 		_conn = conn;
 	}
 
-	public int execute(String sql, Dictionary param, QueryLevel level) {
-		sql = supplementLock(sql, level);
+	public void execute(String sql) {
+		QueryRunner.execute(_conn, sql);
+	}
+
+	public int execute(String sql, Dictionary param) {
 		return QueryRunner.execute(_conn, sql, param);
 	}
 

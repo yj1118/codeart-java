@@ -1,4 +1,4 @@
-package com.apros.codeart.util;
+package com.apros.codeart;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,10 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 表示通过存储昂贵函数调用的结果，并在后续调用中返回缓存的结果来避免重复计算，
+ * 表示方法或成员是用于支持测试的
  */
 @Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.METHOD)
-public @interface Memoized {
+@Target({ ElementType.METHOD, ElementType.TYPE, ElementType.FIELD })
+public @interface TestSupport {
 
 }

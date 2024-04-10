@@ -1,11 +1,16 @@
 package com.apros.codeart.ddd.repository.access;
 
 import java.util.ArrayList;
+import java.util.function.Function;
 
+import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.metadata.ObjectMeta;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.ObjectRepositoryTip;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
+import com.apros.codeart.i18n.Language;
+import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
 
 public class DataTable {
@@ -63,6 +68,16 @@ public class DataTable {
 		return _name;
 	}
 
+	/**
+	 * 该表是否为根表
+	 * 
+	 * @return
+	 */
+	public boolean isAggregateRoot() {
+		// 有可能对象标记的ObjectTip的类型与对象的实际类型不同，所以需要使用ObjectType
+		return this.objectType() == null ? false : ObjectMeta.isAggregateRoot(this.objectType());
+	}
+
 	private DataTable _chainRoot;
 
 	/**
@@ -102,7 +117,57 @@ public class DataTable {
 		return _master;
 	}
 
+	private DataTable _middle;
+
+	/**
+	 * 
+	 * 与该表相关的中间表
+	 * 
+	 * @return
+	 */
+	public DataTable middle() {
+		return _middle;
+	}
+
+	void middle(DataTable value) {
+		_middle = value;
+	}
+
+	private DataTable _slave;
+
+	/**
+	 * 
+	 * 该表相关的从表，该属性在middle表中存在
+	 * 
+	 * @return
+	 */
+	public DataTable slave() {
+		return _slave;
+	}
+
+	void slave(DataTable value) {
+		_slave = value;
+	}
+
 	private IDataField _memberField;
+
+	private void initMemberField(String tableName, DataTable master, IDataField memberField) {
+		// 补全memberField信息
+		if (memberField != null) {
+			if (memberField.parentMemberField() == null && master != null)
+				memberField.parentMemberField(master.memberField());
+
+			if (memberField.masterTableName() == null && master != null)
+				memberField.masterTableName(master.name());
+
+			if (memberField.tableName() == null)
+				memberField.tableName(tableName);
+
+			memberField.table(this);
+		}
+
+		_memberField = memberField;
+	}
 
 	/**
 	 * 
@@ -138,10 +203,6 @@ public class DataTable {
 		return _chain;
 	}
 
-	void setChain(ObjectChain chain) {
-		_chain = chain;
-	}
-
 	private Iterable<IDataField> _fields;
 
 	public Iterable<IDataField> fields() {
@@ -167,6 +228,12 @@ public class DataTable {
 		}
 
 		return fields;
+	}
+
+	private Iterable<IDataField> _objectFields;
+
+	public Iterable<IDataField> objectFields() {
+		return _objectFields;
 	}
 
 	private DataTable findActualRoot(DataTable root) {
@@ -204,45 +271,210 @@ public class DataTable {
 		}
 	}
 
-	DataTable(Class<?> objectType, DataTableType type, String name, Iterable<IDataField> objectFields, DataTable chainRoot, DataTable master,
-			IDataField memberField) {
-		
+	private IDataField _idField;
+
+	public IDataField idField() {
+		if (_idField == null)
+			_idField = ListUtil.find(this.fields(), (t) -> t.name().equalsIgnoreCase(EntityObject.IdPropertyName));
+		return _idField;
+	}
+
+	private boolean _isMultiple;
+
+	/**
+	 * 每次插入数据，是多条的
+	 * 
+	 * @return
+	 */
+	public boolean isMultiple() {
+		return _isMultiple;
+	}
+
+	private String _tableIdName;
+
+	/**
+	 * 
+	 * 格式为TableId的编号，例如：Book表的TableIdName就为 BookId
+	 * 
+	 * @return
+	 */
+	public String tableIdName() {
+		return _tableIdName;
+	}
+
+	private void initTableIdName() {
+		if (this.type() != DataTableType.Middle) {
+			var type = this.objectType();
+			this._tableIdName = String.format("%s%s", type.getSimpleName(), EntityObject.IdPropertyName);
+		}
+	}
+
+	private ArrayList<DataTable> _buildtimeChilds;
+
+	/**
+	 * 构建时确定的表集合，该集合会运用查询
+	 * 
+	 * 使用该属性时注意由于对象关系的循环引用导致的死循环问题
+	 * 
+	 * @return
+	 */
+	public Iterable<DataTable> buildtimeChilds() {
+		return _buildtimeChilds;
+	}
+
+	private void initChilds() {
+		initGetRuntimeTable();
+		initBuildtimeChilds();
+	}
+
+	/**
+	 * 初始化构建时的表
+	 * 
+	 */
+	private void initBuildtimeChilds() {
+		_buildtimeChilds = new ArrayList<DataTable>();
+
+		// 初始化相关的基础表
+		for (var field : this.objectFields()) {
+			var type = field.propertyType();
+			if (TypeUtil.isCollection(type))
+				type = field.tip().monotype();
+			if (field.fieldType() == DataFieldType.GeneratedField || field.fieldType() == DataFieldType.Value)
+				continue;
+
+			var table = createChildTable(this, field, type);
+			_buildtimeChilds.add(table);
+		}
+	}
+
+	private Function<DataTable, Function<String, Function<Class<?>, DataTable>>> _getRuntimeTable;
+
+	private void initGetRuntimeTable() {
+		_getRuntimeTable = LazyIndexer.init((master) -> {
+			return LazyIndexer.init((propertyName) -> {
+				return LazyIndexer.init((propertyType) -> {
+					var memberField = ListUtil.find(master.objectFields(), (field) -> {
+						return field.propertyName().equalsIgnoreCase(propertyName);
+					});
+
+					if (memberField == null) {
+
+						throw new IllegalStateException(
+								Language.strings("codeart.ddd", "NotFoundTableField", master.name(), propertyName));
+					}
+
+					Class<?> objectType = TypeUtil.isCollection(propertyType) ? memberField.tip().monotype()
+							: propertyType;
+
+					return createChildTable(master, memberField, objectType);
+				});
+			});
+		});
+	}
+
+	private DataTable createChildTable(DataTable master, IDataField memberField, Class<?> objectType) {
+		DataTable root = null;
+		if (this.root() == null || this.isAggregateRoot())
+			root = this; // 就算有this.Root也要判断表是否为根对象的表，如果是为根对象的表，那么root就是自己
+		else
+			root = this.root();
+
+		DataTable table = null;
+		switch (memberField.fieldType()) {
+		case DataFieldType.ValueObject: {
+			table = DataTableLoader.createValueObject(root, master, memberField, objectType);
+			break;
+		}
+		case DataFieldType.EntityObject: {
+			table = DataTableLoader.createEntityObject(root, master, memberField, objectType);
+			break;
+		}
+		case DataFieldType.EntityObjectList: {
+			table = DataTableLoader.createEntityObjectList(root, master, memberField, objectType);
+			break;
+		}
+		case DataFieldType.ValueObjectList: {
+			table = DataTableLoader.createValueObjectList(root, master, memberField, objectType);
+			break;
+		}
+		case DataFieldType.ValueList: {
+			table = DataTableLoader.createValueList(root, master, memberField, objectType);
+			break;
+		}
+		case DataFieldType.AggregateRoot: {
+			table = DataTableLoader.createAggregateRoot(root, master, memberField, objectType);
+			break;
+		}
+		case DataFieldType.AggregateRootList: {
+			table = DataTableLoader.createAggregateRootList(root, master, memberField, objectType);
+			break;
+		}
+		default:
+			break;
+		}
+
+		if (table == null)
+			throw new IllegalStateException(Language.strings("codeart.ddd", "createChildTable", master.name(),
+					memberField.fieldType(), objectType.getName()));
+
+		return table;
+	}
+
+//	private void InitDynamic()
+//	{
+//	    this.DynamicType = this.ObjectType as RuntimeObjectType;
+//	    this.IsDynamic = this.DynamicType != null;
+//	    if (this.IsDynamic)
+//	    {
+//	        AddTypTable(this.DynamicType.Define.TypeName, this);
+//	    }
+//	}
+
+	private IDataMapper _mapper;
+
+	public IDataMapper mapper() {
+		return _mapper;
+	}
+
+	DataTable(Class<?> objectType, DataTableType type, String name, Iterable<IDataField> objectFields,
+			DataTable chainRoot, DataTable master, IDataField memberField) {
+
 		_id = DataTableUtil.getId(memberField, chainRoot, name);
 		_objectType = objectType;
 		_type = type;
 		_name = name;
-		
+
 		_fields = getFields(objectFields);
+		_objectFields = objectFields;
 
-		 
-		 _chainRoot = chainRoot;
-		 _master = master;
-		 
-		 if(memberField != null) memberField.table(this);
-		 _memberField = memberField;
+		_chainRoot = chainRoot;
+		_master = master;
 
-		 _root = findActualRoot(chainRoot);
-		 InitObjectType(objectType, memberField?.Tip);
+		initMemberField(name, master, memberField);
 
-		 this.Chain = this.MemberField == null ? ObjectChain.Empty : new ObjectChain(this.MemberField);
-		 this.IsSnapshot = isSnapshot;
+		_root = findActualRoot(chainRoot);
+		initObjectType(objectType, memberField == null ? null : memberField.tip());
 
-		 this.IsMultiple = memberField == null ? false : memberField.IsMultiple;
+		this._chain = this.memberField() == null ? ObjectChain.Empty : new ObjectChain(this.memberField());
 
-		 this.Name = name;
-		 this.Fields = TidyFields(tableFields);
+		this._isMultiple = this.memberField() == null ? false : this.memberField().isMultiple();
 
-		 this.ObjectFields = objectFields;
-		 this.PropertyTips = GetPropertyTips();
-		 InitDerived();
-		 //InitConnectionName();
-		 InitTableIdName();
-		 InitChilds();
-		 InitDynamic();
-		 this.Mapper = DataMapperFactory.Create(this.ObjectType);
-		 //这里触发，是为了防止程序员在程序启动时手工初始化，但会遗漏动态表的初始化
-		 //所以在表构造的时候主动创建
-		 this.Build();
+		initTableIdName();
+		_mapper = DataMapperFactory.create(this.objectType());
+	}
+
+	void loadChilds() {
+		initChilds();
+	}
+
+	/**
+	 * 是否为同一个非运行时表，也就是说只用根据名称判断
+	 * 
+	 * @param target
+	 * @return
+	 */
+	public boolean same(DataTable target) {
+		return this.name().equals(target.name());
 	}
 
 }
