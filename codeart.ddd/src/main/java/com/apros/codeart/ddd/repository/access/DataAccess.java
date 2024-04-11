@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.apros.codeart.ddd.Dictionary;
 import com.apros.codeart.ddd.QueryLevel;
+import com.apros.codeart.ddd.repository.DataContext;
 import com.apros.codeart.dto.DTObject;
 
 public final class DataAccess {
@@ -89,6 +90,12 @@ public final class DataAccess {
 
 	private static String supplementLock(String sql, QueryLevel level) {
 		return DataSource.getAgent().supplementLock(sql, level);
+	}
+
+	public static DataAccess getCurrent() {
+		if (!DataContext.existCurrent())
+			return null;
+		return DataContext.getCurrent().connection().access();
 	}
 
 }

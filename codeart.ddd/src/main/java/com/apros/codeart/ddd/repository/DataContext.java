@@ -36,7 +36,7 @@ public class DataContext implements IDataContext {
 		_lockedMirrors = false;
 	}
 
-	void addMirror(IAggregateRoot obj) {
+	private void addMirror(IAggregateRoot obj) {
 		if (isCommiting())
 			throw new DataContextException(Language.strings("CanNotAddMirror"));
 
@@ -73,7 +73,7 @@ public class DataContext implements IDataContext {
 		});
 	}
 
-//	region 当前被加载的对象集合（不包括镜像对象）
+//	region 当前被加载的对象集合
 
 	private ArrayList<IAggregateRoot> _buffer;
 
@@ -82,7 +82,7 @@ public class DataContext implements IDataContext {
 			_buffer.clear();
 	}
 
-	void addBuffer(IAggregateRoot obj) {
+	public void addBuffer(IAggregateRoot obj, boolean isMirror) {
 
 		if (_buffer == null)
 			_buffer = new ArrayList<IAggregateRoot>();
@@ -92,6 +92,9 @@ public class DataContext implements IDataContext {
 		}))
 			return;
 		_buffer.add(obj);
+
+		if (isMirror)
+			addMirror(obj);
 	}
 
 	/**

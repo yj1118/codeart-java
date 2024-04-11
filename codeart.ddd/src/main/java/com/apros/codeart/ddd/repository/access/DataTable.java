@@ -3,6 +3,7 @@ package com.apros.codeart.ddd.repository.access;
 import java.util.ArrayList;
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.metadata.ObjectMeta;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
@@ -436,6 +437,8 @@ public class DataTable {
 		return _mapper;
 	}
 
+	private Inserter _inserter;
+
 	DataTable(Class<?> objectType, DataTableType type, String name, Iterable<IDataField> objectFields,
 			DataTable chainRoot, DataTable master, IDataField memberField) {
 
@@ -461,6 +464,8 @@ public class DataTable {
 
 		initTableIdName();
 		_mapper = DataMapperFactory.create(this.objectType());
+
+		_inserter = new Inserter(this);
 	}
 
 	void loadChilds() {
@@ -475,6 +480,10 @@ public class DataTable {
 	 */
 	public boolean same(DataTable target) {
 		return this.name().equals(target.name());
+	}
+
+	public void insert(DomainObject object) {
+		_inserter.exec(object);
 	}
 
 }

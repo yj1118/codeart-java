@@ -10,7 +10,7 @@ public abstract class DatabaseAgent implements IDatabaseAgent {
 
 	private Map<Class<? extends IQueryBuilder>, IQueryBuilder> _queryBuilders = new HashMap<>();
 
-	public <T> void registerQueryBuilder(Class<? extends IQueryBuilder> qbClass, IQueryBuilder builder) {
+	public <T extends IQueryBuilder> void registerQueryBuilder(Class<T> qbClass, IQueryBuilder builder) {
 		SafeAccessImpl.checkUp(builder);
 		_queryBuilders.put(qbClass, builder);
 	}

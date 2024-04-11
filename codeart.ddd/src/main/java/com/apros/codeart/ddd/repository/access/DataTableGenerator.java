@@ -16,14 +16,18 @@ final class DataTableGenerator {
 
 	}
 
-	public void generate(DataTable table) {
+	private static void createTable(DataAccess access, DataTable table) {
+		var agent = DataSource.getAgent();
+		var builder = agent.getQueryBuilder(CreateTableQB.class);
+		var sql = builder.build(new QueryDescription(table));
+		access.execute(sql);
+	}
+
+	public static void generate(DataTable table) {
 		ifUnBuilt(table.name(), () -> {
 			// 开启独立事务，这样创建表的操作就和后续的增删改查没有冲突了，不会造成死锁
 			DataContext.newScope((access) -> {
-				var agent = DataSource.getAgent();
-				var builder = agent.getQueryBuilder(CreateTableQB.class);
-				var sql = builder.build(new QueryDescription(table));
-				access.execute(sql);
+				createTable(access, table);
 			});
 			return table;
 		});
@@ -48,10 +52,9 @@ final class DataTableGenerator {
 	@TestSupport
 	static void generate() {
 		// 开启独立事务，这样创建表的操作就和后续的增删改查没有冲突了，不会造成死锁
-		DataContext.newScope(() -> {
+		DataContext.newScope((access) -> {
 			for (var table : _generated) {
-				var sql = CreateTable.Create(index).Build(null, index);
-				SqlHelper.Execute(sql);
+				createTable(access, table);
 			}
 		});
 	}
