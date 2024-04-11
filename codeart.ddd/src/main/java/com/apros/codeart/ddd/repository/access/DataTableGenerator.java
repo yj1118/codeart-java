@@ -5,7 +5,6 @@ import java.util.function.Supplier;
 
 import com.apros.codeart.TestSupport;
 import com.apros.codeart.ddd.repository.DataContext;
-import com.apros.codeart.ddd.repository.access.query.CreateTable;
 import com.apros.codeart.util.ListUtil;
 
 /**
@@ -17,12 +16,12 @@ final class DataTableGenerator {
 
 	}
 
-	private void generate(DataTable table) {
+	public void generate(DataTable table) {
 		ifUnBuilt(table.name(), () -> {
 			// 开启独立事务，这样创建表的操作就和后续的增删改查没有冲突了，不会造成死锁
 			DataContext.newScope((access) -> {
 				var agent = DataSource.getAgent();
-				var builder = agent.getQueryBuilder(CreateTable.class);
+				var builder = agent.getQueryBuilder(CreateTableQB.class);
 				var sql = builder.build(new QueryDescription(table));
 				access.execute(sql);
 			});

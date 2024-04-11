@@ -14,6 +14,10 @@ public final class StringUtil {
 		str.setLength(0);
 	}
 
+	public static void appendFormat(StringBuilder str, String format, Object... args) {
+		str.append(String.format(format, args));
+	}
+
 	/**
 	 * 向字符串末尾添加一个换行符
 	 * 

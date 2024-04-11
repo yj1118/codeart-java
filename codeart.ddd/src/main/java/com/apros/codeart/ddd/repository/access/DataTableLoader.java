@@ -284,7 +284,6 @@ public final class DataTableLoader {
 	public static void dispose() {
 		_buildtimeIndex.clear();
 		_buildtimeIndex = null;
-		DataTableGenerator.dispose();
 	}
 
 	// #endregion

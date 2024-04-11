@@ -5,8 +5,10 @@ import static com.apros.codeart.runtime.Util.propagate;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
+import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.UUID;
 import java.util.function.Function;
 
 import com.apros.codeart.util.LazyIndexer;
@@ -152,6 +154,35 @@ public final class TypeUtil {
 		} catch (Exception e) {
 			throw propagate(e);
 		}
+	}
+
+	private static Function<Class<?>, TypeCode> _getTypeCode = LazyIndexer.init((clazz) -> {
+		if (clazz == boolean.class)
+			return TypeCode.Boolean;
+		else if (clazz == byte.class)
+			return TypeCode.Byte;
+		else if (clazz == char.class)
+			return TypeCode.Char;
+		else if (clazz == short.class)
+			return TypeCode.Short;
+		else if (clazz == int.class)
+			return TypeCode.Int;
+		else if (clazz == long.class)
+			return TypeCode.Long;
+		else if (clazz == LocalDateTime.class)
+			return TypeCode.DateTime;
+		else if (clazz == float.class)
+			return TypeCode.Float;
+		else if (clazz == double.class)
+			return TypeCode.Double;
+		else if (clazz == UUID.class)
+			return TypeCode.Guid;
+		else
+			return TypeCode.Object; // 默认为 OBJECT
+	});
+
+	public static TypeCode getTypeCode(Class<?> clazz) {
+		return _getTypeCode.apply(clazz);
 	}
 
 }

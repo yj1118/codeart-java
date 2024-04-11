@@ -99,13 +99,13 @@ class GeneratedField extends ValueField {
 		PropertyMeta tip = null;
 		DbFieldType fieldType = DbFieldType.Common;
 		if (valueType.equals(String.class)) {
-			var maxLength = DataTableUtil.getMaxLength(field.tip());
+			var maxLength = AccessUtil.getMaxLength(field.tip());
 
 			// 如果value的字符串类型满足数据库要求，那么就可以参与索引
 			if (maxLength < agent.getStringIndexableMaxLength()) {
 				fieldType = DbFieldType.NonclusteredIndex;
 			}
-			var ascii = DataTableUtil.isASCIIString(field.tip());
+			var ascii = AccessUtil.isASCIIString(field.tip());
 			tip = new StringMeta(PrimitiveValueName, declaringType, maxLength, ascii);
 		} else {
 			fieldType = DbFieldType.NonclusteredIndex;

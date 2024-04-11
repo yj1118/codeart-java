@@ -13,8 +13,6 @@ import com.apros.codeart.ddd.Emptyable;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
-import com.apros.codeart.ddd.validation.ASCIIStringValidator;
-import com.apros.codeart.ddd.validation.StringLengthValidator;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.EnumUtil;
 import com.apros.codeart.runtime.TypeUtil;
@@ -109,25 +107,6 @@ final class DataTableUtil {
 			return dbType;
 
 		throw new IllegalStateException(strings("codeart.ddd", "DataTypeNotSupported", dataType.getName()));
-	}
-
-	public static int getMaxLength(PropertyMeta meta) {
-		var stringMeta = TypeUtil.as(meta, GeneratedField.StringMeta.class);
-		if (stringMeta != null) {
-			return stringMeta.maxLength();
-		} else {
-			var sl = meta.findValidator(StringLengthValidator.class);
-			return sl == null ? 0 : sl.max();
-		}
-	}
-
-	public static boolean isASCIIString(PropertyMeta meta) {
-		var stringMeta = TypeUtil.as(meta, GeneratedField.StringMeta.class);
-		if (stringMeta != null) {
-			return stringMeta.ascii();
-		} else {
-			return meta.findValidator(ASCIIStringValidator.class) != null;
-		}
 	}
 
 	public static ValueField getForeignKey(DataTable table, GeneratedFieldType keyType, DbFieldType... dbFieldTypes) {

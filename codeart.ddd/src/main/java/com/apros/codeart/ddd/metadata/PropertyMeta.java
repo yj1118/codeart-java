@@ -214,4 +214,9 @@ public class PropertyMeta {
 		var obj = ObjectMetaLoader.get(propertyName);
 		return obj.findProperty(propertyName);
 	}
+
+	public static Iterable<PropertyMeta> getProperties(Class<?> doType) {
+		var obj = ObjectMetaLoader.get(doType);
+		return obj.properties();
+	}
 }

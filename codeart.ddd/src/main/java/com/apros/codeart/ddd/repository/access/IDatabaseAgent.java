@@ -47,6 +47,6 @@ public interface IDatabaseAgent {
 	 * @param qbClass
 	 * @param builder
 	 */
-	<T> void registerQueryBuilder(Class<? extends IQueryBuilder> qbClass, IQueryBuilder builder)
+	<T extends IQueryBuilder> void registerQueryBuilder(Class<T> qbClass, IQueryBuilder builder);
 
 }

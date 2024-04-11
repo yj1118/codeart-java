@@ -2,10 +2,12 @@ package com.apros.codeart.ddd.repository.access;
 
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.IRepository;
 import com.apros.codeart.ddd.metadata.ObjectMeta;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.repository.Repository;
 import com.apros.codeart.util.LazyIndexer;
+import com.apros.codeart.util.SafeAccessImpl;
 
 final class DataMapperFactory {
 
@@ -25,7 +27,7 @@ final class DataMapperFactory {
 		var mapper = getByRepository(meta);
 		if (mapper != null)
 			return mapper;
-		return DataMapper.Instance;
+		return DataMapperImpl.Instance;
 	});
 
 	/**
@@ -38,10 +40,17 @@ final class DataMapperFactory {
 		var repository = Repository.createByObjectType(meta.objectType());
 		if (repository == null)
 			return null;
-		var dataMapperType = DataMapperAttribute.GetDataMapperType(repository);
+		var dataMapperType = getDataMapperType(repository);
 		if (dataMapperType == null)
 			return null;
-		return SafeAccessAttribute.CreateSingleton < IDataMapper > (dataMapperType);
+		return SafeAccessImpl.createSingleton(dataMapperType);
+	}
+
+	private static Class<? extends IDataMapper> getDataMapperType(IRepository repository) {
+		var ann = repository.getClass().getAnnotation(DataMapper.class);
+		if (ann == null)
+			return null;
+		return ann.type();
 	}
 
 }
