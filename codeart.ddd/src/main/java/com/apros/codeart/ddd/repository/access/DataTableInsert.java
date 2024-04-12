@@ -3,16 +3,18 @@ package com.apros.codeart.ddd.repository.access;
 import com.apros.codeart.ddd.Dictionary;
 import com.apros.codeart.ddd.DomainBuffer;
 import com.apros.codeart.ddd.DomainObject;
+import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.IAggregateRoot;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.i18n.Language;
+import com.apros.codeart.util.StringUtil;
 
-final class Inserter {
+final class DataTableInsert {
 
 	private DataTable _self;
 
-	public Inserter(DataTable self) {
+	public DataTableInsert(DataTable self) {
 		_self = self;
 	}
 
@@ -79,39 +81,35 @@ final class Inserter {
 			insertAndCollectValue(root, parent, obj, tip, data);
 		}
 
-		if (this.Type == DataTableType.ValueObject) {
+		switch (_self.type()) {
+		case DataTableType.ValueObject: {
 			// 需要补充编号
-			data.Add(EntityObject.IdPropertyName, GetObjectId(obj));
+			data.put(EntityObject.IdPropertyName, DataTableUtil.getObjectId(obj));
 			// 插入时默认为1
-			data.Add(GeneratedField.AssociatedCountName, 1);
-		}
-
-		if (this.Type == DataTableType.EntityObject) {
-			// 插入时默认为1
-			data.Add(GeneratedField.AssociatedCountName, 1);
-		}
-
-		if (this.Type == DataTableType.AggregateRoot) {
-			if (this.IsSnapshot) {
-				data.Add(Util.SnapshotTime, DateTime.Now);
-				data.Add(Util.SnapshotLifespan, this.ObjectTip.SnapshotLifespan);
-			}
-		} else {
+			data.put(GeneratedField.AssociatedCountName, 1);
 			// 补充外键
-			data.Add(GeneratedField.RootIdName, GetObjectId(root));
+			data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
+			break;
+		}
+		case DataTableType.EntityObject: {
+			// 插入时默认为1
+			data.put(GeneratedField.AssociatedCountName, 1);
+			// 补充外键
+			data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
+			break;
+		}
+		case DataTableType.Middle: {
+			// 补充外键
+			data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
+			break;
+		}
 		}
 
 		// this.Mapper.FillInsertData(obj, data, this);
 
-		if (!this.IsDerived) {
-			// 只有非派生表才记录TypeKey和DataVersion
-			data.Add(GeneratedField.TypeKeyName, string.Empty); // 追加类型编号，非派生类默认类型编号为空
-			data.Add(GeneratedField.DataVersionName, 1); // 追加数据版本号
-		}
-
-		if (this.IsSessionEnabledMultiTenancy) {
-			data.Add(GeneratedField.TenantIdName, AppSession.TenantId);
-		}
+		// 只有非派生表才记录TypeKey和DataVersion
+		data.put(GeneratedField.TypeKeyName, StringUtil.empty()); // 追加类型编号，非派生类默认类型编号为空
+		data.put(GeneratedField.DataVersionName, 1); // 追加数据版本号
 
 		return data;
 	}
@@ -123,8 +121,8 @@ final class Inserter {
 	/// <param name="parent"></param>
 	/// <param name="obj"></param>
 	/// <returns>成员有可能已经在别的引用中被插入，此时返回false,否则返回true</returns>
-	private void InsertMember(DomainObject root, DomainObject parent, DomainObject obj) {
-		if (obj == null || obj.IsEmpty())
+	private void insertMember(DomainObject root, DomainObject parent, DomainObject obj) {
+		if (obj == null || obj.isEmpty())
 			return;
 
 		// 我们需要先查，看数据库中是否存在数据，如果不存在就新增，存在就增加引用次数

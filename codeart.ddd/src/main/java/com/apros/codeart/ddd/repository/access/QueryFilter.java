@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
-import com.apros.codeart.ddd.Dictionary;
+import com.apros.codeart.ddd.MapData;
 import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.TimeUtil;
@@ -187,9 +187,9 @@ final class QueryFilter {
 
 	public static class Row implements IQueryFilter {
 
-		private Dictionary _result;
+		private MapData _result;
 
-		public Dictionary result() {
+		public MapData result() {
 			return _result;
 		}
 
@@ -198,16 +198,16 @@ final class QueryFilter {
 
 		@Override
 		public void extract(ResultSet rs) throws SQLException {
-			_result = new Dictionary();
+			_result = new MapData();
 			fillSingleData(rs, _result);
 		}
 	}
 
 	public static class Rows implements IQueryFilter {
 
-		private Iterable<Dictionary> _result;
+		private Iterable<MapData> _result;
 
-		public Iterable<Dictionary> result() {
+		public Iterable<MapData> result() {
 			return _result;
 		}
 
@@ -216,7 +216,7 @@ final class QueryFilter {
 
 		@Override
 		public void extract(ResultSet rs) throws SQLException {
-			var rows = new ArrayList<Dictionary>();
+			var rows = new ArrayList<MapData>();
 			fillMultipleData(rs, rows);
 			_result = rows;
 		}
@@ -266,7 +266,7 @@ final class QueryFilter {
 		return count;
 	}
 
-	private static void loadRowData(ResultSet rs, Dictionary data) throws SQLException {
+	private static void loadRowData(ResultSet rs, MapData data) throws SQLException {
 
 		ResultSetMetaData rsmd = rs.getMetaData();
 		int fieldCount = rsmd.getColumnCount();
@@ -285,16 +285,16 @@ final class QueryFilter {
 		}
 	}
 
-	private static void fillSingleData(ResultSet rs, Dictionary data) throws SQLException {
+	private static void fillSingleData(ResultSet rs, MapData data) throws SQLException {
 		if (rs.next()) {
 			loadRowData(rs, data);
 		}
 	}
 
-	private static void fillMultipleData(ResultSet rs, ArrayList<Dictionary> datas) throws SQLException {
+	private static void fillMultipleData(ResultSet rs, ArrayList<MapData> datas) throws SQLException {
 
 		while (rs.next()) {
-			var data = new Dictionary();
+			var data = new MapData();
 			loadRowData(rs, data);
 			datas.add(data);
 		}

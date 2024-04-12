@@ -101,6 +101,14 @@ public final class ListUtil {
 		return list;
 	}
 
+	public static <T> ArrayList<T> asList(T[] source) {
+		ArrayList<T> list = new ArrayList<T>(source.length);
+		for (T item : source) {
+			list.add(item);
+		}
+		return list;
+	}
+
 	public static <T, R> ArrayList<R> mapMany(T[] source, Function<T, Iterable<R>> selector) {
 		ArrayList<R> list = new ArrayList<R>(source.length);
 		for (T item : source) {
@@ -165,6 +173,15 @@ public final class ListUtil {
 		LinkedList<T> temp = new LinkedList<>(source);
 		Collections.reverse(temp);
 		return temp;
+	}
+
+	@SuppressWarnings("unused")
+	public static boolean exists(Iterable<?> e) {
+		if (e == null)
+			return false;
+		for (var t : e)
+			return true;
+		return false;
 	}
 
 	/**

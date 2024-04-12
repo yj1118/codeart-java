@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Function;
 
-import com.apros.codeart.ddd.Dictionary;
+import com.apros.codeart.ddd.MapData;
 import com.apros.codeart.ddd.repository.access.QueryFilter.IQueryFilter;
 import com.apros.codeart.ddd.repository.access.QueryFilter.Row;
 import com.apros.codeart.ddd.repository.access.QueryFilter.Rows;
@@ -48,7 +48,7 @@ public final class QueryRunner {
 	 * @param param
 	 * @return
 	 */
-	public static int execute(Connection conn, String sql, Dictionary param) {
+	public static int execute(Connection conn, String sql, MapData param) {
 
 		try (PreparedStatement pstmt = getStatement(conn, sql, param);) {
 			return pstmt.executeUpdate();
@@ -57,62 +57,62 @@ public final class QueryRunner {
 		}
 	}
 
-	public static Object queryScalar(Connection conn, String sql, Dictionary param) {
+	public static Object queryScalar(Connection conn, String sql, MapData param) {
 		var filter = new QueryFilter.Scalar();
 		query(conn, sql, param, filter);
 		return filter.result();
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> T queryScalar(Class<T> valueType, Connection conn, String sql, Dictionary param) {
+	public static <T> T queryScalar(Class<T> valueType, Connection conn, String sql, MapData param) {
 		var filter = new QueryFilter.Scalar();
 		query(conn, sql, param, filter);
 		return (T) filter.result();
 	}
 
-	public static int queryScalarInt(Connection conn, String sql, Dictionary param) {
+	public static int queryScalarInt(Connection conn, String sql, MapData param) {
 		var filter = new QueryFilter.ScalarInt();
 		query(conn, sql, param, filter);
 		return filter.result();
 	}
 
-	public static long queryScalarLong(Connection conn, String sql, Dictionary param) {
+	public static long queryScalarLong(Connection conn, String sql, MapData param) {
 		var filter = new QueryFilter.ScalarLong();
 		query(conn, sql, param, filter);
 		return filter.result();
 	}
 
-	public static UUID queryScalarGuid(Connection conn, String sql, Dictionary param) {
+	public static UUID queryScalarGuid(Connection conn, String sql, MapData param) {
 		var filter = new QueryFilter.ScalarGuid();
 		query(conn, sql, param, filter);
 		return filter.result();
 	}
 
-	public static Iterable<Object> queryScalars(Connection conn, String sql, Dictionary param) {
+	public static Iterable<Object> queryScalars(Connection conn, String sql, MapData param) {
 		var filter = new QueryFilter.Scalars<Object>();
 		query(conn, sql, param, filter);
 		return filter.result();
 	}
 
-	public static <T> Iterable<T> queryScalars(Class<T> elementType, Connection conn, String sql, Dictionary param) {
+	public static <T> Iterable<T> queryScalars(Class<T> elementType, Connection conn, String sql, MapData param) {
 		var filter = new QueryFilter.Scalars<T>();
 		query(conn, sql, param, filter);
 		return filter.result();
 	}
 
-	public static int[] queryScalarInts(Connection conn, String sql, Dictionary param) {
+	public static int[] queryScalarInts(Connection conn, String sql, MapData param) {
 		var filter = new QueryFilter.ScalarInts();
 		query(conn, sql, param, filter);
 		return filter.result();
 	}
 
-	public static DTObject queryDTO(Connection conn, String sql, Dictionary param) {
+	public static DTObject queryDTO(Connection conn, String sql, MapData param) {
 		var filter = new QueryFilter.DTO();
 		query(conn, sql, param, filter);
 		return filter.result();
 	}
 
-	public static Iterable<DTObject> queryDTOs(Connection conn, String sql, Dictionary param) {
+	public static Iterable<DTObject> queryDTOs(Connection conn, String sql, MapData param) {
 		var filter = new QueryFilter.DTOs();
 		query(conn, sql, param, filter);
 		return filter.result();
@@ -127,19 +127,19 @@ public final class QueryRunner {
 	 * @param param
 	 * @return
 	 */
-	public static Dictionary queryRow(Connection conn, String sql, Dictionary param) {
+	public static MapData queryRow(Connection conn, String sql, MapData param) {
 		var filter = new Row();
 		query(conn, sql, param, filter);
 		return filter.result();
 	}
 
-	public static Iterable<Dictionary> queryRows(Connection conn, String sql, Dictionary param) {
+	public static Iterable<MapData> queryRows(Connection conn, String sql, MapData param) {
 		var filter = new Rows();
 		query(conn, sql, param, filter);
 		return filter.result();
 	}
 
-	private static void query(Connection conn, String sql, Dictionary param, IQueryFilter filter) {
+	private static void query(Connection conn, String sql, MapData param, IQueryFilter filter) {
 
 		try (PreparedStatement pstmt = getStatement(conn, sql, param); ResultSet rs = pstmt.executeQuery()) {
 			filter.extract(rs);
@@ -178,7 +178,7 @@ public final class QueryRunner {
 		 * @param param
 		 * @return
 		 */
-		public void fillParams(PreparedStatement statement, Dictionary param) {
+		public void fillParams(PreparedStatement statement, MapData param) {
 			if (param == null)
 				return;
 			try {
@@ -232,7 +232,7 @@ public final class QueryRunner {
 		return QueryAdapter.parse(sql);
 	});
 
-	private static PreparedStatement getStatement(Connection conn, String sql, Dictionary param) throws SQLException {
+	private static PreparedStatement getStatement(Connection conn, String sql, MapData param) throws SQLException {
 		var adapter = _getAdapter.apply(sql);
 		PreparedStatement pstmt = conn.prepareStatement(adapter.sql());
 		adapter.fillParams(pstmt, param);

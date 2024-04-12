@@ -437,7 +437,9 @@ public class DataTable {
 		return _mapper;
 	}
 
-	private Inserter _inserter;
+	private DataTableQuery _query;
+
+	private DataTableInsert _insert;
 
 	DataTable(Class<?> objectType, DataTableType type, String name, Iterable<IDataField> objectFields,
 			DataTable chainRoot, DataTable master, IDataField memberField) {
@@ -465,7 +467,8 @@ public class DataTable {
 		initTableIdName();
 		_mapper = DataMapperFactory.create(this.objectType());
 
-		_inserter = new Inserter(this);
+		_query = new DataTableQuery(this);
+		_insert = new DataTableInsert(this);
 	}
 
 	void loadChilds() {
@@ -482,8 +485,12 @@ public class DataTable {
 		return this.name().equals(target.name());
 	}
 
-	public void insert(DomainObject object) {
-		_inserter.exec(object);
+	void insert(DomainObject object) {
+		_insert.exec(object);
+	}
+
+	DataTableQuery query() {
+		return _query;
 	}
 
 }

@@ -11,8 +11,11 @@ import java.util.function.Function;
 
 import com.apros.codeart.ddd.Emptyable;
 import com.apros.codeart.ddd.EntityObject;
+import com.apros.codeart.ddd.IEntityObject;
+import com.apros.codeart.ddd.IValueObject;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
+import com.apros.codeart.dto.DTObject;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.EnumUtil;
 import com.apros.codeart.runtime.TypeUtil;
@@ -107,6 +110,22 @@ final class DataTableUtil {
 			return dbType;
 
 		throw new IllegalStateException(strings("codeart.ddd", "DataTypeNotSupported", dataType.getName()));
+	}
+
+	public static Object getObjectId(Object obj) {
+		var eo = TypeUtil.as(obj, IEntityObject.class);
+		if (eo != null)
+			return eo.getIdentity();
+
+		var vo = TypeUtil.as(obj, IValueObject.class);
+		if (vo != null)
+			return vo.getPersistentIdentity(); // 生成的编号
+
+		var dto = TypeUtil.as(obj, DTObject.class); // 测试时经常会用dto模拟对象
+		if (dto != null)
+			return dto.getValue("Id");
+
+		throw new IllegalStateException(strings("codeart.ddd", "UnableGetId", obj.getClass().getSimpleName()));
 	}
 
 	public static ValueField getForeignKey(DataTable table, GeneratedFieldType keyType, DbFieldType... dbFieldTypes) {

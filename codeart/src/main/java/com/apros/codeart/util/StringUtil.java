@@ -1,7 +1,13 @@
 package com.apros.codeart.util;
 
 import java.util.ArrayList;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.apros.codeart.pooling.PoolingException;
 import com.google.common.base.CaseFormat;
@@ -107,6 +113,23 @@ public final class StringUtil {
 		return sb.toString();
 	}
 
+	public static String remove(String original, int index, int length) {
+		if (index < 0 || length < 0 || index > original.length()) {
+			throw new IllegalArgumentException("Index or length out of bounds");
+		}
+
+		// 计算删除部分后面段的起始索引
+		int end = index + length;
+
+		// 检查结束索引是否超出字符串长度
+		if (end > original.length()) {
+			end = original.length();
+		}
+
+		// 创建新字符串，由前一部分和后一部分组成
+		return original.substring(0, index) + original.substring(end);
+	}
+
 	public static ArrayList<String> trim(String[] strs) {
 		return ListUtil.<String, String>map(strs, (e) -> StringUtil.trim(e));
 	}
@@ -179,6 +202,39 @@ public final class StringUtil {
 	public static boolean startsWithIgnoreCase(String str, String prefix) {
 		var start = substr(str, prefix.length());
 		return start.toLowerCase().startsWith(prefix.toLowerCase());
+	}
+
+	public static boolean containsIgnoreCase(Iterable<String> list, String target) {
+		for (String element : list) {
+			if (element.equalsIgnoreCase(target)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static boolean contains(Iterable<String> list, String target) {
+		for (String element : list) {
+			if (element.equals(target)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public static Iterable<String> distinctIgnoreCase(Iterable<String> list) {
+		// 创建一个不区分大小写的 TreeSet，然后使用 Stream API 过滤重复项
+		Set<String> set = StreamSupport.stream(list.spliterator(), false)
+				.collect(Collectors.toCollection(() -> new TreeSet<>(String.CASE_INSENSITIVE_ORDER)));
+
+		return set;
+	}
+
+	public static int indexOfIgnoreCase(String source, String target) {
+		Pattern pattern = Pattern.compile(Pattern.quote(target), Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(source);
+
+		return matcher.find() ? matcher.start() : -1;
 	}
 
 }

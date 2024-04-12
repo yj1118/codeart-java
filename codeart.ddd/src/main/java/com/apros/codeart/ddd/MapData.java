@@ -11,7 +11,7 @@ import com.apros.codeart.util.Guid;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 
-public class Dictionary implements Iterable<Map.Entry<String, Object>> {
+public class MapData implements Iterable<Map.Entry<String, Object>> {
 
 	// 保存对象动态定义的属性值
 	private HashMap<String, Object> _data;
@@ -52,14 +52,14 @@ public class Dictionary implements Iterable<Map.Entry<String, Object>> {
 		return _data.put(name, value);
 	}
 
-	public void combine(Dictionary data) {
+	public void combine(MapData data) {
 		for (var p : _data.entrySet()) {
 			if (!this.containsKey(p.getKey()))
 				this.put(p);
 		}
 	}
 
-	public void update(Dictionary data) {
+	public void update(MapData data) {
 		for (var p : _data.entrySet()) {
 			_data.put(p.getKey(), p.getValue());
 		}
@@ -73,7 +73,7 @@ public class Dictionary implements Iterable<Map.Entry<String, Object>> {
 		return _data.entrySet().iterator();
 	}
 
-	public Dictionary() {
+	public MapData() {
 		_data = new HashMap<String, Object>();
 	}
 
