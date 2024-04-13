@@ -9,8 +9,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.Emptyable;
 import com.apros.codeart.ddd.EntityObject;
+import com.apros.codeart.ddd.IEmptyable;
 import com.apros.codeart.ddd.IEntityObject;
 import com.apros.codeart.ddd.IValueObject;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
@@ -20,6 +22,7 @@ import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.EnumUtil;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.LazyIndexer;
+import com.apros.codeart.util.ListUtil;
 import com.google.common.collect.Iterables;
 
 final class DataTableUtil {
@@ -150,6 +153,61 @@ final class DataTableUtil {
 		}
 		return new GeneratedField(table.idField().tip(), name, keyType, dbFieldTypes);
 	}
+
+	@SuppressWarnings("unchecked")
+	public static Iterable<Object> getValueListData(Object value, Class<?> elementType) {
+		if (value == null)
+			new ArrayList<String>(0);
+
+		var list = TypeUtil.as(value, Iterable.class);
+		if (elementType.isEnum()) {
+			return ListUtil.map(list, (item) -> {
+				return EnumUtil.getValue(item);
+			});
+		} else {
+			return ListUtil.map(list, (item) -> {
+				return (Object) item;
+			});
+		}
+	}
+
+	/// <summary>
+	/// 获取基元类型的属性值
+	/// </summary>
+	/// <returns></returns>
+	public static Object getPrimitivePropertyValue(DomainObject obj, PropertyMeta tip) {
+		var value = obj.getValue(tip.name());
+		if (!tip.isEmptyable())
+			return value;
+		var e = (IEmptyable) value;
+		return e.isEmpty() ? null : e.getValue(); // 可以存null值在数据库
+	}
+
+	/**
+	 * 
+	 * 根据属性名称，获取对应的对象引用的字段，也就是类型 属性名Id的形式的字段
+	 * 
+	 * @param table
+	 * @param propertyName
+	 * @return
+	 */
+	public static IDataField getQuoteField(DataTable table, String propertyName) {
+		return _getQuoteField.apply(table).apply(propertyName);
+	}
+
+	private static Function<DataTable, Function<String, IDataField>> _getQuoteField = LazyIndexer.init((table) -> {
+		return LazyIndexer.init((propertyName) -> {
+			for (var field : table.fields()) {
+				if (field.parentMemberField() == null)
+					continue;
+				var current = field.parentMemberField();
+				if (current.tip().name().equalsIgnoreCase(propertyName)) {
+					return field;
+				}
+			}
+			return null;
+		});
+	});
 
 	private final static Map<Class<?>, DbType> _typeMap = new HashMap<Class<?>, DbType>();
 

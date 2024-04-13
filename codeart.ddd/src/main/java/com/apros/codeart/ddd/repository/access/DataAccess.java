@@ -89,7 +89,7 @@ public final class DataAccess {
 	}
 
 	private static String supplementLock(String sql, QueryLevel level) {
-		return DataSource.getAgent().supplementLock(sql, level);
+		return SqlStatement.supplementLock(sql, level);
 	}
 
 	public static DataAccess getCurrent() {

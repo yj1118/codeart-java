@@ -29,7 +29,7 @@ public final class DataPortal {
 	public static long getIdentity(String tableName) {
 		var id = new WrapperLong();
 		DataContext.newScope((access) -> {
-			String sql = DataSource.getAgent().getIncrIdSql(tableName);
+			String sql = SqlStatement.getIncrIdSql(tableName);
 			id.set(access.queryScalarLong(sql));
 		});
 		return id.get();

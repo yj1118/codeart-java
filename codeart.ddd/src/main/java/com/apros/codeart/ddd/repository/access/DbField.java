@@ -26,6 +26,7 @@ public abstract class DbField {
 	 * @return
 	 */
 	public static DbField create(String name, Class<?> type) {
+
 		switch (TypeUtil.getTypeCode(type)) {
 		case TypeCode.Boolean:
 			return new BooleanField(name);

@@ -3,6 +3,7 @@ module codeart.ddd {
 	requires transitive java.sql;
 	requires com.zaxxer.hikari;
 	requires transitive codeart;
+	requires jsqlparser;
 
 	exports com.apros.codeart.ddd;
 	exports com.apros.codeart.ddd.repository;

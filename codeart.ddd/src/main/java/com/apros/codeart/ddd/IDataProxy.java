@@ -2,7 +2,7 @@ package com.apros.codeart.ddd;
 
 public interface IDataProxy extends INotNullObject {
 
-	Object load(DomainProperty property);
+	Object load(String propertyName);
 
 	/**
 	 * 加载属性更改前的值
@@ -10,16 +10,16 @@ public interface IDataProxy extends INotNullObject {
 	 * @param property
 	 * @return
 	 */
-	Object loadOld(DomainProperty property);
+	Object loadOld(String propertyName);
 
-	void save(DomainProperty property, Object newValue, Object oldValue);
+	void save(String propertyName, Object newValue, Object oldValue);
 
 	/// <summary>
 	/// 属性的数据是否已被加载
 	/// </summary>
 	/// <param name="property"></param>
 	/// <returns></returns>
-	boolean isLoaded(DomainProperty property);
+	boolean isLoaded(String propertyName);
 
 	DomainObject getOwner();
 

@@ -38,6 +38,11 @@
 	    <artifactId>HikariCP</artifactId>
 	    <version>5.1.0</version>
 	</dependency>
+		<dependency>
+	    <groupId>com.github.jsqlparser</groupId>
+	    <artifactId>jsqlparser</artifactId>
+	    <version>4.5</version> <!-- 确保使用最新的版本号 -->
+	</dependency>
   </dependencies>
 
   <build>

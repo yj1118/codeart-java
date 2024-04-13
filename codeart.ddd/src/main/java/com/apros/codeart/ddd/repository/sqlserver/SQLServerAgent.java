@@ -4,6 +4,7 @@ import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.ddd.repository.access.CreateTableQB;
 import com.apros.codeart.ddd.repository.access.DatabaseAgent;
 import com.apros.codeart.ddd.repository.access.IDatabaseAgent;
+import com.apros.codeart.util.StringUtil;
 
 public class SQLServerAgent extends DatabaseAgent {
 
@@ -29,5 +30,19 @@ public class SQLServerAgent extends DatabaseAgent {
 	public int getStringIndexableMaxLength() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public String qualifier(String field) {
+		if (!field.startsWith("["))
+			return String.format("[%s]", field);
+		return field;
+	}
+
+	@Override
+	public String unQualifier(String field) {
+		if (field.startsWith("["))
+			return StringUtil.substr(field, 1, (field.length() - 2));
+		return field;
 	}
 }

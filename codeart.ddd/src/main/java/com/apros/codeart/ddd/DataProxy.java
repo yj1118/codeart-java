@@ -47,24 +47,24 @@ public abstract class DataProxy implements IDataProxy {
 			_oldData.clear();
 	}
 
-	public Object load(DomainProperty property) {
-		return _data.get(property.name());
+	public Object load(String propertyName) {
+		return _data.get(propertyName);
 	}
 
-	public Object loadOld(DomainProperty property) {
+	public Object loadOld(String propertyName) {
 		if (_oldData == null)
 			return null;
-		return _oldData.get(property.name());
+		return _oldData.get(propertyName);
 	}
 
 	public boolean isEmpty() {
 		return false;
 	}
 
-	public void save(DomainProperty property, Object newValue, Object oldValue) {
-		_data.put(property.name(), newValue);
+	public void save(String propertyName, Object newValue, Object oldValue) {
+		_data.put(propertyName, newValue);
 		if (this.isTrackPropertyChange())
-			_oldData.put(property.name(), oldValue);
+			_oldData.put(propertyName, oldValue);
 	}
 
 	public void copy(IDataProxy target) {
@@ -94,10 +94,10 @@ public abstract class DataProxy implements IDataProxy {
 	 * @param property
 	 * @return
 	 */
-	protected abstract Object loadData(DomainProperty property);
+	protected abstract Object loadData(String propertyName);
 
-	public boolean isLoaded(DomainProperty property) {
-		return _data.containsKey(property.name());
+	public boolean isLoaded(String propertyName) {
+		return _data.containsKey(propertyName);
 	}
 
 	/**
@@ -137,7 +137,7 @@ public abstract class DataProxy implements IDataProxy {
 		}
 
 		@Override
-		protected Object loadData(DomainProperty property) {
+		protected Object loadData(String propertyName) {
 			return null;
 		}
 
@@ -174,12 +174,12 @@ public abstract class DataProxy implements IDataProxy {
 		}
 
 		@Override
-		public void save(DomainProperty property, Object newValue, Object oldValue) {
+		public void save(String propertyName, Object newValue, Object oldValue) {
 
 		}
 
 		@Override
-		protected Object loadData(DomainProperty property) {
+		protected Object loadData(String propertyName) {
 			return null;
 		}
 

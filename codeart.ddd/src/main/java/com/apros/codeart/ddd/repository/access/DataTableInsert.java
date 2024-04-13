@@ -1,13 +1,15 @@
 package com.apros.codeart.ddd.repository.access;
 
-import com.apros.codeart.ddd.Dictionary;
 import com.apros.codeart.ddd.DomainBuffer;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.IAggregateRoot;
+import com.apros.codeart.ddd.IDomainObject;
+import com.apros.codeart.ddd.MapData;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.i18n.Language;
+import com.apros.codeart.util.ObjectUtil;
 import com.apros.codeart.util.StringUtil;
 
 final class DataTableInsert {
@@ -18,7 +20,7 @@ final class DataTableInsert {
 		_self = self;
 	}
 
-	public void exec(DomainObject obj) {
+	public void insert(DomainObject obj) {
 		if (obj == null || obj.isEmpty())
 			return;
 		if (!obj.isDirty()) {
@@ -43,7 +45,7 @@ final class DataTableInsert {
 	/// </summary>
 	/// <param name="obj"></param>
 	/// <returns></returns>
-	private Dictionary insertData(DomainObject root, DomainObject parent, DomainObject obj) {
+	private MapData insertData(DomainObject root, DomainObject parent, DomainObject obj) {
 		var data = getInsertData(root, parent, obj);
 
 		DataAccess.getCurrent().execute(this.sqlInsert(), data);
@@ -63,7 +65,7 @@ final class DataTableInsert {
 	 * @param obj
 	 * @param objData
 	 */
-	private void onDataInserted(DomainObject root, DomainObject obj, Dictionary objData) {
+	private void onDataInserted(DomainObject root, DomainObject obj, MapData objData) {
 		if (_self.type() == DataTableType.AggregateRoot) {
 			var ar = (IAggregateRoot) obj;
 			DomainBuffer.add(ar);
@@ -72,11 +74,11 @@ final class DataTableInsert {
 		_self.mapper().onInserted(obj, _self);
 	}
 
-	private Dictionary getInsertData(DomainObject root, DomainObject parent, DomainObject obj) {
+	private MapData getInsertData(DomainObject root, DomainObject parent, DomainObject obj) {
 		Class<?> objectType = _self.objectType();
 
 		var tips = PropertyMeta.getProperties(objectType);
-		var data = new Dictionary();
+		var data = new MapData();
 		for (var tip : tips) {
 			insertAndCollectValue(root, parent, obj, tip, data);
 		}
@@ -103,6 +105,8 @@ final class DataTableInsert {
 			data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
 			break;
 		}
+		default:
+			break;
 		}
 
 		// this.Mapper.FillInsertData(obj, data, this);
@@ -121,172 +125,142 @@ final class DataTableInsert {
 	/// <param name="parent"></param>
 	/// <param name="obj"></param>
 	/// <returns>成员有可能已经在别的引用中被插入，此时返回false,否则返回true</returns>
-	private void insertMember(DomainObject root, DomainObject parent, DomainObject obj) {
+	public void insertMember(DomainObject root, DomainObject parent, DomainObject obj) {
 		if (obj == null || obj.isEmpty())
 			return;
 
 		// 我们需要先查，看数据库中是否存在数据，如果不存在就新增，存在就增加引用次数
-		var existObject = QuerySingle(GetObjectId(root), GetObjectId(obj));
+		var existObject = querySingle(DataTableUtil.getObjectId(root), DataTableUtil.getObjectId(obj));
 
-		if (existObject.IsNull()) {
-			OnPreDataInsert(obj);
-			var data = InsertData(root, parent, obj);
-			OnDataInserted(root, obj, data);
+		if (ObjectUtil.isNull(existObject)) {
+			onPreDataInsert(obj);
+			var data = insertData(root, parent, obj);
+			onDataInserted(root, obj, data);
 		} else {
-			if (this.IsDerived) {
-				this.InheritedRoot.IncrementAssociated(GetObjectId(root), GetObjectId(obj));
-			} else {
-				// 递增引用次数
-				IncrementAssociated(GetObjectId(root), GetObjectId(obj));
+			// 递增引用次数
+			incrementAssociated(DataTableUtil.getObjectId(root), DataTableUtil.getObjectId(obj));
+		}
+	}
+
+	public void insertMiddle(IDomainObject root, IDomainObject master, Iterable<?> slaves) {
+		if (_self.isPrimitiveValue()) {
+			insertMiddleByValues(root, master, slaves);
+			return;
+		}
+
+		var rootId = DataTableUtil.getObjectId(root);
+		var rootIdName = GeneratedField.RootIdName;
+		var slaveIdName = GeneratedField.SlaveIdName;
+
+		if (_self.masterIsRoot()) {
+			int index = 0;
+			for (var slave : slaves) {
+				if (ObjectUtil.isNull(slave))
+					continue;
+				var slaveId = DataTableUtil.getObjectId(slave);
+				var data = new MapData();
+				data.put(rootIdName, rootId);
+				data.put(slaveIdName, slaveId);
+				data.put(GeneratedField.OrderIndexName, index);
+
+				DataAccess.getCurrent().execute(this.sqlInsert(), data);
+				index++;
+			}
+		} else {
+			var masterIdName = GeneratedField.MasterIdName;
+			var masterId = DataTableUtil.getObjectId(master);
+			int index = 0;
+			for (var slave : slaves) {
+				if (ObjectUtil.isNull(slave))
+					continue;
+				var slaveId = DataTableUtil.getObjectId(slave);
+				var data = new MapData();
+				data.put(rootIdName, rootId);
+				data.put(masterIdName, masterId);
+				data.put(slaveIdName, slaveId);
+				data.put(GeneratedField.OrderIndexName, index);
+
+				DataAccess.getCurrent().execute(this.sqlInsert(), data);
+				index++;
+			}
+
+		}
+	}
+
+	private void insertMiddleByValues(IDomainObject root, IDomainObject master, Iterable<?> values) {
+		var rootId = DataTableUtil.getObjectId(root);
+		var rootIdName = GeneratedField.RootIdName;
+		if (_self.masterIsRoot()) {
+			int index = 0;
+			for (var value : values) {
+				var data = new MapData();
+				data.put(rootIdName, rootId);
+				data.put(GeneratedField.PrimitiveValueName, value);
+				data.put(GeneratedField.OrderIndexName, index);
+				DataAccess.getCurrent().execute(this.sqlInsert(), data);
+				index++;
+			}
+		} else {
+			var masterIdName = GeneratedField.MasterIdName;
+			var masterId = DataTableUtil.getObjectId(master);
+			int index = 0;
+			for (var value : values) {
+				var data = new MapData();
+				data.put(rootIdName, rootId);
+				data.put(masterIdName, masterId);
+				data.put(GeneratedField.PrimitiveValueName, value);
+				data.put(GeneratedField.OrderIndexName, index);
+				DataAccess.getCurrent().execute(this.sqlInsert(), data);
+				index++;
 			}
 		}
 	}
 
-	private void InsertMiddle(IDomainObject root, IDomainObject master, IEnumerable slaves)
-	{
-	    if(this.IsPrimitiveValue)
-	    {
-	        InsertMiddleByValues(root, master, slaves);
-	        return;
-	    }
-
-	    var rootId = GetObjectId(root);
-	    var rootIdName = GeneratedField.RootIdName;
-	    var slaveIdName = GeneratedField.SlaveIdName;
-
-	    if (this.Root.IsEqualsOrDerivedOrInherited(this.Master))
-	    {
-	        int index = 0;
-	        for (var slave : slaves)
-	        {
-	            if (slave.IsNull()) continue;
-	            var slaveId = GetObjectId(slave);
-	            var data = new Dictionary();
-                data.put(rootIdName, rootId);
-                data.put(slaveIdName, slaveId);
-                data.put(GeneratedField.OrderIndexName, index);
-                if (this.IsSessionEnabledMultiTenancy)
-                    data.Add(GeneratedField.TenantIdName, AppSession.TenantId);
-                SqlHelper.Execute(this.SqlInsert, data);
-                index++;
-	        }
-	    }
-	    else
-	    {
-	        var masterIdName = GeneratedField.MasterIdName;
-	        var masterId = GetObjectId(master);
-	        int index = 0;
-	        for (var slave : slaves)
-	        {
-	            if (slave.IsNull()) continue;
-	            var slaveId = GetObjectId(slave);
-	            using (var temp = SqlHelper.BorrowData())
-	            {
-	                var data = temp.Item;
-	                data.Add(rootIdName, rootId);
-	                data.Add(masterIdName, masterId);
-	                data.Add(slaveIdName, slaveId);
-	                data.Add(GeneratedField.OrderIndexName, index);
-	                if (this.IsSessionEnabledMultiTenancy)
-	                    data.Add(GeneratedField.TenantIdName, AppSession.TenantId);
-	                SqlHelper.Execute(this.SqlInsert, data);
-	                index++;
-	            }
-	        }
-
-	    }
-	}
-
-	private void InsertMiddleByValues(IDomainObject root, IDomainObject master, IEnumerable values)
-	{
-	    var rootId = GetObjectId(root);
-	    var rootIdName = GeneratedField.RootIdName;
-	    if (this.Root.IsEqualsOrDerivedOrInherited(this.Master))
-	    {
-	        int index = 0;
-	        for (var value : values)
-	        {
-	            using (var temp = SqlHelper.BorrowData())
-	            {
-	                var data = temp.Item;
-	                data.Add(rootIdName, rootId);
-	                data.Add(GeneratedField.PrimitiveValueName, value);
-	                data.Add(GeneratedField.OrderIndexName, index);
-	                if(this.IsSessionEnabledMultiTenancy)
-	                    data.Add(GeneratedField.TenantIdName, AppSession.TenantId);
-	                SqlHelper.Execute(this.SqlInsert, data);
-	                index++;
-	            }
-	        }
-	    }
-	    else
-	    {
-	        var masterIdName = GeneratedField.MasterIdName;
-	        var masterId = GetObjectId(master);
-	        int index = 0;
-	        for (var value in values)
-	        {
-	            using (var temp = SqlHelper.BorrowData())
-	            {
-	                var data = temp.Item;
-	                data.Add(rootIdName, rootId);
-	                data.Add(masterIdName, masterId);
-	                data.Add(GeneratedField.PrimitiveValueName, value);
-	                data.Add(GeneratedField.OrderIndexName, index);
-	                if (this.IsSessionEnabledMultiTenancy)
-	                    data.Add(GeneratedField.TenantIdName, AppSession.TenantId);
-	                SqlHelper.Execute(this.SqlInsert, data);
-	                index++;
-	            }
-	        }
-	    }
-	}
-
-	private void insertAndCollectValue(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip, Dictionary data)
+	private void insertAndCollectValue(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip, MapData data)
 	{
 	    switch (tip.category())
 	    {
 	        case DomainPropertyCategory.Primitive:
 	            {
-	                var value = getPrimitivePropertyValue(current, tip);
-	                data.put(tip.PropertyName, value);
+	                var value = DataTableUtil.getPrimitivePropertyValue(current, tip);
+	                data.put(tip.name(), value);
 	            }
 	            break;
 	        case DomainPropertyCategory.PrimitiveList:
 	            {
-	                var value = current.getValue(tip.Property);
+	                var value = current.getValue(tip.name());
 	                //仅存中间表
-	                var values = GetValueListData(value);
-	                var child = GetChildTableByRuntime(this, tip);//无论是派生还是基类，基础表对应的中间表都一样
-	                child.InsertMiddle(root, current, values);
+	                var values = DataTableUtil.getValueListData(value,tip.monotype());
+	                var child = _self.findChild(_self, tip);//无论是派生还是基类，基础表对应的中间表都一样
+	                child.insertMiddle(root, current, values);
 	            }
 	            break;
 	        case DomainPropertyCategory.ValueObject:
 	            {
-	                InsertAndCollectValueObject(root, parent, current, tip, data);
+	                insertAndCollectValueObject(root, parent, current, tip, data);
 	            }
 	            break;
 	        case DomainPropertyCategory.AggregateRoot:
 	            {
-	                var field = GetQuoteField(this, tip.PropertyName);
-	                object obj = current.GetValue(tip.Property);
-	                var id = GetObjectId(obj);
-	                data.Add(field.Name, id);
+	                var field = DataTableUtil.getQuoteField(_self, tip.name());
+	                Object obj = current.getValue(tip.name());
+	                var id = DataTableUtil.getObjectId(obj);
+	                data.put(field.name(), id);
 	            }
 	            break;
 	        case DomainPropertyCategory.EntityObject:
 	            {
-	                var obj = current.GetValue(tip.Property) as DomainObject;
+	                var obj =(DomainObject)current.getValue(tip.name());
 
-	                var id = GetObjectId(obj);
-	                var field = GetQuoteField(this, tip.PropertyName);
-	                data.Add(field.Name, id);  //收集外键
+	                var id = DataTableUtil.getObjectId(obj);
+	                var field = DataTableUtil.getQuoteField(_self, tip.name());
+	                data.put(field.name(), id);  //收集外键
 
 	                //保存引用数据
-	                if (!obj.IsEmpty())
+	                if (!obj.isEmpty())
 	                {
-	                    var child = GetRuntimeTable(this, tip.PropertyName, obj.ObjectType);
-	                    child.InsertMember(root, current, obj);
+	                    var child = _self.findChild(_self, tip.name(),obj.getClass());
+	                    child.insertMember(root, current, obj);
 	                }
 	            }
 	            break;
@@ -307,9 +281,9 @@ final class DataTableInsert {
 	    }
 	}
 
-	private void InsertAndCollectValueObject(DomainObject root, DomainObject parent, DomainObject current, PropertyRepositoryAttribute tip, DynamicData data)
+	private void insertAndCollectValueObject(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip, MapData data)
 	{
-	    var field = GetQuoteField(this, tip.PropertyName);
+	    var field = DataTableUtil.getQuoteField(_self, tip.name());
 	    var obj = current.GetValue(tip.Property) as DomainObject;
 
 	    if (obj.IsEmpty())
@@ -361,7 +335,7 @@ final class DataTableInsert {
 		return _sqlInsert;
 	}
 
-	private string GetInsertSql() {
+	private String GetInsertSql() {
 		var query = InsertTable.Create(this);
 		return query.Build(null, this);
 	}

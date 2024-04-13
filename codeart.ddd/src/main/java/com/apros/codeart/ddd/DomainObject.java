@@ -419,12 +419,12 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 	}
 
 	public boolean isPropertyLoaded(DomainProperty property) {
-		return this.dataProxy().isLoaded(property);
+		return this.dataProxy().isLoaded(property.name());
 	}
 
 	public boolean isPropertyLoaded(String propertyName) {
 		var property = DomainProperty.getProperty(this.getClass(), propertyName);
-		return this.dataProxy().isLoaded(property);
+		return this.dataProxy().isLoaded(property.name());
 	}
 
 	public int dataVersion() {
@@ -473,7 +473,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 	 * @param value
 	 */
 	public void setValue(DomainProperty property, Object value) {
-		var oldValue = this.dataProxy().load(property);
+		var oldValue = this.dataProxy().load(property.name());
 		boolean isChanged = false;
 
 		if (property.isChanged(oldValue, value)) {
@@ -500,7 +500,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 				collection.setParent(this);
 			}
 
-			this.dataProxy().save(property, value, oldValue);
+			this.dataProxy().save(property.name(), value, oldValue);
 
 			handlePropertyChanged(property, value, oldValue);
 		}
@@ -538,20 +538,24 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 	 */
 	@SuppressWarnings("unchecked")
 	private <T> T tryGetValue(DomainProperty property) {
-		if (this.dataProxy().isLoaded(property)) {
+		if (this.dataProxy().isLoaded(property.name())) {
 			return (T) getValue(property);
 		}
 		return null;
 	}
 
 	/**
-	 * 我们保证领域对象的读操作是线程安全的
+	 * 
 	 * 
 	 * @param property
 	 * @return
 	 */
 	public Object getValue(DomainProperty property) {
-		return this.dataProxy().load(property);
+		return this.dataProxy().load(property.name());
+	}
+
+	public Object getValue(String propertyName) {
+		return this.dataProxy().load(propertyName);
 	}
 
 	/**
@@ -562,7 +566,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 	 * @return
 	 */
 	public Object getOldValue(DomainProperty property) {
-		return this.dataProxy().loadOld(property);
+		return this.dataProxy().loadOld(property.name());
 	}
 
 	/**

@@ -5,6 +5,7 @@ import java.util.function.Function;
 
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
+import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.ddd.metadata.ObjectMeta;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.ObjectRepositoryTip;
@@ -348,6 +349,38 @@ public class DataTable {
 		}
 	}
 
+	/**
+	 * 
+	 * 在运行时查找子表信息
+	 * 
+	 * @param master
+	 * @param tip
+	 * @return
+	 */
+	public DataTable findChild(DataTable master, PropertyMeta tip) {
+		return _getRuntimeTable.apply(master).apply(tip.name()).apply(tip.monotype());
+	}
+
+	/**
+	 * 根据属性名称，实际类型，获取对应的表信息
+	 * 
+	 * runtime表包括预定义的类型和运行时加载的类型对应的表
+	 * 
+	 * 本来通过master和master下的属性名称PropertyName，我们就可以找到子表的定义
+	 * 
+	 * 但是由于属性的值有可能是不同的类型（因为继承关系），所以我们还需要指定属性的类型objectType
+	 * 
+	 * 才能获得当前属性对应的表信息
+	 * 
+	 * @param master
+	 * @param propertyName
+	 * @param objectType   表示实际运行时propertyName对应的objectType
+	 * @return
+	 */
+	public DataTable findChild(DataTable master, String propertyName, Class<?> objectType) {
+		return _getRuntimeTable.apply(master).apply(propertyName).apply(objectType);
+	}
+
 	private Function<DataTable, Function<String, Function<Class<?>, DataTable>>> _getRuntimeTable;
 
 	private void initGetRuntimeTable() {
@@ -371,6 +404,18 @@ public class DataTable {
 				});
 			});
 		});
+	}
+
+	/**
+	 * 
+	 * 表示表是不是因为多条值数据（例如：List<int>）而创建的中间表
+	 * 
+	 * @return
+	 */
+	public boolean isPrimitiveValue() {
+
+		return this.isMultiple() && this.slave() == null; // 作为多条值数据的表，没有slave子表
+
 	}
 
 	private DataTable createChildTable(DataTable master, IDataField memberField, Class<?> objectType) {
@@ -485,8 +530,20 @@ public class DataTable {
 		return this.name().equals(target.name());
 	}
 
+	public boolean masterIsRoot() {
+		return this.root().same(this.master());
+	}
+
 	void insert(DomainObject object) {
-		_insert.exec(object);
+		_insert.insert(object);
+	}
+
+	void insertMiddle(IDomainObject root, IDomainObject master, Iterable<?> slaves) {
+		_insert.insertMiddle(root, master, slaves);
+	}
+
+	void insertMember(DomainObject root, DomainObject parent, DomainObject obj) {
+		_insert.insertMember(root, parent, obj);
 	}
 
 	DataTableQuery query() {

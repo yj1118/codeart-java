@@ -33,6 +33,23 @@ public interface IDatabaseAgent {
 
 	/**
 	 * 
+	 * 包装标示限定符
+	 * 
+	 * @param field
+	 * @return
+	 */
+	String qualifier(String field);
+
+	/**
+	 * 解开标示限定符
+	 * 
+	 * @param field
+	 * @return
+	 */
+	String unQualifier(String field);
+
+	/**
+	 * 
 	 * 获得查询器的实现
 	 * 
 	 * @return

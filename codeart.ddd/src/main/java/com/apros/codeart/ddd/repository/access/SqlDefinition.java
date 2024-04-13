@@ -11,7 +11,7 @@ import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 
-public class SqlDefinition {
+class SqlDefinition {
 
 	private String _top;
 
@@ -77,7 +77,7 @@ public class SqlDefinition {
 				StringBuilder sql = new StringBuilder();
 
 				for (var field : fields) {
-					sql.append(SqlStatement.Qualifier(field));
+					sql.append(SqlStatement.qualifier(field));
 					sql.append(",");
 				}
 
