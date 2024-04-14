@@ -133,7 +133,7 @@ final class DataTableInsert {
 			return;
 
 		// 我们需要先查，看数据库中是否存在数据，如果不存在就新增，存在就增加引用次数
-		var existObject = querySingle(DataTableUtil.getObjectId(root), DataTableUtil.getObjectId(obj));
+		var existObject = _self.querySingle(DataTableUtil.getObjectId(root), DataTableUtil.getObjectId(obj));
 
 		if (ObjectUtil.isNull(existObject)) {
 			onPreDataInsert(obj);
@@ -143,6 +143,22 @@ final class DataTableInsert {
 			// 递增引用次数
 			incrementAssociated(DataTableUtil.getObjectId(root), DataTableUtil.getObjectId(obj));
 		}
+	}
+
+	/// <summary>
+	/// 递增引用次数
+	/// </summary>
+	/// <param name="root"></param>
+	/// <param name="parent"></param>
+	/// <param name="obj"></param>
+	private void incrementAssociated(Object rootId, Object id) {
+		var data = new MapData();
+		data.put(GeneratedField.RootIdName, rootId);
+		data.put(EntityObject.IdPropertyName, id);
+
+		var builder = DataSource.getQueryBuilder(IncrementAssociatedQB.class);
+		var sql = builder.build(new QueryDescription(data));
+		DataAccess.getCurrent().execute(sql, data);
 	}
 
 	public void insertMiddle(IDomainObject root, IDomainObject master, Iterable<?> slaves) {
@@ -293,7 +309,7 @@ final class DataTableInsert {
 		}
 	}
 
-	private void insertMember(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
+	private void insertMembers(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
 		var objs = TypeUtil.as(current.getValue(tip.name()), Iterable.class);
 		insertMembers(root, parent, current, objs, tip);
 	}
@@ -310,12 +326,12 @@ final class DataTableInsert {
 				// 我们需要为ValueObject补充编号
 				((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
 			}
-			child.InsertMember(root, current, obj);
+			child.insertMember(root, current, obj);
 			if (middle == null)
-				middle = child.Middle;
+				middle = child.middle();
 		}
 		if (middle != null)
-			middle.InsertMiddle(root, current, members);
+			middle.insertMiddle(root, current, members);
 	}
 
 	private String _sqlInsert;
@@ -327,8 +343,8 @@ final class DataTableInsert {
 		return _sqlInsert;
 	}
 
-	private String GetInsertSql() {
-		var query = InsertTable.Create(this);
-		return query.Build(null, this);
+	private String getInsertSql() {
+		var builder = DataSource.getQueryBuilder(InsertTableQB.class);
+		return builder.build(new QueryDescription(_self));
 	}
 }

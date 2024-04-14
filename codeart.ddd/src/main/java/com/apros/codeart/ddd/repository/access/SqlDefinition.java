@@ -11,7 +11,7 @@ import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 
-class SqlDefinition {
+public class SqlDefinition {
 
 	private String _top;
 
@@ -441,7 +441,7 @@ class SqlDefinition {
 
 //	region 处理命令文本
 
-	String process(String commandText, MapData param) {
+	public String process(String commandText, MapData param) {
 		if (this.isNative())
 			return this.nativeSql();
 		if (StringUtil.isNullOrEmpty(commandText) || this.isEmpty())

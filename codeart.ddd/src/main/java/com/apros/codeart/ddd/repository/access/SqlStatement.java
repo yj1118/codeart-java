@@ -2,7 +2,7 @@ package com.apros.codeart.ddd.repository.access;
 
 import com.apros.codeart.ddd.QueryLevel;
 
-final class SqlStatement {
+public final class SqlStatement {
 	private SqlStatement() {
 	}
 

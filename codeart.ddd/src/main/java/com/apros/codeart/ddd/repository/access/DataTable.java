@@ -181,6 +181,12 @@ public class DataTable {
 		return _memberField;
 	}
 
+	public PropertyMeta memberPropertyTip() {
+		if (this.memberField() == null)
+			return null;
+		return this.memberField().tip();
+	}
+
 	private Class<?> _elementType;
 
 	/**
@@ -240,6 +246,30 @@ public class DataTable {
 		}
 
 		return fields;
+	}
+
+	private Iterable<IDataField> _primaryKeys;
+
+	public Iterable<IDataField> primaryKeys() {
+		if (_primaryKeys == null)
+			_primaryKeys = ListUtil.filter(this.fields(), (t) -> t.isPrimaryKey());
+		return _primaryKeys;
+	}
+
+	private Iterable<IDataField> _clusteredIndexs;
+
+	public Iterable<IDataField> clusteredIndexs() {
+		if (_clusteredIndexs == null)
+			_clusteredIndexs = ListUtil.filter(this.fields(), (t) -> t.isClusteredIndex());
+		return _clusteredIndexs;
+	}
+
+	private Iterable<IDataField> _nonclusteredIndexs;
+
+	public Iterable<IDataField> nonclusteredIndexs() {
+		if (_nonclusteredIndexs == null)
+			_nonclusteredIndexs = ListUtil.filter(this.fields(), (t) -> t.isNonclusteredIndex());
+		return _nonclusteredIndexs;
 	}
 
 	private Iterable<IDataField> _objectFields;
@@ -556,8 +586,12 @@ public class DataTable {
 		_insert.insertMember(root, parent, obj);
 	}
 
-	DataTableQuery query() {
-		return _query;
+	Object querySingle(Object rootId, Object id) {
+		return _query.querySingle(rootId, id);
 	}
+
+//	DataTableQuery query() {
+//		return _query;
+//	}
 
 }

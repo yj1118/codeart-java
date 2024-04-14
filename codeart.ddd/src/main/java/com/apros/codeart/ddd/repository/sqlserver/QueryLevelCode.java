@@ -30,11 +30,11 @@ final class LockSql {
 			var tableName = math.group(1);
 			var index = math.start(1);
 
-			return StringUtil.insert(sql, index + tableName.length(), getSql(level));
+			return StringUtil.insert(sql, index + tableName.length(), get(level));
 		});
 	});
 
-	private static String getSql(QueryLevel level) {
+	public static String get(QueryLevel level) {
 		switch (level.code()) {
 		case QueryLevel.ShareCode:
 			return StringUtil.empty();

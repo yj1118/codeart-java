@@ -83,6 +83,10 @@ public final class DataAccess {
 		return QueryRunner.queryRow(_conn, sql, params);
 	}
 
+	public MapData queryRow(String sql, MapData params) {
+		return QueryRunner.queryRow(_conn, sql, params);
+	}
+
 	public Iterable<MapData> queryRows(String sql, MapData params, QueryLevel level) {
 		sql = supplementLock(sql, level);
 		return QueryRunner.queryRows(_conn, sql, params);

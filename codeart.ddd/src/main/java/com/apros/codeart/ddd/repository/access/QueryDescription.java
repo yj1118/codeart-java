@@ -1,8 +1,10 @@
 package com.apros.codeart.ddd.repository.access;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.apros.codeart.ddd.MapData;
+import com.apros.codeart.ddd.QueryLevel;
 
 /**
  * {@code param} 查询参数 {@code tables} 涉及到的表 {@code items} 额外的说明项
@@ -36,6 +38,22 @@ public record QueryDescription(MapData param, Map<String, Object> items, DataTab
 		if (items == null)
 			return null;
 		return (T) items.get(itemName);
+	}
+
+	/**
+	 * 为对象表达式创建的查询描述
+	 * 
+	 * @param param
+	 * @param express
+	 * @param level
+	 * @param table
+	 * @return
+	 */
+	public static QueryDescription createBy(MapData param, String express, QueryLevel level, DataTable table) {
+		var items = new HashMap<String, Object>();
+		items.put("express", express);
+		items.put("level", level);
+		return new QueryDescription(param, items, table);
 	}
 
 }

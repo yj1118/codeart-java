@@ -8,7 +8,7 @@ import com.apros.codeart.ddd.metadata.ValueMeta;
 import com.apros.codeart.util.Guid;
 import com.apros.codeart.util.ListUtil;
 
-class GeneratedField extends ValueField {
+public class GeneratedField extends ValueField {
 
 	@Override
 	public DataFieldType fieldType() {

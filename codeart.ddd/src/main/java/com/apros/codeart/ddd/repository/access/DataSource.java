@@ -94,4 +94,9 @@ final class DataSource {
 		return DataSourceHolder.AGENT;
 	}
 
+	public static IQueryBuilder getQueryBuilder(Class<? extends IQueryBuilder> qbType) {
+		var agent = DataSource.getAgent();
+		return agent.getQueryBuilder(qbType);
+	}
+
 }

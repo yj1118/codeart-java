@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.apros.codeart.ddd.MapData;
+import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.util.LazyIndexer;
@@ -35,7 +36,7 @@ final class DataTableQuery {
 	/// <param name="rootId"></param>
 	/// <param name="id"></param>
 	/// <returns></returns>
-	private Object querySingle(Object rootId, Object id) {
+	public Object querySingle(Object rootId, Object id) {
 		var obj = getObjectFromConstruct(rootId, id);
 		if (obj != null)
 			return obj;
@@ -89,13 +90,14 @@ final class DataTableQuery {
 	/// <returns></returns>
 	Object querySingle(String expression, Consumer<MapData> fillArg, QueryLevel level) {
 		expression = getEntryExpression(expression);
-		var exp = QueryObject.Create(this, expression, level);
 
-		object result = null;
-		UseDataEntry(exp, fillArg, (entry) -> {
-			result = GetObjectFromEntry(entry, level);
+		var exp = DataSource.getQueryBuilder(QueryObjectQB.class);
+
+		Object result = null;
+		useDataEntry(exp, expression, fillArg, (entry) -> {
+			result = getObjectFromEntry(entry, level);
 		});
-		return result != null ? result : DomainObject.GetEmpty(this.ObjectType);
+		return result != null ? result : DomainObject.getEmpty(_self.objectType());
 	}
 
 	/// <summary>
@@ -198,7 +200,7 @@ final class DataTableQuery {
 	/// <param name="expression"></param>
 	/// <param name="fillArg"></param>
 	/// <param name="level"></param>
-	void execute(string expression, Action<DynamicData> fillArg, QueryLevel level) {
+	void execute(String expression, Action<DynamicData> fillArg, QueryLevel level) {
 		// 获取总数据数
 		var exp = QueryCommand.Create(this, expression, level);
 		Execute(exp, fillArg);
@@ -249,27 +251,22 @@ final class DataTableQuery {
 	     return list;
 	 }
 
-	#region 获取条目信息
+//	#region 获取条目信息
 
-	/// <summary>
-	/// 获取数据的条目信息，这包括数据必备的编号和版本号
-	/// </summary>
-	/// <param name="id"></param>
-	/// <param name="level"></param>
-	/// <param name="dataVersion"></param>
-	/// <returns></returns>
-	private void UseDataEntry(IQueryBuilder exp, Action<DynamicData> fillArg, Action<DynamicData> action)
-	 {
-	     using (var temp = SqlHelper.BorrowData())
-	     {
-	         var data = temp.Item;
-	         ExecuteQueryEntry(exp, fillArg, data);
-	         if (data.Count > 0)
-	         {
-	             action(data);
-	         }
-	     }
-	 }
+	/**
+	 * 获取数据的条目信息，这包括数据必备的编号和版本号
+	 * 
+	 * @param exp
+	 * @param fillArg
+	 * @param action
+	 */
+	private void useDataEntry(IQueryBuilder exp, String expression, Consumer<MapData> fillArg,
+			Consumer<MapData> action) {
+		var data = executeQueryEntry(exp, expression, fillArg, data);
+		if (data.size() > 0) {
+			action(data);
+		}
+	}
 
 	/// <summary>
 	/// 使用条目集合
@@ -289,27 +286,15 @@ final class DataTableQuery {
 	     }
 	 }
 
-	private void ExecuteQueryEntry(IQueryBuilder query, Action<DynamicData> fillArg, DynamicData data)
-	 {
-	     using (var temp = SqlHelper.BorrowData())
-	     {
-	         var param = temp.Item;
-	         fillArg(param);
-	         AddToTenant(param);
+	private MapData executeQueryEntry(IQueryBuilder query, String expression, Consumer<MapData> fillArg) {
+		var param = new MapData();
+		fillArg.accept(param);
 
-	         var sql = query.Build(param, this);//编译表达式获取执行文本
-	         SqlHelper.QueryFirstOrDefault(sql, param, data);
-	     }
-	 }
+		// 编译表达式获取执行文本
+		var description = QueryDescription.createBy(param, expression, level, _self);
+		var sql = query.build(description);
 
-	private void AddToTenant(DynamicData param) {
-		// if (this.IsEnabledMultiTenancy)
-		// 不一定是判断this表，因为在关联表查询中，有可能是Middle表是开启了租户，但是被引用的根表（例如User）没有开启租户，这时候还是要给租户条件
-		// 为了方便编码，我们认为只要配置文件启动了多租户，在传递条件时，我们就会赋予租户的参数
-		if (DomainDrivenConfiguration.Current.MultiTenancyConfig.IsEnabled) {
-			if (!param.ContainsKey(GeneratedField.TenantIdName)) // TenantId有可能被业务使用,被业务指定了查询条件
-				param.Add(GeneratedField.TenantIdName, AppSession.TenantId);
-		}
+		return DataAccess.getCurrent().queryRow(sql, param);
 	}
 
 	private void ExecuteQueryEntries(IQueryBuilder query, Action<DynamicData> fillArg, List<DynamicData> datas)

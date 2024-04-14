@@ -10,7 +10,7 @@ import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 
-class SqlCondition {
+public final class SqlCondition {
 
 	private ArrayList<SqlLike> _likes;
 

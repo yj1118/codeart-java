@@ -17,8 +17,7 @@ final class DataTableGenerator {
 	}
 
 	private static void createTable(DataAccess access, DataTable table) {
-		var agent = DataSource.getAgent();
-		var builder = agent.getQueryBuilder(CreateTableQB.class);
+		var builder = DataSource.getQueryBuilder(CreateTableQB.class);
 		var sql = builder.build(new QueryDescription(table));
 		access.execute(sql);
 	}
@@ -64,10 +63,11 @@ final class DataTableGenerator {
 	/// </summary>
 	@TestSupport
 	static void drop() {
-		DataContext.newScope(() -> {
+		DataContext.newScope((access) -> {
 			for (var table : _generated) {
-				var sql = DropTable.Create(tableName).Build(null, null);
-				SqlHelper.Execute(tableName, sql);
+				var builder = DataSource.getQueryBuilder(DropTableQB.class);
+				var sql = builder.build(new QueryDescription(table));
+				access.execute(sql);
 			}
 		});
 	}
@@ -76,17 +76,15 @@ final class DataTableGenerator {
 	/// 清空数据
 	/// </summary>
 	@TestSupport
-	static void clearUp()
-	 {
-	     DataContext.newScope(() ->
-	     {
-	    	 for (var table : _generated) {
-	         {
-	             var sql = ClearTable.Create(tableName).Build(null, null);
-	             SqlHelper.Execute(tableName, sql);
-	         }
-	     });
-	 }
+	static void clearUp() {
+		DataContext.newScope((access) -> {
+			for (var table : _generated) {
+				var builder = DataSource.getQueryBuilder(ClearTableQB.class);
+				var sql = builder.build(new QueryDescription(table));
+				access.execute(sql);
+			}
+		});
+	}
 
 	/**
 	 * 

@@ -2,7 +2,7 @@ package com.apros.codeart.ddd.repository.access;
 
 import java.util.ArrayList;
 
-class TempDataTableIndex {
+public class TempDataTableIndex {
 	private ArrayList<String> _tableKeys;
 
 	public TempDataTableIndex() {

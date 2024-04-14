@@ -3,14 +3,20 @@ package com.apros.codeart.ddd.repository.sqlserver;
 import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.ddd.repository.access.CreateTableQB;
 import com.apros.codeart.ddd.repository.access.DatabaseAgent;
+import com.apros.codeart.ddd.repository.access.DropTableQB;
 import com.apros.codeart.ddd.repository.access.IDatabaseAgent;
+import com.apros.codeart.ddd.repository.access.InsertTableQB;
+import com.apros.codeart.ddd.repository.access.QueryObjectQB;
 import com.apros.codeart.util.StringUtil;
 
 public class SQLServerAgent extends DatabaseAgent {
 
 	private SQLServerAgent() {
 		// 注入默认的支持
-		this.registerQueryBuilder(CreateTableQB.class, CreateTableQBImpl.Instance);
+		this.registerQueryBuilder(CreateTableQB.class, CreateTable.Instance);
+		this.registerQueryBuilder(DropTableQB.class, DropTable.Instance);
+		this.registerQueryBuilder(InsertTableQB.class, InsertTable.Instance);
+		this.registerQueryBuilder(QueryObjectQB.class, QueryObject.Instance);
 	}
 
 	@Override
