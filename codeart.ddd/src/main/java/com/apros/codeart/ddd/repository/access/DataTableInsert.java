@@ -5,10 +5,13 @@ import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.IAggregateRoot;
 import com.apros.codeart.ddd.IDomainObject;
+import com.apros.codeart.ddd.IValueObject;
 import com.apros.codeart.ddd.MapData;
-import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
+import com.apros.codeart.ddd.metadata.DomainPropertyCategory;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.i18n.Language;
+import com.apros.codeart.runtime.TypeUtil;
+import com.apros.codeart.util.Guid;
 import com.apros.codeart.util.ObjectUtil;
 import com.apros.codeart.util.StringUtil;
 
@@ -216,114 +219,103 @@ final class DataTableInsert {
 		}
 	}
 
-	private void insertAndCollectValue(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip, MapData data)
-	{
-	    switch (tip.category())
-	    {
-	        case DomainPropertyCategory.Primitive:
-	            {
-	                var value = DataTableUtil.getPrimitivePropertyValue(current, tip);
-	                data.put(tip.name(), value);
-	            }
-	            break;
-	        case DomainPropertyCategory.PrimitiveList:
-	            {
-	                var value = current.getValue(tip.name());
-	                //仅存中间表
-	                var values = DataTableUtil.getValueListData(value,tip.monotype());
-	                var child = _self.findChild(_self, tip);//无论是派生还是基类，基础表对应的中间表都一样
-	                child.insertMiddle(root, current, values);
-	            }
-	            break;
-	        case DomainPropertyCategory.ValueObject:
-	            {
-	                insertAndCollectValueObject(root, parent, current, tip, data);
-	            }
-	            break;
-	        case DomainPropertyCategory.AggregateRoot:
-	            {
-	                var field = DataTableUtil.getQuoteField(_self, tip.name());
-	                Object obj = current.getValue(tip.name());
-	                var id = DataTableUtil.getObjectId(obj);
-	                data.put(field.name(), id);
-	            }
-	            break;
-	        case DomainPropertyCategory.EntityObject:
-	            {
-	                var obj =(DomainObject)current.getValue(tip.name());
+	private void insertAndCollectValue(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip,
+			MapData data) {
+		switch (tip.category()) {
+		case DomainPropertyCategory.Primitive: {
+			var value = DataTableUtil.getPrimitivePropertyValue(current, tip);
+			data.put(tip.name(), value);
+		}
+			break;
+		case DomainPropertyCategory.PrimitiveList: {
+			var value = current.getValue(tip.name());
+			// 仅存中间表
+			var values = DataTableUtil.getValueListData(value, tip.monotype());
+			var child = _self.findChild(_self, tip);// 无论是派生还是基类，基础表对应的中间表都一样
+			child.insertMiddle(root, current, values);
+		}
+			break;
+		case DomainPropertyCategory.ValueObject: {
+			insertAndCollectValueObject(root, parent, current, tip, data);
+		}
+			break;
+		case DomainPropertyCategory.AggregateRoot: {
+			var field = DataTableUtil.getQuoteField(_self, tip.name());
+			Object obj = current.getValue(tip.name());
+			var id = DataTableUtil.getObjectId(obj);
+			data.put(field.name(), id);
+		}
+			break;
+		case DomainPropertyCategory.EntityObject: {
+			var obj = (DomainObject) current.getValue(tip.name());
 
-	                var id = DataTableUtil.getObjectId(obj);
-	                var field = DataTableUtil.getQuoteField(_self, tip.name());
-	                data.put(field.name(), id);  //收集外键
+			var id = DataTableUtil.getObjectId(obj);
+			var field = DataTableUtil.getQuoteField(_self, tip.name());
+			data.put(field.name(), id); // 收集外键
 
-	                //保存引用数据
-	                if (!obj.isEmpty())
-	                {
-	                    var child = _self.findChild(_self, tip.name(),obj.getClass());
-	                    child.insertMember(root, current, obj);
-	                }
-	            }
-	            break;
-	        case DomainPropertyCategory.AggregateRootList:
-	            {
-	                //仅存中间表
-	                var objs = current.GetValue(tip.Property) as IEnumerable;
-	                var child = GetChildTableByRuntime(this, tip);//无论是派生还是基类，基础表对应的中间表都一样
-	                child.Middle.InsertMiddle(root, current, objs);
-	            }
-	            break;
-	        case DomainPropertyCategory.ValueObjectList:
-	        case DomainPropertyCategory.EntityObjectList:
-	            {
-	                InsertMembers(root, parent, current, tip);
-	            }
-	            break;
-	    }
+			// 保存引用数据
+			if (!obj.isEmpty()) {
+				var child = _self.findChild(_self, tip.name(), obj.getClass());
+				child.insertMember(root, current, obj);
+			}
+		}
+			break;
+		case DomainPropertyCategory.AggregateRootList: {
+			// 仅存中间表
+			var objs = TypeUtil.as(current.getValue(tip.name()), Iterable.class);
+			var child = _self.findChild(_self, tip);// 基础表对应的中间表都一样
+			child.middle().insertMiddle(root, current, objs);
+		}
+			break;
+		case DomainPropertyCategory.ValueObjectList:
+		case DomainPropertyCategory.EntityObjectList: {
+			insertMembers(root, parent, current, tip);
+		}
+			break;
+		}
 	}
 
-	private void insertAndCollectValueObject(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip, MapData data)
-	{
-	    var field = DataTableUtil.getQuoteField(_self, tip.name());
-	    var obj = current.GetValue(tip.Property) as DomainObject;
+	private void insertAndCollectValueObject(DomainObject root, DomainObject parent, DomainObject current,
+			PropertyMeta tip, MapData data) {
+		var field = DataTableUtil.getQuoteField(_self, tip.name());
+		var obj = TypeUtil.as(current.getValue(tip.name()), DomainObject.class);
 
-	    if (obj.IsEmpty())
-	    {
-	        data.Add(field.Name, Guid.Empty);
-	    }
-	    else
-	    {
-	        (obj as IValueObject).TrySetId(Guid.NewGuid());
-	        var id = GetObjectId(obj);
-	        data.Add(field.Name, id);
+		if (obj.isEmpty()) {
+			data.put(field.name(), Guid.Empty);
+		} else {
+			((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
+			var id = DataTableUtil.getObjectId(obj);
+			data.put(field.name(), id);
 
-	        //保存数据
-	        var child = GetRuntimeTable(this, tip.PropertyName, obj.ObjectType);
-	        child.InsertMember(root, current, obj);
-	    }
+			// 保存数据
+			var child = _self.findChild(_self, tip.name(), obj.getClass());
+			child.insertMember(root, current, obj);
+		}
 	}
 
-	private void InsertMembers(DomainObject root, DomainObject parent, DomainObject current, PropertyRepositoryAttribute tip)
-	{
-	    var objs = current.GetValue(tip.Property) as IEnumerable;
-	    InsertMembers(root, parent, current, objs, tip);
+	private void insertMember(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
+		var objs = TypeUtil.as(current.getValue(tip.name()), Iterable.class);
+		insertMembers(root, parent, current, objs, tip);
 	}
 
-	private void InsertMembers(DomainObject root, DomainObject parent, DomainObject current, IEnumerable members, PropertyRepositoryAttribute tip)
-	{
-	    DataTable middle = null;
-	    for (DomainObject obj : members)
-	    {
-	        if (obj.IsEmpty()) continue;
-	        var child = GetRuntimeTable(this, tip.PropertyName, obj.ObjectType);
-	        if (child.Type == DataTableType.ValueObject)
-	        {
-	            //我们需要为ValueObject补充编号
-	            (obj as IValueObject).TrySetId(Guid.NewGuid());
-	        }
-	        child.InsertMember(root, current, obj);
-	        if (middle == null) middle = child.Middle;
-	    }
-	    if (middle != null) middle.InsertMiddle(root, current, members);
+	private void insertMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable members,
+			PropertyMeta tip) {
+		DataTable middle = null;
+		for (var member : members) {
+			var obj = (DomainObject) member;
+			if (obj.isEmpty())
+				continue;
+			var child = _self.findChild(_self, tip.name(), obj.getClass());
+			if (child.type() == DataTableType.ValueObject) {
+				// 我们需要为ValueObject补充编号
+				((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
+			}
+			child.InsertMember(root, current, obj);
+			if (middle == null)
+				middle = child.Middle;
+		}
+		if (middle != null)
+			middle.InsertMiddle(root, current, members);
 	}
 
 	private String _sqlInsert;

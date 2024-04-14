@@ -1,6 +1,8 @@
 package com.apros.codeart.ddd.repository.access;
 
+import com.apros.codeart.ddd.MapData;
 import com.apros.codeart.ddd.QueryLevel;
+import com.apros.codeart.util.StringUtil;
 
 /**
  * 基于表达式的查询,可以指定对象属性等表达式
@@ -8,31 +10,6 @@ import com.apros.codeart.ddd.QueryLevel;
  * select子语句系统内部使用，外部请不要调用
  */
 public abstract class QueryExpression implements IQueryBuilder {
-
-	private DataTable _target;
-
-	/**
-	 * 表达式针对的目标表
-	 * 
-	 * @return
-	 */
-	public DataTable target() {
-		return _target;
-	}
-
-	private String _expression;
-
-	public String expression() {
-		return _expression;
-	}
-
-	private SqlDefinition _definition;
-
-	public SqlDefinition definition() {
-		return _definition;
-	}
-
-	private QueryLevel _level;
 
 	/**
 	 * 查询的锁定级别
@@ -49,270 +26,160 @@ public abstract class QueryExpression implements IQueryBuilder {
 
 	public QueryExpression(DataTable target, String expression, QueryLevel level) {
 		_target = target;
-		_expression = expression;
-		_definition = SqlDefinition.create(_expression);
+		_ _definition = SqlDefinition.create(_expression);
 		_level = level;
 	}
 
-	protected override string
+	@Override
+	public String build(QueryDescription description) {
+		// 表达式针对的目标表
+		var target = description.table();
+		// 对象表达式
+		String expression = description.getItem("expression");
+		// 查询级别
+		QueryLevel level = description.getItem("queryLevel");
+		var definition = SqlDefinition.create(expression);
 
-	Process(DynamicData param)
-    {
-        var commandText = GetCommandText(param);
-        return this.Definition.Process(commandText, param);
-    }
+		var commandText = getCommandText(description);
 
-	/// <summary>
-	/// 获取命令文本
-	/// </summary>
-	/// <param name="target"></param>
-	/// <param name="param"></param>
-	/// <param name="level"></param>
-	/// <returns></returns>
-	protected abstract string GetCommandText(DynamicData param);
+		return definition.process(commandText, description.param());
+	}
 
-	protected string GetObjectSql() {
-		var table = this.Target;
+	/**
+	 * 获取命令文本
+	 * 
+	 * @param description
+	 * @return
+	 */
+	protected abstract String getCommandText(QueryDescription description);
+
+	protected String getObjectSql(DataTable target, QueryLevel level, SqlDefinition definition) {
 
 		StringBuilder sql = new StringBuilder();
-		sql.Append("select ");
-		sql.AppendLine(GetSelectFieldsSql(table, this.Definition));
-		sql.AppendLine(" from ");
-		sql.AppendLine(GetFromSql(table, this.Level, this.Definition));
-		sql.Append(GetJoinSql(table, this.Definition));
+		sql.append("select ");
+		StringUtil.appendLine(sql, getSelectFieldsSql(target, definition));
+		StringUtil.appendLine(sql, " from ");
+		StringUtil.appendLine(sql, getFromSql(target, level, definition));
+		StringUtil.appendLine(sql, getJoinSql(target, definition));
 
 		return GetFinallyObjectSql(sql.ToString(), table);
 	}
 
-	#region 得到select语句
+//	#region 得到select语句
 
-	/// <summary>
-	/// 获取表<paramref name="chainRoot"/>需要查询的select字段
-	/// </summary>
-	/// <param name="chainRoot"></param>
-	/// <param name="exp"></param>
-	/// <param name="chain">可以为输出的字段前置对象链</param>
-	/// <returns></returns>
-	private static string GetSelectFieldsSql(DataTable chainRoot, SqlDefinition exp)
-    {
-        StringBuilder sql = new StringBuilder();
-        sql.Append(GetChainRootSelectFieldsSql(chainRoot, exp).Trim());
+	/**
+	 * 
+	 * 获取表 {@code chainRoot} 需要查询的select字段
+	 * 
+	 * @param chainRoot
+	 * @param exp
+	 * @return
+	 */
+	private static String getSelectFieldsSql(DataTable chainRoot, SqlDefinition exp) {
+		StringBuilder sql = new StringBuilder();
+		sql.append(getChainRootSelectFieldsSql(chainRoot, exp).trim());
 
-        using (var temp = TempIndex.Borrow())
-        {
-            var index = temp.Item;
-            sql.Append(GetSlaveSelectFieldsSql(chainRoot, chainRoot, exp, index).Trim());
-        }
-        sql.Length--;//移除最后一个逗号
-        return sql.ToString();
-    }
+		var index = new TempDataTableIndex();
+		sql.Append(getSlaveSelectFieldsSql(chainRoot, chainRoot, exp, index).trim());
+		StringUtil.removeLast(sql); // 移除最后一个逗号
+		return sql.toString();
+	}
 
-	/// <summary>
-	/// 填充查询链中根表的select的字段
-	/// </summary>
-	/// <param name="chainRoot"></param>
-	/// <param name="exp"></param>
-	/// <param name="sql"></param>
-	private static string GetChainRootSelectFieldsSql(DataTable chainRoot, SqlDefinition exp)
-    {
-        StringBuilder sql = new StringBuilder();
-        if (chainRoot.IsDerived)
-        {
-            FillChainRootSelectFieldsSql(chainRoot.InheritedRoot, TableType.InheritedRoot, exp, sql);
+	/**
+	 * 
+	 * 填充查询链中根表的select的字段
+	 * 
+	 * @param chainRoot
+	 * @param exp
+	 * @return
+	 */
+	private static String getChainRootSelectFieldsSql(DataTable chainRoot, SqlDefinition exp) {
+		StringBuilder sql = new StringBuilder();
+		FillChainRootSelectFieldsSql(chainRoot, TableType.Common, exp, sql);
+		return sql.toString();
+	}
 
-            foreach (var derived in chainRoot.Deriveds)
-            {
-                FillChainRootSelectFieldsSql(derived, TableType.Derived, exp, sql);
-            }
-        }
-        else
-        {
-            FillChainRootSelectFieldsSql(chainRoot, TableType.Common, exp, sql);
-        }
-        return sql.ToString();
-    }
+	private static void FillChainRootSelectFieldsSql(DataTable current, TableType tableType, SqlDefinition exp,
+			StringBuilder sql) {
+		StringUtil.appendLine(sql);
 
-	private static void FillChainRootSelectFieldsSql(DataTable current, TableType tableType, SqlDefinition exp, StringBuilder sql)
-    {
-        sql.AppendLine();
+		for (var field : current.fields()) {
+			if (field.isAdditional())
+				continue; // 不输出附加字段，有这类需求请自行编码sql语句，因为附加字段的定制化需求统一由数据映射器处理
+			if (field.tip().lazy() && !exp.specifiedField(field.name()))
+				continue;
 
-        foreach (var field in current.Fields)
-        {
-            if (field.IsAdditional) continue; //不输出附加字段，有这类需求请自行编码sql语句，因为附加字段的定制化需求统一由数据映射器处理
-            if (field.Tip.Lazy && !exp.SpecifiedField(field.Name)) continue;
+			if (!containsField(field.name(), exp))
+				continue;
 
-            if (tableType == TableType.Derived)
-            {
-                //派生表不输出主键信息
-                if (field.Name == EntityObject.IdPropertyName)
-                    continue;
-
-                if (current.Type != DataTableType.AggregateRoot)
-                {
-                    if (field.Name == GeneratedField.RootIdName)
-                        continue;
-                }
-            }
-
-            if (!ContainsField(field.Name, exp)) continue;
-
-            sql.AppendFormat("{0}.{1} as {1},", SqlStatement.Qualifier(current.Name),
-                                                SqlStatement.Qualifier(field.Name));
-        }
-
-        if(current.IsSessionEnabledMultiTenancy)
-        {
-            if (tableType != TableType.Derived)
-            {
-                sql.AppendFormat("{0}.{1} as {1},", SqlStatement.Qualifier(current.Name),
-                                                    SqlStatement.Qualifier(GeneratedField.TenantIdName));
-            }
-        }
-    }
-
-	/// <summary>
-	/// 填充查询链中从表的select的字段
-	/// </summary>
-	/// <param name="chainRoot"></param>
-	/// <param name="master"></param>
-	/// <param name="exp"></param>
-	/// <param name="sql"></param>
-	private static string GetSlaveSelectFieldsSql(DataTable chainRoot, DataTable master, SqlDefinition exp, TempIndex index)
-    {
-        StringBuilder sql = new StringBuilder();
-        if (master.IsDerived)
-        {
-            FillChildSelectFieldsSql(chainRoot, master.InheritedRoot, exp, sql, index);
-
-            foreach (var derived in master.Deriveds)
-            {
-                FillChildSelectFieldsSql(chainRoot, derived, exp, sql, index);
-            }
-        }
-        else
-        {
-            FillChildSelectFieldsSql(chainRoot, master, exp, sql, index);
-        }
-        return sql.ToString();
-    }
-
-	private static void FillChildSelectFieldsSql(DataTable chainRoot, DataTable master, SqlDefinition exp, StringBuilder sql, TempIndex index)
-    {
-        foreach (var child in master.BuildtimeChilds)
-        {
-            if (!index.TryAdd(child)) continue; //防止由于循环引用导致的死循环
-
-            if (child.IsDerived)
-            {
-                FillFieldsSql(chainRoot, master, child.InheritedRoot, TableType.InheritedRoot, exp, sql, index);
-
-                foreach (var derived in child.Deriveds)
-                {
-                    FillFieldsSql(chainRoot, master, derived, TableType.Derived, exp, sql, index);
-                }
-            }
-            else
-            {
-                FillFieldsSql(chainRoot, master, child, TableType.Common, exp, sql, index);
-            }
-        }
-    }
-
-	private static void FillFieldsSql(DataTable chainRoot, DataTable master, DataTable current, TableType tableType, SqlDefinition exp, StringBuilder sql, TempIndex index)
-    {
-        if (!ContainsTable(chainRoot, exp, current)) return;
-
-        var chain = current.GetChainCode(chainRoot);
-        bool containsInner = exp.ContainsInner(chain);
-
-        sql.AppendLine();
-
-        foreach (var field in current.Fields)
-        {
-            if (field.IsAdditional) continue; //不输出附加字段，有这类需求请自行编码sql语句，因为附加字段的定制化需求统一由数据映射器处理
-            if (field.Tip.Lazy && !exp.SpecifiedField(field.Name)) continue;
-
-            if (tableType == TableType.Derived)
-            {
-                if (field.Name == EntityObject.IdPropertyName || field.Name == GeneratedField.RootIdName)
-                    continue;
-            }
-
-            var fieldName = string.Format("{0}_{1}", chain, field.Name);
-
-            if (!containsInner &&
-                    !ContainsField(fieldName, exp)) continue;
-
-            sql.AppendFormat("{0}.{1} as {2},", SqlStatement.Qualifier(chain),
-                                                SqlStatement.Qualifier(field.Name),
-                                                SqlStatement.Qualifier(fieldName));
-        }
-
-        if (current.IsSessionEnabledMultiTenancy)
-        {
-            if (tableType != TableType.Derived)
-            {
-                var fieldName = string.Format("{0}_{1}", chain, GeneratedField.TenantIdName);
-                sql.AppendFormat("{0}.{1} as {2},", SqlStatement.Qualifier(chain),
-                                                    SqlStatement.Qualifier(GeneratedField.TenantIdName),
-                                                    fieldName);
-            }
-        }
-
-        FillChildSelectFieldsSql(chainRoot, current, exp, sql, index);
-    }
-
-	#endregion
-
-	#
-
-	region 获取from语句
-
-	private static string GetFromSql(DataTable chainRoot, QueryLevel level, SqlDefinition exp) {
-		if (chainRoot.IsDerived) {
-			return GetFromSqlByDerived(chainRoot, level, exp);
-			// return string.Format(" ({0}) as {1}", GetDerivedTableSql(chainRoot, level,
-			// string.Empty), chainRoot.Name);
-		} else {
-			return string.Format(" {0}{1}", SqlStatement.Qualifier(chainRoot.Name), GetLockCode(level));
+			StringUtil.appendMessageFormat(sql, "{0}.{1} as {1},", SqlStatement.qualifier(current.name()),
+					SqlStatement.qualifier(field.name()));
 		}
 	}
 
-	private static string GetFromSqlByDerived(DataTable table, QueryLevel level, SqlDefinition exp)
-    {
-        var inheritedRoot = table.InheritedRoot;
+	/**
+	 * * 填充查询链中从表的select的字段
+	 * 
+	 * @param chainRoot
+	 * @param master
+	 * @param exp
+	 * @param index
+	 * @return
+	 */
+	private static String getSlaveSelectFieldsSql(DataTable chainRoot, DataTable master, SqlDefinition exp,
+			TempDataTableIndex index) {
+		StringBuilder sql = new StringBuilder();
+		fillChildSelectFieldsSql(chainRoot, master, exp, sql, index);
+		return sql.toString();
+	}
 
-        StringBuilder sql = new StringBuilder();
-        sql.AppendFormat(" {0}{1}", SqlStatement.Qualifier(inheritedRoot.Name), GetLockCode(level)); //inheritedRoot记录了条目信息，所以一定会参与查询
-        foreach (var derived in table.Deriveds)
-        {
-            if (!exp.ContainsExceptId(derived)) continue;
+	private static void fillChildSelectFieldsSql(DataTable chainRoot, DataTable master, SqlDefinition exp,
+			StringBuilder sql, TempDataTableIndex index) {
+		for (var child : master.buildtimeChilds()) {
+			if (!index.tryAdd(child))
+				continue; // 防止由于循环引用导致的死循环
 
+			fillFieldsSql(chainRoot, master, child, TableType.Common, exp, sql, index);
+		}
+	}
 
-            if (table.Type == DataTableType.AggregateRoot)
-            {
-                sql.AppendFormat(" inner join {0}{2} on {1}.Id={0}.Id",
-                    SqlStatement.Qualifier(derived.Name), SqlStatement.Qualifier(inheritedRoot.Name), GetLockCode(QueryLevel.None));
-            }
-            else
-            {
-                sql.AppendFormat(" inner join {0}{3} on {1}.Id={0}.Id and {1}.{2}={0}.{2}",
-                    SqlStatement.Qualifier(derived.Name)
-                    , SqlStatement.Qualifier(inheritedRoot.Name)
-                    , SqlStatement.Qualifier(GeneratedField.RootIdName)
-                    , GetLockCode(QueryLevel.None));
-            }
-        }
-        return sql.ToString();
-    }
+	private static void fillFieldsSql(DataTable chainRoot, DataTable master, DataTable current, TableType tableType,
+			SqlDefinition exp, StringBuilder sql, TempDataTableIndex index) {
+		if (!containsTable(chainRoot, exp, current))
+			return;
 
-	#endregion
+		var chain = current.getChainPath(chainRoot);
+		boolean containsInner = exp.containsInner(chain);
 
-	#
+		StringUtil.appendLine(sql);
 
-	region 获取join语句
+		for (var field : current.fields()) {
+			if (field.isAdditional())
+				continue; // 不输出附加字段，有这类需求请自行编码sql语句，因为附加字段的定制化需求统一由数据映射器处理
+			if (field.tip().lazy() && !exp.specifiedField(field.name()))
+				continue;
 
-	private static string GetJoinSql(DataTable chainRoot, SqlDefinition exp)
+			var fieldName = String.format("%s_%s", chain, field.name());
+
+			if (!containsInner && !containsField(fieldName, exp))
+				continue;
+
+			StringUtil.appendFormat(sql, "%s.%s as %s,", SqlStatement.qualifier(chain),
+					SqlStatement.qualifier(field.name()), SqlStatement.qualifier(fieldName));
+		}
+
+		fillChildSelectFieldsSql(chainRoot, current, exp, sql, index);
+	}
+
+//	region 获取from语句
+
+	private static String getFromSql(DataTable chainRoot, QueryLevel level, SqlDefinition exp) {
+		return String.format(" %s%s", SqlStatement.qualifier(chainRoot.name()), getLockCode(level));
+	}
+
+//	region 获取join语句
+
+	private static String getJoinSql(DataTable chainRoot, SqlDefinition exp)
     {
         StringBuilder sql = new StringBuilder();
         using (var temp = TempIndex.Borrow())

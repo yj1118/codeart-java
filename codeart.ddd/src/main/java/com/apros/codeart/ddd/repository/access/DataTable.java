@@ -205,6 +205,16 @@ public class DataTable {
 		return _chain;
 	}
 
+	/**
+	 * 获取表相对于 {@code parent} 的属性路径下的对象链，格式是 a_b_c
+	 * 
+	 * @param parent
+	 * @return
+	 */
+	public String getChainPath(DataTable parent) {
+		return _chain.getPath(parent);
+	}
+
 	private Iterable<IDataField> _fields;
 
 	public Iterable<IDataField> fields() {

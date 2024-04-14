@@ -20,4 +20,22 @@ public record QueryDescription(MapData param, Map<String, Object> items, DataTab
 	public QueryDescription(Map<String, Object> items) {
 		this(null, items);
 	}
+
+	public DataTable table() {
+		return table(0);
+	}
+
+	public DataTable table(int index) {
+		if (tables == null)
+			return null;
+		return tables[index];
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T> T getItem(String itemName) {
+		if (items == null)
+			return null;
+		return (T) items.get(itemName);
+	}
+
 }

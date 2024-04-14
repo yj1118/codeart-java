@@ -20,4 +20,8 @@ public class Guid {
 		return value == null || value.equals(Empty);
 	}
 
+	public static UUID NewGuid() {
+		return UUID.randomUUID();
+	}
+
 }

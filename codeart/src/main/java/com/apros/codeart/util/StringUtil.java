@@ -1,5 +1,6 @@
 package com.apros.codeart.util;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Set;
 import java.util.TreeSet;
@@ -22,6 +23,10 @@ public final class StringUtil {
 
 	public static void appendFormat(StringBuilder str, String format, Object... args) {
 		str.append(String.format(format, args));
+	}
+
+	public static void appendMessageFormat(StringBuilder str, String format, Object... args) {
+		str.append(MessageFormat.format(format, args));
 	}
 
 	/**
