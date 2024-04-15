@@ -157,7 +157,7 @@ final class DataTableInsert {
 		data.put(EntityObject.IdPropertyName, id);
 
 		var builder = DataSource.getQueryBuilder(IncrementAssociatedQB.class);
-		var sql = builder.build(new QueryDescription(data));
+		var sql = builder.build(new QueryDescription(_self));
 		DataAccess.getCurrent().execute(sql, data);
 	}
 

@@ -48,7 +48,7 @@ public final class Repository {
 	 * @param methodName
 	 * @return
 	 */
-	static Method getMethodFromRepository(Class<?> objectType, String methodName) {
+	public static Method getMethodFromRepository(Class<?> objectType, String methodName) {
 		if (StringUtil.isNullOrEmpty(methodName))
 			return null;
 		var objectTip = ObjectRepositoryImpl.getTip(objectType, true);

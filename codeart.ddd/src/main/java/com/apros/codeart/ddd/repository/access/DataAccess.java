@@ -34,6 +34,10 @@ public final class DataAccess {
 		return QueryRunner.queryScalar(valueType, _conn, sql, param);
 	}
 
+	public int queryScalarInt(String sql, MapData params) {
+		return QueryRunner.queryScalarInt(_conn, sql, params);
+	}
+
 	public int queryScalarInt(String sql, MapData params, QueryLevel level) {
 		sql = supplementLock(sql, level);
 		return QueryRunner.queryScalarInt(_conn, sql, params);
@@ -85,6 +89,10 @@ public final class DataAccess {
 
 	public MapData queryRow(String sql, MapData params) {
 		return QueryRunner.queryRow(_conn, sql, params);
+	}
+
+	public Iterable<MapData> queryRows(String sql, MapData params) {
+		return QueryRunner.queryRows(_conn, sql, params);
 	}
 
 	public Iterable<MapData> queryRows(String sql, MapData params, QueryLevel level) {

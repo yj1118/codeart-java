@@ -130,7 +130,6 @@ public class GeneratedField extends ValueField {
 	public static final String MasterIdName = "MasterId";
 	public static final String SlaveIdName = "SlaveId";
 	public static final String PrimitiveValueName = "Value";
-	public static final String TenantIdName = "TenantId";
 
 	public static class CustomMeta extends PropertyMeta {
 

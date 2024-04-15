@@ -1,12 +1,20 @@
 package com.apros.codeart.ddd.repository.sqlserver;
 
 import com.apros.codeart.ddd.QueryLevel;
+import com.apros.codeart.ddd.repository.access.ClearTableQB;
 import com.apros.codeart.ddd.repository.access.CreateTableQB;
 import com.apros.codeart.ddd.repository.access.DatabaseAgent;
+import com.apros.codeart.ddd.repository.access.DecrementAssociatedQB;
+import com.apros.codeart.ddd.repository.access.DeleteTableQB;
 import com.apros.codeart.ddd.repository.access.DropTableQB;
+import com.apros.codeart.ddd.repository.access.GetAssociatedQB;
+import com.apros.codeart.ddd.repository.access.GetPrimitiveValuesQB;
+import com.apros.codeart.ddd.repository.access.GetSlaveIdsQB;
 import com.apros.codeart.ddd.repository.access.IDatabaseAgent;
+import com.apros.codeart.ddd.repository.access.IncrementAssociatedQB;
 import com.apros.codeart.ddd.repository.access.InsertTableQB;
 import com.apros.codeart.ddd.repository.access.QueryObjectQB;
+import com.apros.codeart.ddd.repository.access.UpdateTableQB;
 import com.apros.codeart.util.StringUtil;
 
 public class SQLServerAgent extends DatabaseAgent {
@@ -16,7 +24,18 @@ public class SQLServerAgent extends DatabaseAgent {
 		this.registerQueryBuilder(CreateTableQB.class, CreateTable.Instance);
 		this.registerQueryBuilder(DropTableQB.class, DropTable.Instance);
 		this.registerQueryBuilder(InsertTableQB.class, InsertTable.Instance);
+		this.registerQueryBuilder(DeleteTableQB.class, DeleteTable.Instance);
+		this.registerQueryBuilder(ClearTableQB.class, ClearTable.Instance);
+		this.registerQueryBuilder(UpdateTableQB.class, UpdateTable.Instance);
+
 		this.registerQueryBuilder(QueryObjectQB.class, QueryObject.Instance);
+
+		this.registerQueryBuilder(IncrementAssociatedQB.class, IncrementAssociated.Instance);
+		this.registerQueryBuilder(DecrementAssociatedQB.class, DecrementAssociated.Instance);
+		this.registerQueryBuilder(GetAssociatedQB.class, GetAssociated.Instance);
+
+		this.registerQueryBuilder(GetPrimitiveValuesQB.class, GetPrimitiveValues.Instance);
+		this.registerQueryBuilder(GetSlaveIdsQB.class, GetSlaveIds.Instance);
 	}
 
 	@Override
@@ -32,6 +51,9 @@ public class SQLServerAgent extends DatabaseAgent {
 		return null;
 	}
 
+	/**
+	 * 可被索引得字符串得最大长度
+	 */
 	@Override
 	public int getStringIndexableMaxLength() {
 		// TODO Auto-generated method stub

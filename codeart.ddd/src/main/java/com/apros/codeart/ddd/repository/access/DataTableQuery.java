@@ -5,6 +5,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.apros.codeart.ddd.MapData;
+import com.apros.codeart.ddd.DataVersionException;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.QueryLevel;
@@ -94,7 +95,7 @@ final class DataTableQuery {
 		var exp = DataSource.getQueryBuilder(QueryObjectQB.class);
 
 		Object result = null;
-		useDataEntry(exp, expression, fillArg, (entry) -> {
+		useDataEntry(exp, expression, level, fillArg, (entry) -> {
 			result = getObjectFromEntry(entry, level);
 		});
 		return result != null ? result : DomainObject.getEmpty(_self.objectType());
@@ -260,9 +261,9 @@ final class DataTableQuery {
 	 * @param fillArg
 	 * @param action
 	 */
-	private void useDataEntry(IQueryBuilder exp, String expression, Consumer<MapData> fillArg,
+	private void useDataEntry(IQueryBuilder exp, String expression, QueryLevel level, Consumer<MapData> fillArg,
 			Consumer<MapData> action) {
-		var data = executeQueryEntry(exp, expression, fillArg, data);
+		var data = executeQueryEntry(exp, expression, level, fillArg, data);
 		if (data.size() > 0) {
 			action(data);
 		}
@@ -286,7 +287,8 @@ final class DataTableQuery {
 	     }
 	 }
 
-	private MapData executeQueryEntry(IQueryBuilder query, String expression, Consumer<MapData> fillArg) {
+	private MapData executeQueryEntry(IQueryBuilder query, String expression, QueryLevel level,
+			Consumer<MapData> fillArg) {
 		var param = new MapData();
 		fillArg.accept(param);
 
@@ -487,25 +489,24 @@ final class DataTableQuery {
 	// }
 	// }
 
-	#endregion
+//	#endregion
 
-	#
+//	region 得到对象版本号
 
-	region 得到对象版本号
-
-	/// <summary>
-	/// 根据对象原始数据获取版本号
-	/// </summary>
-	internal
-
-	int GetDataVersion(DynamicData originalData) {
-		if (this.Type == DataTableType.AggregateRoot) {
-			var id = originalData.Get(EntityObject.IdPropertyName);
-			return GetDataVersion(id);
+	/**
+	 * 根据对象原始数据获取版本号
+	 * 
+	 * @param originalData
+	 * @return
+	 */
+	int getDataVersion(MapData originalData) {
+		if (_self.type() == DataTableType.AggregateRoot) {
+			var id = originalData.get(EntityObject.IdPropertyName);
+			return getDataVersion(id);
 		} else {
-			var rootId = originalData.Get(GeneratedField.RootIdName);
-			var id = originalData.Get(EntityObject.IdPropertyName);
-			return GetDataVersion(rootId, id);
+			var rootId = originalData.get(GeneratedField.RootIdName);
+			var id = originalData.get(EntityObject.IdPropertyName);
+			return getDataVersion(rootId, id);
 		}
 	}
 
@@ -514,31 +515,51 @@ final class DataTableQuery {
 	/// </summary>
 	/// <param name="id"></param>
 	/// <returns></returns>
-	private int GetDataVersion(object id) {
-		return GetDataVersionImpl((param) -> {
-			param.Add(EntityObject.IdPropertyName, id);
+	int getDataVersion(Object id) {
+		return getDataVersionImpl((param) -> {
+			param.put(EntityObject.IdPropertyName, id);
 		});
 	}
 
-	private int GetDataVersion(object rootId, object id) {
-		return GetDataVersionImpl((param) -> {
-			param.Add(GeneratedField.RootIdName, rootId);
-			param.Add(EntityObject.IdPropertyName, id);
+	private int getDataVersion(Object rootId, Object id) {
+		return getDataVersionImpl((param) -> {
+			param.put(GeneratedField.RootIdName, rootId);
+			param.put(EntityObject.IdPropertyName, id);
 		});
 	}
 
-	private int GetDataVersionImpl(Action<DynamicData> fillArg) {
-		var expression = GetObjectByIdExpression(this);
-		var exp = QueryObject.Create(this, expression, QueryLevel.None); // 在领域层主动查看数据编号时，不需要锁；在提交数据时获取数据编号，由于对象已被锁，所以不需要在读取版本号时锁
+	private int getDataVersionImpl(Consumer<MapData> fillArg) {
+		var expression = getObjectByIdExpression(_self);
 
+		var exp = DataSource.getQueryBuilder(QueryObjectQB.class);
+
+		// 在领域层主动查看数据编号时，不需要锁；在提交数据时获取数据编号，由于对象已被锁，所以不需要在读取版本号时锁
 		int dataVersion = 0;
-		UseDataEntry(exp, fillArg, (entry) -> {
-			dataVersion = (int) entry.Get(GeneratedField.DataVersionName);
+		useDataEntry(exp, expression, QueryLevel.None, fillArg, (entry) -> {
+			dataVersion = (int) entry.get(GeneratedField.DataVersionName);
 		});
 		return dataVersion;
 	}
 
-	#endregion
+	public void checkDataVersion(DomainObject root) {
+		var id = DataTableUtil.getObjectId(root);
+		if (root.dataVersion() != _self.getDataVersion(id)) {
+			throw new DataVersionException(root.getClass(), id);
+		}
+	}
+
+	public int getAssociated(Object rootId, Object id) {
+		var data = new MapData();
+		data.put(GeneratedField.RootIdName, rootId);
+		data.put(EntityObject.IdPropertyName, id);
+
+		var qb = DataSource.getQueryBuilder(GetAssociatedQB.class);
+		var sql = qb.build(new QueryDescription(_self));
+
+		return DataAccess.getCurrent().queryScalarInt(sql, data);
+	}
+
+//	#endregion
 
 	// internal T QuerySingle<T>(IQueryBuilder compiler, Action<DynamicData>
 	// fillArg, QueryLevel level)

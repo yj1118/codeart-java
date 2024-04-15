@@ -6,6 +6,8 @@ import java.util.function.Function;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.IDomainObject;
+import com.apros.codeart.ddd.MapData;
+import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.ddd.metadata.ObjectMeta;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.ObjectRepositoryTip;
@@ -526,6 +528,14 @@ public class DataTable {
 
 	private DataTableInsert _insert;
 
+	private DataTableUpdate _update;
+
+	private DataTableRead _read;
+
+	private DataTableDelete _delete;
+
+	private DataTableCommon _common;
+
 	DataTable(Class<?> objectType, DataTableType type, String name, Iterable<IDataField> objectFields,
 			DataTable chainRoot, DataTable master, IDataField memberField) {
 
@@ -554,6 +564,10 @@ public class DataTable {
 
 		_query = new DataTableQuery(this);
 		_insert = new DataTableInsert(this);
+		_update = new DataTableUpdate(this);
+		_delete = new DateTableDelete(this);
+		_read = new DataTableRead(this);
+		_common = new DataTaleCommon(this);
 	}
 
 	void loadChilds() {
@@ -588,6 +602,72 @@ public class DataTable {
 
 	Object querySingle(Object rootId, Object id) {
 		return _query.querySingle(rootId, id);
+	}
+
+	void queryOneToMore(Object rootId, Object masterId, ArrayList<Object> objs) {
+		_read.queryOneToMore(rootId, masterId, objs);
+	}
+
+	void queryMembers(PropertyMeta tip, MapData data, ArrayList<Object> objs) {
+		_read.queryMembers(tip, data, objs);
+	}
+
+	Object queryMember(PropertyMeta tip, MapData data) {
+		return _read.queryMember(tip, data);
+	}
+
+	int getDataVersion(MapData originalData) {
+		return _query.getDataVersion(originalData);
+	}
+
+	int getDataVersion(Object id) {
+		return _query.getDataVersion(id);
+	}
+
+	public void checkDataVersion(DomainObject root) {
+		_query.checkDataVersion(root);
+	}
+
+	public int getAssociated(Object rootId, Object id) {
+		return _query.getAssociated(rootId, id);
+	}
+
+	public void decrementAssociated(Object rootId, Object id) {
+		_update.decrementAssociated(rootId, id);
+	}
+
+	void deleteMiddle(DomainObject root, DomainObject master, DomainObject slave) {
+		_delete.deleteMiddle(root, master, slave);
+	}
+
+	void deleteMiddleByRootSlave(DomainObject obj) {
+		_delete.deleteMiddleByRootSlave(obj);
+	}
+
+	void deleteMiddleByMaster(DomainObject root, DomainObject master) {
+		_delete.deleteMiddleByMaster(root, master);
+	}
+
+	void deleteMember(DomainObject root, DomainObject parent, DomainObject obj) {
+		_delete.deleteMember(root, parent, obj);
+	}
+
+	void deleteMemberByOriginalData(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
+		_delete.deleteMemberByOriginalData(root, parent, current, tip);
+	}
+
+	public void deleteMembersByOriginalData(DomainObject root, DomainObject parent, DomainObject current,
+			PropertyMeta tip) {
+		_delete.deleteMembersByOriginalData(root, parent, current, tip);
+	}
+
+	Iterable<DataTable> getQuoteMiddlesByMaster() {
+		return _common.getQuoteMiddlesByMaster();
+	}
+
+	Object readPropertyValue(DomainObject parent, PropertyMeta tip, ParameterRepositoryAttribute prmTip,
+			MapData data, QueryLevel level) {
+		return _read.readPropertyValue(null, null, null, null, null)
 	}
 
 //	DataTableQuery query() {

@@ -1,6 +1,12 @@
 package com.apros.codeart.ddd.repository.access;
 
+import com.apros.codeart.ddd.DomainBuffer;
+import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.DomainObject;
+import com.apros.codeart.ddd.EntityObject;
+import com.apros.codeart.ddd.MapData;
+import com.apros.codeart.ddd.metadata.PropertyMeta;
+import com.apros.codeart.i18n.Language;
 
 final class DataTableUpdate {
 
@@ -15,20 +21,18 @@ final class DataTableUpdate {
 			return;
 
 		DomainObject root = null;
-		if (this.Type == DataTableType.AggregateRoot)
+		if (_self.type() == DataTableType.AggregateRoot)
 			root = obj;
-		if (root == null || root.IsEmpty())
-			throw new DomainDrivenException(string.Format(Strings.PersistentObjectError, obj.ObjectType.FullName));
+		if (root == null || root.isEmpty())
+			throw new IllegalStateException(
+					Language.strings("codeart.ddd", "PersistentObjectError", obj.getClass().getName()));
 
-		if (obj.IsDirty) {
-			CheckDataVersion(root);
-			OnPreDataUpdate(obj);
-			if (UpdateData(root, null, obj)) {
-				OnDataUpdated(root, obj);
+		if (obj.isDirty()) {
+			_self.checkDataVersion(root);
+			onPreDataUpdate(obj);
+			if (updateData(root, null, obj)) {
+				onDataUpdated(root, obj);
 			}
-		} else {
-			// 如果对象不是脏的，但是要求修改，那么有可能是该对象的引用链上的对象发生了变化，所以我们移除该对象的缓冲
-			DomainBuffer.Public.Remove(obj.ObjectType, GetObjectId(obj));
 		}
 	}
 
@@ -37,114 +41,82 @@ final class DataTableUpdate {
 	/// </summary>
 	/// <param name="obj"></param>
 	/// <returns></returns>
-	internal bool
+	boolean updateData(DomainObject root, DomainObject parent, DomainObject obj) {
+		boolean isChanged = false;
 
-	UpdateData(DomainObject root, DomainObject parent, DomainObject obj)
-	 {
-	     bool isChanged = false;
+		var tips = PropertyMeta.getProperties(_self.objectType());
 
-	     var tips = Util.GetPropertyTips(this.ObjectType);
-	     using (var temp = SqlHelper.BorrowData())
-	     {
-	         var data = temp.Item;
-	         foreach (var tip in tips)
-	         {
-	             var memberIsChanged = UpdateAndCollectChangedValue(root, parent, obj, tip, data);
-	             if (!isChanged) isChanged = memberIsChanged;
-	         }
+		var data = new MapData();
+		for (var tip : tips) {
+			var memberIsChanged = updateAndCollectChangedValue(root, parent, obj, tip, data);
+			if (!isChanged)
+				isChanged = memberIsChanged;
+		}
 
-	         //this.Mapper.FillUpdateData(obj, data, this);
+		// this.Mapper.FillUpdateData(obj, data, this);
 
-	         if (data.Count > 0)
-	         {
-	             if (this.Type != DataTableType.AggregateRoot)
-	             {
-	                 //补充根键
-	                 data.Add(GeneratedField.RootIdName, GetObjectId(root));
-	             }
+		if (data.size() > 0) {
+			if (_self.type() != DataTableType.AggregateRoot) {
+				// 补充根键
+				data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
+			}
 
-	             //补充主键
-	             data.Add(EntityObject.IdPropertyName, GetObjectId(obj));
+			// 补充主键
+			data.put(EntityObject.IdPropertyName, DataTableUtil.getObjectId(obj));
 
-	             if(this.IsSessionEnabledMultiTenancy)
-	             {
-	                 data.Add(GeneratedField.TenantIdName, AppSession.TenantId);
-	             }
+			var sql = getUpdateSql(data);
+			DataAccess.getCurrent().execute(sql, data);
 
-	             var sql = GetUpdateSql(data);
-	             SqlHelper.Execute(sql, data);
+			// 更新代理对象中的数据
+			((DataProxyImpl) obj.dataProxy()).originalData().update(data);
+		}
 
-	             //更新代理对象中的数据
-	             (obj.DataProxy as DataProxyPro).OriginalData.Update(data);
-	         }
-	     }
-
-	     //如果有基表，那么继续修改
-	     var baseTable = this.BaseTable;
-	     if (baseTable != null)
-	     {
-	         var baseIsChanged = baseTable.UpdateData(root, parent, obj);
-	         if (!isChanged) isChanged = baseIsChanged;
-	     }
-	     return isChanged;
-	 }
-
-	private void OnPreDataUpdate(DomainObject obj) {
-		this.Mapper.OnPreUpdate(obj, this);
+		return isChanged;
 	}
 
-	/// <summary>
-	/// 该方法用于修改数据后，更新基表的信息
-	/// </summary>
-	/// <param name="root"></param>
-	/// <param name="obj"></param>
-	private void OnDataUpdated(DomainObject root, DomainObject obj)
-	 {
-	     obj.MarkClean(); //修改之后，就干净了
+	private void onPreDataUpdate(DomainObject obj) {
+		_self.mapper().onPreUpdate(obj, _self);
+	}
 
-	     var id = GetObjectId(obj);
+	/**
+	 * 
+	 * 该方法用于修改数据后，更新基表的信息
+	 * 
+	 * @param root
+	 * @param obj
+	 */
+	private void onDataUpdated(DomainObject root, DomainObject obj) {
+		obj.markClean(); // 修改之后，就干净了
 
-	     //更新数据版本号
-	     var target = this.IsDerived ? this.InheritedRoot : this;
-	     using (var temp = SqlHelper.BorrowData())
-	     {
-	         var data = temp.Item;
-	         if (target.Type != DataTableType.AggregateRoot)
-	         {
-	             data.Add(GeneratedField.RootIdName, GetObjectId(root));
-	         }
+		var id = DataTableUtil.getObjectId(obj);
 
-	         data.Add(EntityObject.IdPropertyName, id);
+		// 更新数据版本号
+		var target = _self;
+		var data = new MapData();
+		if (target.type() != DataTableType.AggregateRoot) {
+			data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
+		}
 
-	         if (this.IsSessionEnabledMultiTenancy)
-	         {
-	             data.Add(GeneratedField.TenantIdName, AppSession.TenantId);
-	         }
+		data.put(EntityObject.IdPropertyName, id);
 
-	         //更新版本号
-	         SqlHelper.Execute(target.GetUpdateVersionSql(), data);
+		// 更新版本号
+		SqlHelper.Execute(target.GetUpdateVersionSql(), data);
 
-	         //更新代理对象的版本号
-	         var dataVersion = target.Type == DataTableType.AggregateRoot
-	                             ? this.GetDataVersion(id)
-	                             : this.GetDataVersion(GetObjectId(root), id);
+		// 更新代理对象的版本号
+		var dataVersion = target.Type == DataTableType.AggregateRoot ? this.GetDataVersion(id)
+				: this.GetDataVersion(GetObjectId(root), id);
 
-	         obj.DataProxy.Version = dataVersion;
-	     }
+		obj.DataProxy.Version = dataVersion;
 
-	     if (this.Type == DataTableType.AggregateRoot)
-	     {
-	         if (obj.IsMirror)
-	         {
-	             //镜像被修改了，对应的公共缓冲区中的对象也要被重新加载
-	             DomainBuffer.Public.Remove(obj.ObjectType, id);
-	         }
-	     }
+		if (this.Type == DataTableType.AggregateRoot) {
+			if (obj.IsMirror) {
+				// 镜像被修改了，对应的公共缓冲区中的对象也要被重新加载
+				DomainBuffer.Public.Remove(obj.ObjectType, id);
+			}
+		}
 
-	     
-
-	     this.Mapper.OnUpdated(obj, this);
-	 }
+		this.Mapper.OnUpdated(obj, this);
+	}
 
 	private void UpdateMember(DomainObject root, DomainObject parent, DomainObject obj) {
 		if (obj == null || obj.IsEmpty() || !obj.IsDirty)
@@ -163,27 +135,27 @@ final class DataTableUpdate {
 	/// <param name="tip"></param>
 	/// <param name="data"></param>
 	/// <returns>当内部成员发生变化，返回true</returns>
-	private bool UpdateAndCollectChangedValue(DomainObject root, DomainObject parent, DomainObject current, PropertyRepositoryAttribute tip, DynamicData data)
+	private boolean updateAndCollectChangedValue(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip, MapData data)
 	 {
-	     switch (tip.DomainPropertyType)
+	     switch (tip.category())
 	     {
-	         case DomainPropertyType.Primitive:
+	         case DomainPropertyCategory.Primitive:
 	             {
-	                 if (current.IsPropertyChanged(tip.Property))
+	                 if (current.isPropertyChanged(tip.name()))
 	                 {
-	                     var value = GetPrimitivePropertyValue(current, tip);
-	                     data.Add(tip.PropertyName, value);
+	                     var value = DataTableUtil.getPrimitivePropertyValue(current, tip);
+	                     data.put(tip.name(), value);
 	                     return true;
 	                 }
 	             }
 	             break;
 	         case DomainPropertyType.PrimitiveList:
 	             {
-	                 if (current.IsPropertyChanged(tip.Property))
+	                 if (current.isPropertyChanged(tip.name()))
 	                 {
 	                     //删除老数据
-	                     var child = GetChildTableByRuntime(this, tip);
-	                     child.DeleteMiddleByMaster(root, current);
+	                     var child = _self.findChild(_self, tip);
+	                     child.deleteMiddleByMaster(root, current);
 
 	                     var value = current.GetValue(tip.Property);
 	                     //仅存中间表
@@ -350,7 +322,7 @@ final class DataTableUpdate {
 	     {
 	         case DomainPropertyType.Primitive:
 	             {
-	                 return GetPrimitivePropertyValue(current, tip);
+	                 return DataTableUtil.getPrimitivePropertyValue(current, tip);
 	             }
 	         case DomainPropertyType.PrimitiveList:
 	             {
@@ -491,13 +463,31 @@ final class DataTableUpdate {
 	// }
 	// }
 
-	private string GetUpdateSql(DynamicData data) {
+	private String getUpdateSql(MapData data) {
 		var query = UpdateTable.Create(this, this.IsSessionEnabledMultiTenancy);
 		return query.Build(data, this);
 	}
 
-	private string GetUpdateVersionSql() {
+	private String getUpdateVersionSql() {
 		var query = UpdateDataVersion.Create(this, this.IsSessionEnabledMultiTenancy); // 不能直接用table检索，因为环境不同，IsEnabledMultiTenancy会有变化
 		return query.Build(null, this);
 	}
+
+	/**
+	 * 
+	 * 递减引用次数
+	 * 
+	 * @param rootId
+	 * @param id
+	 */
+	public void decrementAssociated(Object rootId, Object id) {
+		var data = new MapData();
+		data.put(GeneratedField.RootIdName, rootId);
+		data.put(EntityObject.IdPropertyName, id);
+
+		var builder = DataSource.getQueryBuilder(DecrementAssociatedQB.class);
+		var sql = builder.build(new QueryDescription(_self));
+		DataAccess.getCurrent().execute(sql, data);
+	}
+
 }

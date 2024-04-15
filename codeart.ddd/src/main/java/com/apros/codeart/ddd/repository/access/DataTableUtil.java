@@ -15,6 +15,7 @@ import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.IEmptyable;
 import com.apros.codeart.ddd.IEntityObject;
 import com.apros.codeart.ddd.IValueObject;
+import com.apros.codeart.ddd.MapData;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.dto.DTObject;
@@ -208,6 +209,18 @@ final class DataTableUtil {
 			return null;
 		});
 	});
+
+	/**
+	 * 获取对象内部的原始数据
+	 * 
+	 * @param obj
+	 * @return
+	 */
+	public static MapData getOriginalData(Object obj) {
+		var proxy = ((DomainObject) obj).dataProxy();
+
+		return ((DataProxyImpl) proxy).originalData();
+	}
 
 	private final static Map<Class<?>, DbType> _typeMap = new HashMap<Class<?>, DbType>();
 
