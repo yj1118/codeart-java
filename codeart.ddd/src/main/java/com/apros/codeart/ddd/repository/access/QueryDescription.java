@@ -15,6 +15,10 @@ public record QueryDescription(MapData param, Map<String, Object> items, DataTab
 		this(null, null, tables);
 	}
 
+	public QueryDescription(MapData param, DataTable... tables) {
+		this(param, null, tables);
+	}
+
 	public QueryDescription(MapData param) {
 		this(param, null);
 	}

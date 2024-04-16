@@ -188,7 +188,7 @@ final class DataTableDelete {
 	/// <param name="parent"></param>
 	/// <param name="members"></param>
 	/// <param name="tip"></param>
-	private void deleteMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable<?> members,
+	void deleteMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable<?> members,
 			PropertyMeta tip) {
 		var propertyName = tip.name();
 		for (var member : members) {

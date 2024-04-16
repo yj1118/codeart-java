@@ -109,6 +109,14 @@ public final class ListUtil {
 		return list;
 	}
 
+	public static <T> ArrayList<T> asList(Iterable<T> source) {
+		ArrayList<T> list = new ArrayList<T>(Iterables.size(source));
+		for (T item : source) {
+			list.add(item);
+		}
+		return list;
+	}
+
 	public static <T, R> ArrayList<R> mapMany(T[] source, Function<T, Iterable<R>> selector) {
 		ArrayList<R> list = new ArrayList<R>(source.length);
 		for (T item : source) {
@@ -202,6 +210,62 @@ public final class ListUtil {
 		}
 	}
 
+	/// <summary>
+	/// 将集合<paramref name="source"/>转变成为<paramref name="target"/>，需要增加哪些元素和需要删除哪些元素
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="source"></param>
+	/// <param name="target"></param>
+	/// <returns></returns>
+	public static <T> TransformResult<T, T> transform(Iterable<T> source, Iterable<T> target) {
+		return transform(source, target, (s, t) -> {
+			return s.equals(t);
+		});
+	}
+
+	public static record TransformResult<TT, ST>(Iterable<TT> adds, Iterable<ST> removes, Iterable<TT> updates) {
+	}
+
+	/// <summary>
+	/// 将集合<paramref name="source"/>转变成为<paramref name="target"/>，需要增加哪些元素和需要删除哪些元素
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
+	/// <param name="source"></param>
+	/// <param name="target"></param>
+	/// <param name="equals"></param>
+	/// <returns></returns>
+	public static <TT, ST> TransformResult<TT, ST> transform(Iterable<ST> source, Iterable<TT> target,
+			BiFunction<ST, TT, Boolean> equals) {
+		ArrayList<ST> souceCopy = asList(source);
+		ArrayList<TT> targetCopy = asList(target);
+
+		if (Iterables.size(source) == 0)
+			return new TransformResult<TT, ST>(targetCopy, ListUtil.empty(), ListUtil.empty());
+
+		if (Iterables.size(target) == 0)
+			return new TransformResult<TT, ST>(ListUtil.empty(), souceCopy, ListUtil.empty());
+
+		List<TT> sames = new ArrayList<TT>(); // 需要保留的
+
+		// 有相同的
+		for (var item : source) {
+			var same = ListUtil.find(target, (t) -> equals.apply(item, t));
+
+			if (same != null) // 找到相同的保留
+			{
+				sames.add(same);
+			}
+
+		}
+
+		for (var same : sames) {
+			ListUtil.removeFirst(souceCopy, (item) -> equals.apply(item, same));
+			targetCopy.remove(same);
+		}
+
+		return new TransformResult<TT, ST>(targetCopy, souceCopy, sames);
+	}
+
 	private static final Object Empty;
 
 	private static Object createEmpty() {
@@ -222,9 +286,12 @@ public final class ListUtil {
 
 	private static final int[] EmptyInts;
 
+	private static final Object[] EmptyObjects;
+
 	static {
 		Empty = createEmpty();
 		EmptyInts = new int[] {};
+		EmptyObjects = new Object[] {};
 	}
 
 	@SuppressWarnings("unchecked")
@@ -234,6 +301,10 @@ public final class ListUtil {
 
 	public static int[] emptyInts() {
 		return EmptyInts;
+	}
+
+	public static Object[] emptyObjects() {
+		return EmptyObjects;
 	}
 
 }

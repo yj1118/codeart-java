@@ -3,6 +3,7 @@ package com.apros.codeart.ddd.repository.access;
 import java.util.ArrayList;
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.ConstructorParameterInfo;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.IDomainObject;
@@ -248,6 +249,18 @@ public class DataTable {
 		}
 
 		return fields;
+	}
+
+	private Iterable<IDataField> _defaultQueryFields;
+
+	/// <summary>
+	/// 默认查询的字段
+	/// </summary>
+	public Iterable<IDataField> defaultQueryFields() {
+		if (_defaultQueryFields == null) {
+			_defaultQueryFields = ListUtil.filter(this.fields(), (t) -> !t.isAdditional() && !t.tip().lazy());
+		}
+		return _defaultQueryFields;
 	}
 
 	private Iterable<IDataField> _primaryKeys;
@@ -600,6 +613,15 @@ public class DataTable {
 		_insert.insertMember(root, parent, obj);
 	}
 
+	void insertMembers(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
+		_insert.insertMembers(root, parent, current, tip);
+	}
+
+	void insertMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable<?> members,
+			PropertyMeta tip) {
+		_insert.insertMembers(root, parent, current, members, tip);
+	}
+
 	Object querySingle(Object rootId, Object id) {
 		return _query.querySingle(rootId, id);
 	}
@@ -622,6 +644,10 @@ public class DataTable {
 
 	int getDataVersion(Object id) {
 		return _query.getDataVersion(id);
+	}
+
+	int getDataVersion(Object rootId, Object id) {
+		return _query.getDataVersion(rootId, id);
 	}
 
 	public void checkDataVersion(DomainObject root) {
@@ -656,9 +682,36 @@ public class DataTable {
 		_delete.deleteMemberByOriginalData(root, parent, current, tip);
 	}
 
-	public void deleteMembersByOriginalData(DomainObject root, DomainObject parent, DomainObject current,
-			PropertyMeta tip) {
+	void deleteMembersByOriginalData(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
 		_delete.deleteMembersByOriginalData(root, parent, current, tip);
+	}
+
+	void deleteMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable<?> members,
+			PropertyMeta tip) {
+		_delete.deleteMembers(root, parent, current, members, tip);
+	}
+
+	void updateMember(DomainObject root, DomainObject parent, DomainObject obj) {
+		_update.updateMember(root, parent, obj);
+	}
+
+	void updateMembers(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
+		_update.updateMembers(root, parent, current, tip);
+	}
+
+	void updateMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable<?> members,
+			PropertyMeta tip) {
+		_update.updateMembers(root, parent, current, members, tip);
+	}
+
+	Object readMembers(DomainObject parent, PropertyMeta tip, ConstructorParameterInfo prmTip, MapData data,
+			QueryLevel level) {
+		return _read.readMembers(parent, tip, prmTip, data, level);
+	}
+
+	Object readValues(PropertyMeta tip, ConstructorParameterInfo prmTip, DomainObject parent, Object rootId,
+			Object masterId, QueryLevel level) {
+		return _read.readValues(tip, prmTip, parent, rootId, masterId, level);
 	}
 
 	Iterable<DataTable> getQuoteMiddlesByMaster() {

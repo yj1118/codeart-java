@@ -1,7 +1,6 @@
 package com.apros.codeart.ddd;
 
 import java.lang.reflect.Constructor;
-import java.util.ArrayList;
 import java.util.function.Function;
 
 import com.apros.codeart.ddd.metadata.ObjectMeta;
@@ -9,6 +8,7 @@ import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
+import com.google.common.collect.ImmutableList;
 
 public class ConstructorRepositoryImpl {
 	private Constructor<?> _constructor;
@@ -45,17 +45,17 @@ public class ConstructorRepositoryImpl {
 
 	private void initParameters(Constructor<?> constructor) {
 		var originals = constructor.getParameters();
-		var prms = new ArrayList<ConstructorParameterInfo>(originals.length);
+		ImmutableList.Builder<ConstructorParameterInfo> builder = ImmutableList.builder();
 		for (var original : originals) {
 			var prm = new ConstructorParameterInfo(this, original);
-			prms.add(prm);
+			builder.add(prm);
 		}
-		_parameters = prms;
+		_parameters = builder.build();
 	}
 
-	Iterable<ConstructorParameterInfo> _parameters;
+	ImmutableList<ConstructorParameterInfo> _parameters;
 
-	public Iterable<ConstructorParameterInfo> parameters() {
+	public ImmutableList<ConstructorParameterInfo> parameters() {
 		return _parameters;
 	}
 

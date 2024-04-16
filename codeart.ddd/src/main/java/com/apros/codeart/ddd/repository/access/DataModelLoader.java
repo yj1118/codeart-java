@@ -25,7 +25,7 @@ final class DataModelLoader {
 		return new DataModel(meta, root);
 	});
 
-	public DataModel get(Class<? extends IAggregateRoot> objectType) {
+	public static DataModel get(Class<? extends IAggregateRoot> objectType) {
 		return _getModel.apply(objectType);
 	}
 

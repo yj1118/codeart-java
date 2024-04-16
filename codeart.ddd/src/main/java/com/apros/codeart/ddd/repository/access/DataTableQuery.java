@@ -521,7 +521,7 @@ final class DataTableQuery {
 		});
 	}
 
-	private int getDataVersion(Object rootId, Object id) {
+	int getDataVersion(Object rootId, Object id) {
 		return getDataVersionImpl((param) -> {
 			param.put(GeneratedField.RootIdName, rootId);
 			param.put(EntityObject.IdPropertyName, id);

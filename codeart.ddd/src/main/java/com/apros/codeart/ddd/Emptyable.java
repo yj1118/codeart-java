@@ -2,6 +2,7 @@ package com.apros.codeart.ddd;
 
 import static com.apros.codeart.i18n.Language.strings;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import com.apros.codeart.dto.DTObject;
@@ -79,7 +80,22 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, INul
 		if (emptyableType.equals(EmptyableLong.class))
 			return EmptyableLong.Empty;
 
-		throw new IllegalStateException(strings("codeart.ddd", "DidNotFindEmpty", emptyableType.getName()));
+		throw new IllegalStateException(strings("codeart.ddd", "DidNotFindEmptyType", emptyableType.getName()));
+
+	}
+
+	public static IEmptyable create(Class<?> emptyableType, Object value) {
+
+		if (emptyableType.equals(EmptyableDateTime.class))
+			return new EmptyableDateTime((LocalDateTime) value);
+
+		if (emptyableType.equals(EmptyableInt.class))
+			return new EmptyableInt((Integer) value);
+
+		if (emptyableType.equals(EmptyableLong.class))
+			return new EmptyableLong((Long) value);
+
+		throw new IllegalStateException(strings("codeart.ddd", "DidNotFindEmptyType", emptyableType.getName()));
 
 	}
 

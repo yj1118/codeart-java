@@ -309,12 +309,12 @@ final class DataTableInsert {
 		}
 	}
 
-	private void insertMembers(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
+	void insertMembers(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
 		var objs = TypeUtil.as(current.getValue(tip.name()), Iterable.class);
 		insertMembers(root, parent, current, objs, tip);
 	}
 
-	private void insertMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable members,
+	void insertMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable<?> members,
 			PropertyMeta tip) {
 		DataTable middle = null;
 		for (var member : members) {

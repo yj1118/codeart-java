@@ -506,11 +506,6 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 		}
 	}
 
-	public void setValue(String propertyName, Object value) {
-		var property = DomainProperty.getProperty(this.getClass(), propertyName);
-		setValue(property, value);
-	}
-
 	/**
 	 * 
 	 * 该方法虽然是公开的，但是 {@code property} 都是由类内部定义的，

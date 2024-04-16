@@ -28,6 +28,10 @@ public class PropertyMeta {
 		return _name;
 	}
 
+	public DomainProperty getProperty() {
+		return DomainProperty.getProperty(this.declaringType(), this.name());
+	}
+
 	/**
 	 * 属性的值的类型，比如字符串/整型等
 	 */

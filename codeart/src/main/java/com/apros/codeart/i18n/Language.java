@@ -1,5 +1,6 @@
 package com.apros.codeart.i18n;
 
+import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
@@ -20,6 +21,10 @@ public final class Language {
 		var name = StringUtil.isNullOrEmpty(baseName) ? "strings" : String.format("%s.strings", baseName);
 		ResourceBundle bundle = ResourceBundle.getBundle(name, locale);
 		return bundle.getString(key);
+	}
+
+	public static String stringsMessageFormat(String baseName, String key, Object... args) {
+		return MessageFormat.format(strings(baseName, key), args);
 	}
 
 	public static String strings(String baseName, String key, Object... args) {

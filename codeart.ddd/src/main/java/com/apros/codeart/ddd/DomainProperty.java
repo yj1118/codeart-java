@@ -365,4 +365,8 @@ public class DomainProperty {
 		});
 	}
 
+	public static DomainProperty getProperty(PropertyMeta tip) {
+		return getProperty(tip.declaringType(), tip.name());
+	}
+
 }

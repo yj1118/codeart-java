@@ -1,12 +1,16 @@
 package com.apros.codeart.ddd.repository.access;
 
-import com.apros.codeart.ddd.DomainBuffer;
-import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
+import com.apros.codeart.ddd.IDomainObject;
+import com.apros.codeart.ddd.IValueObject;
 import com.apros.codeart.ddd.MapData;
+import com.apros.codeart.ddd.QueryLevel;
+import com.apros.codeart.ddd.metadata.DomainPropertyCategory;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.i18n.Language;
+import com.apros.codeart.util.Guid;
+import com.apros.codeart.util.ListUtil;
 
 final class DataTableUpdate {
 
@@ -91,38 +95,30 @@ final class DataTableUpdate {
 		var id = DataTableUtil.getObjectId(obj);
 
 		// 更新数据版本号
-		var target = _self;
 		var data = new MapData();
-		if (target.type() != DataTableType.AggregateRoot) {
+		if (_self.type() != DataTableType.AggregateRoot) {
 			data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
 		}
 
 		data.put(EntityObject.IdPropertyName, id);
 
 		// 更新版本号
-		SqlHelper.Execute(target.GetUpdateVersionSql(), data);
+		DataAccess.getCurrent().execute(getUpdateVersionSql(), data);
 
 		// 更新代理对象的版本号
-		var dataVersion = target.Type == DataTableType.AggregateRoot ? this.GetDataVersion(id)
-				: this.GetDataVersion(GetObjectId(root), id);
+		var dataVersion = _self.type() == DataTableType.AggregateRoot ? _self.getDataVersion(id)
+				: _self.getDataVersion(DataTableUtil.getObjectId(root), id);
 
-		obj.DataProxy.Version = dataVersion;
+		obj.dataProxy().setVersion(dataVersion);
 
-		if (this.Type == DataTableType.AggregateRoot) {
-			if (obj.IsMirror) {
-				// 镜像被修改了，对应的公共缓冲区中的对象也要被重新加载
-				DomainBuffer.Public.Remove(obj.ObjectType, id);
-			}
-		}
-
-		this.Mapper.OnUpdated(obj, this);
+		_self.mapper().onUpdated(obj, _self);
 	}
 
-	private void UpdateMember(DomainObject root, DomainObject parent, DomainObject obj) {
-		if (obj == null || obj.IsEmpty() || !obj.IsDirty)
+	void updateMember(DomainObject root, DomainObject parent, DomainObject obj) {
+		if (obj == null || obj.isEmpty() || !obj.isDirty())
 			return;
-		if (UpdateData(root, parent, obj)) {
-			OnDataUpdated(root, obj);
+		if (updateData(root, parent, obj)) {
+			onDataUpdated(root, obj);
 		}
 	}
 
@@ -135,234 +131,197 @@ final class DataTableUpdate {
 	/// <param name="tip"></param>
 	/// <param name="data"></param>
 	/// <returns>当内部成员发生变化，返回true</returns>
-	private boolean updateAndCollectChangedValue(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip, MapData data)
-	 {
-	     switch (tip.category())
-	     {
-	         case DomainPropertyCategory.Primitive:
-	             {
-	                 if (current.isPropertyChanged(tip.name()))
-	                 {
-	                     var value = DataTableUtil.getPrimitivePropertyValue(current, tip);
-	                     data.put(tip.name(), value);
-	                     return true;
-	                 }
-	             }
-	             break;
-	         case DomainPropertyType.PrimitiveList:
-	             {
-	                 if (current.isPropertyChanged(tip.name()))
-	                 {
-	                     //删除老数据
-	                     var child = _self.findChild(_self, tip);
-	                     child.deleteMiddleByMaster(root, current);
+	@SuppressWarnings("unchecked")
+	private boolean updateAndCollectChangedValue(DomainObject root, DomainObject parent, DomainObject current,
+			PropertyMeta tip, MapData data) {
+		switch (tip.category()) {
+		case DomainPropertyCategory.Primitive: {
+			if (current.isPropertyChanged(tip.name())) {
+				var value = DataTableUtil.getPrimitivePropertyValue(current, tip);
+				data.put(tip.name(), value);
+				return true;
+			}
+		}
+			break;
+		case DomainPropertyCategory.PrimitiveList: {
+			if (current.isPropertyChanged(tip.name())) {
+				// 删除老数据
+				var child = _self.findChild(_self, tip);
+				child.deleteMiddleByMaster(root, current);
 
-	                     var value = current.GetValue(tip.Property);
-	                     //仅存中间表
-	                     var values = GetValueListData(value);
-	                     child.InsertMiddle(root, current, values);
-	                     return true;
-	                 }
-	             }
-	             break;
-	         //case DomainPropertyType.ValueObject:
-	         //    {
-	         //        if (current.IsPropertyChanged(tip.Property))
-	         //        {
-	         //            //删除原始数据
-	         //            DeleteMemberByOriginalData(root, parent, current, tip);
-	         //            //新增数据
-	         //            InsertAndCollectValueObject(root, parent, current, tip, data);
-	         //            return true;
-	         //        }
-	         //    }
-	         //    break;
-	         case DomainPropertyType.AggregateRoot:
-	             {
-	                 if (current.IsPropertyChanged(tip.Property))
-	                 {
-	                     var field = GetQuoteField(this, tip.PropertyName);
-	                     object obj = current.GetValue(tip.Property);
-	                     var id = GetObjectId(obj);
-	                     data.Add(field.Name, id);
-	                     return true;
-	                 }
-	             }
-	             break;
-	         case DomainPropertyType.ValueObject: //虽然值对象的成员不会变，但是成员的成员也许会改变
-	         case DomainPropertyType.EntityObject:
-	             {
-	                 if (current.IsPropertyChanged(tip.Property))
-	                 {
-	                     var obj = current.GetValue(tip.Property) as DomainObject;
-	                     if(tip.DomainPropertyType == DomainPropertyType.ValueObject)
-	                     {
-	                         (obj as IValueObject).TrySetId(Guid.NewGuid());
-	                     }
+				var value = current.getValue(tip.name());
+				// 仅存中间表
+				var values = DataTableUtil.getValueListData(value, tip.monotype());
+				child.insertMiddle(root, current, values);
+				return true;
+			}
+		}
+			break;
+		// case DomainPropertyType.ValueObject:
+		// {
+		// if (current.IsPropertyChanged(tip.Property))
+		// {
+		// //删除原始数据
+		// DeleteMemberByOriginalData(root, parent, current, tip);
+		// //新增数据
+		// InsertAndCollectValueObject(root, parent, current, tip, data);
+		// return true;
+		// }
+		// }
+		// break;
+		case DomainPropertyCategory.AggregateRoot: {
+			if (current.isPropertyChanged(tip.name())) {
+				var field = DataTableUtil.getQuoteField(_self, tip.name());
+				Object obj = current.getValue(tip.name());
+				var id = DataTableUtil.getObjectId(obj);
+				data.put(field.name(), id);
+				return true;
+			}
+		}
+			break;
+		case DomainPropertyCategory.ValueObject: // 虽然值对象的成员不会变，但是成员的成员也许会改变
+		case DomainPropertyCategory.EntityObject: {
+			if (current.isPropertyChanged(tip.name())) {
+				var obj = (DomainObject) current.getValue(tip.name());
+				if (tip.category() == DomainPropertyCategory.ValueObject) {
+					((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
+				}
 
-	                     var id = GetObjectId(obj);
-	                     var field = GetQuoteField(this, tip.PropertyName);
-	                     data.Add(field.Name, id);  //收集外键
+				var id = DataTableUtil.getObjectId(obj);
+				var field = DataTableUtil.getQuoteField(_self, tip.name());
+				data.put(field.name(), id); // 收集外键
 
-	                     //删除原始数据
-	                     DeleteMemberByOriginalData(root, parent, current, tip);
+				// 删除原始数据
+				_self.deleteMemberByOriginalData(root, parent, current, tip);
 
-	                     //保存引用数据
-	                     if (!obj.IsEmpty())
-	                     {
-	                         var child = GetRuntimeTable(this, tip.PropertyName, obj.ObjectType);
-	                         child.InsertMember(root, current, obj);
-	                     }
-	                     return true;
-	                 }
-	                 else if (current.IsPropertyDirty(tip.Property))
-	                 {
-	                     //如果引用的内聚成员是脏对象，那么需要修改
-	                     var obj = current.GetValue(tip.Property) as DomainObject;
-	                     if (!obj.IsEmpty())
-	                     {
-	                         //从衍生表中找到对象表
-	                         var child = GetRuntimeTable(this, tip.PropertyName, obj.ObjectType);
-	                         child.UpdateMember(root, parent, obj);
-	                     }
-	                     return true;
-	                 }
-	             }
-	             break;
-	         case DomainPropertyType.AggregateRootList:
-	             {
-	                 if (current.IsPropertyChanged(tip.Property))
-	                 {
-	                     //删除老数据
-	                     var child = GetChildTableByRuntime(this, tip);
-	                     child.Middle.DeleteMiddleByMaster(root, current);
+				// 保存引用数据
+				if (!obj.isEmpty()) {
+					var child = _self.findChild(_self, tip.name(), obj.getClass());
+					child.insertMember(root, current, obj);
+				}
+				return true;
+			} else if (current.isPropertyDirty(tip.name())) {
+				// 如果引用的内聚成员是脏对象，那么需要修改
+				var obj = (DomainObject) current.getValue(tip.name());
+				if (!obj.isEmpty()) {
+					// 从衍生表中找到对象表
+					var child = _self.findChild(_self, tip.name(), obj.getClass());
+					child.updateMember(root, parent, obj);
+				}
+				return true;
+			}
+		}
+			break;
+		case DomainPropertyCategory.AggregateRootList: {
+			if (current.isPropertyChanged(tip.name())) {
+				// 删除老数据
+				var child = _self.findChild(_self, tip);
+				child.middle().deleteMiddleByMaster(root, current);
 
-	                     //追加新数据
-	                     var objs = current.GetValue(tip.Property) as IEnumerable;
-	                     child.Middle.InsertMiddle(root, current, objs);
-	                     return true;
-	                 }
-	             }
-	             break;
-	         case DomainPropertyType.ValueObjectList:
-	             {
-	                 if (current.IsPropertyChanged(tip.Property))
-	                 {
-	                     //在删除数据之前，需要预读对象，确保子对象延迟加载的数据也被增加了，否则会引起数据丢失
-	                     PreRead(current);
+				// 追加新数据
+				var objs = (Iterable<?>) current.getValue(tip.name());
+				child.middle().insertMiddle(root, current, objs);
+				return true;
+			}
+		}
+			break;
+		case DomainPropertyCategory.ValueObjectList: {
+			if (current.isPropertyChanged(tip.name())) {
+				// 在删除数据之前，需要预读对象，确保子对象延迟加载的数据也被增加了，否则会引起数据丢失
+				preRead(current);
 
-	                     //引用关系发生了变化，删除重新追加
-	                     //这里要注意，需要删除的是数据库的数据，所以要重新读取
-	                     //删除原始数据
-	                     DeleteMembersByOriginalData(root, parent, current, tip);
+				// 引用关系发生了变化，删除重新追加
+				// 这里要注意，需要删除的是数据库的数据，所以要重新读取
+				// 删除原始数据
+				_self.deleteMembersByOriginalData(root, parent, current, tip);
 
-	                     //加入新数据
-	                     InsertMembers(root, parent, current, tip);
-	                     return true;
-	                 }
-	                 else if (current.IsPropertyDirty(tip.Property))
-	                 {
-	                     //引用关系没变，只是数据脏了
-	                     UpdateMembers(root, parent, current, tip);
-	                     return true;
-	                 }
-	             }
-	             break;
-	         case DomainPropertyType.EntityObjectList:
-	             {
-	                 if (current.IsPropertyChanged(tip.Property))
-	                 {
-	                     var targets = current.GetValue(tip.Property) as IEnumerable<IDomainObject>;
+				// 加入新数据
+				_self.insertMembers(root, parent, current, tip);
+				return true;
+			} else if (current.isPropertyDirty(tip.name())) {
+				// 引用关系没变，只是数据脏了
+				_self.updateMembers(root, parent, current, tip);
+				return true;
+			}
+		}
+			break;
+		case DomainPropertyCategory.EntityObjectList: {
+			if (current.isPropertyChanged(tip.name())) {
+				var targets = (Iterable<IDomainObject>) current.getValue(tip.name());
 
-	                     //加载原始数据
-	                     var rawData = ((DataProxyPro)current.DataProxy).OriginalData;
-	                     var raw = ReadMembers(current, tip, null, rawData, QueryLevel.None) as IEnumerable<IDomainObject>;
-	                     //对比
-	                     var diff = raw.Transform(targets);
+				// 加载原始数据
+				var rawData = ((DataProxyImpl) current.dataProxy()).originalData();
+				var raw = (Iterable<IDomainObject>) _self.readMembers(current, tip, null, rawData, QueryLevel.None);
+				// 对比
+				var diff = ListUtil.transform(raw, targets);
 
-	                     
-	                     InsertMembers(root, parent, current, diff.Adds, tip);
+				_self.insertMembers(root, parent, current, diff.adds(), tip);
 
-	                     DeleteMembers(root, parent, current, diff.Removes, tip);
+				_self.deleteMembers(root, parent, current, diff.removes(), tip);
 
-	                     UpdateMembers(root, parent, current, diff.Updates, tip);
+				_self.updateMembers(root, parent, current, diff.updates(), tip);
 
+				// 以上3行代码会打乱成员顺序，所以要更新下排序
+				updateOrderIndexs(root, parent, current, targets, tip);// 更新排序
 
-	                     //以上3行代码会打乱成员顺序，所以要更新下排序
-	                     UpdateOrderIndexs(root, parent, current, targets, tip);//更新排序
+				return true;
+			} else if (current.isPropertyDirty(tip.name())) {
+				// 引用关系没变，只是数据脏了
+				_self.updateMembers(root, parent, current, tip);
+				return true;
+			}
+		}
+			break;
+		}
+		return false;
+	}
 
-	                     return true;
-	                 }
-	                 else if (current.IsPropertyDirty(tip.Property))
-	                 {
-	                     //引用关系没变，只是数据脏了
-	                     UpdateMembers(root, parent, current, tip);
-	                     return true;
-	                 }
-	             }
-	             break;
-	     }
-	     return false;
-	 }
+	private static void preRead(DomainObject obj) {
+		var objectType = obj.getClass();
 
-	private static void PreRead(DomainObject obj)
-	 {
-	     Type objectType = obj.ObjectType;
+		var tips = PropertyMeta.getProperties(objectType);
+		for (var tip : tips) {
+			preReadProperty(obj, tip);
+		}
+	}
 
-	     var tips = Util.GetPropertyTips(objectType);
-	     foreach (var tip in tips)
-	     {
-	         PreReadProperty(obj, tip);
-	     }
-	 }
-
-	private static object PreReadProperty(DomainObject current, PropertyRepositoryAttribute tip)
-	 {
-	     switch (tip.DomainPropertyType)
-	     {
-	         case DomainPropertyType.Primitive:
-	             {
-	                 return DataTableUtil.getPrimitivePropertyValue(current, tip);
-	             }
-	         case DomainPropertyType.PrimitiveList:
-	             {
-	                 return current.GetValue(tip.Property);
-	             }
-	         case DomainPropertyType.ValueObject:
-	             {
-	                 var obj = current.GetValue(tip.Property) as DomainObject;
-	                 PreRead(obj);
-	                 return obj;
-	             }
-	         case DomainPropertyType.AggregateRoot:
-	             {
-	                 //仅获得引用即可，不需要完整的预读
-	                 return current.GetValue(tip.Property);
-	             }
-	         case DomainPropertyType.EntityObject:
-	             {
-	                 var obj = current.GetValue(tip.Property) as DomainObject;
-	                 PreRead(obj);
-	                 return obj;
-	             }
-	         case DomainPropertyType.AggregateRootList:
-	             {
-	                 //仅获得引用即可，不需要完整的预读
-	                 return current.GetValue(tip.Property);
-	             }
-	         case DomainPropertyType.ValueObjectList:
-	         case DomainPropertyType.EntityObjectList:
-	             {
-	                 var objs = current.GetValue(tip.Property) as IEnumerable;
-	                 foreach(DomainObject obj in objs)
-	                 {
-	                     PreRead(obj);
-	                 }
-	                 return objs;
-	             }
-	     }
-	     return null;
-	 }
+	private static Object preReadProperty(DomainObject current, PropertyMeta tip) {
+		switch (tip.category()) {
+		case DomainPropertyCategory.Primitive: {
+			return DataTableUtil.getPrimitivePropertyValue(current, tip);
+		}
+		case DomainPropertyCategory.PrimitiveList: {
+			return current.getValue(tip.name());
+		}
+		case DomainPropertyCategory.ValueObject: {
+			var obj = (DomainObject) current.getValue(tip.name());
+			preRead(obj);
+			return obj;
+		}
+		case DomainPropertyCategory.AggregateRoot: {
+			// 仅获得引用即可，不需要完整的预读
+			return current.getValue(tip.name());
+		}
+		case DomainPropertyCategory.EntityObject: {
+			var obj = (DomainObject) current.getValue(tip.name());
+			preRead(obj);
+			return obj;
+		}
+		case DomainPropertyCategory.AggregateRootList: {
+			// 仅获得引用即可，不需要完整的预读
+			return current.getValue(tip.name());
+		}
+		case DomainPropertyCategory.ValueObjectList:
+		case DomainPropertyCategory.EntityObjectList: {
+			var objs = (Iterable<?>) current.getValue(tip.name());
+			for (var obj : objs) {
+				preRead((DomainObject) obj);
+			}
+			return objs;
+		}
+		}
+		return null;
+	}
 
 	/// <summary>
 	/// 修改current对应的集合属性
@@ -371,42 +330,42 @@ final class DataTableUpdate {
 	/// <param name="parent"></param>
 	/// <param name="current"></param>
 	/// <param name="tip"></param>
-	private void UpdateMembers(DomainObject root, DomainObject parent, DomainObject current, PropertyRepositoryAttribute tip)
-	 {
-	     var objs = current.GetValue(tip.Property) as IEnumerable;
-	     UpdateMembers(root, parent, current, objs, tip);
-	 }
+	void updateMembers(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
+		var objs = (Iterable<?>) current.getValue(tip.name());
+		updateMembers(root, parent, current, objs, tip);
+	}
 
-	private void UpdateMembers(DomainObject root, DomainObject parent, DomainObject current, IEnumerable members, PropertyRepositoryAttribute tip)
-	 {
-	     foreach (DomainObject obj in members)
-	     {
-	         if (!obj.IsEmpty())
-	         {
-	             var child = GetRuntimeTable(this, tip.PropertyName, obj.ObjectType);
-	             //方法内部会检查是否为脏，为脏的才更新
-	             child.UpdateMember(root, current, obj);
-	         }
-	     }
-	 }
+	void updateMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable<?> members,
+			PropertyMeta tip) {
+		for (var member : members) {
+			DomainObject obj = (DomainObject) member;
+			if (!obj.isEmpty()) {
+				var child = _self.findChild(_self, tip.name(), obj.getClass());
+				// 方法内部会检查是否为脏，为脏的才更新
+				child.updateMember(root, current, obj);
+			}
+		}
+	}
 
-	private void UpdateOrderIndexs(DomainObject root, DomainObject parent, DomainObject current, IEnumerable members, PropertyRepositoryAttribute tip)
-	 {
-	     //先删除，再添加
-	     var propertyName = tip.PropertyName;
-	     DataTable child = null;
-	     foreach (DomainObject obj in members)
-	     {
-	         if (obj.IsEmpty()) continue;
-	         if(child == null) child = GetRuntimeTable(this, propertyName, obj.ObjectType);
-	         //删除中间表
-	         child.Middle.DeleteMiddle(root, current, obj);
-	     }
+	private void updateOrderIndexs(DomainObject root, DomainObject parent, DomainObject current, Iterable<?> members,
+			PropertyMeta tip) {
+		// 先删除，再添加
+		var propertyName = tip.name();
+		DataTable child = null;
+		for (var member : members) {
+			DomainObject obj = (DomainObject) member;
+			if (obj.isEmpty())
+				continue;
+			if (child == null)
+				child = _self.findChild(_self, propertyName, obj.getClass());
+			// 删除中间表
+			child.middle().deleteMiddle(root, current, obj);
+		}
 
-	     //重新添加中间表
-	     if(child != null)
-	         child.Middle.InsertMiddle(root, current, members);
-	 }
+		// 重新添加中间表
+		if (child != null)
+			child.middle().insertMiddle(root, current, members);
+	}
 
 	// private void UpdateMiddle(IDomainObject root, IDomainObject master,
 	// IEnumerable slaves, PropertyRepositoryAttribute tip)
@@ -464,13 +423,14 @@ final class DataTableUpdate {
 	// }
 
 	private String getUpdateSql(MapData data) {
-		var query = UpdateTable.Create(this, this.IsSessionEnabledMultiTenancy);
-		return query.Build(data, this);
+		var qb = DataSource.getQueryBuilder(UpdateTableQB.class);
+		return qb.build(new QueryDescription(data, _self));
 	}
 
 	private String getUpdateVersionSql() {
-		var query = UpdateDataVersion.Create(this, this.IsSessionEnabledMultiTenancy); // 不能直接用table检索，因为环境不同，IsEnabledMultiTenancy会有变化
-		return query.Build(null, this);
+
+		var qb = DataSource.getQueryBuilder(UpdateDataVersionQB.class);
+		return qb.build(new QueryDescription(_self));
 	}
 
 	/**

@@ -57,6 +57,12 @@ public final class ConstructorParameterInfo {
 		return _tip;
 	}
 
+	public Class<?> implementType() {
+		if (_tip == null)
+			return null;
+		return _tip.implementType();
+	}
+
 	public Class<?> declaringType() {
 		return _constructorTip.constructor().getDeclaringClass();
 	}
@@ -97,7 +103,7 @@ public final class ConstructorParameterInfo {
 	 * @param object
 	 * @return
 	 */
-	public Object tryLoadData(Class<?> objectType, MapData data, QueryLevel level) {
+	public Object loadData(Class<?> objectType, MapData data, QueryLevel level) {
 
 		try {
 			var method = _getLoadData.apply(objectType);
