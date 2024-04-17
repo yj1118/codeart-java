@@ -6,11 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import com.apros.codeart.TestSupport;
 import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.ddd.metadata.DomainObjectCategory;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.util.ListUtil;
 
+/**
+ * 
+ */
 public final class DataTableLoader {
 
 	private DataTableLoader() {
@@ -61,8 +65,7 @@ public final class DataTableLoader {
 	/// <param name="memberField"></param>
 	/// <param name="isMultiple"></param>
 	/// <returns></returns>
-	public static DataTable createEntityObject(DataTable root, DataTable master, IDataField memberField,
-			Class<?> objectType) {
+	static DataTable createEntityObject(DataTable root, DataTable master, IDataField memberField, Class<?> objectType) {
 
 		String tableName = objectType.getSimpleName();
 
@@ -89,8 +92,7 @@ public final class DataTableLoader {
 	 * @param objectType
 	 * @return
 	 */
-	public static DataTable createValueObject(DataTable root, DataTable master, IDataField memberField,
-			Class<?> objectType) {
+	static DataTable createValueObject(DataTable root, DataTable master, IDataField memberField, Class<?> objectType) {
 		String tableName = objectType.getSimpleName();
 
 		return tryCreate(tableName, root, memberField, () -> {
@@ -105,7 +107,7 @@ public final class DataTableLoader {
 		});
 	}
 
-	public static DataTable createEntityObjectList(DataTable root, DataTable master, IDataField memberField,
+	static DataTable createEntityObjectList(DataTable root, DataTable master, IDataField memberField,
 			Class<?> objectType) {
 		// 需要创建EntityObject从表和中间表
 		var slave = createEntityObject(root, master, memberField, objectType);
@@ -124,8 +126,7 @@ public final class DataTableLoader {
 	 * @param objectType
 	 * @return
 	 */
-	public static DataTable createValueList(DataTable root, DataTable master, IDataField memberField,
-			Class<?> objectType) {
+	static DataTable createValueList(DataTable root, DataTable master, IDataField memberField, Class<?> objectType) {
 		String tableName = String.format("%s_%s", master.name(), memberField.name());
 
 		return tryCreate(tableName, root, memberField, () -> {
@@ -157,7 +158,7 @@ public final class DataTableLoader {
 		});
 	}
 
-	public static DataTable createValueObjectList(DataTable root, DataTable master, IDataField memberField,
+	static DataTable createValueObjectList(DataTable root, DataTable master, IDataField memberField,
 			Class<?> objectType) {
 		var slave = createValueObject(root, master, memberField, objectType);
 		var middle = createMiddleTable(slave, memberField);
@@ -175,7 +176,7 @@ public final class DataTableLoader {
 	 * @param objectType
 	 * @return
 	 */
-	public static DataTable createAggregateRoot(DataTable root, DataTable master, IDataField memberField,
+	static DataTable createAggregateRoot(DataTable root, DataTable master, IDataField memberField,
 			Class<?> objectType) {
 		var tableName = objectType.getSimpleName();
 
@@ -186,7 +187,7 @@ public final class DataTableLoader {
 		});
 	}
 
-	public static DataTable createAggregateRootList(DataTable root, DataTable master, IDataField memberField,
+	static DataTable createAggregateRootList(DataTable root, DataTable master, IDataField memberField,
 			Class<?> objectType) {
 		// 字段为根对象的集合，那么仅创建中间表
 		var slave = createAggregateRoot(root, master, memberField, objectType);
@@ -281,9 +282,37 @@ public final class DataTableLoader {
 	/**
 	 * 加载工作完毕后，清理为了加载而造成的资源
 	 */
-	public static void dispose() {
+	public static void disposeTemp() {
 		_buildtimeIndex.clear();
 		_buildtimeIndex = null;
+	}
+
+	public static DataTable get(Class<?> objectType) {
+		return DataTableGenerator.getTable(objectType);
+	}
+
+	/**
+	 * 删除表
+	 */
+	@TestSupport
+	public static void drop() {
+		DataTableGenerator.drop();
+	}
+
+	/**
+	 * 清空数据，但是不删除表
+	 */
+	@TestSupport
+	public static void clearUp() {
+		DataTableGenerator.clearUp();
+	}
+
+	/**
+	 * 创建所有表信息，这主要用于支持测试
+	 */
+	@TestSupport
+	public static void generate() {
+		DataTableGenerator.generate();
 	}
 
 	// #endregion

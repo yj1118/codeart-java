@@ -601,7 +601,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 		});
 	}
 
-	public EventHandler<DomainPropertyChangedEventArgs> propertyChanged = new EventHandler<DomainPropertyChangedEventArgs>();
+	public final EventHandler<DomainPropertyChangedEventArgs> propertyChanged = new EventHandler<DomainPropertyChangedEventArgs>();
 
 	// 该方法似乎没什么用，所以不提供了，todo
 //	/// <summary>

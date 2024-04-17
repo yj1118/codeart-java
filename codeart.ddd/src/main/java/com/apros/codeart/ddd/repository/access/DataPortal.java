@@ -1,16 +1,17 @@
 package com.apros.codeart.ddd.repository.access;
 
-import java.util.ArrayList;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
-import com.apros.codeart.ddd.Dictionary;
-import com.apros.codeart.ddd.IAggregateRoot;
+import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.IDomainObject;
+import com.apros.codeart.ddd.MapData;
 import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.ddd.repository.DataContext;
 import com.apros.codeart.ddd.repository.Page;
-import com.apros.codeart.util.WrapperInt;
-import com.apros.codeart.util.WrapperLong;
+import com.apros.codeart.util.EmptyEventArgs;
+import com.apros.codeart.util.EventHandler;
 
 public final class DataPortal {
 
@@ -21,73 +22,31 @@ public final class DataPortal {
 
 	/**
 	 * 
-	 * 根据对象类型，获取一个自增的编号，该编号由数据层维护递增
+	 * 
 	 * 
 	 * @param tableName
 	 * @return
 	 */
 	public static long getIdentity(String tableName) {
-		var id = new WrapperLong();
-		DataContext.newScope((access) -> {
+		return DataContext.newScope((access) -> {
 			String sql = SqlStatement.getIncrIdSql(tableName);
-			id.set(access.queryScalarLong(sql));
+			return access.queryScalarLong(sql);
 		});
-		return id.get();
-	}
-
-	public static <T extends IAggregateRoot> long getIdentity(Class<?> rootType) {
-
-		var model = DataModel.get(rootType);
-
-		var id = new WrapperLong();
-		DataContext.newScope(() -> {
-			id.set(model.getIdentity());
-		});
-		return id.get();
 	}
 
 	/**
-	 * 获得流水号,流水号保证对每个租户都是连续的
 	 * 
-	 * 请注意，流水号不能用于领域对象的编号，因为编号必须保证全局唯一
+	 * 根据对象类型，获取一个自增的编号，该编号由数据层维护递增
 	 * 
 	 * @param <T>
-	 * @param rootType
+	 * @param doType
 	 * @return
 	 */
-	public static <T extends IAggregateRoot> long getSerialNumber(Class<?> rootType) {
-	{
-	     var model = DataModel.get(rootType);
+	public static <T extends IDomainObject> long getIdentity(Class<T> doType) {
 
-	     long sn = 0;
-	     DataContext.newScope(() ->
-	     {
-	    	 sn = model.getSerialNumber();
-	     });
-	     return sn;
-	 }
-
-	/**
-	 * 可以为非根对象建立唯一标示
-	 * 
-	 * @param <A>
-	 * @param <M>
-	 * @return
-	 */
-	public static <A extends IAggregateRoot,M extends DomainObject> long getIdentity()
-	{
-	     var objectType = typeof(A);
-	     var model = DataModel.Create(objectType);
-
-	     var table = DataTable.GetTable<T>();
-
-	     long id = 0;
-	     DataContext.UseTransactionScope(() ->
-	     {
-	         id = table.GetIdentity();
-	     });
-	     return id;
-	 }
+		var table = DataTableLoader.get(doType);
+		return getIdentity(table.name());
+	}
 
 // todo 似乎没用了
 //	/// <summary>
@@ -99,15 +58,15 @@ public final class DataPortal {
 //		DataModel.RuntimeBuild();
 //	}
 
-	/**
-	 * 
-	 * 初始化 <typeparamref name="T"/> 对应的数据模型，这会初始化表结构
-	 * 
-	 * @param <T>
-	 */
-	public static <T extends IAggregateRoot> void init(Class<T> rootType) {
-		DataModel.create(rootType);
-	}
+//	/**
+//	 * 
+//	 * 初始化 <typeparamref name="T"/> 对应的数据模型，这会初始化表结构
+//	 * 
+//	 * @param <T>
+//	 */
+//	public static <T extends IAggregateRoot> void init(Class<T> rootType) {
+//		DataModel.create(rootType);
+//	}
 
 //	#region 销毁数据
 
@@ -125,26 +84,16 @@ public final class DataPortal {
 	 */
 	public static void clearUp() {
 		DataModel.clearUp();
-		for (var evt : _onClearUpEvents) {
-			evt();
-		}
+		onClearUp.raise(null, () -> EmptyEventArgs.Instance);
 	}
 
-	private static ArrayList<Runnable> _onClearUpEvents = new ArrayList<Runnable>();
+	public static EventHandler<EmptyEventArgs> onClearUp = new EventHandler<EmptyEventArgs>();
 
-	public static void onClearUp(Action action) {
-		_onClearUpEvents.Add(action);
+	public static Iterable<MapData> directQuery(String sql, MapData param) {
+		return direct((access) -> {
+			return access.queryRows(sql, param);
+		});
 	}
-
-	public static Iterable<Dictionary> directQuery(String sql, Dictionary param)
-	{
-	     IEnumerable<Dictionary> result = null;
-	     direct<T>((access) ->
-	     {
-	         result = access.Query(sql, param);
-	     });
-	     return result;
-	 }
 
 	/**
 	 * 直接使用数据库连接操作数据库
@@ -153,17 +102,11 @@ public final class DataPortal {
 	 * @param action
 	 */
 	public static void direct(Consumer<DataAccess> action) {
-		var model = DataModel.Create(objectType);
-		DataContext.Using(() -> {
-			var conn = DataContext.Current.Connection;
-			action(conn);
-		});
+		DataContext.using(action);
 	}
 
-	public static void direct(Consumer<DataAccess> action) {
-		DataContext.using((access) -> {
-			action(access);
-		});
+	public static <T> T direct(Function<DataAccess, T> action) {
+		return DataContext.using(action);
 	}
 
 //	#endregion
@@ -172,34 +115,30 @@ public final class DataPortal {
 	/// 在数据层创建指定对象的数据
 	/// </summary>
 	/// <param name="obj"></param>
-	static void Create(DomainObject obj) {
-		var objectType = obj.GetType();
-		var model = DataModel.Create(objectType);
-		model.Insert(obj);
+	static void create(DomainObject obj) {
+		var objectType = obj.getClass();
+		var model = DataModelLoader.get(objectType);
+		model.insert(obj);
 	}
 
 	/// <summary>
 	/// 在数据层中修改指定对象的数据
 	/// </summary>
 	/// <param name="obj"></param>
-	internal
-
 	static void Update(DomainObject obj) {
-		Type objectType = obj.GetType();
-		var model = DataModel.Create(objectType);
-		model.Update(obj);
+		var objectType = obj.getClass();
+		var model = DataModelLoader.get(objectType);
+		model.update(obj);
 	}
 
 	/// <summary>
 	/// 在数据层中删除指定对象的数据
 	/// </summary>
 	/// <param name="obj"></param>
-	internal
-
-	static void Delete(DomainObject obj) {
-		var objectType = obj.GetType();
-		var model = DataModel.Create(objectType);
-		model.Delete(obj);
+	static void delete(DomainObject obj) {
+		var objectType = obj.getClass();
+		var model = DataModelLoader.get(objectType);
+		model.delete(obj);
 	}
 
 //	#region keep
@@ -247,17 +186,16 @@ public final class DataPortal {
 	 * @param level
 	 * @return
 	 */
-	static <T extends IEntityObject> T querySingle(Class<T> objectType, Object id, QueryLevel level) {
-		var model = DataModel.get(objectType);
-		return model.querySingle(objectType, id, level);
+	static <T extends IDomainObject> T querySingle(Class<T> objectType, Object id, QueryLevel level) {
+		var model = DataModelLoader.get(objectType);
+		return model.querySingle(id, level);
 	}
 
 	// 基于对象表达式的查询
 
-	static <T extends IDomainObject> T querySingle(Class<T> objectType, String expression, Consumer<Dictionary> fillArg,
+	static <T extends IDomainObject> T querySingle(Class<T> objectType, String expression, Consumer<MapData> fillArg,
 			QueryLevel level) {
-
-		var model = DataModel.get(objectType);
+		var model = DataModelLoader.get(objectType);
 		return model.querySingle(expression, fillArg, level);
 	}
 
@@ -270,8 +208,8 @@ public final class DataPortal {
 	/// <returns></returns>
 
 	static <T extends IDomainObject> Iterable<T> query(Class<T> objectType, String expression,
-			Consumer<Dictionary> fillArg, QueryLevel level) {
-		var model = DataModel.get(objectType);
+			Consumer<MapData> fillArg, QueryLevel level) {
+		var model = DataModelLoader.get(objectType);
 		return model.query(expression, fillArg, level);
 	}
 
@@ -288,21 +226,21 @@ public final class DataPortal {
 	 * @return
 	 */
 	static <T extends IDomainObject> Page<T> query(Class<T> objectType, String expression, int pageIndex, int pageSize,
-			Consumer<Dictionary> fillArg) {
-		var model = DataModel.get(objectType);
+			Consumer<MapData> fillArg) {
+		var model = DataModelLoader.get(objectType);
 		return model.query(expression, pageIndex, pageSize, fillArg);
 	}
 
-	static <T extends IDomainObject> int getCount(Class<T> objectType, String expression, Consumer<Dictionary> fillArg,
+	static <T extends IDomainObject> int getCount(Class<T> objectType, String expression, Consumer<MapData> fillArg,
 			QueryLevel level) {
-		var model = DataModel.get(objectType);
+		var model = DataModelLoader.get(objectType);
 		return model.getCount(expression, fillArg, level);
 	}
 
-	static <T extends IDomainObject> void execute(Class<T> objectType, String expression, Consumer<Dictionary> fillArg,
-			QueryLevel level) {
-		var model = DataModel.get(objectType);
-		model.execute(expression, fillArg, level);
+	static <T extends IDomainObject> void execute(Class<T> objectType, String expression, Consumer<MapData> fillArg,
+			QueryLevel level, Consumer<Map<String, Object>> fillItems) {
+		var model = DataModelLoader.get(objectType);
+		model.execute(expression, fillArg, level, fillItems);
 	}
 
 }

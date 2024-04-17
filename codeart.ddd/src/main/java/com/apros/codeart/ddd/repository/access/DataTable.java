@@ -1,6 +1,8 @@
 package com.apros.codeart.ddd.repository.access;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.apros.codeart.ddd.ConstructorParameterInfo;
@@ -14,6 +16,7 @@ import com.apros.codeart.ddd.metadata.ObjectMeta;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.ddd.metadata.ObjectRepositoryTip;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
+import com.apros.codeart.ddd.repository.Page;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.LazyIndexer;
@@ -623,8 +626,29 @@ public class DataTable {
 		_insert.insertMembers(root, parent, current, members, tip);
 	}
 
-	Object querySingle(Object rootId, Object id) {
+	<T> T querySingle(Object rootId, Object id) {
 		return _query.querySingle(rootId, id);
+	}
+
+	<T> T querySingle(String expression, Consumer<MapData> fillArg, QueryLevel level) {
+		return _query.querySingle(expression, fillArg, level);
+	}
+
+	<T> Iterable<T> query(String expression, Consumer<MapData> fillArg, QueryLevel level) {
+		return _query.query(expression, fillArg, level);
+	}
+
+	<T> Page<T> query(String expression, int pageIndex, int pageSize, Consumer<MapData> fillArg) {
+		return _query.query(expression, pageIndex, pageSize, fillArg);
+	}
+
+	int getCount(String expression, Consumer<MapData> fillArg, QueryLevel level) {
+		return _query.getCount(expression, fillArg, level);
+	}
+
+	void execute(String expression, Consumer<MapData> fillArg, QueryLevel level,
+			Consumer<Map<String, Object>> fillItems) {
+		_query.execute(expression, fillArg, level, fillItems);
 	}
 
 	void queryOneToMore(Object rootId, Object masterId, ArrayList<Object> objs) {
@@ -663,6 +687,10 @@ public class DataTable {
 		_update.decrementAssociated(rootId, id);
 	}
 
+	void delete(DomainObject root) {
+		_delete.delete(root);
+	}
+
 	void deleteMiddle(DomainObject root, DomainObject master, DomainObject slave) {
 		_delete.deleteMiddle(root, master, slave);
 	}
@@ -690,6 +718,10 @@ public class DataTable {
 	void deleteMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable<?> members,
 			PropertyMeta tip) {
 		_delete.deleteMembers(root, parent, current, members, tip);
+	}
+
+	void update(DomainObject obj) {
+		_update.update(obj);
 	}
 
 	void updateMember(DomainObject root, DomainObject parent, DomainObject obj) {

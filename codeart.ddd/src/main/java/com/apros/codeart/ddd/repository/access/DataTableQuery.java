@@ -2,15 +2,17 @@ package com.apros.codeart.ddd.repository.access;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import com.apros.codeart.ddd.MapData;
 import com.apros.codeart.ddd.DataVersionException;
 import com.apros.codeart.ddd.DomainBuffer;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.IAggregateRoot;
+import com.apros.codeart.ddd.MapData;
 import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.ddd.repository.Page;
 import com.apros.codeart.i18n.Language;
@@ -44,10 +46,11 @@ final class DataTableQuery {
 	/// <param name="rootId"></param>
 	/// <param name="id"></param>
 	/// <returns></returns>
-	public Object querySingle(Object rootId, Object id) {
+	@SuppressWarnings("unchecked")
+	public <T> T querySingle(Object rootId, Object id) {
 		var obj = getObjectFromConstruct(rootId, id);
 		if (obj != null)
-			return obj;
+			return (T) obj;
 
 		var expression = getObjectByIdExpression(_self);
 		return querySingle(expression, (param) -> {
@@ -96,7 +99,8 @@ final class DataTableQuery {
 	/// <param name="fillArg"></param>
 	/// <param name="level"></param>
 	/// <returns></returns>
-	Object querySingle(String expression, Consumer<MapData> fillArg, QueryLevel level) {
+	@SuppressWarnings("unchecked")
+	<T> T querySingle(String expression, Consumer<MapData> fillArg, QueryLevel level) {
 		expression = getEntryExpression(expression);
 
 		var exp = DataSource.getQueryBuilder(QueryObjectQB.class);
@@ -108,7 +112,7 @@ final class DataTableQuery {
 			result = getObjectFromEntry(data, level);
 		}
 
-		return result != null ? result : DomainObject.getEmpty(_self.objectType());
+		return (T) (result != null ? result : DomainObject.getEmpty(_self.objectType()));
 	}
 
 	/// <summary>
@@ -187,30 +191,36 @@ final class DataTableQuery {
 		return DataAccess.getCurrent().queryScalarInt(sql, param);
 	}
 
-	/// <summary>
-	/// 执行一个持久层命令
-	/// </summary>
-	/// <param name="expression"></param>
-	/// <param name="fillArg"></param>
-	/// <param name="level"></param>
-	void execute(String expression, Consumer<MapData> fillArg, QueryLevel level) {
-		// 获取总数据数
-		var exp = QueryCommand.Create(this, expression, level);
-		Execute(exp, fillArg);
+	/**
+	 * 
+	 * 执行一个持久层命令，持久层命令的意义在于可以多数据库支持
+	 * 
+	 * 而仓储里直接写算法，则会与某个特定的数据库绑定，取舍看场景
+	 * 
+	 * 如果需要返回结果，那么写入在items里
+	 * 
+	 * @param expression
+	 * @param fillArg
+	 * @param level
+	 */
+	void execute(String expression, Consumer<MapData> fillArg, QueryLevel level,
+			Consumer<Map<String, Object>> fillItems) {
+
+		var param = new MapData();
+		fillArg.accept(param);
+
+		var qb = DataSource.getQueryBuilder(QueryCommandQB.class);
+
+		var items = new HashMap<String, Object>();
+		items.put("expression", expression);
+		items.put("level", level);
+		if (fillItems != null)
+			fillItems.accept(items);
+
+		var sql = qb.build(new QueryDescription(param, items, _self));
+
+		DataAccess.getCurrent().execute(sql, param);
 	}
-
-	private void execute(IQueryBuilder query, Action<DynamicData> fillArg)
-	 {
-	     using (var temp = SqlHelper.BorrowData())
-	     {
-	         var param = temp.Item;
-	         fillArg(param);
-	         AddToTenant(param);
-
-	         var sql = query.Build(param, this);
-	         SqlHelper.Execute(sql, param);
-	     }
-	 }
 
 	@SuppressWarnings("unchecked")
 	private <T> Iterable<T> getObjectsFromEntriesByPage(String expression, Consumer<MapData> fillArg) {

@@ -689,6 +689,12 @@ public class DataContext implements IDataContext {
 		});
 	}
 
+	public static <T> T newScope(Supplier<T> action) {
+		return newScope((conn) -> {
+			return action.get();
+		});
+	}
+
 	/**
 	 * 新建一个范围数据上下文，该数据上下文会创建一个新的独立事务
 	 * 
@@ -704,6 +710,28 @@ public class DataContext implements IDataContext {
 			var dataContext = new DataContext();
 			DataContext.setCurrent(dataContext);
 			using(dataContext, action, true);
+
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+			if (prev != null) {
+				DataContext.setCurrent(prev); // 还原当前数据上下文
+			} else {
+				DataContext.setCurrent(null);
+			}
+		}
+	}
+
+	public static <T> T newScope(Function<DataAccess, T> action) {
+		DataContext prev = null;
+		if (DataContext.existCurrent()) {
+			prev = DataContext.getCurrent(); // 保留当前的数据上下文对象
+		}
+
+		try {
+			var dataContext = new DataContext();
+			DataContext.setCurrent(dataContext);
+			return using(dataContext, action, true);
 
 		} catch (Exception ex) {
 			throw ex;
