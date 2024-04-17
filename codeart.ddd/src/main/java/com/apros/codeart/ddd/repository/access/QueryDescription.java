@@ -8,6 +8,7 @@ import com.apros.codeart.ddd.QueryLevel;
 
 /**
  * {@code param} 查询参数 {@code tables} 涉及到的表 {@code items} 额外的说明项
+ * 
  */
 public record QueryDescription(MapData param, Map<String, Object> items, DataTable... tables) {
 
@@ -17,10 +18,6 @@ public record QueryDescription(MapData param, Map<String, Object> items, DataTab
 
 	public QueryDescription(MapData param, DataTable... tables) {
 		this(param, null, tables);
-	}
-
-	public QueryDescription(MapData param) {
-		this(param, null);
 	}
 
 	public QueryDescription(Map<String, Object> items) {

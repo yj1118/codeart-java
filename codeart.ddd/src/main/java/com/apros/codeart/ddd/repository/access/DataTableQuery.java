@@ -1,15 +1,22 @@
 package com.apros.codeart.ddd.repository.access;
 
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 import com.apros.codeart.ddd.MapData;
 import com.apros.codeart.ddd.DataVersionException;
+import com.apros.codeart.ddd.DomainBuffer;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
+import com.apros.codeart.ddd.IAggregateRoot;
 import com.apros.codeart.ddd.QueryLevel;
+import com.apros.codeart.ddd.repository.Page;
+import com.apros.codeart.i18n.Language;
 import com.apros.codeart.util.LazyIndexer;
+import com.apros.codeart.util.StringUtil;
+import com.google.common.collect.Iterables;
 
 final class DataTableQuery {
 
@@ -55,7 +62,7 @@ final class DataTableQuery {
 	/// 从构造上下文中获取对象
 	/// </summary>
 	/// <returns></returns>
-	private Object getObjectFromConstruct(Object id) {
+	Object getObjectFromConstruct(Object id) {
 		return ConstructContext.get(_self.objectType(), id);
 	}
 
@@ -64,11 +71,11 @@ final class DataTableQuery {
 	/// </summary>
 	/// <param name="id"></param>
 	/// <returns></returns>
-	private Object getObjectFromConstruct(Object rootId, Object id) {
+	Object getObjectFromConstruct(Object rootId, Object id) {
 		return ConstructContext.get(_self.objectType(), rootId, id);
 	}
 
-	private Object getObjectFromConstruct(MapData data) {
+	Object getObjectFromConstruct(MapData data) {
 		var id = data.get(EntityObject.IdPropertyName);
 		if (_self.type() == DataTableType.AggregateRoot) {
 			return getObjectFromConstruct(id);
@@ -95,9 +102,12 @@ final class DataTableQuery {
 		var exp = DataSource.getQueryBuilder(QueryObjectQB.class);
 
 		Object result = null;
-		useDataEntry(exp, expression, level, fillArg, (entry) -> {
-			result = getObjectFromEntry(entry, level);
-		});
+
+		var data = executeQueryEntry(exp, expression, level, fillArg);
+		if (data.size() > 0) {
+			result = getObjectFromEntry(data, level);
+		}
+
 		return result != null ? result : DomainObject.getEmpty(_self.objectType());
 	}
 
@@ -107,10 +117,10 @@ final class DataTableQuery {
 	/// <returns></returns>
 	private Object getObjectFromEntryByPage(MapData entry) {
 		String typeKey = (String) entry.get(GeneratedField.TypeKeyName);
-		var table = StringUtil.isNullOrEmpty(typeKey) ? this : getDataTable(typeKey);
+		var table = StringUtil.isNullOrEmpty(typeKey) ? _self : DataTableUtil.getDataTable(typeKey);
 
 		// 非聚合根是不能被加入到缓冲区的
-		return table.createObject(table.ObjectTip.ObjectType, entry, QueryLevel.None);
+		return table.createObject(table.objectType(), entry, QueryLevel.None);
 	}
 
 	/// <summary>
@@ -121,79 +131,61 @@ final class DataTableQuery {
 	/// </summary>
 	/// <returns></returns>
 	private Object getObjectFromEntry(MapData entry, QueryLevel level) {
-		if (this.Type == DataTableType.AggregateRoot) {
-			object id = entry.Get(EntityObject.IdPropertyName);
-			int dataVersion = (int) entry.Get(GeneratedField.DataVersionName);
-			string typeKey = (string) entry.Get(GeneratedField.TypeKeyName);
-			var table = string.IsNullOrEmpty(typeKey) ? this : GetDataTable(typeKey);
+		if (_self.type() == DataTableType.AggregateRoot) {
+			Object id = entry.get(EntityObject.IdPropertyName);
+			int dataVersion = (int) entry.get(GeneratedField.DataVersionName);
+			String typeKey = (String) entry.get(GeneratedField.TypeKeyName);
+			var table = StringUtil.isNullOrEmpty(typeKey) ? _self : DataTableUtil.getDataTable(typeKey);
 
-			if (level.Code == QueryLevel.MirroringCode) {
+			if (level.code() == QueryLevel.MirroringCode) {
 				// 镜像查询会在加入到当前会话中的对象缓冲区，不同的会话有各自的镜像对象，同一个会话的同一个对象的镜像只有一个
-				var obj = DomainBuffer.Mirror.GetOrCreate(table.ObjectTip.ObjectType, id, dataVersion, () -> {
-					return (IAggregateRoot) table.LoadObject(id, QueryLevel.Mirroring); // 由于查询条目的时候已经锁了数据，所以此处不用再锁定
-				});
-				DataContext.Current.AddMirror(obj); // 加入镜像
-				return obj;
-			}
-
-			{
-				var obj = DomainBuffer.Public.GetOrCreate(table.ObjectTip.ObjectType, id, dataVersion, () -> {
-					return (IAggregateRoot) table.LoadObject(id, QueryLevel.None); // 由于查询条目的时候已经锁了数据，所以此处不用再锁定
-				});
-				if (DataContext.ExistCurrent())
-					DataContext.Current.AddBuffer(obj); // 加入数据上下文缓冲区
-				return obj;
+				return DomainBuffer.obtain(table.objectType(), id, dataVersion, () -> {
+					return (IAggregateRoot) table.loadObject(id, QueryLevel.Mirroring); // 由于查询条目的时候已经锁了数据，所以此处不用再锁定
+				}, true);
+			} else {
+				return DomainBuffer.obtain(table.objectType(), id, dataVersion, () -> {
+					return (IAggregateRoot) table.loadObject(id, QueryLevel.None); // 由于查询条目的时候已经锁了数据，所以此处不用再锁定
+				}, false);
 			}
 		} else {
-			object rootId = entry.Get(GeneratedField.RootIdName);
-			object id = entry.Get(EntityObject.IdPropertyName);
-			int dataVersion = (int) entry.Get(GeneratedField.DataVersionName);
-			string typeKey = (string) entry.Get(GeneratedField.TypeKeyName);
-			var table = string.IsNullOrEmpty(typeKey) ? this : GetDataTable(typeKey);
+			Object rootId = entry.get(GeneratedField.RootIdName);
+			Object id = entry.get(EntityObject.IdPropertyName);
+			String typeKey = (String) entry.get(GeneratedField.TypeKeyName);
+			var table = StringUtil.isNullOrEmpty(typeKey) ? _self : DataTableUtil.getDataTable(typeKey);
 
 			// 非聚合根是不能被加入到缓冲区的
-			return table.LoadObject(rootId, id);
+			return table.loadObject(rootId, id);
 		}
 	}
 
-	<T> Iterable<T> query( String expression, Consumer<DynamicData> fillArg,QueryLevel level)
-	{
-	     expression = getEntryExpression(expression);
-	     var exp = QueryObject.Create(this, expression, level);
-	     return getObjectsFromEntries<T>(exp, fillArg, level);
-	 }
+	<T> Iterable<T> query(String expression, Consumer<MapData> fillArg, QueryLevel level) {
+		expression = getEntryExpression(expression);
+		return getObjectsFromEntries(QueryObjectQB.class, expression, fillArg, level);
+	}
 
-	<T> Page<T> query(String expression,int pageIndex,int pageSize, Consumer<DynamicData> fillArg)
-	{
-	     expression = GetEntryExpression(expression);
-	     var exp = QueryPage.Create(this, expression);
-	     Iterable<T> objects = getObjectsFromEntriesByPage<T>(exp, (data) ->
-	     {
-	         data.Add("pageIndex", pageIndex);
-	         data.Add("pageSize", pageSize);
-	         fillArg(data);
-	     });
-	     int count = GetCount(expression, fillArg, QueryLevel.None);
-	     return new Page<T>(pageIndex, pageSize, objects, count);
-	 }
+	<T> Page<T> query(String expression, int pageIndex, int pageSize, Consumer<MapData> fillArg) {
+		expression = getEntryExpression(expression);
+
+		Iterable<T> objects = getObjectsFromEntriesByPage(expression, (data) -> {
+			data.put("pageIndex", pageIndex);
+			data.put("pageSize", pageSize);
+			fillArg.accept(data);
+		});
+		int count = getCount(expression, fillArg, QueryLevel.None);
+		return new Page<T>(pageIndex, pageSize, objects, count);
+	}
 
 	int getCount(String expression, Consumer<MapData> fillArg, QueryLevel level) {
 		// 获取总数据数
-		var exp = QueryCount.Create(this, expression, level);
-		return GetCount(exp, fillArg);
-	}
+		var param = new MapData();
+		fillArg.accept(param);
 
-	private int GetCount(IQueryBuilder query, Action<DynamicData> fillArg)
-	 {
-	     int count = 0;
-	     //获取总数据数
-	     var param = new MapData();
-         fillArg(param);
-         addToTenant(param);
-         var sql = query.Build(param, this);
-         count = SqlHelper.ExecuteScalar<int>(sql, param);
-	     return count;
-	 }
+		var qb = DataSource.getQueryBuilder(QueryCountQB.class);
+
+		var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
+
+		return DataAccess.getCurrent().queryScalarInt(sql, param);
+	}
 
 	/// <summary>
 	/// 执行一个持久层命令
@@ -201,7 +193,7 @@ final class DataTableQuery {
 	/// <param name="expression"></param>
 	/// <param name="fillArg"></param>
 	/// <param name="level"></param>
-	void execute(String expression, Action<DynamicData> fillArg, QueryLevel level) {
+	void execute(String expression, Consumer<MapData> fillArg, QueryLevel level) {
 		// 获取总数据数
 		var exp = QueryCommand.Create(this, expression, level);
 		Execute(exp, fillArg);
@@ -220,72 +212,38 @@ final class DataTableQuery {
 	     }
 	 }
 
-	private Iterable<T> GetObjectsFromEntriesByPage<T>(IQueryBuilder exp, Action<DynamicData>fillArg)
-	{
-	     var list = Symbiosis.TryMark(ListPool<T>.Instance, () ->
-	     {
-	         return new List<T>();
-	     });
+	@SuppressWarnings("unchecked")
+	private <T> Iterable<T> getObjectsFromEntriesByPage(String expression, Consumer<MapData> fillArg) {
 
-	     UseDataEntries(exp, fillArg, (entry) ->
-	     {
-	         var obj = GetObjectFromEntryByPage(entry);
-	         list.Add((T)obj);
-	     });
-	     return list;
-	 }
+		var datas = executeQueryEntries(QueryPageQB.class, expression, QueryLevel.None, fillArg);
 
-	private IEnumerable<T> GetObjectsFromEntries<T>(
-	IQueryBuilder exp, Action<DynamicData>fillArg,
-	QueryLevel level)
-	{
-	     var list = Symbiosis.TryMark(ListPool<T>.Instance, () ->
-	     {
-	         return new List<T>();
-	     });
+		var list = new ArrayList<T>(Iterables.size(datas));
 
-	     UseDataEntries(exp, fillArg, (entry) ->
-	     {
-	         var obj = GetObjectFromEntry(entry, level);
-	         list.Add((T)obj);
-	     });
-	     return list;
-	 }
-
-//	#region 获取条目信息
-
-	/**
-	 * 获取数据的条目信息，这包括数据必备的编号和版本号
-	 * 
-	 * @param exp
-	 * @param fillArg
-	 * @param action
-	 */
-	private void useDataEntry(IQueryBuilder exp, String expression, QueryLevel level, Consumer<MapData> fillArg,
-			Consumer<MapData> action) {
-		var data = executeQueryEntry(exp, expression, level, fillArg, data);
-		if (data.size() > 0) {
-			action(data);
+		for (var data : datas) {
+			var obj = getObjectFromEntryByPage(data);
+			list.add((T) obj);
 		}
+
+		return list;
 	}
 
-	/// <summary>
-	/// 使用条目集合
-	/// </summary>
-	/// <param name="expression"></param>
-	/// <param name="fillArg"></param>
-	/// <param name="level"></param>
-	/// <param name="action"></param>
-	private void UseDataEntries(IQueryBuilder exp, Action<DynamicData> fillArg, Action<DynamicData> action)
-	 {
-	     using (var temp = SqlHelper.BorrowDatas())
-	     {
-	         var datas = temp.Item;
-	         ExecuteQueryEntries(exp, fillArg, datas);
-	         foreach (var data in datas)
-	             action(data);
-	     }
-	 }
+	@SuppressWarnings("unchecked")
+	private <T> Iterable<T> getObjectsFromEntries(Class<? extends IQueryBuilder> qbType, String expression,
+			Consumer<MapData> fillArg, QueryLevel level) {
+
+		var datas = executeQueryEntries(QueryObjectQB.class, expression, level, fillArg);
+
+		var list = new ArrayList<T>(Iterables.size(datas));
+
+		for (var data : datas) {
+			var obj = getObjectFromEntry(data, level);
+			list.add((T) obj);
+		}
+
+		return list;
+	}
+
+//	#region 获取条目信息
 
 	private MapData executeQueryEntry(IQueryBuilder query, String expression, QueryLevel level,
 			Consumer<MapData> fillArg) {
@@ -299,18 +257,15 @@ final class DataTableQuery {
 		return DataAccess.getCurrent().queryRow(sql, param);
 	}
 
-	private void ExecuteQueryEntries(IQueryBuilder query, Action<DynamicData> fillArg, List<DynamicData> datas)
-	 {
-	     using (var temp = SqlHelper.BorrowData())
-	     {
-	         var param = temp.Item;
-	         fillArg(param);
-	         AddToTenant(param);
+	private Iterable<MapData> executeQueryEntries(Class<? extends IQueryBuilder> qbType, String expression,
+			QueryLevel level, Consumer<MapData> fillArg) {
+		var param = new MapData();
+		fillArg.accept(param);
 
-	         var sql = query.Build(param, this);//编译表达式获取执行文本
-	         SqlHelper.Query(sql, param, datas);
-	     }
-	 }
+		var qb = DataSource.getQueryBuilder(qbType);
+		var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
+		return DataAccess.getCurrent().queryRows(sql, param);
+	}
 
 	/// <summary>
 	/// 根据表达式获取数据条目
@@ -321,38 +276,40 @@ final class DataTableQuery {
 		return _getFindEntryByExpression.apply(_self).apply(expression);
 	}
 
-	/// <summary>
-	/// 获得默认查询的字段
-	/// </summary>
-	/// <returns></returns>
-	private static String GetDefaultQueryFields(DataTable table)
-	 {
-	     StringBuilder fields= new StringBuilder();
+	/**
+	 * 
+	 * 获得默认查询的字段
+	 * 
+	 * @param table
+	 * @return
+	 */
+	private static String getDefaultQueryFields(DataTable table) {
+		StringBuilder fields = new StringBuilder();
 
-	     foreach (var field in table.DefaultQueryFields)
-	     {
-	         fields.AppendFormat("{0},", field.Name);
-	     }
+		for (var field : table.defaultQueryFields()) {
 
-	     fields.Length--;
+			StringUtil.appendFormat(fields, "%s,", field.name());
+		}
 
-	     return fields.ToString();
-	 }
+		StringUtil.removeLast(fields);
+
+		return fields.toString();
+	}
 
 	private static Function<DataTable, Function<String, String>> _getFindEntryByExpression = LazyIndexer
 			.init((table) -> {
 				return LazyIndexer.init((expression) -> {
-					SqlDefinition def = SqlDefinition.Create(expression, isEnabledMultiTenancy);
-					if (def.IsCustom)
+					SqlDefinition def = SqlDefinition.create(expression);
+					if (def.isCustom())
 						return expression; // 如果是自定义查询，那么直接返回表达式，由程序员自行解析
-					var selects = def.Columns.Select;
-					if (selects.Count() == 0 || selects.First() == "*") {
-						var tenantSql = isEnabledMultiTenancy ? string.Format(",{0}", GeneratedField.TenantIdName)
-								: string.Empty;
+					var selects = def.columns().select();
+					var selectCount = Iterables.size(selects);
+					var firstSelect = Iterables.getFirst(selects, null);
+					if (selectCount == 0 || firstSelect == "*") {
 
-						var fieldsSql = GetDefaultQueryFields(table);
+						var fieldsSql = getDefaultQueryFields(table);
 
-						expression = string.Format("{0}[select {1}{2}]", expression, fieldsSql, tenantSql);
+						expression = String.format("%s[select %s]", expression, fieldsSql);
 
 						// 没有指定输出属性就输出对象自身
 						// if (table.Type == DataTableType.AggregateRoot)
@@ -367,34 +324,31 @@ final class DataTableQuery {
 						// GeneratedField.RootIdName, EntityObject.IdPropertyName,
 						// GeneratedField.DataVersionName, GeneratedField.TypeKeyName, tenantSql);
 						// }
-					} else if (selects.Count() == 1) {
-						var propertyName = selects.First();
+					} else if (selectCount == 1) {
+						var propertyName = firstSelect;
 
-						var tenantSql = isEnabledMultiTenancy
-								? string.Format(",{0}.{1} as {1}", propertyName, GeneratedField.TenantIdName)
-								: string.Empty;
-
-						if (table.Type == DataTableType.AggregateRoot) {
-							expression = string.Format("{0}[select {1}.{2} as {2},{1}.{3} as {3},{1}.{4} as {4}{5}]",
-									expression, propertyName, EntityObject.IdPropertyName,
-									GeneratedField.DataVersionName, GeneratedField.TypeKeyName, tenantSql);
+						if (table.type() == DataTableType.AggregateRoot) {
+							expression = MessageFormat.format(
+									"{0}[select {1}.{2} as {2},{1}.{3} as {3},{1}.{4} as {4}]", expression,
+									propertyName, EntityObject.IdPropertyName, GeneratedField.DataVersionName,
+									GeneratedField.TypeKeyName);
 						} else {
-							expression = string.Format("{0}[select {1},{2}.{3},{2}.{4},{2}.{5}{6}]", expression,
+							expression = MessageFormat.format("{0}[select {1},{2}.{3},{2}.{4},{2}.{5}]", expression,
 									GeneratedField.RootIdName, propertyName, EntityObject.IdPropertyName,
-									GeneratedField.DataVersionName, GeneratedField.TypeKeyName, tenantSql);
+									GeneratedField.DataVersionName, GeneratedField.TypeKeyName);
 						}
-					} else if (selects.Count() > 1) {
-						throw new DataAccessException(string.Format(Strings.NotSupportMultipleProperties, expression));
+					} else if (selectCount > 1) {
+						throw new IllegalStateException(
+								Language.strings("codeart.ddd", "NotSupportMultipleProperties", expression));
 					}
 
 					return expression;
 				});
 			});
 
-	#endregion
+//	#endregion
 
-	#
-	region 实际查询，构造完整对象
+//	region 实际查询，构造完整对象
 
 	/// <summary>
 	/// 根据编号从数据库中查询数据
@@ -402,11 +356,11 @@ final class DataTableQuery {
 	/// <param name="id"></param>
 	/// <param name="level"></param>
 	/// <returns></returns>
-	private DomainObject LoadObject(object id, QueryLevel level) {
-		var expression = getObjectByIdExpression(this);
-		var exp = QueryObject.Create(this, expression, level);
-		return ExecuteQueryObject(this.ObjectType, exp, (param) -> {
-			param.Add(EntityObject.IdPropertyName, id);
+	DomainObject loadObject(Object id, QueryLevel level) {
+		var expression = getObjectByIdExpression(_self);
+
+		return executeQueryObject(_self.objectType(), expression, (param) -> {
+			param.put(EntityObject.IdPropertyName, id);
 		}, level);
 	}
 
@@ -416,12 +370,12 @@ final class DataTableQuery {
 	/// <param name="rootId"></param>
 	/// <param name="id"></param>
 	/// <returns></returns>
-	private DomainObject LoadObject(object rootId, object id) {
-		var expression = getObjectByIdExpression(this);
-		var exp = QueryObject.Create(this, expression, QueryLevel.None);
-		return ExecuteQueryObject(this.ObjectType, exp, (param) -> {
-			param.Add(GeneratedField.RootIdName, rootId);
-			param.Add(EntityObject.IdPropertyName, id);
+	DomainObject loadObject(Object rootId, Object id) {
+		var expression = getObjectByIdExpression(_self);
+
+		return executeQueryObject(_self.objectType(), expression, (param) -> {
+			param.put(GeneratedField.RootIdName, rootId);
+			param.put(EntityObject.IdPropertyName, id);
 		}, QueryLevel.None);
 	}
 
@@ -439,19 +393,17 @@ final class DataTableQuery {
 	// return ExecuteQueryObject(this.ImplementOrElementType, exp, fillArg);
 	// }
 
-	private DomainObject ExecuteQueryObject(Type objectType, IQueryBuilder query, Action<DynamicData> fillArg, QueryLevel level)
-	 {
-	     using (var temp = SqlHelper.BorrowData())
-	     {
-	         var param = temp.Item;
-	         fillArg(param);
-	         AddToTenant(param);
+	private DomainObject executeQueryObject(Class<?> objectType, String expression, Consumer<MapData> fillArg,
+			QueryLevel level) {
+		var param = new MapData();
+		fillArg.accept(param);
 
-	         var sql = query.Build(param, this);//编译表达式获取执行文本
-	         var data = SqlHelper.QueryFirstOrDefault(sql, param);
-	         return CreateObject(objectType, data, level);
-	     }
-	 }
+		var qb = DataSource.getQueryBuilder(QueryObjectQB.class);
+		var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
+
+		var data = DataAccess.getCurrent().queryRow(sql, param);
+		return _self.createObject(objectType, data, level);
+	}
 
 	/// <summary>
 	/// 执行查询对象集合的sql
@@ -535,9 +487,11 @@ final class DataTableQuery {
 
 		// 在领域层主动查看数据编号时，不需要锁；在提交数据时获取数据编号，由于对象已被锁，所以不需要在读取版本号时锁
 		int dataVersion = 0;
-		useDataEntry(exp, expression, QueryLevel.None, fillArg, (entry) -> {
-			dataVersion = (int) entry.get(GeneratedField.DataVersionName);
-		});
+		var data = executeQueryEntry(exp, expression, QueryLevel.None, fillArg);
+		if (data.size() > 0) {
+			dataVersion = (int) data.get(GeneratedField.DataVersionName);
+		}
+
 		return dataVersion;
 	}
 

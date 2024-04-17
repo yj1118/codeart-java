@@ -51,6 +51,15 @@ public final class StringUtil {
 		return str.charAt(str.length() - 1);
 	}
 
+	public static void replaceAll(StringBuilder sb, String from, String to) {
+		int index = sb.indexOf(from);
+		while (index != -1) {
+			sb.replace(index, index + from.length(), to);
+			index += to.length();
+			index = sb.indexOf(from, index);
+		}
+	}
+
 	public static boolean isNullOrEmpty(String str) {
 		return str == null || str.equals("");
 	}

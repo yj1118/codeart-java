@@ -1,5 +1,7 @@
 package com.apros.codeart.ddd;
 
+import static com.apros.codeart.runtime.Util.propagate;
+
 import java.lang.reflect.Constructor;
 import java.util.function.Function;
 
@@ -63,23 +65,22 @@ public class ConstructorRepositoryImpl {
 		return _getTip.apply(objectType);
 	}
 
-	private static Function<Class<?>, ConstructorRepositoryImpl> _getTip = LazyIndexer
-			.<Class<?>, ConstructorRepositoryImpl>init((objectType) -> {
-				try {
-					Constructor<?>[] constructors = objectType.getConstructors();
+	private static Function<Class<?>, ConstructorRepositoryImpl> _getTip = LazyIndexer.init((objectType) -> {
+		try {
+			Constructor<?>[] constructors = objectType.getConstructors();
 
-					var target = ListUtil.find(constructors, (c) -> {
-						return c.getAnnotation(ConstructorRepository.class) != null;
-					});
-
-					if (target == null) {
-						throw new DomainDrivenException(
-								Language.strings("codeart.ddd", "NoRepositoryConstructor", objectType.getName()));
-					}
-
-					return new ConstructorRepositoryImpl(target);
-				} catch (Exception ex) {
-					throw propagate(ex);
-				}
+			var target = ListUtil.find(constructors, (c) -> {
+				return c.getAnnotation(ConstructorRepository.class) != null;
 			});
+
+			if (target == null) {
+				throw new DomainDrivenException(
+						Language.strings("codeart.ddd", "NoRepositoryConstructor", objectType.getName()));
+			}
+
+			return new ConstructorRepositoryImpl(target);
+		} catch (Exception ex) {
+			throw propagate(ex);
+		}
+	});
 }

@@ -14,6 +14,7 @@ import com.apros.codeart.ddd.repository.access.IDatabaseAgent;
 import com.apros.codeart.ddd.repository.access.IncrementAssociatedQB;
 import com.apros.codeart.ddd.repository.access.InsertTableQB;
 import com.apros.codeart.ddd.repository.access.QueryObjectQB;
+import com.apros.codeart.ddd.repository.access.QueryPageQB;
 import com.apros.codeart.ddd.repository.access.UpdateTableQB;
 import com.apros.codeart.util.StringUtil;
 
@@ -36,6 +37,7 @@ public class SQLServerAgent extends DatabaseAgent {
 
 		this.registerQueryBuilder(GetPrimitiveValuesQB.class, GetPrimitiveValues.Instance);
 		this.registerQueryBuilder(GetSlaveIdsQB.class, GetSlaveIds.Instance);
+		this.registerQueryBuilder(QueryPageQB.class, QueryPage.Instance);
 	}
 
 	@Override

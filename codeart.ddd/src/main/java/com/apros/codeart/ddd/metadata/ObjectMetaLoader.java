@@ -6,6 +6,7 @@ import static com.apros.codeart.runtime.Util.propagate;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.apros.codeart.ddd.DerivedClassImpl;
 import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.ddd.ObjectValidatorImpl;
@@ -88,6 +89,9 @@ public final class ObjectMetaLoader {
 		// 再加载完整定义，即出发静态构造
 		for (var domainType : domainTypes) {
 			staticConstructor(domainType);
+
+			// 尝试为派生类做支持
+			DerivedClassImpl.init(domainType);
 		}
 	}
 

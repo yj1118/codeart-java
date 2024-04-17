@@ -6,6 +6,7 @@ import java.util.function.Function;
 import com.apros.codeart.ddd.ConstructorParameterInfo;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
+import com.apros.codeart.ddd.IAggregateRoot;
 import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.ddd.MapData;
 import com.apros.codeart.ddd.QueryLevel;
@@ -578,9 +579,9 @@ public class DataTable {
 		_query = new DataTableQuery(this);
 		_insert = new DataTableInsert(this);
 		_update = new DataTableUpdate(this);
-		_delete = new DateTableDelete(this);
+		_delete = new DataTableDelete(this);
 		_read = new DataTableRead(this);
-		_common = new DataTaleCommon(this);
+		_common = new DataTableCommon(this);
 	}
 
 	void loadChilds() {
@@ -718,13 +719,64 @@ public class DataTable {
 		return _common.getQuoteMiddlesByMaster();
 	}
 
-	Object readPropertyValue(DomainObject parent, PropertyMeta tip, ParameterRepositoryAttribute prmTip,
-			MapData data, QueryLevel level) {
-		return _read.readPropertyValue(null, null, null, null, null)
+	DomainObject createObject(Class<?> objectType, MapData data, QueryLevel level) {
+		return _read.createObject(_objectType, data, level);
 	}
 
-//	DataTableQuery query() {
-//		return _query;
-//	}
+	Object readPropertyValue(DomainObject parent, PropertyMeta tip, ConstructorParameterInfo prmTip, MapData data,
+			QueryLevel level) {
+		return _read.readPropertyValue(parent, tip, prmTip, data, level);
+	}
+
+	Object getObjectFromConstruct(Object id) {
+		return _query.getObjectFromConstruct(id);
+	}
+
+	Object readOneToMore(PropertyMeta tip, ConstructorParameterInfo prmTip, DomainObject parent, Object rootId,
+			Object masterId, QueryLevel level) {
+		return _read.readOneToMore(tip, prmTip, parent, rootId, masterId, level);
+	}
+
+	/// <summary>
+	/// 从构造上下文中获取对象
+	/// </summary>
+	/// <param name="id"></param>
+	/// <returns></returns>
+	Object getObjectFromConstruct(Object rootId, Object id) {
+		return _query.getObjectFromConstruct(rootId, id);
+	}
+
+	Object getObjectFromConstruct(MapData data) {
+		return _query.getObjectFromConstruct(data);
+	}
+
+	DomainObject loadObject(Object id, QueryLevel level) {
+		return _query.loadObject(id, level);
+	}
+
+	DomainObject loadObject(Object rootId, Object id) {
+		return _query.loadObject(rootId, id);
+	}
+
+	/**
+	 * 获得不带任何引用链的、独立、干净的表信息
+	 * 
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public DataTable getAbsolute() {
+		switch (this.type()) {
+		case DataTableType.AggregateRoot: {
+			return DataModelLoader.get((Class<? extends IAggregateRoot>) this.objectType()).root();
+		}
+		case DataTableType.EntityObject:
+		case DataTableType.ValueObject: {
+			return this; // 对于成员类型，直接返回，因为没有干净的
+		}
+		default:
+			break;
+		}
+		throw new IllegalStateException(Language.strings("codeart.ddd", "UnknownException"));
+	}
 
 }

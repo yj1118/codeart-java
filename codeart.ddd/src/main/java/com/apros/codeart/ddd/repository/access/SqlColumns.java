@@ -5,7 +5,7 @@ import java.util.List;
 import com.apros.codeart.util.ListUtil;
 import com.apros.codeart.util.StringUtil;
 
-class SqlColumns {
+public class SqlColumns {
 
 	private Iterable<String> _select;
 

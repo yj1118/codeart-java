@@ -1,14 +1,17 @@
 package com.apros.codeart.ddd.repository.access;
 
+import static com.apros.codeart.runtime.Util.propagate;
+
 import java.lang.reflect.Constructor;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
 import com.apros.codeart.ddd.ConstructorParameterInfo;
 import com.apros.codeart.ddd.ConstructorRepositoryImpl;
+import com.apros.codeart.ddd.DerivedClassImpl;
 import com.apros.codeart.ddd.DomainCollection;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.DomainProperty;
@@ -20,6 +23,7 @@ import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.ddd.IValueObject;
 import com.apros.codeart.ddd.MapData;
 import com.apros.codeart.ddd.QueryLevel;
+import com.apros.codeart.ddd.metadata.DomainPropertyCategory;
 import com.apros.codeart.ddd.metadata.PropertyMeta;
 import com.apros.codeart.ddd.repository.DataContext;
 import com.apros.codeart.i18n.Language;
@@ -27,6 +31,7 @@ import com.apros.codeart.runtime.Activator;
 import com.apros.codeart.runtime.TypeUtil;
 import com.apros.codeart.util.LazyIndexer;
 import com.apros.codeart.util.ListUtil;
+import com.apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
 
 final class DataTableRead {
@@ -42,7 +47,8 @@ final class DataTableRead {
 	/// <param name="rootId"></param>
 	/// <param name="id"></param>
 	/// <returns></returns>
-	private Object readOneToMore(PropertyMeta tip, ConstructorParameterInfo prmTip, DomainObject parent, Object rootId,
+	@SuppressWarnings("unchecked")
+	Object readOneToMore(PropertyMeta tip, ConstructorParameterInfo prmTip, DomainObject parent, Object rootId,
 			Object masterId, QueryLevel level) {
 		var datas = queryRootAndSlaveIds(rootId, masterId);
 
@@ -96,6 +102,7 @@ final class DataTableRead {
 	/// <param name="masterId"></param>
 	/// <param name="level"></param>
 	/// <returns></returns>
+	@SuppressWarnings("unchecked")
 	Object readValues(PropertyMeta tip, ConstructorParameterInfo prmTip, DomainObject parent, Object rootId,
 			Object masterId, QueryLevel level) {
 		var datas = queryPrimitiveValues(rootId, masterId);
@@ -111,7 +118,6 @@ final class DataTableRead {
 			implementType = _self.objectType();
 		}
 		var list = createList(parent, implementType, tip);
-		var elementType = _self.elementType();
 
 		var valueName = GeneratedField.PrimitiveValueName;
 		for (var data : datas) {
@@ -121,48 +127,61 @@ final class DataTableRead {
 		return list;
 	}
 
-	/// <summary>
-	///
-	/// </summary>
-	/// <param name="parent"></param>
-	/// <param name="listType"></param>
-	/// <param name="property">集合在对象中的属性定义</param>
-	/// <returns></returns>
+	/**
+	 * 
+	 * 集合在对象中的属性定义
+	 * 
+	 * @param parent
+	 * @param listType
+	 * @param tip
+	 * @return
+	 */
+	@SuppressWarnings("rawtypes")
 	private Collection createList(DomainObject parent, Class<?> listType, PropertyMeta tip) {
-		if (_isDomainCollection.apply(listType)) {
-			var constructor = _getDomainCollectionConstructor.apply(listType);
+		try {
+			if (_isDomainCollection.apply(listType)) {
+				var constructor = _getDomainCollectionConstructor.apply(listType);
 
-			var collection = (IDomainCollection) constructor.newInstance(tip.monotype(),
-					DomainProperty.getProperty(tip));
-			collection.setParent(parent);
-			return (Collection) collection;
+				var collection = (IDomainCollection) constructor.newInstance(tip.monotype(),
+						DomainProperty.getProperty(tip));
+				collection.setParent(parent);
+				return (Collection) collection;
+			}
+			return (Collection) Activator.createInstance(listType);
+		} catch (Exception ex) {
+			throw propagate(ex);
 		}
-		return (Collection) Activator.createInstance(listType);
 	}
 
 	private static Function<Class<?>, Boolean> _isDomainCollection = LazyIndexer.init((type) -> {
 		return type.isAssignableFrom(DomainCollection.class);
 	});
 
-	private static Function<Class<?>, Constructor> _getDomainCollectionConstructor = LazyIndexer.init((type) -> {
-		return type.getConstructor(Class.class, DomainProperty.class);
+	private static Function<Class<?>, Constructor<?>> _getDomainCollectionConstructor = LazyIndexer.init((type) -> {
+
+		try {
+			return type.getConstructor(Class.class, DomainProperty.class);
+		} catch (Exception ex) {
+			throw propagate(ex);
+		}
 	});
 
-	/// <summary>
-	/// 创建对象
-	/// </summary>
-	/// <param name="objectType"></param>
-	/// <param name="data"></param>
-	/// <returns></returns>
-	private DomainObject createObject(Class<?> objectType, MapData data, QueryLevel level) {
-		DomainObject obj = null;
+	/**
+	 * 
+	 * 创建对象
+	 * 
+	 * @param objectType
+	 * @param data
+	 * @param level
+	 * @return
+	 */
+	DomainObject createObject(Class<?> objectType, MapData data, QueryLevel level) {
 
-		DataContext.using(() -> {
-			if (data.isEmpty())
-				obj = (DomainObject) DomainObject.getEmpty(objectType);
-			else {
-				obj = createObjectImpl(objectType, objectType, data, level);
-			}
+		if (data.isEmpty())
+			return (DomainObject) DomainObject.getEmpty(objectType);
+
+		DomainObject obj = DataContext.using(() -> {
+			return createObjectImpl(objectType, objectType, data, level);
 		});
 		return obj;
 	}
@@ -211,10 +230,15 @@ final class DataTableRead {
 	}
 
 	private DomainObject constructObject(Class<?> objectType, MapData data, QueryLevel level) {
-		var constructorTip = ConstructorRepositoryImpl.getTip(objectType);
-		var constructor = constructorTip.constructor();
-		var args = createArguments(constructorTip, data, level);
-		return (DomainObject) constructor.newInstance(args);
+
+		try {
+			var constructorTip = ConstructorRepositoryImpl.getTip(objectType);
+			var constructor = constructorTip.constructor();
+			var args = createArguments(constructorTip, data, level);
+			return (DomainObject) constructor.newInstance(args);
+		} catch (Exception ex) {
+			throw propagate(ex);
+		}
 	}
 
 	/// <summary>
@@ -316,7 +340,7 @@ final class DataTableRead {
 			return readPrimitive(tip, data);
 		}
 		case DomainPropertyCategory.PrimitiveList: {
-			return readPrimitiveList(parent, tip, prmTip, data, level);
+			return readPrimitiveList(parent, tip, prm, data, level);
 		}
 		case DomainPropertyCategory.AggregateRoot: {
 			return readAggregateRoot(tip, data, level);
@@ -328,7 +352,7 @@ final class DataTableRead {
 		case DomainPropertyCategory.EntityObjectList:
 		case DomainPropertyCategory.ValueObjectList:
 		case DomainPropertyCategory.AggregateRootList: {
-			return readMembers(parent, tip, prmTip, data, level);
+			return readMembers(parent, tip, prm, data, level);
 		}
 		}
 		return null;
@@ -416,13 +440,14 @@ final class DataTableRead {
 		return value;
 	}
 
+	@SuppressWarnings("unchecked")
 	private boolean containsObjectData(PropertyMeta tip, MapData data) {
 		DataTable table = null;
 
 		switch (tip.category()) {
 		case DomainPropertyCategory.AggregateRoot: {
-			var model = DataModel.Create(tip.PropertyType);
-			table = model.Root;
+			var model = DataModelLoader.get((Class<? extends IAggregateRoot>) tip.monotype());
+			table = model.root();
 			break;
 		}
 		case DomainPropertyCategory.EntityObject:
@@ -445,118 +470,72 @@ final class DataTableRead {
 		return true;
 	}
 
-	private Object readAggregateRoot(PropertyMeta tip, MapData data, QueryLevel level)
-    {
-        var model = DataModel.create(tip.monotype());
+	@SuppressWarnings("unchecked")
+	private Object readAggregateRoot(PropertyMeta tip, MapData data, QueryLevel level) {
+		var model = DataModelLoader.get((Class<? extends IAggregateRoot>) tip.monotype());
+		var item = getObjectData(data, tip);
+		if (item != null) {
+			MapData entry = (MapData) item;
+			return model.root().createObject(tip.monotype(), entry, QueryLevel.None); // 从数据中直接加载的根对象信息，一定是不带锁的
+		}
 
-        if (TryGetObjectData(data, tip, out var item))
-        {
-            DynamicData entry = item as DynamicData;
-            var obj = model.Root.CreateObject(tip.PropertyType, entry, QueryLevel.None); //从数据中直接加载的根对象信息，一定是不带锁的
+		var dataKey = DataTableUtil.getIdName(tip.name());
 
-            //数据填充的对象，不加载镜像（为了提高性能）
-            //if (((IDomainObject)obj).IsEmpty() && model.ObjectTip.Snapshot)
-            //{
-            //    //加载快照
-            //    obj = model.Snapshot.QuerySingle(id, QueryLevel.None);
-            //}
-
-            return obj;
-        }
-
-
-        var dataKey = _getIdName(tip.PropertyName);
-
-        object id = null;
-        if (data.TryGetValue(dataKey, out id))
-        {
-            var queryLevel = getQueryAggreateRootLevel(level);
-            var obj = model.Root.QuerySingle(id, queryLevel);
-
-            if (((IDomainObject)obj).IsEmpty() && model.ObjectTip.Snapshot)
-            {
-                //加载快照
-                obj = model.Snapshot.QuerySingle(id, QueryLevel.None);
-            }
-
-            return obj;
-        }
-        return null;
-    }
+		Object id = data.get(dataKey);
+		if (id != null) {
+			var queryLevel = getQueryAggreateRootLevel(level);
+			return model.root().querySingle(id, queryLevel);
+		}
+		return null;
+	}
 
 	private Object readMember(PropertyMeta tip, MapData data) {
 		return tip.lazy() ? readMemberByLazy(tip, data) : readMemberFromData(tip, data);
 	}
 
-	private Object ReadMemberFromData(PropertyRepositoryAttribute tip, DynamicData data)
-    {
-        var name = _getNameWithSeparated(tip.PropertyName);
-        var subData = new DynamicData(); //由于subData要参与构造，所以不从池中取
-        foreach (var p in data)
-        {
-            var dataName = p.Key;
-            if (dataName.StartsWith(name))
-            {
-                var subName = _getNextName(dataName);
-                subData.Add(subName, p.Value);
-            }
-        }
+	private Object readMemberFromData(PropertyMeta tip, MapData data) {
+		var name = DataTableUtil.getNameWithSeparated(tip.name());
+		var subData = new MapData();
+		for (var p : data) {
+			var dataName = p.getKey();
+			if (dataName.startsWith(name)) {
+				var subName = DataTableUtil.getNextName(dataName);
+				subData.put(subName, p.getValue());
+			}
+		}
 
-        if (subData.IsEmpty())
-        {
-            if (tip.DomainPropertyType == DomainPropertyType.AggregateRoot)
-            {
-                var idName = _getIdName(tip.PropertyName);
-                var id = data.Get(idName);
-                return ReadSnapshot(tip, id);
-            }
-            return DomainObject.GetEmpty(tip.PropertyType);
-        }
+		if (subData.isEmpty())
+			return DomainObject.getEmpty(tip.monotype());
 
+		var typeKey = (String) subData.get(GeneratedField.TypeKeyName);
+		Class<?> objectType = StringUtil.isNullOrEmpty(typeKey) ? tip.monotype()
+				: DerivedClassImpl.getDerivedType(typeKey);
 
-        var typeKey = (string)subData.Get(GeneratedField.TypeKeyName);
-        Type objectType = null;
-        if (this.IsDynamic)
-        {
-            objectType = tip.PropertyType;
-        }
-        else
-        {
-            objectType = string.IsNullOrEmpty(typeKey) ? tip.PropertyType : DerivedClassAttribute.GetDerivedType(typeKey);
-        }
+		var child = _self.findChild(_self, tip.name(), objectType);
+		// 先尝试中构造上下文中得到
+		var obj = child.getObjectFromConstruct(subData);
+		if (obj == null)
+			obj = child.createObject(objectType, subData, QueryLevel.None); // 成员始终是QueryLevel.None的方式加载
+		return obj;
+	}
 
+	private Object readMemberByLazy(PropertyMeta tip, MapData data) {
+		var child = _self.findChild(_self, tip);
+		var dataKey = DataTableUtil.getIdName(tip.name());
 
-        var child = GetRuntimeTable(this, tip.PropertyName, objectType);
-        //先尝试中构造上下文中得到
-        return child.GetObjectFromConstruct(subData) ?? child.CreateObject(objectType, subData, QueryLevel.None); //成员始终是QueryLevel.None的方式加载
-    }
+		Object id = data.get(dataKey);
+		if (id != null) {
 
-	private object ReadMemberByLazy(PropertyRepositoryAttribute tip, DynamicData data)
-    {
-        var child = GetChildTableByRuntime(this, tip);
-        var dataKey = _getIdName(tip.PropertyName);
+			var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
+					: GeneratedField.RootIdName;
 
-        object id = null;
-        if (data.TryGetValue(dataKey, out id))
-        {
-            object rootId = null;
-            var rootIdName = this.Type == DataTableType.AggregateRoot
-                                            ? EntityObject.IdPropertyName
-                                            : GeneratedField.RootIdName;
-            if (data.TryGetValue(rootIdName, out rootId))
-            {
-                var member = child.QuerySingle(rootId, id);
-                if(tip.DomainPropertyType == DomainPropertyType.AggregateRoot)
-                {
-                    //尝试加载快照
-                    if (member.IsNull())
-                        return ReadSnapshot(tip, id);
-                }
-                return member;
-            }
-        }
-        return null;
-    }
+			Object rootId = data.get(rootIdName);
+			if (rootId != null) {
+				return child.querySingle(rootId, id);
+			}
+		}
+		return null;
+	}
 
 	Object readMembers(DomainObject parent, PropertyMeta tip, ConstructorParameterInfo prmTip, MapData data,
 			QueryLevel level) {
@@ -568,7 +547,7 @@ final class DataTableRead {
 
 		if (rootId != null) {
 			// 当前对象的编号，就是子对象的masterId
-			object masterId = data.get(EntityObject.IdPropertyName);
+			Object masterId = data.get(EntityObject.IdPropertyName);
 
 			var child = _self.findChild(_self, tip);
 			return child.readOneToMore(tip, prmTip, parent, rootId, masterId, level);
@@ -633,28 +612,28 @@ final class DataTableRead {
 //	#region 查询数据
 
 	/// <summary>
-	/// 查询单值数据，不必缓存，因此延迟就在后就被加载到内存中已被缓存的对象了
+	/// 查询单值数据，不必缓存，因为延迟加载后就被加载到内存中已被缓存的对象了
 	/// </summary>
 	/// <param name="rootId"></param>
 	/// <param name="id"></param>
 	/// <param name="propertyName"></param>
 	/// <returns></returns>
-	private Object queryDataScalar(Object rootId, Object id, String propertyName)
-    {
-        var query = GetScalarByIdExpression(this, propertyName);
-        using (var temp = SqlHelper.BorrowData())
-        {
-            var param = temp.Item;
-            if (this.Type != DataTableType.AggregateRoot)
-            {
-                param.Add(GeneratedField.RootIdName, rootId);
-            }
-            param.Add(EntityObject.IdPropertyName, id);
+	private Object queryDataScalar(Object rootId, Object id, String propertyName) {
 
-            var sql = query.Build(param, this);
-            return SqlHelper.ExecuteScalar(sql, param);
-        }
-    }
+		var param = new MapData();
+		if (_self.type() != DataTableType.AggregateRoot) {
+			param.put(GeneratedField.RootIdName, rootId);
+		}
+		param.put(EntityObject.IdPropertyName, id);
+
+		var expression = getScalarByIdExpression(_self, propertyName);
+
+		var qb = DataSource.getQueryBuilder(QueryObjectQB.class);
+		var description = QueryDescription.createBy(param, expression, QueryLevel.None, _self);
+		var sql = qb.build(description);
+
+		return DataAccess.getCurrent().queryScalar(sql, param);
+	}
 
 	/**
 	 * 
@@ -704,27 +683,23 @@ final class DataTableRead {
 
 //	#endregion
 
-	private static QueryExpression GetScalarByIdExpression(DataTable table, string propertyName)
-    {
-        return _getScalarById(table)(propertyName);
-    }
+	private static String getScalarByIdExpression(DataTable table, String propertyName) {
+		return _getScalarById.apply(table).apply(propertyName);
+	}
 
-	private static Func<DataTable, Func<string, QueryExpression>> _getScalarById = LazyIndexer.Init<DataTable, Func<string,QueryExpression>>((table)=>
-	{
-        return LazyIndexer.Init<string, QueryExpression>((propertyName) =>
-        {
-            string expression = null;
+	private static Function<DataTable, Function<String, String>> _getScalarById = LazyIndexer.init((table) -> {
+		return LazyIndexer.init((propertyName) -> {
+			String expression = null;
 
-            if (table.Type == DataTableType.AggregateRoot)
-            {
-                expression = string.Format("[{0}=@{0}][select {1}]", EntityObject.IdPropertyName, propertyName);
-            }
-            else
-            {
-                expression = string.Format("[{0}=@{0} and {1}=@{1}][select {2}]", GeneratedField.RootIdName, EntityObject.IdPropertyName, propertyName);
-            }
-            return QueryObject.Create(table, expression, QueryLevel.None);
-        });
-    });
+			if (table.type() == DataTableType.AggregateRoot) {
+				expression = MessageFormat.format("[{0}=@{0}][select {1}]", EntityObject.IdPropertyName, propertyName);
+			} else {
+				expression = MessageFormat.format("[{0}=@{0} and {1}=@{1}][select {2}]", GeneratedField.RootIdName,
+						EntityObject.IdPropertyName, propertyName);
+			}
+
+			return expression;
+		});
+	});
 
 }

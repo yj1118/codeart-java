@@ -122,7 +122,7 @@ public class SqlDefinition {
 
 	private SqlColumns _columns;
 
-	SqlColumns columns() {
+	public SqlColumns columns() {
 		return _columns;
 	}
 

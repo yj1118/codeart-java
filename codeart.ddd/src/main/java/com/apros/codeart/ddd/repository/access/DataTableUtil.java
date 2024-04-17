@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.Emptyable;
 import com.apros.codeart.ddd.EntityObject;
@@ -210,6 +211,36 @@ final class DataTableUtil {
 		});
 	});
 
+//	#region 根据typeKey找表
+
+	private static HashMap<String, DataTable> _typeTables = new HashMap<String, DataTable>();
+
+	static void addTypTable(String typeKey, DataTable table) {
+		if (!_typeTables.containsKey(typeKey)) {
+
+			if (!_typeTables.containsKey(typeKey)) // 防止 table.GetAbsolute方法操作了_typeTables，这里再次判断下重复
+			{
+				var absoluteTable = table.getAbsolute();
+				_typeTables.put(typeKey, absoluteTable);
+			}
+		}
+	}
+
+	/// <summary>
+	/// 该方法可以找到动态类型对应的表
+	/// </summary>
+	/// <param name="typeKey"></param>
+	/// <returns></returns>
+	static DataTable getDataTable(String typeKey) {
+		DataTable value = _typeTables.get(typeKey);
+		if (value == null)
+			throw new DomainDrivenException(String.format("codeart.ddd", "NotFoundDerivedType", typeKey));
+		return value;
+
+	}
+
+//	#endregion
+
 	/**
 	 * 获取对象内部的原始数据
 	 * 
@@ -264,8 +295,25 @@ final class DataTableUtil {
 		return _getIdName.apply(name);
 	}
 
+	public static String getNameWithSeparated(String name) {
+		return _getNameWithSeparated.apply(name);
+	}
+
+	public static String getNextName(String name) {
+		return _getNextName.apply(name);
+	}
+
 	private static Function<String, String> _getIdName = LazyIndexer.init((name) -> {
 		return String.format("%s%s", name, EntityObject.IdPropertyName);
+	});
+
+	private static Function<String, String> _getNameWithSeparated = LazyIndexer.init((name) -> {
+		return String.format("%s_", name);
+	});
+
+	private static Function<String, String> _getNextName = LazyIndexer.init((name) -> {
+		var pos = name.indexOf("_");
+		return name.substring(pos + 1);
 	});
 
 	public static Iterable<IDataField> getObjectFields(Class<?> objectType) {

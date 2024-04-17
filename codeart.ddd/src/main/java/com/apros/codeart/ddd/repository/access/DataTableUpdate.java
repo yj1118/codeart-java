@@ -1,5 +1,6 @@
 package com.apros.codeart.ddd.repository.access;
 
+import com.apros.codeart.ddd.DomainBuffer;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.IDomainObject;
@@ -37,6 +38,9 @@ final class DataTableUpdate {
 			if (updateData(root, null, obj)) {
 				onDataUpdated(root, obj);
 			}
+		} else {
+			// 如果对象不是脏的，但是要求修改，那么有可能是该对象的引用链上的对象发生了变化，所以我们移除该对象的缓冲
+			DomainBuffer.remove(obj.getClass(), DataTableUtil.getObjectId(obj));
 		}
 	}
 
@@ -110,6 +114,13 @@ final class DataTableUpdate {
 				: _self.getDataVersion(DataTableUtil.getObjectId(root), id);
 
 		obj.dataProxy().setVersion(dataVersion);
+
+		if (_self.type() == DataTableType.AggregateRoot) {
+			if (obj.isMirror()) {
+				// 镜像被修改了，对应的公共缓冲区中的对象也要被重新加载
+				DomainBuffer.remove(obj.getClass(), id);
+			}
+		}
 
 		_self.mapper().onUpdated(obj, _self);
 	}

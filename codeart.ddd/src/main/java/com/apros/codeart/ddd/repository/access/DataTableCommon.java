@@ -10,7 +10,7 @@ final class DataTableCommon {
 
 	private DataTable _self;
 
-	private DataTableCommon(DataTable self) {
+	public DataTableCommon(DataTable self) {
 		_self = self;
 	}
 

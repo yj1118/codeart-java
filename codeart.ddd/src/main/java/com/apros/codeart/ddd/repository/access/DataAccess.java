@@ -24,6 +24,10 @@ public final class DataAccess {
 		return QueryRunner.execute(_conn, sql, param);
 	}
 
+	public Object queryScalar(String sql, MapData params) {
+		return QueryRunner.queryScalar(_conn, sql, params);
+	}
+
 	public Object queryScalar(String sql, MapData params, QueryLevel level) {
 		sql = supplementLock(sql, level);
 		return QueryRunner.queryScalar(_conn, sql, params);

@@ -2,6 +2,7 @@ package com.apros.codeart.ddd.repository.access;
 
 import java.util.ArrayList;
 
+import com.apros.codeart.ddd.DomainBuffer;
 import com.apros.codeart.ddd.DomainObject;
 import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.IAggregateRoot;
@@ -66,6 +67,10 @@ final class DataTableDelete {
 	 * @param obj
 	 */
 	private void onDataDeleted(Object rootId, Object id, DomainObject obj) {
+		// 从缓冲区中删除对象
+		if (_self.type() == DataTableType.AggregateRoot) {
+			DomainBuffer.remove(_self.objectType(), rootId); // 不用考虑mirror，删不删除都不影响
+		}
 		_self.mapper().onDeleted(obj, _self);
 	}
 

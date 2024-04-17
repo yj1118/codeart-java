@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.apros.codeart.context.AppSession;
@@ -75,7 +76,7 @@ public class DataContext implements IDataContext {
 
 //	region 当前被加载的对象集合
 
-	private ArrayList<IAggregateRoot> _buffer;
+	private DomainBufferImpl _buffer;
 
 	private void disposeBuffer() {
 		if (_buffer != null)
@@ -85,16 +86,34 @@ public class DataContext implements IDataContext {
 	public void addBuffer(IAggregateRoot obj, boolean isMirror) {
 
 		if (_buffer == null)
-			_buffer = new ArrayList<IAggregateRoot>();
+			_buffer = new DomainBufferImpl();
 
-		if (ListUtil.contains(_buffer, (t) -> {
-			return t.uniqueKey().equals(obj.uniqueKey());
-		}))
-			return;
 		_buffer.add(obj);
 
 		if (isMirror)
 			addMirror(obj);
+	}
+
+	public void removeBuffer(Class<?> objectType, Object id) {
+
+		if (_buffer == null)
+			return;
+
+		_buffer.remove(objectType, id);
+	}
+
+	public IAggregateRoot obtainBuffer(Class<?> objectType, Object id, int dataVersion, Supplier<IAggregateRoot> load,
+			boolean isMirror) {
+
+		if (_buffer == null)
+			_buffer = new DomainBufferImpl();
+
+		var obj = _buffer.obtain(objectType, id, dataVersion, load);
+
+		if (isMirror)
+			addMirror(obj);
+
+		return obj;
 	}
 
 	/**
@@ -103,9 +122,7 @@ public class DataContext implements IDataContext {
 	 * @return
 	 */
 	Iterable<IAggregateRoot> getBufferObjects() {
-		if (_buffer == null)
-			return ListUtil.empty();
-		return _buffer;
+		return _buffer.items();
 	}
 
 //	region CUD
@@ -546,6 +563,8 @@ public class DataContext implements IDataContext {
 		return AppSession.getItem(_sessionKey) != null;
 	}
 
+//	#region 无返回值
+
 	private static void using(DataContext dataContext, Consumer<DataAccess> action, boolean timely) {
 		try {
 			boolean isCommiting = dataContext.isCommiting();
@@ -600,6 +619,69 @@ public class DataContext implements IDataContext {
 		}
 
 	}
+
+//	#endregion
+
+//	#region 有返回值
+
+	public static <T> T using(Supplier<T> action) {
+		return using(action, false);
+	}
+
+	public static <T> T using(Supplier<T> action, boolean timely) {
+		return using((access) -> {
+			return action.get();
+		}, timely);
+	}
+
+	public static <T> T using(Function<DataAccess, T> action) {
+		return using(action, false);
+	}
+
+	public static <T> T using(Function<DataAccess, T> action, boolean timely) {
+		if (DataContext.existCurrent()) {
+			var dataContext = DataContext.getCurrent();
+			return using(dataContext, action, timely);
+		} else {
+
+			var dataContext = new DataContext();
+			DataContext.setCurrent(dataContext);
+			try {
+				return using(dataContext, action, timely);
+			} catch (Exception e) {
+				throw e;
+			} finally {
+				DataContext.setCurrent(null);// 执行完后，释放
+			}
+		}
+
+	}
+
+	private static <T> T using(DataContext dataContext, Function<DataAccess, T> action, boolean timely) {
+		try {
+			T result;
+			boolean isCommiting = dataContext.isCommiting();
+			if (isCommiting) {
+				// 事务上下文已进入提交阶段，那么不必重复开启事务
+				result = action.apply(dataContext.connection().access());
+			} else {
+				dataContext.beginTransaction();
+				if (timely)
+					dataContext.openTimelyMode();
+
+				result = action.apply(dataContext.connection().access());
+				dataContext.commit();
+			}
+			return result;
+		} catch (Exception ex) {
+			if (dataContext.inTransaction()) {
+				dataContext.rollback();
+			}
+			throw ex;
+		}
+	}
+
+//	#endregion
 
 	public static void newScope(Runnable action) {
 		newScope((conn) -> {

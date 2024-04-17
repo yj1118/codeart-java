@@ -1,15 +1,16 @@
 package com.apros.codeart.ddd.repository.sqlserver;
 
+import com.apros.codeart.ddd.EntityObject;
 import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.ddd.repository.access.DataTable;
-import com.apros.codeart.ddd.repository.access.QueryObjectQB;
+import com.apros.codeart.ddd.repository.access.QueryCountQB;
 import com.apros.codeart.ddd.repository.access.SqlDefinition;
 import com.apros.codeart.util.SafeAccess;
 
 @SafeAccess
-class QueryObject extends QueryObjectQB {
+class QueryCount extends QueryCountQB {
 
-	private QueryObject() {
+	private QueryCount() {
 	}
 
 	protected String buildImpl(DataTable target, String expression, QueryLevel level) {
@@ -18,9 +19,9 @@ class QueryObject extends QueryObjectQB {
 
 		String objectSql = ExpressionHelper.getObjectSql(target, level, definition);
 
-		return String.format("select {0} * from {1} {2}", definition.top(), objectSql, definition.order());
+		return String.format("select count({0}) from {1}", EntityObject.IdPropertyName, objectSql);
 	}
 
-	public static final QueryObject Instance = new QueryObject();
+	public static final QueryCount Instance = new QueryCount();
 
 }
