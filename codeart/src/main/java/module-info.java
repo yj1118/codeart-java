@@ -2,14 +2,15 @@ module codeart {
 	requires org.objectweb.asm;
 	requires com.google.common;
 	requires org.reflections;
+	requires org.agrona.core;
 
-	exports com.apros.codeart;
-	exports com.apros.codeart.i18n;
-	exports com.apros.codeart.runtime;
-	exports com.apros.codeart.context;
-	exports com.apros.codeart.util;
-	exports com.apros.codeart.dto;
-	exports com.apros.codeart.dto.serialization;
+	exports apros.codeart;
+	exports apros.codeart.i18n;
+	exports apros.codeart.runtime;
+	exports apros.codeart.context;
+	exports apros.codeart.util;
+	exports apros.codeart.dto;
+	exports apros.codeart.dto.serialization;
 
 	opens codeart;
 }

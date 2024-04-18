@@ -1,6 +1,6 @@
 package subsystem.account;
 
-import com.apros.codeart.ddd.DomainObject;
+import apros.codeart.ddd.DomainObject;
 
 public class Account extends DomainObject {
 

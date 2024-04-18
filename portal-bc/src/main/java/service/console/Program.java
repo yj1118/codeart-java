@@ -1,6 +1,6 @@
 package service.console;
 
-import com.apros.codeart.ddd.console.ServiceHost;
+import apros.codeart.ddd.console.ServiceHost;
 
 public class Program {
 

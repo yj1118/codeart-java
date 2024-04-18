@@ -1,6 +1,6 @@
 package subsystem.user;
 
-import com.apros.codeart.ddd.DomainObject;
+import apros.codeart.ddd.DomainObject;
 
 public class User extends DomainObject {
 
