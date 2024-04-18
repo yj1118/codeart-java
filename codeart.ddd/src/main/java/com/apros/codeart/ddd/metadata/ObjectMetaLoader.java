@@ -79,7 +79,7 @@ public final class ObjectMetaLoader {
 		return null; // 非领域类型是没有元数据的
 	}
 
-	static void load(Iterable<Class<?>> domainTypes) {
+	static void load(Iterable<Class<? extends IDomainObject>> domainTypes) {
 
 		// 为了防止循环引用导致的死循环，要先预加载（只加载类型，不加载属性信息）
 		for (var domainType : domainTypes) {

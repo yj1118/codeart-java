@@ -6,7 +6,7 @@ import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.ddd.metadata.ObjectMetaLoader;
 import com.apros.codeart.util.LazyIndexer;
 
-final class DataModelLoader {
+public final class DataModelLoader {
 
 	private DataModelLoader() {
 
@@ -24,7 +24,7 @@ final class DataModelLoader {
 		return new DataModel(meta, root);
 	});
 
-	public static DataModel get(Class<? extends IDomainObject> objectType) {
+	static DataModel get(Class<? extends IDomainObject> objectType) {
 		return _getModel.apply(objectType);
 	}
 

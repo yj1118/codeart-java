@@ -6,6 +6,7 @@ import java.util.ArrayList;
 
 import com.apros.codeart.AppConfig;
 import com.apros.codeart.ddd.DomainObject;
+import com.apros.codeart.ddd.IDomainObject;
 import com.apros.codeart.runtime.Activator;
 import com.apros.codeart.util.ListUtil;
 
@@ -15,9 +16,9 @@ public final class MetadataLoader {
 
 	private static boolean loaded = false;
 
-	private static Iterable<Class<?>> _domainTypes;
+	private static Iterable<Class<? extends IDomainObject>> _domainTypes;
 
-	public Iterable<Class<?>> domainTypes() {
+	public Iterable<Class<? extends IDomainObject>> domainTypes() {
 		if (!loaded)
 			throw new IllegalArgumentException(strings("codeart.ddd", "MetadataNotInitialized"));
 		return _domainTypes;
@@ -26,7 +27,7 @@ public final class MetadataLoader {
 	/**
 	 * 加载所有领域对象的元数据
 	 */
-	public static Iterable<Class<?>> load() {
+	public static Iterable<Class<? extends IDomainObject>> load() {
 		if (loaded)
 			return _domainTypes;
 		loaded = true;
@@ -49,9 +50,9 @@ public final class MetadataLoader {
 		return _domainTypes;
 	}
 
-	private static Iterable<Class<?>> findDomainTypes() {
+	private static Iterable<Class<? extends IDomainObject>> findDomainTypes() {
 		var findedTypes = Activator.getSubTypesOf(DomainObject.class, AppConfig.mergeArchives("subsystem"));
-		ArrayList<Class<?>> domainTypes = new ArrayList<>();
+		ArrayList<Class<? extends IDomainObject>> domainTypes = new ArrayList<>();
 		for (var findedType : findedTypes) {
 			if (ListUtil.contains(findedTypes, null))
 

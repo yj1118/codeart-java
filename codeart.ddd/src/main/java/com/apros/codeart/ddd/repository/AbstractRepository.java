@@ -1,6 +1,7 @@
 package com.apros.codeart.ddd.repository;
 
 import com.apros.codeart.ddd.IAggregateRoot;
+import com.apros.codeart.ddd.IRepository;
 import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.ddd.StatusEvent;
 import com.apros.codeart.ddd.StatusEventType;

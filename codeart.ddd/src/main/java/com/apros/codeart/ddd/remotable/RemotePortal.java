@@ -2,6 +2,7 @@ package com.apros.codeart.ddd.remotable;
 
 import com.apros.codeart.ddd.QueryLevel;
 import com.apros.codeart.ddd.dynamic.DynamicRoot;
+import com.apros.codeart.ddd.dynamic.IDynamicRepository;
 import com.apros.codeart.ddd.repository.Repository;
 
 public final class RemotePortal {
@@ -9,22 +10,26 @@ public final class RemotePortal {
 	private RemotePortal() {
 	}
 
-	region 获取和同步对象
+//	region 获取和同步对象
 
-	/// <summary>
-	/// 获取远程对象并根据配置保存到本地
-	/// </summary>
-	/// <param name="define">远程对象的定义</param>
-	/// <param name="id">远程对象的数据编号</param>
-	/// <returns></returns>
-	static DynamicRoot getObject(Class<?> objectType, Object id, QueryLevel level)
+	/**
+	 * 
+	 * 获取远程对象并根据配置保存到本地
+	 * 
+	 * @param <T>
+	 * @param objectType 远程对象的类型
+	 * @param id 远程对象的编号
+	 * @param level
+	 * @return
+	 */
+	static <T extends DynamicRoot> T getObject(Class<T> objectType, Object id, QueryLevel level)
 	{
 	    var repository = Repository.create(IDynamicRepository.class);
-	    var root = repository.Find(define, id, level);
-	    if (!root.IsEmpty()) return root;//注释这句话就可以测试paper提交引起的死锁问题，该问题目前已解决
+	    var root = repository.find(objectType, id, level);
+	    if (!root.isEmpty()) return root;
 
 	    //从远程获取聚合根对象
-	    var remoteRoot = GetRootByRemote(define, id);
+	    var remoteRoot = getRootByRemote(objectType, id);
 
 	    //保存到本地
 	    DataContext.UseTransactionScope(() =>
@@ -40,13 +45,15 @@ public final class RemotePortal {
 	    return root;
 	}
 
-	/// <summary>
-	/// 从远程加载数据
-	/// </summary>
-	/// <param name="define"></param>
-	/// <param name="id"></param>
-	/// <returns></returns>
-	private static DynamicRoot GetRootByRemote(AggregateRootDefine define, object id) {
+	/**
+	 * 
+	 * 从远程加载数据
+	 * 
+	 * @param objectType
+	 * @param id
+	 * @return
+	 */
+	private static <T extends DynamicRoot> T getRootByRemote(Class<T> objectType, Object id) {
 		var data = RemoteService.GetObject(define, id);
 		return (DynamicRoot) define.CreateInstance(data);
 	}

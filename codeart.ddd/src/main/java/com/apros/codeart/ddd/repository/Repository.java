@@ -4,6 +4,9 @@ import java.lang.reflect.Method;
 
 import com.apros.codeart.ddd.DomainDrivenException;
 import com.apros.codeart.ddd.IRepository;
+import com.apros.codeart.ddd.QueryLevel;
+import com.apros.codeart.ddd.dynamic.DynamicRoot;
+import com.apros.codeart.ddd.remotable.RemotePortal;
 import com.apros.codeart.i18n.Language;
 import com.apros.codeart.runtime.MethodUtil;
 import com.apros.codeart.util.StringUtil;
@@ -62,37 +65,34 @@ public final class Repository {
 	}
 
 //	#region 远程对象
-//
-//	/// <summary>
-//	/// 查找远程根对象（使用动态对象须引用Microsoft.CSharp）
-//	/// </summary>
-//	/// <param name="id"></param>
-//	/// <returns></returns>
-//	public static dynamic FindRemoteRoot<T>(object id)
-//	where T:AggregateRootDefine
-//	{
-//	    var define =(AggregateRootDefine)TypeDefine.GetDefine<T>();
-//	    return RemotePortal.GetObject(define, id, QueryLevel.None);
-//	}
-//
-//	public static dynamic FindRemoteRootWithLock<T>(object id)
-//	where T:AggregateRootDefine
-//	{
-//	    var define = (AggregateRootDefine)TypeDefine.GetDefine<T>();
-//	    return RemotePortal.GetObject(define, id, QueryLevel.Single);
-//	}
-//
-//	public static IEnumerable<dynamic> FindRemoteRoots<T>(IEnumerable<object> ids)
-//	where T:AggregateRootDefine
-//	{
-//	    var items = new List<dynamic>(ids.Count());
-//	    foreach (var id in ids)
-//	    {
-//	        var item = Repository.FindRemoteRoot<T>(id);
-//	        items.Add(item);
-//	    }
-//	    return items;
-//	}
+
+	/// <summary>
+	/// 查找远程根对象
+	/// </summary>
+	/// <param name="id"></param>
+	/// <returns></returns>
+	public static <T extends DynamicRoot> T findRemoteRoot(Class<?> objectType, Object id) {
+		return RemotePortal.getObject(objectType, id, QueryLevel.None);
+	}
+
+	public static dynamic FindRemoteRootWithLock<T>(object id)
+	where T:AggregateRootDefine
+	{
+	    var define = (AggregateRootDefine)TypeDefine.GetDefine<T>();
+	    return RemotePortal.GetObject(define, id, QueryLevel.Single);
+	}
+
+	public static IEnumerable<dynamic> FindRemoteRoots<T>(IEnumerable<object> ids)
+	where T:AggregateRootDefine
+	{
+	    var items = new List<dynamic>(ids.Count());
+	    foreach (var id in ids)
+	    {
+	        var item = Repository.FindRemoteRoot<T>(id);
+	        items.Add(item);
+	    }
+	    return items;
+	}
 
 //	#endregion
 
