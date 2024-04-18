@@ -259,10 +259,14 @@ public final class StringUtil {
 	 * 
 	 * 用utf-8编码，预估字符串最大可能占有的字节数
 	 * 
+	 * 虽然 maxBytesPerChar() 提供了一个快速且简便的方法来估算可能的最大字节长度，但它往往不适合用于精确的内存分配或性能优化，
+	 * 
+	 * 因为它可能导致显著的内存浪费。在性能和内存使用敏感的应用中，应考虑实际编码字符串来精确计算所需的字节长度。
+	 * 
 	 * @param value
 	 * @return
 	 */
-	public static int byteLengthEstimation(String value) {
+	public static int maxBytesPerChar(String value) {
 		Charset charset = StandardCharsets.UTF_8;
 		CharsetEncoder encoder = charset.newEncoder();
 
