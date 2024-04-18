@@ -40,11 +40,6 @@
 	    <artifactId>reflections</artifactId>
 	    <version>0.10.2</version>
 	</dependency>
-	<dependency>
-	    <groupId>org.agrona</groupId>
-	    <artifactId>agrona</artifactId>
-	    <version>1.21.1</version>
-	</dependency>
   </dependencies>
 
   <build>

@@ -1,5 +1,8 @@
 package apros.codeart.util;
 
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Set;
@@ -250,6 +253,24 @@ public final class StringUtil {
 		Matcher matcher = pattern.matcher(source);
 
 		return matcher.find() ? matcher.start() : -1;
+	}
+
+	/**
+	 * 
+	 * 用utf-8编码，预估字符串最大可能占有的字节数
+	 * 
+	 * @param value
+	 * @return
+	 */
+	public static int byteLengthEstimation(String value) {
+		Charset charset = StandardCharsets.UTF_8;
+		CharsetEncoder encoder = charset.newEncoder();
+
+		// 获取每个字符可能占用的最大字节数
+		float maxBytesPerChar = encoder.maxBytesPerChar();
+		int maxByteLength = (int) (value.length() * maxBytesPerChar);
+
+		return maxByteLength;
 	}
 
 }

@@ -2,25 +2,28 @@ package apros.codeart.mq;
 
 import apros.codeart.AppConfig;
 
-public final class MQConfig {
-	private MQConfig() {
+public final class MQ {
+	private MQ() {
 	}
 
-	private static class MQConfigHolder {
+	private static class MQHolder {
 
-		/**
-		 * 消息队列数据传输，用于接收和发送数据的缓冲区大小
-		 */
-		private static final int BUFFER_SIZE;
+//		/**
+//		 * 消息队列数据传输，用于接收和发送数据的缓冲区大小
+//		 */
+//		private static final ByteBuffer BUFFER;
 
 		static {
 
 			var mq = AppConfig.section("mq");
 			if (mq != null) {
-				BUFFER_SIZE = mq.getInt("buffer");
+//				var bufferSize = mq.getInt("buffer.size", 10);
+//				var bufferCount = mq.getInt("buffer.count", 20);
+//
+//				BUFFER = ByteBuffer.createMB(bufferSize, bufferCount);
 
 			} else {
-				BUFFER_SIZE = 200; // 默认200M
+//				BUFFER = ByteBuffer.createMB(10, 20);
 			}
 		}
 	}
@@ -37,15 +40,11 @@ public final class MQConfig {
 //		return DataSourceHolder.TYPE;
 //	}
 //
-	/**
-	 * 
-	 * 字节缓冲区的大小
-	 * 
-	 * @return
-	 */
-	public static int bufferSize() {
-		return MQConfigHolder.BUFFER_SIZE;
-	}
+
+//	public static ByteBuffer getBuffer() {
+//		return MQHolder.BUFFER;
+//	}
+
 //
 //	public static IQueryBuilder getQueryBuilder(Class<? extends IQueryBuilder> qbType) {
 //		var agent = DataSource.getAgent();

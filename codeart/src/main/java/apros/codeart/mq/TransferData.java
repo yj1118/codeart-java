@@ -1,6 +1,9 @@
 package apros.codeart.mq;
 
+import java.nio.ByteBuffer;
+
 import apros.codeart.dto.DTObject;
+import apros.codeart.io.BytesReader;
 import apros.codeart.util.ListUtil;
 
 public class TransferData {
@@ -30,20 +33,20 @@ public class TransferData {
 		return _binaryDataLength;
 	}
 
-	private byte[] _binaryData;
+	private ByteBuffer _binaryData;
 
 	/**
 	 * 二进制数据
 	 * 
 	 * @return
 	 */
-	public byte[] binaryData() {
+	public ByteBuffer binaryData() {
 		return _binaryData;
 	}
 
 //	#endregion
 
-	public TransferData(String language, DTObject info, int binaryDataLength, byte[] binaryData) {
+	public TransferData(String language, DTObject info, int binaryDataLength, ByteBuffer binaryData) {
 		_language = language;
 		_info = info;
 		_binaryDataLength = binaryDataLength;
@@ -54,38 +57,31 @@ public class TransferData {
 		_language = language;
 		_info = info;
 		_binaryDataLength = 0;
-		_binaryData = ListUtil.emptyByts();
+		_binaryData = null;
 	}
 
-	public static TransferData Deserialize(byte[] content)
-	 {
-	     using (var temp = ByteBuffer.Borrow(content.Length))
-	     {
-	         var source = temp.Item;
-	         source.Write(content);
+	public static TransferData deserialize(byte[] content) {
 
-	         var language = source.ReadString();
+		var reader = new BytesReader(content);
 
-	         var dtoLength = source.ReadInt32();
-	         var dtoData = source.ReadBytes(dtoLength);
+		var language = reader.readString();
+		var dtoCode = reader.readString();
 
-	         DTObject dto = DTObject.Create(dtoData);
+		DTObject dto = DTObject.readonly(dtoCode);
 
-	         int binaryLength = 0;
-	         byte[] binaryData = Array.Empty<byte>();
+		int binaryLength = 0;
+		ByteBuffer binaryData = null;
 
-	         if (source.ReadPosition < source.Length)
-	         {
-	             binaryLength = source.ReadInt32();
-	             var thisTimeLength = source.ReadInt32();
-	             binaryData = source.ReadBytes(thisTimeLength);
-	         }
+		if (reader.hasRemaining()) {
+			binaryLength = reader.readInt();
+			var thisTimeLength = reader.readInt();
+			binaryData = reader.readBuffer(thisTimeLength);
+		}
 
-	         return new TransferData(language, dto, binaryLength, binaryData);
-	     }
-	 }
+		return new TransferData(language, dto, binaryLength, binaryData);
+	}
 
-	public static byte[] Serialize(TransferData result)
+	public static byte[] serialize(TransferData result)
 	 {
 	     var size = result.DataLength == 0 ? SegmentSize.Byte512.Value : result.Buffer.Length; 
 
@@ -116,5 +112,4 @@ public class TransferData {
 	public static TransferData CreateEmpty() {
 		return new TransferData(string.Empty, DTObject.Empty);
 	}
-
 }

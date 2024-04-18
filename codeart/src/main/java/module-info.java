@@ -2,7 +2,6 @@ module codeart {
 	requires org.objectweb.asm;
 	requires com.google.common;
 	requires org.reflections;
-	requires org.agrona.core;
 
 	exports apros.codeart;
 	exports apros.codeart.i18n;
