@@ -11,17 +11,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @param <T>
  */
 final class ResidentItem implements IPoolItem {
-	private IPool _owner;
+	private IPoolSegment _owner;
 	private Object _item;
 	private AtomicBoolean _isBorrowed;
 
-	public ResidentItem(IPool owner, Object item) {
+	public ResidentItem(IPoolSegment owner, Object item) {
 		_owner = owner;
 		_item = item;
 		_isBorrowed = new AtomicBoolean(false);
 	}
 
-	public IPool getOwner() {
+	public IPoolSegment getOwner() {
 		return _owner;
 	}
 

@@ -9,7 +9,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public final class Pool<T> implements IPool {
+public final class PoolSegment<T> implements IPoolSegment {
 
 	private final Supplier<T> _itemFactory;
 	/**
@@ -39,7 +39,8 @@ public final class Pool<T> implements IPool {
 	 * @param itemDestroyer 当项被消除时，会使用该对象进行额外的销毁操作,可为空
 	 * @param config        池行为的配置
 	 */
-	public Pool(Supplier<T> itemFactory, Consumer<T> itemRecycler, Consumer<T> itemDestroyer, PoolConfig config) {
+	public PoolSegment(Supplier<T> itemFactory, Consumer<T> itemRecycler, Consumer<T> itemDestroyer,
+			PoolConfig config) {
 		Objects.requireNonNull(itemFactory, "itemFactory");
 		Objects.requireNonNull(config, "config");
 
@@ -52,11 +53,11 @@ public final class Pool<T> implements IPool {
 		_container = createContainer();
 	}
 
-	public Pool(Supplier<T> itemFactory, Consumer<T> itemRecycler, PoolConfig config) {
+	public PoolSegment(Supplier<T> itemFactory, Consumer<T> itemRecycler, PoolConfig config) {
 		this(itemFactory, itemRecycler, null, config);
 	}
 
-	public Pool(Supplier<T> itemFactory, PoolConfig config) {
+	public PoolSegment(Supplier<T> itemFactory, PoolConfig config) {
 		this(itemFactory, null, null, config);
 	}
 

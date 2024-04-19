@@ -1,5 +1,5 @@
 package apros.codeart.pooling;
 
-public interface IPool extends AutoCloseable {
+public interface IPoolSegment extends AutoCloseable {
 	void clear(IPoolItem item);
 }

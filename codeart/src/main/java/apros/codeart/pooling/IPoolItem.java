@@ -7,7 +7,7 @@ public interface IPoolItem extends AutoCloseable {
 	 * 
 	 * @return
 	 */
-	IPool getOwner();
+	IPoolSegment getOwner();
 
 	/**
 	 * 获取项
