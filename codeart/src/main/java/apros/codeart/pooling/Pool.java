@@ -68,7 +68,7 @@ public class Pool<T> {
 	}
 
 	public Pool(Class<T> itemType, Supplier<T> itemFactory) {
-		this(itemType, 50, 2, 0, itemFactory, null, null);
+		this(itemType, 100, 2, 0, itemFactory, null, null);
 	}
 
 	/**

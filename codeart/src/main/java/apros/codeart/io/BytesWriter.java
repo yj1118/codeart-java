@@ -44,7 +44,7 @@ public final class BytesWriter {
 
 	/**
 	 * 
-	 * 读取长度为 {@length} 的数组，以buferr形式返回，这个方法的好处是建立了子视图，并没有真正的创建新的数组
+	 * 读取长度为 {@length} 的数组，以bufferr形式返回，这个方法的好处是建立了子视图，并没有真正的创建新的数组
 	 * 
 	 * @param length
 	 * @return
