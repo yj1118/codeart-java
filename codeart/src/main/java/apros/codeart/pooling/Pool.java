@@ -63,6 +63,14 @@ public class Pool<T> {
 		this(itemType, segmentCapacity, minSegmentCount, 0, itemFactory, null, null);
 	}
 
+	public Pool(Class<T> itemType, int segmentCapacity, Supplier<T> itemFactory) {
+		this(itemType, segmentCapacity, 2, 0, itemFactory, null, null);
+	}
+
+	public Pool(Class<T> itemType, Supplier<T> itemFactory) {
+		this(itemType, 50, 2, 0, itemFactory, null, null);
+	}
+
 	/**
 	 * 构造时就创建分段，避免按需加载导致的并发控制，会增加额外的性能损耗
 	 */
