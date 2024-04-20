@@ -1,16 +1,12 @@
 package apros.codeart.pooling;
 
 final class TempItem implements IPoolItem {
-	private IPool _owner;
+	private Pool<?> _owner;
 	private Object _item;
 
-	public TempItem(IPool owner, Object item) {
+	private TempItem(Pool<?> owner) {
 		_owner = owner;
-		_item = item;
-	}
-
-	public IPool getOwner() {
-		return _owner;
+		_item = owner.createItem();
 	}
 
 	/// <summary>
@@ -21,12 +17,21 @@ final class TempItem implements IPoolItem {
 		return (T) _item;
 	}
 
-	/**
-	 * 该对象的关闭操作，就是清理操作，关闭后就返回到池中了，可以继续借出
-	 */
+	public static TempItem tryClaim(Pool<?> owner) {
+		owner.borrowedIncrement(); // 借出数+1
+		return new TempItem(owner);
+	}
+
+	@Override
+	public void back() {
+		// 临时项直接销毁
+		_owner.disposeItem(this);
+		_owner.borrowedDecrement(); // 借出数-1
+	}
+
 	@Override
 	public void close() {
-		_owner.clear(this); // 让池来处理清理工作
+		this.back();
 	}
 
 }

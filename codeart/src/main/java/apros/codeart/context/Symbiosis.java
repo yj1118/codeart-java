@@ -7,7 +7,6 @@ import java.util.HashSet;
 
 import apros.codeart.pooling.IReusable;
 import apros.codeart.pooling.Pool;
-import apros.codeart.pooling.PoolConfig;
 import apros.codeart.pooling.Util;
 
 /**
@@ -38,9 +37,9 @@ final class Symbiosis implements IReusable {
 		_items.clear();
 	}
 
-	private static Pool<Symbiosis> _pool = new Pool<Symbiosis>(() -> {
+	private static Pool<Symbiosis> _pool = new Pool<Symbiosis>(Symbiosis.class, 50, 2, () -> {
 		return new Symbiosis();
-	}, PoolConfig.onlyMaxRemainTime(300));
+	});
 
 	private final static String _sessionKey = "__Symbiosis.Current";
 
