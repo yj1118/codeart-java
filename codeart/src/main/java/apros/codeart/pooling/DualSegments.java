@@ -69,7 +69,7 @@ class DualSegments {
 		return _segmentCount.getAcquire();
 	}
 
-	private Object _syncObject = new Object();
+	private final Object _syncObject = new Object();
 
 	boolean tryGrow() {
 		// 如果借出项总数大于当前所有缓冲项的数量，那么扩容

@@ -12,6 +12,11 @@ public final class PrimitiveUtil {
 	private PrimitiveUtil() {
 	}
 
+	public static Object convert(String value, String typeName) {
+		var type = getType(typeName);
+		return convert(value, type);
+	}
+
 	@SuppressWarnings("unchecked")
 	public static <T> T convertT(Object value, Class<T> targetType) {
 		return (T) convert(value, targetType);
@@ -114,5 +119,7 @@ public final class PrimitiveUtil {
 			return true;
 		return false;
 	}
+
+	public static final String PrimitiveTypes = "char,bool,boolean,byte,datetime,double,short,int,single,long,float,single,float,string,guid";
 
 }

@@ -1,4 +1,4 @@
-package apros.codeart.mq;
+package apros.codeart.mq.event;
 
 /**
  * 事件的订阅者

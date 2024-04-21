@@ -25,8 +25,6 @@ public class LazyIndexer {
 	 */
 	public static <TKey, TValue> Function<TKey, TValue> init(Function<TKey, TValue> valueFactory,
 			Function<TValue, Boolean> filter) {
-		if (valueFactory == null)
-			throw new ArgumentNullException("valueFactory");
 		var map = new HashMap<TKey, TValue>();
 		return key -> {
 			TValue result = map.get(key);

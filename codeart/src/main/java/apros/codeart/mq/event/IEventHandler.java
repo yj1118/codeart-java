@@ -1,4 +1,6 @@
-package apros.codeart.mq;
+package apros.codeart.mq.event;
+
+import apros.codeart.mq.TransferData;
 
 /**
  * 远程事件处理器

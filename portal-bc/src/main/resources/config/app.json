@@ -8,6 +8,13 @@
 		"password":"Rw$510th%v"
 	},
 	"mq":{
-		
+		"event":{
+			"publisher":{
+				"factory":{
+					"type":"",
+					"arguments":[]
+				}
+			}
+		}
 	}
 }

@@ -34,4 +34,10 @@ public final class ArgumentAssert {
 		Preconditions.checkArgument(value.length > 0, strings("codeart", "CannotEmpty", parameterName));
 	}
 
+	public static void isNotNull(Object value, String parameterName) {
+		// 检查不为null
+		Preconditions.checkNotNull(value, strings("codeart", "ArgCanNotNull", parameterName));
+
+	}
+
 }
