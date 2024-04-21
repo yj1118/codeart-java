@@ -37,7 +37,17 @@ public final class ArgumentAssert {
 	public static void isNotNull(Object value, String parameterName) {
 		// 检查不为null
 		Preconditions.checkNotNull(value, strings("codeart", "ArgCanNotNull", parameterName));
+	}
 
+	/**
+	 * 不能小于或等于0
+	 * 
+	 * @param value
+	 * @param parameterName
+	 */
+	public static void lessThanOrEqualZero(int value, String parameterName) {
+		if (value <= 0)
+			throw new IllegalArgumentException(strings("codeart", "LessThanOrEqualZero", parameterName));
 	}
 
 }

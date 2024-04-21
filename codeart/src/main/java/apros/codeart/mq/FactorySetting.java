@@ -1,9 +1,8 @@
-package apros.codeart.mq.event;
+package apros.codeart.mq;
 
 import java.util.function.Supplier;
 
 import apros.codeart.i18n.Language;
-import apros.codeart.mq.EasyMQException;
 
 public class FactorySetting<T> {
 

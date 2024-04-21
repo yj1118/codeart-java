@@ -2,7 +2,7 @@ package apros.codeart.mq.event;
 
 import apros.codeart.InterfaceImplementer;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.MQ;
+import apros.codeart.mq.FactorySetting;
 
 public final class EventPortal {
 
@@ -44,12 +44,12 @@ public final class EventPortal {
 	}
 
 	private static ISubscriber createSubscriber(String eventName) {
-		var group = MQ.getSubscriberGroup();
+		var group = MQEvent.getSubscriberGroup();
 		return getSubscriberFactory().create(eventName, group);
 	}
 
 	private static ISubscriber removeSubscriber(String eventName) {
-		var group = MQ.getSubscriberGroup();
+		var group = MQEvent.getSubscriberGroup();
 		return getSubscriberFactory().remove(eventName, group);
 	}
 
@@ -87,7 +87,7 @@ public final class EventPortal {
 
 	private static FactorySetting<IPublisherFactory> _publisherSetting = new FactorySetting<IPublisherFactory>(
 			IPublisherFactory.class, () -> {
-				InterfaceImplementer impl = MQ.getPublisherFactoryImplementer();
+				InterfaceImplementer impl = MQEvent.getPublisherFactoryImplementer();
 				if (impl != null) {
 					return impl.getInstance(IPublisherFactory.class);
 				}
@@ -104,7 +104,7 @@ public final class EventPortal {
 
 	private static FactorySetting<ISubscriberFactory> _subscriberSetting = new FactorySetting<ISubscriberFactory>(
 			ISubscriberFactory.class, () -> {
-				InterfaceImplementer impl = MQ.getSubscriberFactoryImplementer();
+				InterfaceImplementer impl = MQEvent.getSubscriberFactoryImplementer();
 				if (impl != null) {
 					return impl.getInstance(ISubscriberFactory.class);
 				}

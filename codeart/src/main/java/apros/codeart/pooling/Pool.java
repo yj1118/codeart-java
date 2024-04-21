@@ -49,30 +49,22 @@ public class Pool<T> {
 	 * @param segmentSize  每个分段的大小
 	 * @param segmentCount 分段数量initialSegmentCount
 	 */
-	public Pool(Class<T> itemType, int segmentCapacity, int minSegmentCount, int maxSegmentCount,
-			Function<Boolean, T> itemFactory, Consumer<T> itemRecycler, Consumer<T> itemDestroyer) {
+	public Pool(Class<T> itemType, PoolConfig config, Function<Boolean, T> itemFactory, Consumer<T> itemRecycler,
+			Consumer<T> itemDestroyer) {
 		_itemFactory = itemFactory;
 		_itemRecycler = itemRecycler;
 		_itemDestroyer = itemDestroyer;
 		_itemDisposable = _itemDestroyer != null && itemType.isAssignableFrom(AutoCloseable.class);
-		_dual = new DualSegments(this, segmentCapacity, minSegmentCount, maxSegmentCount);
+		_dual = new DualSegments(this, config.initialSegmentCapacity(), config.maxSegmentCapacity(),
+				config.initialSegmentCount(), config.maxSegmentCount());
 	}
 
-	public Pool(Class<T> itemType, int segmentCapacity, int minSegmentCount, Function<Boolean, T> itemFactory) {
-		this(itemType, segmentCapacity, minSegmentCount, 0, itemFactory, null, null);
+	public Pool(Class<T> itemType, PoolConfig config, Function<Boolean, T> itemFactory) {
+		this(itemType, config, itemFactory, null, null);
 	}
 
-	public Pool(Class<T> itemType, int segmentCapacity, int minSegmentCount, Function<Boolean, T> itemFactory,
-			Consumer<T> itemRecycler) {
-		this(itemType, segmentCapacity, minSegmentCount, 0, itemFactory, itemRecycler, null);
-	}
-
-	public Pool(Class<T> itemType, int segmentCapacity, Function<Boolean, T> itemFactory) {
-		this(itemType, segmentCapacity, 2, 0, itemFactory, null, null);
-	}
-
-	public Pool(Class<T> itemType, Function<Boolean, T> itemFactory) {
-		this(itemType, 100, 2, 0, itemFactory, null, null);
+	public Pool(Class<T> itemType, PoolConfig config, Function<Boolean, T> itemFactory, Consumer<T> itemRecycler) {
+		this(itemType, config, itemFactory, itemRecycler, null);
 	}
 
 	/**
@@ -85,7 +77,7 @@ public class Pool<T> {
 	 * 
 	 * @return
 	 */
-	private PoolSegment claimSegment() {
+	private DualPoolSegment claimSegment() {
 		var index = next(); // 取出下一个可用的分段坐标
 		return _dual.segments()[index];
 	}

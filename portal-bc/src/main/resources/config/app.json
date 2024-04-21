@@ -15,6 +15,15 @@
 					"arguments":[]
 				}
 			}
+		},
+		"rpc":{
+			"client":{
+				"factory":{
+					"type":"",
+					"arguments":[]
+				},
+				"timeout":20
+			}
 		}
 	}
 }
