@@ -37,7 +37,7 @@ final class Symbiosis implements IReusable {
 		_items.clear();
 	}
 
-	private static Pool<Symbiosis> _pool = new Pool<Symbiosis>(Symbiosis.class, () -> {
+	private static Pool<Symbiosis> _pool = new Pool<Symbiosis>(Symbiosis.class, (isTempItem) -> {
 		return new Symbiosis();
 	});
 

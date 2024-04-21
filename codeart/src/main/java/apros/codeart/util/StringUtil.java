@@ -1,5 +1,7 @@
 package apros.codeart.util;
 
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.StandardCharsets;
@@ -15,6 +17,7 @@ import java.util.stream.StreamSupport;
 
 import com.google.common.base.CaseFormat;
 
+import apros.codeart.io.IOBuffer;
 import apros.codeart.pooling.PoolingException;
 
 public final class StringUtil {
@@ -266,8 +269,8 @@ public final class StringUtil {
 	 * @param value
 	 * @return
 	 */
-	public static int maxBytesPerChar(String value) {
-		Charset charset = StandardCharsets.UTF_8;
+	public static int maxBytesPerChar(String value, Charset charset) {
+
 		CharsetEncoder encoder = charset.newEncoder();
 
 		// 获取每个字符可能占用的最大字节数
@@ -275,6 +278,34 @@ public final class StringUtil {
 		int maxByteLength = (int) (value.length() * maxBytesPerChar);
 
 		return maxByteLength;
+	}
+
+	public static int maxBytesPerChar(String value) {
+		return maxBytesPerChar(value, StandardCharsets.UTF_8);
+	}
+
+	public static int getBytesSize(String value) {
+		return getBytesSize(value, StandardCharsets.UTF_8);
+	}
+
+	/**
+	 * 
+	 * 获得字符串实际占用的字节数
+	 * 
+	 * @param value
+	 * @param charset
+	 * @return
+	 */
+	public static int getBytesSize(String value, Charset charset) {
+		var max = maxBytesPerChar(value, charset);
+		try (var temp = IOBuffer.borrow(max)) {
+			ByteBuffer buffer = temp.getItem();
+			int start = 0;
+			CharsetEncoder encoder = charset.newEncoder();
+			encoder.encode(CharBuffer.wrap(value), buffer, true);
+			int end = buffer.position();
+			return end - start;
+		}
 	}
 
 }

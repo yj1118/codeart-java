@@ -4,7 +4,8 @@ import java.nio.ByteBuffer;
 
 import apros.codeart.dto.DTObject;
 import apros.codeart.io.BytesReader;
-import apros.codeart.util.ListUtil;
+import apros.codeart.io.BytesWriter;
+import apros.codeart.util.StringUtil;
 
 public class TransferData {
 
@@ -22,15 +23,15 @@ public class TransferData {
 
 //	#region 二进制传输（如果需要的话）
 
-	private int _binaryDataLength;
+	private int _binaryDataTotalLength;
 
 	/**
 	 * 二进制数据的总长度（有可能是分段传输，该值是总数据的长度，而不是本次传输的长度）
 	 * 
 	 * @return
 	 */
-	public int binaryDataLength() {
-		return _binaryDataLength;
+	public int binaryDataTotalLength() {
+		return _binaryDataTotalLength;
 	}
 
 	private ByteBuffer _binaryData;
@@ -46,17 +47,17 @@ public class TransferData {
 
 //	#endregion
 
-	public TransferData(String language, DTObject info, int binaryDataLength, ByteBuffer binaryData) {
+	public TransferData(String language, DTObject info, int binaryDataTotalLength, ByteBuffer binaryData) {
 		_language = language;
 		_info = info;
-		_binaryDataLength = binaryDataLength;
+		_binaryDataTotalLength = binaryDataTotalLength;
 		_binaryData = binaryData;
 	}
 
 	public TransferData(String language, DTObject info) {
 		_language = language;
 		_info = info;
-		_binaryDataLength = 0;
+		_binaryDataTotalLength = 0;
 		_binaryData = null;
 	}
 
@@ -69,47 +70,48 @@ public class TransferData {
 
 		DTObject dto = DTObject.readonly(dtoCode);
 
-		int binaryLength = 0;
+		int binaryTotalLength = reader.readInt();
 		ByteBuffer binaryData = null;
 
 		if (reader.hasRemaining()) {
-			binaryLength = reader.readInt();
 			var thisTimeLength = reader.readInt();
 			binaryData = reader.readBuffer(thisTimeLength);
 		}
 
-		return new TransferData(language, dto, binaryLength, binaryData);
+		return new TransferData(language, dto, binaryTotalLength, binaryData);
 	}
 
-	public static byte[] serialize(TransferData result)
-	 {
-	     var size = result.DataLength == 0 ? SegmentSize.Byte512.Value : result.Buffer.Length; 
+	public static byte[] serialize(TransferData result) {
+		// 注意，我们使用估算值快速得到可能的最大占用大小
+		int estimateSize = 0;
+		// 语言占用字节数
+		estimateSize += StringUtil.maxBytesPerChar(result.language());
 
-	     using (var temp = ByteBuffer.Borrow(size))
-	     {
-	         var target = temp.Item;
+		// info占用字节数
+		var infoCode = result.info().getCode();
 
-	         target.Write(result.Language);
+		estimateSize += StringUtil.maxBytesPerChar(infoCode);
 
+		estimateSize += 4; // binaryDataTotalLength的记录占用4个字节
+		// 二进制数据占用字节数
+		estimateSize += result.binaryData() == null ? 0 : result.binaryData().capacity();
 
-	         var dtoData = result.Info.ToData();
+		try (var writer = new BytesWriter(estimateSize)) {
 
+			writer.write(result.language());
+			writer.write(infoCode);
 
-	         target.Write(dtoData.Length);
-	         target.Write(dtoData);
+			writer.write(result.binaryDataTotalLength());
 
-	         if (result.DataLength > 0)
-	         {
-	             target.Write(result.DataLength);
-	             target.Write(result.Buffer.Length);
-	             target.Write(result.Buffer);
-	         }
+			if (result.binaryData() != null) {
+				writer.write(result.binaryData());
+			}
 
-	         return target.ToArray();
-	     }
-	 }
+			return writer.toBytesAndEnd();
+		}
+	}
 
-	public static TransferData CreateEmpty() {
-		return new TransferData(string.Empty, DTObject.Empty);
+	public static TransferData createEmpty() {
+		return new TransferData(StringUtil.empty(), DTObject.Empty);
 	}
 }

@@ -6,7 +6,7 @@ final class TempItem implements IPoolItem {
 
 	private TempItem(Pool<?> owner) {
 		_owner = owner;
-		_item = owner.createItem();
+		_item = owner.createItem(true);
 	}
 
 	/// <summary>

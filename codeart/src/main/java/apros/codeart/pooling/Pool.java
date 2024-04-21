@@ -4,14 +4,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
 
 public class Pool<T> {
 
-	private final Supplier<T> _itemFactory;
+	private final Function<Boolean, T> _itemFactory;
 	/**
 	 * 当项被返回到池中，会被回收者回收一次
 	 */
@@ -51,7 +50,7 @@ public class Pool<T> {
 	 * @param segmentCount 分段数量initialSegmentCount
 	 */
 	public Pool(Class<T> itemType, int segmentCapacity, int minSegmentCount, int maxSegmentCount,
-			Supplier<T> itemFactory, Consumer<T> itemRecycler, Consumer<T> itemDestroyer) {
+			Function<Boolean, T> itemFactory, Consumer<T> itemRecycler, Consumer<T> itemDestroyer) {
 		_itemFactory = itemFactory;
 		_itemRecycler = itemRecycler;
 		_itemDestroyer = itemDestroyer;
@@ -59,15 +58,20 @@ public class Pool<T> {
 		_dual = new DualSegments(this, segmentCapacity, minSegmentCount, maxSegmentCount);
 	}
 
-	public Pool(Class<T> itemType, int segmentCapacity, int minSegmentCount, Supplier<T> itemFactory) {
+	public Pool(Class<T> itemType, int segmentCapacity, int minSegmentCount, Function<Boolean, T> itemFactory) {
 		this(itemType, segmentCapacity, minSegmentCount, 0, itemFactory, null, null);
 	}
 
-	public Pool(Class<T> itemType, int segmentCapacity, Supplier<T> itemFactory) {
+	public Pool(Class<T> itemType, int segmentCapacity, int minSegmentCount, Function<Boolean, T> itemFactory,
+			Consumer<T> itemRecycler) {
+		this(itemType, segmentCapacity, minSegmentCount, 0, itemFactory, itemRecycler, null);
+	}
+
+	public Pool(Class<T> itemType, int segmentCapacity, Function<Boolean, T> itemFactory) {
 		this(itemType, segmentCapacity, 2, 0, itemFactory, null, null);
 	}
 
-	public Pool(Class<T> itemType, Supplier<T> itemFactory) {
+	public Pool(Class<T> itemType, Function<Boolean, T> itemFactory) {
 		this(itemType, 100, 2, 0, itemFactory, null, null);
 	}
 
@@ -118,8 +122,8 @@ public class Pool<T> {
 		}
 	}
 
-	Object createItem() {
-		return _itemFactory.get();
+	Object createItem(Boolean isTempItem) {
+		return _itemFactory.apply(isTempItem);
 	}
 
 	void clearItem(IPoolItem item) {

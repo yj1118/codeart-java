@@ -14,7 +14,7 @@ final class ResidentItem implements IPoolItem {
 
 	public ResidentItem(Pool<?> owner) {
 		_owner = owner;
-		_item = owner.createItem();
+		_item = owner.createItem(false);
 		_isBorrowed = new AtomicBoolean(false);
 	}
 
