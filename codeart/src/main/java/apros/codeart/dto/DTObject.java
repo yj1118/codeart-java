@@ -15,8 +15,8 @@ import java.util.function.Function;
 import com.google.common.collect.Iterables;
 
 import apros.codeart.context.AppSession;
-import apros.codeart.dto.serialization.DTObjectMapper;
 import apros.codeart.dto.serialization.IDTOSerializable;
+import apros.codeart.dto.serialization.internal.DTObjectMapper;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.INullProxy;
@@ -1041,6 +1041,10 @@ public class DTObject implements INullProxy {
 				}
 			}
 		}
+	}
+
+	public void loadBy(Object target) {
+		load(StringUtil.empty(), target);
 	}
 
 	/**

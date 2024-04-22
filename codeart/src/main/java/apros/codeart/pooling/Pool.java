@@ -8,6 +8,27 @@ import java.util.function.Function;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
 
+/**
+ * 组成结构：
+ * 
+ * 1.双片段组（DualSegments）:
+ * 
+ * 对象池由1个双片段组（DualSegments）组成。（一个对象池一个双片段组，1对1关系）
+ * 
+ * 双片段组内部维护两个池段（PoolSegment）的集合(PoolSegment[])，(池段集合A和吃段集合B，A和B放在一个数组里：PoolSegment[2][])。
+ * 
+ * 同一时刻只有一个池段集合在工作：当A在工作时，B的内容为空，且闲置，当B在工作时，A的内容为空，且闲置。
+ * 
+ * 也就是说，池在工作的时候，有1个或者多个池段（PoolSegment）在活动，另外一组池段则在闲置，闲置的池段是null，不占用内存。
+ * 
+ * 2.池段（PoolSegment）：
+ * 
+ * 池段内部有2个容器，容器就是池项的集合（ResidentItem[]）。(容器a和容器b，a和b放在一个数组里：ResidentItem[2][])。
+ * 
+ * 同一时刻只有一个容器在工作：当a在工作时，b的内容为空，且闲置，当b在工作时，a的内容为空，且闲置。
+ * 
+ * @param <T>
+ */
 public class Pool<T> {
 
 	private final Function<Boolean, T> _itemFactory;
@@ -68,16 +89,12 @@ public class Pool<T> {
 	}
 
 	/**
-	 * 构造时就创建分段，避免按需加载导致的并发控制，会增加额外的性能损耗
-	 */
-
-	/**
 	 * 
 	 * 使用轮询的方式领取一个可用的分段
 	 * 
 	 * @return
 	 */
-	private DualPoolSegment claimSegment() {
+	private PoolSegment claimSegment() {
 		var index = next(); // 取出下一个可用的分段坐标
 		return _dual.segments()[index];
 	}

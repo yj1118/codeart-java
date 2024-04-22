@@ -1,4 +1,4 @@
-module codeart {
+module apros.codeart {
 	requires org.objectweb.asm;
 	requires com.google.common;
 	requires org.reflections;
@@ -10,6 +10,9 @@ module codeart {
 	exports apros.codeart.util;
 	exports apros.codeart.dto;
 	exports apros.codeart.dto.serialization;
+	exports apros.codeart.mq;
+	exports apros.codeart.mq.rpc.server;
+	exports apros.codeart.mq.rpc.client;
 
-	opens codeart;
+	opens apros.codeart;
 }

@@ -71,11 +71,11 @@ public final class Repository {
 	/// </summary>
 	/// <param name="id"></param>
 	/// <returns></returns>
-	public static <T extends DynamicRoot> T findRemoteRoot(Class<?> objectType, Object id) {
+	public static <T extends DynamicRoot> T findRemoteRoot(Class<T> objectType, Object id) {
 		return RemotePortal.getObject(objectType, id, QueryLevel.None);
 	}
 
-	public static dynamic FindRemoteRootWithLock<T>(object id)
+	public static dynamic FindRemoteRootWithLock<T>(Object id)
 	where T:AggregateRootDefine
 	{
 	    var define = (AggregateRootDefine)TypeDefine.GetDefine<T>();

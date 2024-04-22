@@ -674,7 +674,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 		StatusEvent.execute(StatusEventType.Constructed, this);
 	}
 
-	public EventHandler<DomainObjectChangedEventArgs> _changed = new EventHandler<DomainObjectChangedEventArgs>();
+	private EventHandler<DomainObjectChangedEventArgs> _changed;
 
 	public EventHandler<DomainObjectChangedEventArgs> changed() {
 		if (_changed == null)

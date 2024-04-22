@@ -17,25 +17,34 @@ public interface IDynamicRepository extends IRepository {
 	 */
 	<T extends DynamicRoot> T find(Class<T> rootType, Object id, QueryLevel level);
 
-	/// <summary>
-	/// 向仓储中添加动态根对象
-	/// </summary>
-	/// <param name="define"></param>
-	/// <param name="obj"></param>
+	/**
+	 * 
+	 * 向仓储中添加动态根对象
+	 * 
+	 * @param <T>
+	 * @param rootType
+	 * @param obj
+	 */
 	<T extends DynamicRoot> void add(Class<T> rootType, T obj);
 
-	/// <summary>
-	/// 修改仓储中的根对象
-	/// </summary>
-	/// <param name="define"></param>
-	/// <param name="obj"></param>
+	/**
+	 * 
+	 * 修改仓储中的根对象
+	 * 
+	 * @param <T>
+	 * @param rootType
+	 * @param obj
+	 */
 	<T extends DynamicRoot> void update(Class<T> rootType, T obj);
 
-	/// <summary>
-	/// 移除仓储中的根对象
-	/// </summary>
-	/// <param name="define"></param>
-	/// <param name="obj"></param>
+	/**
+	 * 
+	 * 移除仓储中的根对象
+	 * 
+	 * @param <T>
+	 * @param rootType
+	 * @param obj
+	 */
 	<T extends DynamicRoot> void delete(Class<T> rootType, T obj);
 
 }

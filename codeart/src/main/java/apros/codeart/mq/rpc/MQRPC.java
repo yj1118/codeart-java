@@ -4,7 +4,7 @@ import apros.codeart.AppConfig;
 import apros.codeart.InterfaceImplementer;
 import apros.codeart.dto.DTObject;
 
-final class MQRPC {
+public final class MQRPC {
 	private MQRPC() {
 	}
 

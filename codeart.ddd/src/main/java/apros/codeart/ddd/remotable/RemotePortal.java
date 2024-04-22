@@ -3,6 +3,7 @@ package apros.codeart.ddd.remotable;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.dynamic.IDynamicRepository;
+import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.Repository;
 
 public final class RemotePortal {
@@ -18,31 +19,28 @@ public final class RemotePortal {
 	 * 
 	 * @param <T>
 	 * @param objectType 远程对象的类型
-	 * @param id 远程对象的编号
+	 * @param id         远程对象的编号
 	 * @param level
 	 * @return
 	 */
-	static <T extends DynamicRoot> T getObject(Class<T> objectType, Object id, QueryLevel level)
-	{
-	    var repository = Repository.create(IDynamicRepository.class);
-	    var root = repository.find(objectType, id, level);
-	    if (!root.isEmpty()) return root;
+	static <T extends DynamicRoot> T getObject(Class<T> objectType, Object id, QueryLevel level) {
+		var repository = Repository.create(IDynamicRepository.class);
+		var root = repository.find(objectType, id, level);
+		if (!root.isEmpty())
+			return root;
 
-	    //从远程获取聚合根对象
-	    var remoteRoot = getRootByRemote(objectType, id);
+		// 从远程获取聚合根对象
+		var remoteRoot = getRootByRemote(objectType, id);
 
-	    //保存到本地
-	    DataContext.UseTransactionScope(() =>
-	    {
-	        root = repository.Find(define, id, QueryLevel.HoldSingle);
-	        //System.Threading.Thread.Sleep(5000);  取消注释就可以测试paper提交引起的死锁问题，该问题目前已解决
-	        if (root.IsEmpty())
-	        {
-	            root = remoteRoot;
-	            AddRoot(repository, define, root);
-	        }
-	    });
-	    return root;
+		// 保存到本地
+		DataContext.newScope(() -> {
+			root = repository.find(objectType, id, QueryLevel.HoldSingle);
+			if (root.isEmpty()) {
+				root = remoteRoot;
+				addRoot(repository, objectType, root);
+			}
+		});
+		return root;
 	}
 
 	/**
@@ -54,8 +52,8 @@ public final class RemotePortal {
 	 * @return
 	 */
 	private static <T extends DynamicRoot> T getRootByRemote(Class<T> objectType, Object id) {
-		var data = RemoteService.GetObject(define, id);
-		return (DynamicRoot) define.CreateInstance(data);
+		var data = RemoteService.getObject(objectType, id);
+		return (DynamicRoot) define.createInstance(data);
 	}
 
 	/// <summary>
@@ -64,25 +62,25 @@ public final class RemotePortal {
 	/// <param name="repository"></param>
 	/// <param name="define"></param>
 	/// <param name="root"></param>
-	private static void AddRoot(IDynamicRepository repository, AggregateRootDefine define, DynamicRoot root) {
-		repository.Add(define, root);
-		AddMemberRoots(repository, define, root);
+	private static <T extends DynamicRoot> void addRoot(IDynamicRepository repository, Class<T> objectType, T root) {
+		repository.add(objectType, root);
+		addMemberRoots(repository, root);
 	}
 
-	private static void AddMemberRoots(IDynamicRepository repository, AggregateRootDefine define, DynamicRoot root)
-	{
-	    var memberRoots = root.GetRoots();
-	    foreach (var member in memberRoots)
-	    {
-	        var id = member.GetIdentity();
-	        //为了防止死锁，我们开启的是不带锁的模式判定是否有本地数据
-	        //虽然这有可能造成重复输入的插入而导致报错，但是几率非常低，而且不会引起灾难性bug
-	        var local = repository.Find(define, id, QueryLevel.None);
-	        if (local.IsEmpty())
-	        {
-	            repository.Add(define, member);
-	        }
-	    }
+	@SuppressWarnings("unchecked")
+	private static void addMemberRoots(IDynamicRepository repository, DynamicRoot root) {
+		var memberRoots = root.getRefRoots();
+		for (var member : memberRoots) {
+			var objectType = (Class<? extends DynamicRoot>) member.getClass();
+
+			var id = member.getIdentity();
+			// 为了防止死锁，我们开启的是不带锁的模式判定是否有本地数据
+			// 虽然这有可能造成重复输入的插入而导致报错，但是几率非常低，而且不会引起灾难性bug
+			var local = repository.find(objectType, id, QueryLevel.None);
+			if (local.isEmpty()) {
+				repository.add(objectType, member);
+			}
+		}
 	}
 
 	/// <summary>

@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.google.common.base.CaseFormat;
+import com.google.common.base.Strings;
 
 import apros.codeart.io.IOBuffer;
 import apros.codeart.pooling.PoolingException;
@@ -217,7 +217,17 @@ public final class StringUtil {
 	}
 
 	public static String firstToUpper(String str) {
-		return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_CAMEL, str);
+		if (Strings.isNullOrEmpty(str)) {
+			return str;
+		}
+		return Character.toUpperCase(str.charAt(0)) + str.substring(1);
+	}
+
+	public static String firstToLower(String str) {
+		if (Strings.isNullOrEmpty(str)) {
+			return str;
+		}
+		return Character.toLowerCase(str.charAt(0)) + str.substring(1);
 	}
 
 	public static boolean startsWithIgnoreCase(String str, String prefix) {

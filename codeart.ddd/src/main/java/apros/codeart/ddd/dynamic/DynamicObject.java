@@ -187,58 +187,97 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 	}
 
 	/**
-	 * 从dto中加载数据
+	 * 得到动态对象内部所有的动态根类型的成员对象（不包括当前对象自身，也不包括空的根对象）
 	 */
-	@SuppressWarnings("unchecked")
-	public Iterable<DynamicRoot> getRoots() {
+	public Iterable<DynamicRoot> getRefRoots() {
 		ArrayList<DynamicRoot> roots = new ArrayList<>();
+		ArrayList<Object> processed = new ArrayList<>(); // 防止死循环的额外参数
 
+		this.fillRefRoots(roots, processed, DynamicRoot.class);
+
+		return roots;
+	}
+
+	/**
+	 * 为了防止死循环，增加了该方法
+	 * 
+	 * @param roots 将当前对象直接或间接引用到的根对象，填充到 roots里
+	 */
+	protected <T extends DynamicRoot> void fillRefRoots(ArrayList<T> roots, ArrayList<Object> processed,
+			Class<T> rootType) {
 		for (var property : this.properties()) {
 			switch (property.category()) {
 			case DomainPropertyCategory.AggregateRoot: {
 				var value = this.getValue(property);
-				var root = (DynamicRoot) value;
-				if (!root.isEmpty()) {
+				if (processed.contains(value))
+					continue;
+				processed.add(value);
+
+				var root = TypeUtil.as(value, rootType);
+				if (root != null && !root.isEmpty()) {
 					roots.add(root);
-					ListUtil.addRange(roots, root.getRoots());
+					root.fillRefRoots(roots, processed, rootType);
 				}
 			}
 				break;
 			case DomainPropertyCategory.EntityObject:
 			case DomainPropertyCategory.ValueObject: {
 				var value = this.getValue(property);
-				var obj = (DynamicObject) value;
-				if (!obj.isEmpty()) {
-					ListUtil.addRange(roots, obj.getRoots());
+				if (processed.contains(value))
+					continue;
+				processed.add(value);
+
+				var obj = TypeUtil.as(value, DynamicObject.class);
+				if (obj != null && !obj.isEmpty()) {
+					obj.fillRefRoots(roots, processed, rootType);
 				}
 			}
 				break;
 			case DomainPropertyCategory.AggregateRootList: {
+				var value = this.getValue(property);
+				if (processed.contains(value))
+					continue;
+				processed.add(value);
 
-				var list = (Iterable<DynamicRoot>) this.getValue(property);
-				for (DynamicRoot root : list) {
-					if (!root.isEmpty()) {
+				var list = TypeUtil.as(value, Iterable.class);
+				for (var obj : list) {
+					if (processed.contains(obj))
+						continue;
+					processed.add(obj);
+
+					var root = TypeUtil.as(obj, rootType);
+					if (root != null && !root.isEmpty()) {
 						roots.add(root);
-						ListUtil.addRange(roots, root.getRoots());
+						root.fillRefRoots(roots, processed, rootType);
 					}
 				}
 			}
 				break;
 			case DomainPropertyCategory.EntityObjectList:
 			case DomainPropertyCategory.ValueObjectList: {
-				var list = (Iterable<DynamicObject>) this.getValue(property);
-				for (DynamicObject obj : list) {
-					if (!obj.isEmpty()) {
-						ListUtil.addRange(roots, obj.getRoots());
+				var value = this.getValue(property);
+				if (processed.contains(value))
+					continue;
+				processed.add(value);
+
+				var list = TypeUtil.as(value, Iterable.class);
+				for (var obj : list) {
+					if (processed.contains(obj))
+						continue;
+					processed.add(obj);
+
+					var o = TypeUtil.as(obj, DynamicObject.class);
+					if (o != null && !o.isEmpty()) {
+						o.fillRefRoots(roots, processed, rootType);
 					}
 				}
+
 			}
 				break;
 			default:
 				break;
 			}
 		}
-		return roots;
 	}
 
 	/**

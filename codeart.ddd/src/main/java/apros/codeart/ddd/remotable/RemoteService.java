@@ -1,21 +1,21 @@
 package apros.codeart.ddd.remotable;
 
+import apros.codeart.ddd.metadata.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
+import apros.codeart.mq.rpc.client.RPCClient;
 
 public class RemoteService {
 
-	public static DTObject getObject(AggregateRootDefine define, object id)
-	 {
-	     var remoteType = define.RemoteType;
-	     var methodName = RemoteActionName.GetObject(remoteType);
-	     return RPCClient.Invoke(methodName, (arg) =>
-	     {
-	         arg["id"] = id;
-	         arg["typeName"] = remoteType.FullName;
-	         arg["schemaCode"] = define.MetadataSchemaCode;
-	         arg["identity"] = AppContext.Identity; //没有直接使用session的身份是因为有可能服务点只为一个项目（一个身份）而架设
-	     }).Info;
-	 }
+	public static DTObject getObject(Class<?> objectType, Object id) {
+		var methodName = RemoteActionName.getObject(objectType);
+		var meta = ObjectMetaLoader.get(objectType);
+		return RPCClient.invoke(methodName, (arg) -> {
+			arg.setValue("id", id);
+			arg.setString("typeName", meta.name());
+			arg.setString("schemaCode", meta.schemeCode());
+			arg.setObject("identity", AppContext.identity());// 没有直接使用session的身份是因为有可能服务点只为一个项目（一个身份）而架设
+		}).info();
+	}
 
 	public static void NotifyUpdated(RemoteType remoteType, object id) {
 		var arg = CreateEventArg(remoteType, id);

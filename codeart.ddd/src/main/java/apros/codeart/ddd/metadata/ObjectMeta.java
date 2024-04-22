@@ -11,6 +11,7 @@ import apros.codeart.ddd.IEntityObject;
 import apros.codeart.ddd.IObjectValidator;
 import apros.codeart.ddd.IValueObject;
 import apros.codeart.ddd.MergeDomain;
+import apros.codeart.ddd.dynamic.internal.TypeDefine;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.ListUtil;
@@ -86,6 +87,43 @@ public class ObjectMeta {
 		return _repositoryTip;
 	}
 
+	private TypeDefine _define;
+
+	/**
+	 * 
+	 * 类型定义，只有动态类型才有此定义
+	 * 
+	 * @return
+	 */
+	public TypeDefine getDefine() {
+		return _define;
+	}
+
+	public TypeDefine setDefine(TypeDefine define) {
+		return _define;
+	}
+
+	/**
+	 * 
+	 * 是否为注入或者声明的动态类型
+	 * 
+	 * @return
+	 */
+	public boolean isDynamic() {
+		return _define != null;
+	}
+
+	private String _schemeCode;
+
+	public String schemeCode() {
+		return _schemeCode;
+	}
+
+	private String getSchemeCode() {
+		// todo
+		return "";
+	}
+
 	ObjectMeta(String name, Class<?> objectType, DomainObjectCategory category, Iterable<IObjectValidator> validators,
 			boolean remotable, ObjectRepositoryTip repositoryTip) {
 		_name = name;
@@ -95,6 +133,7 @@ public class ObjectMeta {
 		_validators = validators;
 		_remotable = remotable;
 		_repositoryTip = repositoryTip;
+		_schemeCode = getSchemeCode();
 	}
 
 	@Override

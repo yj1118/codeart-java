@@ -114,7 +114,7 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
 			while (i < selfSize) {
 				var s_dto = selfIterator.next();
 				var t_dto = targetIterator.next();
-				s_dto.load(t_dto);
+				s_dto.loadBy(t_dto);
 				i++;
 			}
 
@@ -128,7 +128,7 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
 			while (i < targetSize) {
 				var s_dto = selfIterator.next();
 				var t_dto = targetIterator.next();
-				s_dto.load(t_dto);
+				s_dto.loadBy(t_dto);
 				i++;
 			}
 
