@@ -74,6 +74,25 @@ public final class TypeUtil {
 		return null;
 	}
 
+	/**
+	 * 
+	 * 将类型信息Class<?>转换为 <? extends T>
+	 * 
+	 * @param <T>
+	 * @param unknownClass
+	 * @param cls
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public static <T> Class<? extends T> as(Class<?> unknownClass, Class<T> cls) {
+
+		if (cls.isAssignableFrom(unknownClass)) {
+			return (Class<? extends T>) unknownClass;
+		}
+
+		return null;
+	}
+
 	public static boolean is(Object obj, Class<?> cls) {
 		return cls.isInstance(obj);
 	}

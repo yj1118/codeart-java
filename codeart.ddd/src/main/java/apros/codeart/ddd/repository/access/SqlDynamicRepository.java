@@ -1,9 +1,12 @@
 package apros.codeart.ddd.repository.access;
 
+import static apros.codeart.i18n.Language.strings;
+
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.dynamic.IDynamicRepository;
+import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess
@@ -17,32 +20,6 @@ public class SqlDynamicRepository implements IDynamicRepository {
 		return model.querySingle(id, level);
 	}
 
-	/**
-	 * 向仓储中添加动态根对象
-	 */
-	public <T extends DynamicRoot> void add(Class<T> rootType, T obj) {
-		var model = DataModelLoader.get(rootType);
-		model.insert(obj);
-	}
-
-	/// <summary>
-	/// 修改仓储中的根对象
-	/// </summary>
-	/// <param name="define"></param>
-	/// <param name="obj"></param>
-	public <T extends DynamicRoot> void update(Class<T> rootType, T obj) {
-		var model = DataModelLoader.get(rootType);
-		model.update(obj);
-	}
-
-	/**
-	 * 移除仓储中的根对象
-	 */
-	public <T extends DynamicRoot> void delete(Class<T> rootType, T obj) {
-		var model = DataModelLoader.get(rootType);
-		model.delete(obj);
-	}
-
 	public static final SqlDynamicRepository Instance = new SqlDynamicRepository();
 
 	@Override
@@ -52,19 +29,33 @@ public class SqlDynamicRepository implements IDynamicRepository {
 
 	@Override
 	public void addRoot(IAggregateRoot obj) {
-		throw new UnsupportedOperationException("SqlDynamicRepository.addRoot(IAggregateRoot obj)");
+		var root = asRoot(obj);
+		var model = DataModelLoader.get(obj.getClass());
+		model.insert(root);
 
 	}
 
 	@Override
 	public void updateRoot(IAggregateRoot obj) {
-		throw new UnsupportedOperationException("SqlDynamicRepository.updateRoot(IAggregateRoot obj)");
-
+		var root = asRoot(obj);
+		var model = DataModelLoader.get(obj.getClass());
+		model.update(root);
 	}
 
 	@Override
 	public void deleteRoot(IAggregateRoot obj) {
-		throw new UnsupportedOperationException("SqlDynamicRepository.deleteRoot(IAggregateRoot obj)");
+		var root = asRoot(obj);
+		var model = DataModelLoader.get(obj.getClass());
+		model.delete(root);
+	}
+
+	private DynamicRoot asRoot(IAggregateRoot obj) {
+		var root = TypeUtil.as(obj, DynamicRoot.class);
+		if (root == null) {
+			throw new IllegalArgumentException(
+					strings("codeart.ddd", "NotDynamicRootType", obj.getClass().getSimpleName()));
+		}
+		return root;
 	}
 
 }

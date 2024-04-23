@@ -28,9 +28,6 @@ public final class DynamicProperty {
 	public static void register(Class<?> declaringType, String objectMetaCode) {
 		var define = TypeDefine.getMetadata(objectMetaCode);
 		registerProperies(declaringType, define);
-
-		var meta = ObjectMetaLoader.get(declaringType);
-		meta.setDefine(define);
 	}
 
 	public static void register(Class<?> declaringType, DTObject objectMeta) {

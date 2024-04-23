@@ -1,5 +1,7 @@
 package apros.codeart.ddd.remotable;
 
+import apros.codeart.context.AppSession;
+import apros.codeart.context.GlobalContext;
 import apros.codeart.ddd.metadata.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.rpc.client.RPCClient;
@@ -13,13 +15,13 @@ public class RemoteService {
 			arg.setValue("id", id);
 			arg.setString("typeName", meta.name());
 			arg.setString("schemaCode", meta.schemeCode());
-			arg.setObject("identity", AppContext.identity());// 没有直接使用session的身份是因为有可能服务点只为一个项目（一个身份）而架设
+			arg.setObject("identity", AppSession.adaptIdentity());
 		}).info();
 	}
 
-	public static void NotifyUpdated(RemoteType remoteType, object id) {
-		var arg = CreateEventArg(remoteType, id);
-		var eventName = RemoteObjectUpdated.GetEventName(remoteType);
+	public static void notifyUpdated(Class<?> objectType, Object id) {
+		var arg = createEventArg(objectType, id);
+		var eventName = RemoteObjectUpdated.getEventName(remoteType);
 		EventPortal.Publish(eventName, arg);
 	}
 
@@ -29,9 +31,9 @@ public class RemoteService {
 		EventPortal.Publish(eventName, arg);
 	}
 
-	private static DTObject CreateEventArg(RemoteType remoteType, object id) {
-		var arg = DTObject.Create();
-		arg["identity"] = AppContext.Identity;
+	private static DTObject createEventArg(Class<?> objectType, Object id) {
+		var arg = DTObject.editable();
+		arg["identity"] = AppSession.adaptIdentity();
 		arg["typeName"] = remoteType.FullName;
 		arg["id"] = id;
 		return arg;

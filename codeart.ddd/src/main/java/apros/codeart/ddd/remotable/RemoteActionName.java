@@ -25,7 +25,7 @@ final class RemoteActionName {
 	/// </summary>
 	/// <param name="type"></param>
 	/// <returns></returns>
-	public static String ObjectUpdated(Class<?> type) {
+	public static String objectUpdated(Class<?> type) {
 		return _getObjectUpdated.apply(type);
 	}
 
@@ -38,7 +38,7 @@ final class RemoteActionName {
 	/// </summary>
 	/// <param name="type"></param>
 	/// <returns></returns>
-	public static String ObjectDeleted(Class<?> type) {
+	public static String objectDeleted(Class<?> type) {
 		return _getObjectDeleted.apply(type);
 	}
 

@@ -93,6 +93,13 @@ public final class ObjectMetaLoader {
 			// 尝试为派生类做支持
 			DerivedClassImpl.init(domainType);
 		}
+
+		// 全部执行完毕后，再触发ObjectMeta完成加载的方法
+		for (var domainType : domainTypes) {
+			var meta = get(domainType);
+			meta.loadComplete();
+		}
+
 	}
 
 	/**

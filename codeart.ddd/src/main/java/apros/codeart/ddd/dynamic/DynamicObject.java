@@ -179,7 +179,7 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 	 * 
 	 * @param target
 	 */
-	void sync(DynamicObject target) {
+	public void sync(DynamicObject target) {
 		for (var property : this.properties()) {
 			var value = target.getValue(property);
 			this.setValue(property, value);

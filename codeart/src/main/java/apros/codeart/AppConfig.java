@@ -26,6 +26,12 @@ public final class AppConfig {
 		return Iterables.toArray(archives(), String.class);
 	}
 
+	/**
+	 * 
+	 * 需要参与初始化的档案名称，档案是包的顶级名称，比如 subsystem.account和subsystem.user的档案名为subsystem
+	 * 
+	 * @return
+	 */
 	public static Iterable<String> archives() {
 		if (_archives == null) {
 			_archives = ImmutableList.copyOf(_config.getStrings("archives"));
