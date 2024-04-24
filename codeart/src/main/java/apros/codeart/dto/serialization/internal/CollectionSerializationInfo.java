@@ -10,7 +10,7 @@ import apros.codeart.runtime.TypeUtil;
  * java的泛型集合不可能是基元类型，所以只用考虑引用类型即可
  */
 class CollectionSerializationInfo extends MemberSerializationInfo {
-	public CollectionSerializationInfo(Field field, DTOMemberAnn memberAnn) {
+	public CollectionSerializationInfo(Field field, DTOMemberImpl memberAnn) {
 		super(field, memberAnn);
 	}
 

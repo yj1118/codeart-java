@@ -39,18 +39,9 @@ final class DTODeserializeMethodGenerator {
 	}
 
 	private static void readMembers(MethodGenerator g, TypeSerializationInfo typeInfo) {
-		if (typeInfo.getClassAnn().mode() == DTOSerializableMode.General) {
-			for (var member : typeInfo.getMemberInfos()) {
-				if (member.canWrite()) {
-					member.generateDeserializeIL(g);
-				}
-			}
-		} else {
-			// 在函数模式,只有标记了Parameter的成员才会被反序列化到对象实例中
-			for (var member : typeInfo.getMemberInfos()) {
-				if (member.getMemberAnn().getType() == DTOMemberType.Parameter && member.canWrite()) {
-					member.generateDeserializeIL(g);
-				}
+		for (var member : typeInfo.getMemberInfos()) {
+			if (member.canWrite()) {
+				member.generateDeserializeIL(g);
 			}
 		}
 	}

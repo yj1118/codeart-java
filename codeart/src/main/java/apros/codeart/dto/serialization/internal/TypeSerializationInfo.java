@@ -12,9 +12,9 @@ import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.StringUtil;
 
 public abstract class TypeSerializationInfo {
-	private DTOClassAnn _classAnn;
+	private DTOClassImpl _classAnn;
 
-	public DTOClassAnn getClassAnn() {
+	public DTOClassImpl getClassAnn() {
 		return _classAnn;
 	}
 
@@ -44,7 +44,7 @@ public abstract class TypeSerializationInfo {
 		return TypeUtil.isCollection(_targetClass);
 	}
 
-	protected abstract DTOClassAnn getClassAnnotation(Class<?> classType);
+	protected abstract DTOClassImpl getClassAnnotation(Class<?> classType);
 
 	protected void initialize() {
 		if (this._classAnn != null)
@@ -60,7 +60,7 @@ public abstract class TypeSerializationInfo {
 		}
 	}
 
-	protected abstract DTOMemberAnn getMemberAnnotation(Field field);
+	protected abstract DTOMemberImpl getMemberAnnotation(Field field);
 
 	private ArrayList<MemberSerializationInfo> buildMembers() {
 		var memberInfos = new ArrayList<MemberSerializationInfo>();

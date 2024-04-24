@@ -45,20 +45,11 @@ final class DTOSerializeMethodGenerator {
 	}
 
 	private static void writeMembers(MethodGenerator g, TypeSerializationInfo typeInfo) {
-		if (typeInfo.getClassAnn().mode() == DTOSerializableMode.General) {
-			for (var member : typeInfo.getMemberInfos()) {
-				if (member.canRead()) {
-					member.generateSerializeIL(g);
-				}
+		for (var member : typeInfo.getMemberInfos()) {
+			if (member.canRead()) {
+				member.generateSerializeIL(g);
+			}
 
-			}
-		} else {
-			// 在函数模式,只有标记了ReturnValue的成员才会被写入到dto中
-			for (var member : typeInfo.getMemberInfos()) {
-				if (member.getMemberAnn().getType() == DTOMemberType.ReturnValue) {
-					member.generateSerializeIL(g);
-				}
-			}
 		}
 	}
 

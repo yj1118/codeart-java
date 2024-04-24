@@ -8,7 +8,7 @@ import apros.codeart.runtime.TypeUtil;
 
 class ArraySerializationInfo extends MemberSerializationInfo {
 
-	public ArraySerializationInfo(Field field, DTOMemberAnn memberAnn) {
+	public ArraySerializationInfo(Field field, DTOMemberImpl memberAnn) {
 		super(field, memberAnn);
 	}
 

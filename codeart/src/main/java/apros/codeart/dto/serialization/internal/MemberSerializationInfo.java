@@ -19,7 +19,7 @@ class MemberSerializationInfo {
 	}
 
 	private static MemberSerializationInfo createByCollection(Class<?> targetClass, Field field,
-			DTOMemberAnn memberAnn) {
+			DTOMemberImpl memberAnn) {
 		if (TypeUtil.is(targetClass, Iterable.class)) {
 			return field == null ? new CollectionSerializationInfo(targetClass)
 					: new CollectionSerializationInfo(field, memberAnn);
@@ -33,7 +33,7 @@ class MemberSerializationInfo {
 
 	}
 
-	public static MemberSerializationInfo create(Field field, DTOMemberAnn memberAnn) {
+	public static MemberSerializationInfo create(Field field, DTOMemberImpl memberAnn) {
 		var t = getTargetClass(null, field);
 		// 数组
 		if (t.isArray())
@@ -68,9 +68,9 @@ class MemberSerializationInfo {
 
 	private Class<?> _classType;
 
-	private DTOMemberAnn _memberAnn;
+	private DTOMemberImpl _memberAnn;
 
-	public DTOMemberAnn getMemberAnn() {
+	public DTOMemberImpl getMemberAnn() {
 		return _memberAnn;
 	}
 
@@ -125,7 +125,7 @@ class MemberSerializationInfo {
 		_classType = classType;
 	}
 
-	public MemberSerializationInfo(Field field, DTOMemberAnn memberAnn) {
+	public MemberSerializationInfo(Field field, DTOMemberImpl memberAnn) {
 		_field = field;
 		_memberAnn = memberAnn;
 	}
