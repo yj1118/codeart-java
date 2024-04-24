@@ -4,5 +4,5 @@ import apros.codeart.dto.DTObject;
 import apros.codeart.mq.TransferData;
 
 public interface IRPCHandler {
-	TransferData Process(String method, DTObject args);
+	TransferData process(String method, DTObject args);
 }

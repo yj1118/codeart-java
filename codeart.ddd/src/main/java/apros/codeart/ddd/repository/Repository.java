@@ -1,12 +1,15 @@
 package apros.codeart.ddd.repository;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+
+import com.google.common.collect.Iterables;
 
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.IRepository;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.dynamic.DynamicRoot;
-import apros.codeart.ddd.remotable.RemotePortal;
+import apros.codeart.ddd.remotable.internal.RemotePortal;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.MethodUtil;
 import apros.codeart.util.StringUtil;
@@ -75,23 +78,18 @@ public final class Repository {
 		return RemotePortal.getObject(objectType, id, QueryLevel.None);
 	}
 
-	public static dynamic FindRemoteRootWithLock<T>(Object id)
-	where T:AggregateRootDefine
-	{
-	    var define = (AggregateRootDefine)TypeDefine.GetDefine<T>();
-	    return RemotePortal.GetObject(define, id, QueryLevel.Single);
+	public static <T extends DynamicRoot> T findRemoteRootWithLock(Class<T> objectType, Object id) {
+		return RemotePortal.getObject(objectType, id, QueryLevel.Single);
 	}
 
-	public static IEnumerable<dynamic> FindRemoteRoots<T>(IEnumerable<object> ids)
-	where T:AggregateRootDefine
-	{
-	    var items = new List<dynamic>(ids.Count());
-	    foreach (var id in ids)
-	    {
-	        var item = Repository.FindRemoteRoot<T>(id);
-	        items.Add(item);
-	    }
-	    return items;
+	public static <T extends DynamicRoot> Iterable<T> findRemoteRoots(Class<T> objectType, Iterable<Object> ids) {
+		var items = new ArrayList<T>(Iterables.size(ids));
+
+		for (var id : ids) {
+			var item = Repository.findRemoteRoot(objectType, id);
+			items.add(item);
+		}
+		return items;
 	}
 
 //	#endregion

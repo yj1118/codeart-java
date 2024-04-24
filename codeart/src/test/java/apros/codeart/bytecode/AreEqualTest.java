@@ -8,9 +8,6 @@ import java.util.function.BiConsumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import apros.codeart.bytecode.ClassGenerator;
-import apros.codeart.bytecode.LogicOperator;
-import apros.codeart.bytecode.MethodGenerator;
 import apros.codeart.core.TestRunner;
 
 @ExtendWith(TestRunner.class)

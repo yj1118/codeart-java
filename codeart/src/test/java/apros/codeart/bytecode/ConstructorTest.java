@@ -7,8 +7,6 @@ import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 
-import apros.codeart.bytecode.ClassGenerator;
-
 class ConstructorTest {
 
 	public static class ConstructorTestObject { // 方法内部的局部类
@@ -128,6 +126,7 @@ class ConstructorTest {
 			var method = cls.getDeclaredMethod("getList");
 			var obj = method.invoke(null);
 
+			@SuppressWarnings("unchecked")
 			var list = (ArrayList<Integer>) obj;
 
 			list.add(1);

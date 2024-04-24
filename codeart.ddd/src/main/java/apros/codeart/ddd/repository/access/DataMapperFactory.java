@@ -9,7 +9,7 @@ import apros.codeart.ddd.repository.Repository;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.SafeAccessImpl;
 
-final class DataMapperFactory {
+public final class DataMapperFactory {
 
 	private DataMapperFactory() {
 	}

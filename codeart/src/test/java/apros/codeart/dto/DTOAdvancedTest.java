@@ -33,7 +33,7 @@ public class DTOAdvancedTest {
 		assertEquals(15, dto.getInt("id"));
 	}
 
-	private final String _code0 = "{\"name\":\"名称\",\"orderIndex\":\"1\",\"markedCode\":\"markedCode\",\"description\":\"这是一项描述\",\"attached\":[{\"name\":\"配置1\",\"type\":\"3\",\"required\":\"true\",\"options\":\"选项1\"},{\"name\":\"配置2\",\"type\":\"2\",\"required\":\"true\",\"options\":\"选项1，选项2\"},{\"name\":\"配置3\",\"type\":\"4\",\"required\":\"false\",\"options\":\"选项1，选项2，选项3\"}]}";
+//	private final String _code0 = "{\"name\":\"名称\",\"orderIndex\":\"1\",\"markedCode\":\"markedCode\",\"description\":\"这是一项描述\",\"attached\":[{\"name\":\"配置1\",\"type\":\"3\",\"required\":\"true\",\"options\":\"选项1\"},{\"name\":\"配置2\",\"type\":\"2\",\"required\":\"true\",\"options\":\"选项1，选项2\"},{\"name\":\"配置3\",\"type\":\"4\",\"required\":\"false\",\"options\":\"选项1，选项2，选项3\"}]}";
 
 	/// <summary>
 	/// 变换的时候集合是空的

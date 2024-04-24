@@ -54,6 +54,7 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 	/**
 	 * 从dto中加载数据
 	 */
+	@SuppressWarnings("unchecked")
 	public void load(DTObject data) {
 		for (var property : this.properties()) {
 			var value = data.getValue(property.name(), false);

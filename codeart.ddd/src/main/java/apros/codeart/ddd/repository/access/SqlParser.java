@@ -64,7 +64,7 @@ final class SqlParser {
 				Expression expression = expressionItem.getExpression();
 
 				String fieldName = null;
-				String aliasName = null;
+//				String aliasName = null;
 
 				if (expression instanceof Column) {
 					Column column = (Column) expression;

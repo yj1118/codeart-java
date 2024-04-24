@@ -34,7 +34,7 @@ public abstract class RemoteObjectHandler implements IEventHandler {
 	protected void useDefine(DTObject arg, BiConsumer<Class<? extends DynamicRoot>, Object> action) {
 		var typeName = arg.getString("typeName");
 		var meatdata = ObjectMetaLoader.get(typeName);
-		var rootType = TypeUtil.as(meatdata.objectType(), DynamicRoot.class);
+		var rootType = TypeUtil.asT(meatdata.objectType(), DynamicRoot.class);
 
 		if (rootType == null) {
 			throw new IllegalArgumentException(strings("codeart.ddd", "NotDynamicRootType", typeName));

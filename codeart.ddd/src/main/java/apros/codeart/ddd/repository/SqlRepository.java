@@ -2,46 +2,42 @@ package apros.codeart.ddd.repository;
 
 import java.util.function.Consumer;
 
+import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.IAggregateRoot;
+import apros.codeart.ddd.MapData;
 import apros.codeart.ddd.QueryLevel;
-import apros.codeart.ddd.repository.access.DataPortal;
+import apros.codeart.ddd.repository.access._DataPortal;
 
 public abstract class SqlRepository<TRoot extends IAggregateRoot> extends AbstractRepository<TRoot> {
 
 //	#region 增删改
 
 	@Override
-	protected void persistAddRoot(TRoot obj)
-	 {
-	     DataContext.using(() ->
-	     {
-	         DataPortal.Create(obj as DomainObject);
-	     });
-	 }
+	protected void persistAddRoot(TRoot obj) {
+		DataContext.using(() -> {
+			_DataPortal.insert((DomainObject) obj);
+		});
+	}
 
 	@Override
-	protected void persistUpdateRoot(TRoot obj)
-	 {
-	     DataContext.using(() ->
-	     {
-	         DataPortal.Update(obj as DomainObject);
-	     });
-	 }
+	protected void persistUpdateRoot(TRoot obj) {
+		DataContext.using(() -> {
+			_DataPortal.update((DomainObject) obj);
+		});
+	}
 
 	@Override
-	protected void persistDeleteRoot(TRoot obj)
-	 {
-	     DataContext.Using(() ->
-	     {
-	         DataPortal.Delete(obj as DomainObject);
-	     });
-	 }
+	protected void persistDeleteRoot(TRoot obj) {
+		DataContext.using(() -> {
+			_DataPortal.delete((DomainObject) obj);
+		});
+	}
 
 //	#endregion
 
 	@Override
 	protected TRoot persistFind(Object id, QueryLevel level) {
-	     return DataPortal.QuerySingle<TRoot>(id, level);
+		return _DataPortal.querySingle(this.getRootType(), id, level);
 	}
 
 	/// <summary>
@@ -51,21 +47,17 @@ public abstract class SqlRepository<TRoot extends IAggregateRoot> extends Abstra
 	/// <param name="expression"></param>
 	/// <param name="level"></param>
 	/// <returns></returns>
-	protected <T extends IAggregateRoot> T QuerySingle(String expression, Consumer<DynamicData> fillArg, QueryLevel level)
-	{
-	     T result = null;
-	     DataContext.using((access) ->
-	     {
-	         result = access.querySingle<T>(expression, fillArg, level);
-	     });
-	     return result;
-	 }
+	protected <T extends IAggregateRoot> T querySingle(Class<T> objectType, String expression,
+			Consumer<MapData> fillArg, QueryLevel level) {
 
-	// protected T QuerySingle<T>(IQueryBuilder compiler, Action<DynamicData>
-	// fillArg, QueryLevel level) where T : class, IRepositoryable
-	// {
-	// return DataContext.Current.QuerySingle<T>(compiler, fillArg, level);
-	// }
+		return DataContext.using(() -> {
+			var dataContext = DataContext.getCurrent();
+			// 执行查询，并且向数据上下文中注册查询结果
+			return dataContext.registerQueried(objectType, level, () -> {
+				return _DataPortal.querySingle(objectType, expression, fillArg, level);
+			});
+		});
+	}
 
 	/// <summary>
 	/// 基于对象表达式的查询
@@ -74,18 +66,17 @@ public abstract class SqlRepository<TRoot extends IAggregateRoot> extends Abstra
 	/// <param name="expression"></param>
 	/// <param name="level"></param>
 	/// <returns></returns>
-	public IEnumerable<T> Query<T>(
-	string expression, Action<DynamicData>fillArg,
-	QueryLevel level)
-	where T:class,IAggregateRoot
-	{
-	     IEnumerable<T> result = null;
-	     DataContext.Using(() =>
-	     {
-	         result = DataContext.Current.Query<T>(expression, fillArg, level);
-	     });
-	     return result;
-	 }
+	public <T extends IAggregateRoot> Iterable<T> query(Class<T> objectType, String expression,
+			Consumer<MapData> fillArg, QueryLevel level) {
+		return DataContext.using(() -> {
+			var dataContext = DataContext.getCurrent();
+			// 执行查询，并且向数据上下文中注册查询结果
+			return dataContext.registerCollectionQueried(objectType, level, () -> {
+				return _DataPortal.query(objectType, expression, fillArg, level);
+			});
+
+		});
+	}
 
 	/// <summary>
 	/// 基于对象表达式的查询
@@ -94,49 +85,22 @@ public abstract class SqlRepository<TRoot extends IAggregateRoot> extends Abstra
 	/// <param name="expression"></param>
 	/// <param name="level"></param>
 	/// <returns></returns>
-	public Page<T> Query<T>(
-	string expression,
-	int pageIndex,
-	int pageSize, Action<DynamicData>fillArg)
-	where T:class,IAggregateRoot
-	{
-	     Page<T> result = default(Page<T>);
-	     DataContext.Using(() =>
-	     {
-	         result = DataContext.Current.Query<T>(expression, pageIndex, pageSize, fillArg);
-	     });
-	     return result;
-	 }
+	public <T extends IAggregateRoot> Page<T> query(Class<T> objectType, String expression, int pageIndex, int pageSize,
+			Consumer<MapData> fillArg, QueryLevel level) {
+		return DataContext.using(() -> {
+			var dataContext = DataContext.getCurrent();
+			return dataContext.registerPageQueried(objectType, level, () -> {
+				return _DataPortal.query(objectType, expression, pageIndex, pageSize, fillArg);
+			});
 
-	public int GetCount<T>(
-	string expression, Action<DynamicData>fillArg,
-	QueryLevel level)
-	where T:class,IAggregateRoot
-	{
-	     int result = 0;
-	     DataContext.Using(() =>
-	     {
-	         result = DataContext.Current.GetCount<T>(expression, fillArg, level);
-	     });
-	     return result;
-	 }
+		});
+	}
 
-	/// <summary>
-	/// 使用适配器查询
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="adapterName">适配器的名称，在类型<typeparam
-	/// name="T"/>下唯一，该名称会用来提高程序性能</param>
-	/// <returns></returns>
-	public QueryAdapter<T> Adapter<T>(string adapterName)
-	where T:class,IAggregateRoot
-	{
-	     QueryAdapter<T> result = null;
-	     DataContext.Using(() =>
-	     {
-	         result = DataContext.Current.Adapter<T>(adapterName);
-	     });
-	     return result;
-	 }
+	public <T extends IAggregateRoot> int getCount(Class<T> objectType, String expression, Consumer<MapData> fillArg,
+			QueryLevel level) {
+		return DataContext.using(() -> {
+			return _DataPortal.getCount(objectType, expression, fillArg, level);
+		});
+	}
 
 }

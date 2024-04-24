@@ -1,6 +1,4 @@
-package apros.codeart.ddd.remotable;
-
-import static apros.codeart.i18n.Language.strings;
+package apros.codeart.ddd.remotable.internal;
 
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.dynamic.DynamicRoot;
@@ -27,7 +25,7 @@ public final class RemotePortal {
 	 * @param level
 	 * @return
 	 */
-	static <T extends DynamicRoot> T getObject(Class<T> objectType, Object id, QueryLevel level) {
+	public static <T extends DynamicRoot> T getObject(Class<T> objectType, Object id, QueryLevel level) {
 		var repository = Repository.create(IDynamicRepository.class);
 		var root = repository.find(objectType, id, level);
 		if (!root.isEmpty())
@@ -37,12 +35,13 @@ public final class RemotePortal {
 		var remoteRoot = getRootByRemote(objectType, id);
 
 		// 保存到本地
-		DataContext.newScope(() -> {
-			root = repository.find(objectType, id, QueryLevel.HoldSingle);
-			if (root.isEmpty()) {
-				root = remoteRoot;
-				addRoot(repository, objectType, root);
+		root = DataContext.newScope(() -> {
+			var localRoot = repository.find(objectType, id, QueryLevel.HoldSingle);
+			if (localRoot.isEmpty()) {
+				addRoot(repository, objectType, remoteRoot);
+				localRoot = remoteRoot;
 			}
+			return remoteRoot;
 		});
 		return root;
 	}
@@ -76,11 +75,10 @@ public final class RemotePortal {
 		addMemberRoots(repository, root);
 	}
 
-	@SuppressWarnings("unchecked")
 	private static void addMemberRoots(IDynamicRepository repository, DynamicRoot root) {
 		var memberRoots = root.getRefRoots();
 		for (var member : memberRoots) {
-			var objectType = TypeUtil.as(member.getClass(), DynamicRoot.class);
+			var objectType = TypeUtil.asT(member.getClass(), DynamicRoot.class);
 
 			var id = member.getIdentity();
 			// 为了防止死锁，我们开启的是不带锁的模式判定是否有本地数据
@@ -150,28 +148,27 @@ public final class RemotePortal {
 //
 //	region 广播消息
 
-	/// <summary>
-	/// 通知对象已修改
-	/// </summary>
-	/// <param name="type"></param>
-	/// <param name="id"></param>
-	internal
-
-	static void NotifyUpdated(RemoteType type, object id) {
-		RemoteService.NotifyUpdated(type, id);
+	/**
+	 * 
+	 * 通知对象已修改
+	 * 
+	 * @param type
+	 * @param id
+	 */
+	public static void notifyUpdated(Class<?> objectType, Object id) {
+		RemoteService.notifyUpdated(objectType, id);
 	}
 
-	/// <summary>
-	/// 通知对象已删除
-	/// </summary>
-	/// <param name="type"></param>
-	/// <param name="id"></param>
-	internal
-
-	static void NotifyDeleted(RemoteType type, object id) {
-		RemoteService.NotifyDeleted(type, id);
+	/**
+	 * 通知对象已删除
+	 * 
+	 * @param objectType
+	 * @param id
+	 */
+	public static void notifyDeleted(Class<?> objectType, Object id) {
+		RemoteService.notifyDeleted(objectType, id);
 	}
 
-	#endregion
+//	#endregion
 
 }

@@ -10,7 +10,7 @@ import apros.codeart.ddd.DerivedClassImpl;
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.IDomainObject;
 import apros.codeart.ddd.ObjectValidatorImpl;
-import apros.codeart.ddd.remotable.RemotableImpl;
+import apros.codeart.ddd.remotable.internal.RemotableImpl;
 import apros.codeart.ddd.repository.ObjectRepositoryImpl;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.FieldUtil;

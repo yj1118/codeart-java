@@ -1,6 +1,6 @@
 package apros.codeart.ddd;
 
-import apros.codeart.ddd.remotable.RemotePortal;
+import apros.codeart.ddd.remotable.internal.RemotePortal;
 import apros.codeart.ddd.repository.RepositoryEventArgs;
 import apros.codeart.ddd.repository.RepositoryRollbackEventArgs;
 import apros.codeart.util.EventHandler;

@@ -1,11 +1,11 @@
-package apros.codeart.ddd.remotable;
+package apros.codeart.ddd.remotable.internal;
 
 import java.util.function.Function;
 
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.StringUtil;
 
-final class RemoteActionName {
+public final class RemoteActionName {
 	private RemoteActionName() {
 	}
 

@@ -5,5 +5,5 @@ package apros.codeart.ddd.repository.access;
  * 
  * {@code placeholder} 占位符，用于生成sql语句时替换用
  */
-record SqlIn(String field, String paramName, String placeholder) {
+public record SqlIn(String field, String paramName, String placeholder) {
 };

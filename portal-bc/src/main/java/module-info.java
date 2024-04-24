@@ -1,6 +1,6 @@
 module portal_bc {
-	requires codeart;
-	requires codeart.ddd;
+	requires apros.codeart;
+	requires apros.codeart.ddd;
 
 	opens config;
 }

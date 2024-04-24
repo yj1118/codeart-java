@@ -2,8 +2,6 @@ package apros.codeart.ddd.repository.access;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -104,11 +102,11 @@ final class DataTableQuery {
 	<T> T querySingle(String expression, Consumer<MapData> fillArg, QueryLevel level) {
 		expression = getEntryExpression(expression);
 
-		var exp = DataSource.getQueryBuilder(QueryObjectQB.class);
+		var query = DataSource.getQueryBuilder(QueryObjectQB.class);
 
 		Object result = null;
 
-		var data = executeQueryEntry(exp, expression, level, fillArg);
+		var data = executeQueryEntry(query, expression, level, fillArg);
 		if (data.size() > 0) {
 			result = getObjectFromEntry(data, level);
 		}
@@ -192,36 +190,40 @@ final class DataTableQuery {
 		return DataAccess.getCurrent().queryScalarInt(sql, param);
 	}
 
-	/**
-	 * 
-	 * 执行一个持久层命令，持久层命令的意义在于可以多数据库支持
-	 * 
-	 * 而仓储里直接写算法，则会与某个特定的数据库绑定，取舍看场景
-	 * 
-	 * 如果需要返回结果，那么写入在items里
-	 * 
-	 * @param expression
-	 * @param fillArg
-	 * @param level
-	 */
-	void execute(String expression, Consumer<MapData> fillArg, QueryLevel level,
-			Consumer<Map<String, Object>> fillItems) {
-
-		var param = new MapData();
-		fillArg.accept(param);
-
-		var qb = DataSource.getQueryBuilder(QueryCommandQB.class);
-
-		var items = new HashMap<String, Object>();
-		items.put("expression", expression);
-		items.put("level", level);
-		if (fillItems != null)
-			fillItems.accept(items);
-
-		var sql = qb.build(new QueryDescription(param, items, _self));
-
-		DataAccess.getCurrent().execute(sql, param);
-	}
+//	/**
+//	 * 
+//	 * 执行一个持久层命令，持久层命令的意义在于可以多数据库支持
+//	 * 
+//	 * 而仓储里直接写算法，则会与某个特定的数据库绑定，取舍看场景
+//	 * 
+//	 * 如果需要返回结果，那么写入在items里
+//	 * 
+//	 * @param expression 实现方可以通过表达式来识别执行什么命令
+//	 * @param fillArg
+//	 * @param level
+//	 */
+//	void execute(String expression, Consumer<MapData> fillArg, QueryLevel level,
+//			Consumer<Map<String, Object>> fillItems) {
+//
+//		var param = new MapData();
+//		fillArg.accept(param);
+//
+//		var qb = DataSource.getQueryBuilder(QueryCommandQB.class);
+//
+//		var items = new HashMap<String, Object>();
+//		items.put("expression", expression);
+//		items.put("level", level);
+//		if (fillItems != null)
+//			fillItems.accept(items);
+//
+//		var description = new QueryDescription(param, items, _self);
+//
+//		var sql = qb.build(description);
+//
+//		DataAccess.getCurrent().execute(sql, param);
+//
+//		return description;
+//	}
 
 	@SuppressWarnings("unchecked")
 	private <T> Iterable<T> getObjectsFromEntriesByPage(String expression, Consumer<MapData> fillArg) {

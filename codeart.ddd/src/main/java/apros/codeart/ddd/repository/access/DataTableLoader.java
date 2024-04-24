@@ -15,7 +15,7 @@ import apros.codeart.util.ListUtil;
 /**
  * 
  */
-public final class DataTableLoader {
+final class DataTableLoader {
 
 	private DataTableLoader() {
 
@@ -53,7 +53,7 @@ public final class DataTableLoader {
 		return table;
 	}
 
-	static DataTable getRoot(Class<?> objectType) {
+	public static DataTable getRoot(Class<?> objectType) {
 		return _roots.get(objectType);
 	}
 
@@ -65,7 +65,8 @@ public final class DataTableLoader {
 	/// <param name="memberField"></param>
 	/// <param name="isMultiple"></param>
 	/// <returns></returns>
-	static DataTable createEntityObject(DataTable root, DataTable master, IDataField memberField, Class<?> objectType) {
+	public static DataTable createEntityObject(DataTable root, DataTable master, IDataField memberField,
+			Class<?> objectType) {
 
 		String tableName = objectType.getSimpleName();
 
@@ -92,7 +93,8 @@ public final class DataTableLoader {
 	 * @param objectType
 	 * @return
 	 */
-	static DataTable createValueObject(DataTable root, DataTable master, IDataField memberField, Class<?> objectType) {
+	public static DataTable createValueObject(DataTable root, DataTable master, IDataField memberField,
+			Class<?> objectType) {
 		String tableName = objectType.getSimpleName();
 
 		return tryCreate(tableName, root, memberField, () -> {
@@ -107,7 +109,7 @@ public final class DataTableLoader {
 		});
 	}
 
-	static DataTable createEntityObjectList(DataTable root, DataTable master, IDataField memberField,
+	public static DataTable createEntityObjectList(DataTable root, DataTable master, IDataField memberField,
 			Class<?> objectType) {
 		// 需要创建EntityObject从表和中间表
 		var slave = createEntityObject(root, master, memberField, objectType);
@@ -126,7 +128,8 @@ public final class DataTableLoader {
 	 * @param objectType
 	 * @return
 	 */
-	static DataTable createValueList(DataTable root, DataTable master, IDataField memberField, Class<?> objectType) {
+	public static DataTable createValueList(DataTable root, DataTable master, IDataField memberField,
+			Class<?> objectType) {
 		String tableName = String.format("%s_%s", master.name(), memberField.name());
 
 		return tryCreate(tableName, root, memberField, () -> {
@@ -158,7 +161,7 @@ public final class DataTableLoader {
 		});
 	}
 
-	static DataTable createValueObjectList(DataTable root, DataTable master, IDataField memberField,
+	public static DataTable createValueObjectList(DataTable root, DataTable master, IDataField memberField,
 			Class<?> objectType) {
 		var slave = createValueObject(root, master, memberField, objectType);
 		var middle = createMiddleTable(slave, memberField);
@@ -176,7 +179,7 @@ public final class DataTableLoader {
 	 * @param objectType
 	 * @return
 	 */
-	static DataTable createAggregateRoot(DataTable root, DataTable master, IDataField memberField,
+	public static DataTable createAggregateRoot(DataTable root, DataTable master, IDataField memberField,
 			Class<?> objectType) {
 		var tableName = objectType.getSimpleName();
 
@@ -187,7 +190,7 @@ public final class DataTableLoader {
 		});
 	}
 
-	static DataTable createAggregateRootList(DataTable root, DataTable master, IDataField memberField,
+	public static DataTable createAggregateRootList(DataTable root, DataTable master, IDataField memberField,
 			Class<?> objectType) {
 		// 字段为根对象的集合，那么仅创建中间表
 		var slave = createAggregateRoot(root, master, memberField, objectType);

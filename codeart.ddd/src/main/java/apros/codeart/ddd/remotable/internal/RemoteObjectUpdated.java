@@ -1,16 +1,17 @@
-package apros.codeart.ddd.remotable;
+package apros.codeart.ddd.remotable.internal;
 
+import apros.codeart.ddd.remotable.RemoteObjectHandler;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.event.EventPortal;
 import apros.codeart.util.SafeAccess;
 
-public class RemoteObjectUpdated {
+class RemoteObjectUpdated {
 
 	public static String getEventName(Class<?> remoteType) {
 		return RemoteActionName.objectUpdated(remoteType);
 	}
 
-	public static void Subscribe(Class<?> remoteType) {
+	public static void subscribe(Class<?> remoteType) {
 		var eventName = getEventName(remoteType);
 		EventPortal.subscribe(eventName, handler);
 	}

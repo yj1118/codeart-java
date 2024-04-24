@@ -1,7 +1,6 @@
 package apros.codeart.ddd.repository.access;
 
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -646,10 +645,10 @@ public class DataTable {
 		return _query.getCount(expression, fillArg, level);
 	}
 
-	void execute(String expression, Consumer<MapData> fillArg, QueryLevel level,
-			Consumer<Map<String, Object>> fillItems) {
-		_query.execute(expression, fillArg, level, fillItems);
-	}
+//	void execute(String expression, Consumer<MapData> fillArg, QueryLevel level,
+//			Consumer<Map<String, Object>> fillItems) {
+//		_query.execute(expression, fillArg, level, fillItems);
+//	}
 
 	void queryOneToMore(Object rootId, Object masterId, ArrayList<Object> objs) {
 		_read.queryOneToMore(rootId, masterId, objs);

@@ -57,4 +57,10 @@ public record QueryDescription(MapData param, Map<String, Object> items, DataTab
 		return new QueryDescription(param, items, table);
 	}
 
+	public static QueryDescription createBy(MapData param, QueryLevel level, DataTable table) {
+		var items = new HashMap<String, Object>();
+		items.put("level", level);
+		return new QueryDescription(param, items, table);
+	}
+
 }

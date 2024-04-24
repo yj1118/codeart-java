@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import apros.codeart.bytecode.ClassGenerator;
 import apros.codeart.core.TestRunner;
 
 @ExtendWith(TestRunner.class)

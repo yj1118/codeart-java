@@ -1,6 +1,6 @@
 package apros.codeart.ddd.repository.access;
 
-class SqlLike {
+public final class SqlLike {
 	private byte _position;
 
 	public boolean before() {

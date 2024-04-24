@@ -84,7 +84,7 @@ public final class TypeUtil {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T> Class<? extends T> as(Class<?> unknownClass, Class<T> cls) {
+	public static <T> Class<? extends T> asT(Class<?> unknownClass, Class<T> cls) {
 
 		if (cls.isAssignableFrom(unknownClass)) {
 			return (Class<? extends T>) unknownClass;

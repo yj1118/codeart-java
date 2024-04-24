@@ -1,6 +1,5 @@
 package apros.codeart.ddd.repository.access;
 
-import java.util.Map;
 import java.util.function.Consumer;
 
 import apros.codeart.TestSupport;
@@ -72,10 +71,19 @@ final class DataModel {
 		return _root.getCount(expression, fillArg, level);
 	}
 
-	public void execute(String expression, Consumer<MapData> fillArg, QueryLevel level,
-			Consumer<Map<String, Object>> fillItems) {
-		_root.execute(expression, fillArg, level, fillItems);
-	}
+//	/**
+//	 * 
+//	 * 该方法实际上是执行程序员写得自定义命令，exporession由外部识别并执行
+//	 * 
+//	 * @param expression
+//	 * @param fillArg
+//	 * @param level
+//	 * @param fillItems
+//	 */
+//	public void execute(String expression, Consumer<MapData> fillArg, QueryLevel level,
+//			Consumer<Map<String, Object>> fillItems) {
+//		_root.execute(expression, fillArg, level, fillItems);
+//	}
 
 	@TestSupport
 	public static void generate() {

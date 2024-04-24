@@ -60,8 +60,8 @@ class CommonTest {
 		assertEquals("{\"id\":1,\"name\":\"Louis\",\"hobby\":[{\"v\":0,\"n\":\"LS0\"},{\"v\":1,\"n\":\"LS1\"}]}",
 				dto.getCode());
 
-		var code = dto.getCode();
-		var copy = DTObject.readonly(code);
+//		var code = dto.getCode();
+//		var copy = DTObject.readonly(code);
 		list = dto.getList("hobby");
 
 		for (int i = 0; i < list.size(); i++) {

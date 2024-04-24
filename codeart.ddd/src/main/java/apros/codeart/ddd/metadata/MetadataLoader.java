@@ -18,7 +18,7 @@ public final class MetadataLoader {
 
 	private static Iterable<Class<? extends IDomainObject>> _domainTypes;
 
-	public Iterable<Class<? extends IDomainObject>> domainTypes() {
+	public static Iterable<Class<? extends IDomainObject>> getDomainTypes() {
 		if (!loaded)
 			throw new IllegalArgumentException(strings("codeart.ddd", "MetadataNotInitialized"));
 		return _domainTypes;

@@ -24,7 +24,6 @@ class ArraySerializationInfo extends MemberSerializationInfo {
 			return LogicOperator.IsNull;
 		}, () -> {
 
-			var elementType = TypeUtil.resolveElementType(this.getTargetClass());
 			SerializationMethodHelper.writeArray(g, this.getDTOMemberName());
 		}, () -> {
 //先写入空数组
