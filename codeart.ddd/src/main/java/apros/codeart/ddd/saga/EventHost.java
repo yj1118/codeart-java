@@ -1,4 +1,4 @@
-package apros.codeart.ddd.saga.internal;
+package apros.codeart.ddd.saga;
 
 public final class EventHost {
 	private EventHost() {

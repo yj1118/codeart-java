@@ -1,5 +1,11 @@
 package apros.codeart.ddd.saga;
 
+import java.util.ArrayList;
+
+import com.google.common.collect.ImmutableList;
+
+import apros.codeart.dto.DTObject;
+
 public abstract class DomainEvent implements IDomainEvent {
 
 	public DomainEvent() {
@@ -33,95 +39,48 @@ public abstract class DomainEvent implements IDomainEvent {
 	 */
 	public abstract Iterable<String> getPostEvents();
 
-	/// <summary>
-	/// 当前事件对应的条目
-	/// </summary>
-	internal EventEntry Entry
-	{
-	    get;
-	    set;
+	private ImmutableList<String> _entries;
+
+	public ImmutableList<String> entries() {
+		return _entries;
 	}
 
-	/// <summary>
-	/// 当前事件对应的条目
-	/// </summary>
-	// internal EventEntrySlim Entry
-	// {
-//	    get;
-//	    set;
-	// }
-
-	/// <summary>
-	/// 接受一个事件调用完成后的结果
-	/// </summary>
-	/// <returns></returns>
-	internal
-
-	void ApplyResult(EventEntry entry, DTObject result)
-	{
-	    var eventName = entry.EventName;
-	    if (eventName.EqualsIgnoreCase(this.EventName))
-	    {
-	        //接受自身事件触发的结果
-	        this.SetArgs(result);
-	    }
-	    else
-	    {
-	        entry.ArgsCode = result.GetCode();
-	    }
-	    this.EventCompleted(eventName, result);
-	    UpdateCode();
+	void apply(String eventName, DTObject result) {
+		this.eventCompleted(eventName, result);
 	}
 
-	/// <summary>
-	/// 填充事件的参数
-	/// </summary>
-	/// <param name="eventName"></param>
-	/// <param name="args"></param>
-	protected virtual void FillArgs(string eventName, DTObject args)
-	{
+	public abstract DTObject getArgs(String eventName, DTObject input);
 
-	}
+	/**
+	 * 
+	 * 事件执行完毕之后触发该回调
+	 * 
+	 * @param eventName
+	 * @param result
+	 */
+	protected abstract void eventCompleted(String eventName, DTObject result);
 
-	/// <summary>
-	/// 事件执行完毕之后触发该回调
-	/// </summary>
-	/// <param name="preEventName"></param>
-	/// <param name="result"></param>
-	protected virtual void EventCompleted(string eventName, DTObject result)
-	{
+//	#endregion
 
-	}
+	/**
+	 * 触发事件
+	 */
+	public abstract DTObject raise(DTObject arg, EventContext context);
 
-	#endregion
+	/**
+	 * 回溯事件
+	 */
+	public abstract void reverse(EventContext context);
 
-	public void Raise() {
-		RaiseImplement();
-	}
+//	#
 
-	/// <summary>
-	/// 实现执行事件的方法
-	/// </summary>
-	/// <returns>如果领域事件没有返回值，那么返回null</returns>
-	protected abstract void RaiseImplement();
-
-	public void Reverse() {
-		ReverseImplement();
-	}
-
-	/// <summary>
-	/// 实现回逆事件的方法
-	/// </summary>
-	protected abstract void ReverseImplement();
-
-	#
-
-	region 全局事件
+//	region 全局事件
 
 	/// <summary>
 	/// 领域事件被成功执行完毕的事件
 	/// </summary>
 	internal
+
 	static event Action<Guid,DomainEvent>Succeeded;
 
 	public static void OnSucceeded(Guid queueId, DomainEvent @event)

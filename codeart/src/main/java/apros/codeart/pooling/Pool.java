@@ -64,7 +64,7 @@ public class Pool<T> {
 		_borrowedCount.decrement();
 	}
 
-	private DualSegments _dual;
+	private DualMatrix _dual;
 
 	/**
 	 * @param segmentSize  每个分段的大小
@@ -76,7 +76,7 @@ public class Pool<T> {
 		_itemRecycler = itemRecycler;
 		_itemDestroyer = itemDestroyer;
 		_itemDisposable = _itemDestroyer != null && itemType.isAssignableFrom(AutoCloseable.class);
-		_dual = new DualSegments(this, config.initialSegmentCapacity(), config.maxSegmentCapacity(),
+		_dual = new DualMatrix(this, config.initialSegmentCapacity(), config.maxSegmentCapacity(),
 				config.initialSegmentCount(), config.maxSegmentCount());
 	}
 
@@ -94,7 +94,7 @@ public class Pool<T> {
 	 * 
 	 * @return
 	 */
-	private PoolSegment claimSegment() {
+	private DualVector claimSegment() {
 		var index = next(); // 取出下一个可用的分段坐标
 		return _dual.segments()[index];
 	}

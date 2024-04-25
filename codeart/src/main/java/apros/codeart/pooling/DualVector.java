@@ -2,7 +2,7 @@ package apros.codeart.pooling;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-final class PoolSegment {
+final class DualVector {
 
 	// 在扩容的时候可以反复切换
 	private final ResidentItem[][] _dualContainers = new ResidentItem[2][];
@@ -36,7 +36,7 @@ final class PoolSegment {
 
 	private AtomicInteger _dualIndex = new AtomicInteger(0);
 
-	public PoolSegment(Pool<?> pool, int initialCapacity, int maxCapacity) {
+	public DualVector(Pool<?> pool, int initialCapacity, int maxCapacity) {
 		_pool = pool;
 		_initialCapacity = initialCapacity;
 		_maxCapacity = maxCapacity;
