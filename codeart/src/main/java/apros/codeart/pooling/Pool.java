@@ -101,7 +101,7 @@ public class Pool<T> {
 	 */
 	private DualVector claimSegment() {
 		var index = next(); // 取出下一个可用的分段坐标
-		return _dual.segments()[index];
+		return _dual.segments().getAcquire(index);
 	}
 
 	public IPoolItem borrow() {

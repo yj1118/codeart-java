@@ -2,14 +2,16 @@ package apros.codeart.pooling;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReferenceArray;
 
 final class DualVector implements AutoCloseable {
 
 	// 在扩容的时候可以反复切换
-	private final ResidentItem[][] _dualContainers = new ResidentItem[2][];
+	private final AtomicReferenceArray<AtomicResidentItemArray> _dualContainers = new AtomicReferenceArray<>(
+			new AtomicResidentItemArray[2]);
 
-	public ResidentItem[] container() {
-		return _dualContainers[_dualIndex.getAcquire()];
+	public AtomicResidentItemArray container() {
+		return _dualContainers.getAcquire(_dualIndex.getAcquire());
 	}
 
 	private Pool<?> _pool;
@@ -46,11 +48,13 @@ final class DualVector implements AutoCloseable {
 	}
 
 	private void initContainer() {
-		var items = _dualContainers[_dualIndex.getAcquire()] = new ResidentItem[_initialCapacity];
+		var items = new AtomicResidentItemArray(_initialCapacity);
 
-		for (var i = 0; i < items.length; i++) {
-			items[i] = new ResidentItem(_pool, this, i);
+		for (var i = 0; i < items.length(); i++) {
+			items.setRelease(i, new ResidentItem(_pool, this, i));
 		}
+
+		_dualContainers.setRelease(0, items);
 	}
 
 	private int getIndex() {
@@ -67,7 +71,7 @@ final class DualVector implements AutoCloseable {
 
 		var index = getIndex();
 
-		var item = this.container()[index];
+		var item = this.container().getAcquire(index);
 
 		if (item.tryClaim())
 			return item;
@@ -86,13 +90,16 @@ final class DualVector implements AutoCloseable {
 			return;
 
 		_isDisposed.setRelease(true);
-		for (var item : this.container()) {
+		var container = this.container();
+
+		for (var i = 0; i < container.length(); i++) {
+			var item = container.getAcquire(i);
 			if (!item.isBorrowed()) // 对于借出去的项，归还时会自动释放
 				item.dispose();
 		}
 
-		_dualContainers[0] = null;
-		_dualContainers[1] = null;
+		_dualContainers.setRelease(0, null);
+		_dualContainers.setRelease(1, null);
 	}
 
 	/**
@@ -110,7 +117,7 @@ final class DualVector implements AutoCloseable {
 			return false;
 
 		var src = this.container();
-		int oldCount = src.length;
+		int oldCount = src.length();
 		// oldCapacity >> 1 是将 oldCapacity 右移一位的结果，相当于 oldCapacity
 		// 的一半。将这个值加到原始容量上，得到的就是新容量，即原始容量的150%。
 		// 在这里是将片段数为原数量的1.5倍
@@ -118,13 +125,14 @@ final class DualVector implements AutoCloseable {
 		newCount = Math.min(newCount, _maxCapacity); // 确保不能超过maxCapacity
 
 		int oldDualIndex = _dualIndex.getAcquire();
-		var dest = _dualContainers[((oldDualIndex + 1) % 2)] = new ResidentItem[newCount]; // 双片段组，一共也就2个
+		var dest = new AtomicResidentItemArray(newCount); // 双片段组，一共也就2个
+		_dualContainers.setRelease(((oldDualIndex + 1) % 2), dest);
 
-		System.arraycopy(src, 0, dest, 0, dest.length);
+		AtomicResidentItemArray.copy(src, dest, dest.length());
 
-		for (var i = src.length; i < newCount; i++) {
+		for (var i = src.length(); i < newCount; i++) {
 			// 补充增容的数据
-			dest[i] = new ResidentItem(_pool, i);
+			dest.setRelease(i, new ResidentItem(_pool, this, i));
 		}
 
 		// 注意，要先执行a,因为数据已经拷贝到新的对象容器了，切换到新的对象容器,如果这时候有外界来访问数据，哪怕b没有执行，那么取的数据范围也不会有危险
@@ -137,16 +145,49 @@ final class DualVector implements AutoCloseable {
 		_capacity.setRelease(newCount);
 
 		// 释放老的对象容器
-		_dualContainers[oldDualIndex] = null;
+		_dualContainers.setRelease(oldDualIndex, null);
 
 		return true;
 	}
 
-	boolean allowShrink() {
-		var capacity = this.capacity();
-		if (capacity == _initialCapacity) // 最小值，不用缩减容量
+	boolean tryShrink() {
+
+		if (_initialCapacity == _maxCapacity)
 			return false;
 
+		if (_capacity.getAcquire() == _initialCapacity)
+			return false;
+
+		var src = this.container();
+		int oldCount = src.length();
+		int newCount = Math.max(_initialCapacity, (int) ((float) oldCount / 1.5F));
+		int oldDualIndex = _dualIndex.getAcquire();
+
+		var dest = new AtomicResidentItemArray(newCount); // 双片段组，一共也就2个
+		_dualContainers.setRelease(((oldDualIndex + 1) % 2), dest);
+
+		AtomicResidentItemArray.copy(src, dest, dest.length());
+
+		// 注意，要先执行a,因为数据已经拷贝到新的矩阵池了，
+		// 新的矩阵池的count小于老矩阵池，所以得先把数量设置
+		// 这样就算b还没执行，而有人在借项，也是借老src里的矢量池的项，而且这些项都已经复制到b了，所以不会有危害
+
+		// a.设置新的向量池容量
+		_capacity.setRelease(newCount);
+
+		// b.应用最新的向量池
+		_dualIndex.updateAndGet(current -> (current + 1) % 2);
+
+		for (var i = newCount; i < src.length(); i++) {
+			var item = src.getAcquire(i);
+			if (!item.isBorrowed())
+				item.dispose();
+		}
+
+		// 释放向量池
+		_dualContainers.setRelease(oldDualIndex, null);
+
+		return true;
 	}
 
 	@Override
