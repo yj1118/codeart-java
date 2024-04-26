@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.dto.DTObject;
+import apros.codeart.mq.event.EventPortal;
 
 public final class EventTrigger {
 
@@ -101,19 +102,21 @@ public final class EventTrigger {
 
 		var eventId = queue.getEventId(eventName);
 		// 先订阅触发事件的返回结果的事件
-		subscribeRemoteEventResult(eventName, eventId);
+		subscribeRemoteEventResult(eventId);
 
 		// 再发布“触发事件”的事件
-		var raiseEventName = EventUtil.GetRaise(entry.EventName);
-		EventPortal.Publish(raiseEventName, entry.GetRemotable(identity, args)); // 触发远程事件就是发布一个“触发事件”的事件
-																					// ，订阅者会收到消息后会执行触发操作
+		var raiseEventName = EventUtil.getRaise(eventName);
 
-		TimeoutManager.Start(eventKey);
+		var remoteArg = queue.getEntryRemotable(eventName, eventId, args);
+		EventPortal.publish(raiseEventName, remoteArg); // 触发远程事件就是发布一个“触发事件”的事件
+		// ，订阅者会收到消息后会执行触发操作
+
+		TimeoutManager.start(eventKey);
 	}
 
-	private static void subscribeRemoteEventResult(String eventName, String eventId) {
-		var raiseResultEventName = EventUtil.getRaiseResult(eventName, eventId);
-		EventPortal.Subscribe(raiseResultEventName, ReceiveResultEventHandler.Instance, true);
+	private static void subscribeRemoteEventResult(String eventId) {
+		var raiseResultEventName = EventUtil.getRaiseResult(eventId);
+		EventPortal.subscribe(raiseResultEventName, ReceiveResultEventHandler.instance, true);
 	}
 
 }

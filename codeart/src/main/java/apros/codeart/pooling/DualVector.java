@@ -1,8 +1,9 @@
 package apros.codeart.pooling;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-final class DualVector {
+final class DualVector implements AutoCloseable {
 
 	// 在扩容的时候可以反复切换
 	private final ResidentItem[][] _dualContainers = new ResidentItem[2][];
@@ -48,7 +49,7 @@ final class DualVector {
 		var items = _dualContainers[_dualIndex.getAcquire()] = new ResidentItem[_initialCapacity];
 
 		for (var i = 0; i < items.length; i++) {
-			items[i] = new ResidentItem(_pool);
+			items[i] = new ResidentItem(_pool, this, i);
 		}
 	}
 
@@ -74,7 +75,17 @@ final class DualVector {
 		return null;
 	}
 
+	private AtomicBoolean _isDisposed = new AtomicBoolean(false);
+
+	public boolean isDisposed() {
+		return _isDisposed.getAcquire();
+	}
+
 	public void dispose() {
+		if (this.isDisposed())
+			return;
+
+		_isDisposed.setRelease(true);
 		for (var item : this.container()) {
 			if (!item.isBorrowed()) // 对于借出去的项，归还时会自动释放
 				item.dispose();
@@ -113,7 +124,7 @@ final class DualVector {
 
 		for (var i = src.length; i < newCount; i++) {
 			// 补充增容的数据
-			dest[i] = new ResidentItem(_pool);
+			dest[i] = new ResidentItem(_pool, i);
 		}
 
 		// 注意，要先执行a,因为数据已经拷贝到新的对象容器了，切换到新的对象容器,如果这时候有外界来访问数据，哪怕b没有执行，那么取的数据范围也不会有危险
@@ -129,6 +140,18 @@ final class DualVector {
 		_dualContainers[oldDualIndex] = null;
 
 		return true;
+	}
+
+	boolean allowShrink() {
+		var capacity = this.capacity();
+		if (capacity == _initialCapacity) // 最小值，不用缩减容量
+			return false;
+
+	}
+
+	@Override
+	public void close() throws Exception {
+		this.dispose();
 	}
 
 }

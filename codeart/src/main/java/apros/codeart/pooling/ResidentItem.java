@@ -8,14 +8,31 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * 我们要注意数值计算的原子性和可见性 原子性不代表可见性，所以需要用release和acquire模式
  */
 final class ResidentItem implements IPoolItem {
-	private Pool<?> _owner;
+	private Pool<?> _pool;
+	private DualVector _vector;
 	private Object _item;
 	private AtomicBoolean _isBorrowed;
+	private AtomicBoolean _isDisposed;
 
-	public ResidentItem(Pool<?> owner) {
-		_owner = owner;
-		_item = owner.createItem(false);
+	private final int _index;
+
+	/**
+	 * 
+	 * 项在池中的矢量位置
+	 * 
+	 * @return
+	 */
+	public int index() {
+		return _index;
+	}
+
+	public ResidentItem(Pool<?> pool, DualVector vector, int index) {
+		_pool = pool;
+		_vector = vector;
+		_item = pool.createItem(false);
 		_isBorrowed = new AtomicBoolean(false);
+		_isDisposed = new AtomicBoolean(false);
+		_index = index;
 	}
 
 	public boolean isBorrowed() {
@@ -37,7 +54,7 @@ final class ResidentItem implements IPoolItem {
 		// acquire: 确保当前读到的一定是最新数据
 		// release: 确保当前写入的数据，对其他线程立即可见
 		if (_isBorrowed.compareAndExchange(false, true) == false) {
-			_owner.borrowedIncrement(); // 借出数+1
+			_pool.borrowedIncrement(); // 借出数+1
 			return true;
 		}
 
@@ -45,7 +62,11 @@ final class ResidentItem implements IPoolItem {
 	}
 
 	public void dispose() {
-		_owner.disposeItem(this); // 销毁项
+		if (_isDisposed.getAcquire())
+			return;
+
+		_isDisposed.setRelease(true);
+		_pool.disposeItem(this); // 销毁项
 	}
 
 	/**
@@ -55,14 +76,21 @@ final class ResidentItem implements IPoolItem {
 	public void back() {
 
 		// 如果项具备销毁的能力，并且版本号不同，那么就销毁，不再使用
-		if (_owner.itemDisposable() && _owner.isDisposed()) {
-			_owner.disposeItem(this); // 直接销毁
+		boolean itemDisposable = _pool.itemDisposable();
+		if (itemDisposable && (_pool.isDisposed())) {
+			this.dispose(); // 直接销毁
 		} else {
 			if (!_isBorrowed.getAcquire())
-				throw new PoolingException(strings("codeart", "CannotReturnPoolItem", _owner.getClass().getName()));
-			_owner.clearItem(this); // 让池来处理清理工作
+				throw new PoolingException(strings("codeart", "CannotReturnPoolItem", _pool.getClass().getName()));
+			_pool.clearItem(this); // 让池来处理清理工作
 			_isBorrowed.setRelease(false); // 再标记已归还了
-			_owner.borrowedDecrement(); // 借出数-1
+			_pool.borrowedDecrement(); // 借出数-1
+
+			if (itemDisposable && (_vector.isDisposed() || this.index() >= _pool.vectorCapacity())) {
+				// 项所在的位置比矢量池的容量还大，那证明池已经被缩减容量了，需要销毁该项
+				this.dispose();
+			}
+
 		}
 
 	}

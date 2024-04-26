@@ -80,4 +80,23 @@ public class EventQueue {
 		return String.format("%s-%s", this.id().toString(), eventName);
 	}
 
+	/**
+	 * 
+	 * 获得要执行事件得远程数据
+	 * 
+	 * @param eventName
+	 * @param eventId
+	 * @param args
+	 * @return
+	 */
+	DTObject getEntryRemotable(String eventName, String eventId, DTObject args) {
+		// 并没有将本地队列的编号和条目状态传递出去
+		var e = DTObject.editable();
+		e.setString("eventId", eventId);
+		e.setString("eventName", eventName);
+		e.setObject("args", args);
+		e.setObject("identity", this.getIdentity());
+		return e;
+	}
+
 }

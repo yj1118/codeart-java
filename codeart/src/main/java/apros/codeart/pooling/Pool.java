@@ -1,5 +1,6 @@
 package apros.codeart.pooling;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Consumer;
@@ -41,7 +42,7 @@ public class Pool<T> {
 	private AtomicInteger _pointer = new AtomicInteger(-1);
 
 	private int next() {
-		return _pointer.updateAndGet(current -> (current + 1) % _dual.segmentCount());
+		return _pointer.updateAndGet(current -> (current + 1) % _dual.vectorCount());
 	}
 
 	private boolean _itemDisposable;
@@ -65,6 +66,10 @@ public class Pool<T> {
 	}
 
 	private DualMatrix _dual;
+
+	public int vectorCapacity() {
+		return _dual.vectorCapacity();
+	}
 
 	/**
 	 * @param segmentSize  每个分段的大小
@@ -165,17 +170,19 @@ public class Pool<T> {
 		}
 	}
 
-	private boolean _isDisposed = false;
+	private AtomicBoolean _isDisposed = new AtomicBoolean(false);
 
 	public boolean isDisposed() {
-		return _isDisposed;
+		return _isDisposed.getAcquire();
 	}
 
 	/**
 	 * 该方法一般测试环境中用，生产环境不会用到
 	 */
 	public void dispose() {
-		_isDisposed = true;
+		if (this.isDisposed())
+			return;
+		_isDisposed.setRelease(true);
 		_dual.dispose();
 	}
 
