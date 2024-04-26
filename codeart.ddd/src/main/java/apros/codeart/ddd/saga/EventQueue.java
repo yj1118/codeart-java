@@ -60,10 +60,6 @@ public class EventQueue {
 
 	}
 
-	public boolean isLocal(String eventName) {
-		return this.source().name().equals(eventName);
-	}
-
 	public DTObject getArgs(String eventName, DTObject input) {
 		return this.source().getArgs(eventName, input);
 	}

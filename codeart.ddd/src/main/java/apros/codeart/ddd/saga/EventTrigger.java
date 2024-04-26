@@ -1,10 +1,17 @@
 package apros.codeart.ddd.saga;
 
-import java.util.UUID;
+import static apros.codeart.i18n.Language.strings;
 
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import apros.codeart.context.AppSession;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.event.EventPortal;
+import apros.codeart.util.concurrent.BusySignal;
 
 public final class EventTrigger {
 
@@ -21,24 +28,20 @@ public final class EventTrigger {
 	     while (!running && !successful)
 	     {
 	    	//触发队列事件
-             var eventName = queue.next();
-             if (eventName != null)
+             var event = queue.next();
+             if (event != null)
              {
+            	 String eventName = event.name();
                  EventLog.flushRaise(queue, eventName); //一定要确保日志先被正确的写入，否则会有BUG
-                 if (queue.isLocal(eventName))
+            	 args = queue.getArgs(eventName, args);
+                 if (event.local() != null)
                  {
                 	 // 本地事件，直接执行
-                	 // 本地事件就是事件源，切领域事件仅支持1个本地事件和多个外部事件的联合调用
-                	 // 不支持多个本地之间和多个外部事件的联合调用，主要是为了节省开销，而且实际上也没必要
-                	 args = queue.getArgs(eventName, args);
-                     var source = queue.source();
-
-                     raiseLocalEvent(source, args, queue);
+                     args = raiseLocalEvent(event.local(), args, queue);
                  }
                  else
                  {
-
-                     raiseRemoteEvent(eventName, args, queue);
+                	 args = raiseRemoteEvent(eventName, args, queue);
                  }
              }
 
@@ -98,7 +101,7 @@ public final class EventTrigger {
 		});
 	}
 
-	private static void raiseRemoteEvent(String eventName, DTObject args, EventQueue queue) {
+	private static DTObject raiseRemoteEvent(String eventName, DTObject args, EventQueue queue) {
 
 		var eventId = queue.getEventId(eventName);
 		// 先订阅触发事件的返回结果的事件
@@ -111,12 +114,74 @@ public final class EventTrigger {
 		EventPortal.publish(raiseEventName, remoteArg); // 触发远程事件就是发布一个“触发事件”的事件
 		// ，订阅者会收到消息后会执行触发操作
 
-		TimeoutManager.start(eventKey);
+		BusySignal<DTObject> signal = createSignal(eventId);
+
+		try {
+			var output = signal.wait(10, TimeUnit.SECONDS);
+			
+			var error = output.getString("error",null);
+
+			if (error != null)
+			{
+			    var ui = @event.GetValue<bool>("ui"); //ui错误
+			    //如果没有执行成功，那么抛出异常
+			    if(ui) throw new RemoteBusinessFailedException(message);
+			    throw new RemoteEventFailedException(message);
+			}
+			
+			var message = output.getString("message",null);
+			
+			if (message != null)
+			{
+				throw new RemoteBusinessFailedException(message);
+			}
+			
+
+			var data = output.getObject("data");
+
+
+			var entry = queue.GetEntry(key.EventId);
+			if (entry.IsEmpty())
+			{
+			    throw new DomainEventException(string.Format(Strings.EventEntryNotExistWithCallbackTip, queue.Id, entry.EventId));
+			}
+
+			
+
+			//远程事件执行完毕后，用它所在的源事件接受结果
+			var source = queue.source();
+			source.apply(eventName, data);
+			
+			return data;
+
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+			removeSignal(eventId);
+			cleanupRemoteEventResult(eventId);
+		}
+
 	}
 
 	private static void subscribeRemoteEventResult(String eventId) {
 		var raiseResultEventName = EventUtil.getRaiseResult(eventId);
 		EventPortal.subscribe(raiseResultEventName, ReceiveResultEventHandler.instance, true);
+	}
+
+	private static ConcurrentHashMap<String, BusySignal<DTObject>> _signals = new ConcurrentHashMap<String, BusySignal<DTObject>>();
+
+	private static BusySignal<DTObject> createSignal(String id) {
+		BusySignal<DTObject> signal = new BusySignal<>();
+		_signals.put(id, signal);
+		return signal;
+	}
+
+	private static void removeSignal(String id) {
+		_signals.remove(id);
+	}
+
+	public static BusySignal<DTObject> getSignal(String id) {
+		return _signals.get(id);
 	}
 
 }

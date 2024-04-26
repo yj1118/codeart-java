@@ -150,6 +150,11 @@ final class DualVector implements AutoCloseable {
 		return true;
 	}
 
+	/**
+	 * 尝试减容
+	 * 
+	 * @return
+	 */
 	boolean tryShrink() {
 
 		if (_initialCapacity == _maxCapacity)

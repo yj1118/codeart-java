@@ -110,6 +110,7 @@ public class Pool<T> {
 		IPoolItem item = rb.tryClaim();
 
 		if (item != null) {
+			_dual.tryShrink();
 			return item;
 		}
 

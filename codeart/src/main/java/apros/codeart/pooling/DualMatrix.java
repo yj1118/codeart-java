@@ -104,13 +104,16 @@ class DualMatrix {
 
 	boolean tryGrow() {
 		// 如果借出项总数大于当前所有缓冲项的数量，那么扩容
-		var size = this.capacity();
-		if (_maxSize > 0 && size >= _maxSize) // 已达到最大限制，不扩容
+		if (_maxSize > 0 && this.capacity() >= _maxSize) // 已达到最大限制，不扩容
 			return false;
 
-		if (_pool.borrowedCount() > size) {
+		if (_pool.borrowedCount() > this.capacity()) {
 
 			synchronized (_syncObject) {
+
+				if (_maxSize > 0 && this.capacity() >= _maxSize) // 已达到最大限制，不扩容
+					return false;
+
 				if (_pool.borrowedCount() > this.capacity()) {
 					this.grow();
 					return true;
@@ -193,6 +196,10 @@ class DualMatrix {
 		if (_pool.borrowedCount() < (this.capacity() / 1.5)) {
 
 			synchronized (_syncObject) {
+
+				if (this.vectorCapacity() == _initialVectorCapacity)
+					return false;
+
 				if (_pool.borrowedCount() < (this.capacity() / 1.5)) {
 					this.shrink();
 					return true;

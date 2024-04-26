@@ -10,6 +10,7 @@ module apros.codeart {
 	exports apros.codeart.pooling;
 	exports apros.codeart.pooling.util;
 	exports apros.codeart.util;
+	exports apros.codeart.util.concurrent;
 	exports apros.codeart.dto;
 	exports apros.codeart.dto.serialization;
 	exports apros.codeart.mq;
