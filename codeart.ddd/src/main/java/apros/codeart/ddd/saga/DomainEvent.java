@@ -23,42 +23,21 @@ public abstract class DomainEvent implements IDomainEvent {
 		return _name;
 	}
 
-	private Iterable<String> _preEvents;
-
 	/**
 	 * 前置事件
 	 * 
 	 * @return
 	 */
-	public abstract Iterable<String> getPreEvents();
+	public abstract Iterable<String> getPreEvents(DTObject input);
 
 	/**
 	 * 后置事件
 	 * 
 	 * @return
 	 */
-	public abstract Iterable<String> getPostEvents();
+	public abstract Iterable<String> getPostEvents(DTObject input);
 
-	private ImmutableList<String> _entries;
-
-	public ImmutableList<String> entries() {
-		return _entries;
-	}
-
-	void apply(String eventName, DTObject result) {
-		this.eventCompleted(eventName, result);
-	}
-
-	public abstract DTObject getArgs(String eventName, DTObject input);
-
-	/**
-	 * 
-	 * 事件执行完毕之后触发该回调
-	 * 
-	 * @param eventName
-	 * @param result
-	 */
-	protected abstract void eventCompleted(String eventName, DTObject result);
+	public abstract DTObject getArgs(DTObject args, EventContext ctx);
 
 //	#endregion
 

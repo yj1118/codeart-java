@@ -3,7 +3,7 @@ package apros.codeart.util.concurrent;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public final class BusySignal<T> {
+public final class BusySignal<T> implements ISignal<T> {
 
 	private final AtomicBoolean _ready = new AtomicBoolean(false);
 

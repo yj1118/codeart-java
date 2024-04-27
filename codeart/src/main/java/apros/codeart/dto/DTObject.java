@@ -874,6 +874,11 @@ public class DTObject implements INullProxy {
 		return DTObject.readonly(code);
 	}
 
+	public DTObject asEditable() {
+		var code = this.getCode();
+		return DTObject.editable(code);
+	}
+
 	private static DTObject createImpl(String code, boolean readonly) {
 		var root = EntityDeserializer.deserialize(code, readonly);
 		return obtain(root, readonly);
