@@ -65,8 +65,8 @@ public final class EventContext {
 	 * @return
 	 */
 	DTObject getEntryRemotable(DTObject args) {
-		// 并没有将本地队列的编号和条目状态传递出去
 		var e = DTObject.editable();
+//		e.setString("id", this.id()); // 环境编号（也是队列编号）
 		e.setString("eventId", this.eventId());
 		e.setString("eventName", this.eventName());
 		e.setObject("args", args);

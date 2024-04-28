@@ -11,7 +11,7 @@ import apros.codeart.util.StringUtil;
 import apros.codeart.util.concurrent.ISignal;
 import apros.codeart.util.concurrent.LatchSignal;
 
-public final class EventTrigger {
+final class EventTrigger {
 
 	private EventTrigger() {
 	}
@@ -20,9 +20,13 @@ public final class EventTrigger {
 	/// 开始一个新的事件
 	/// </summary>
 	/// <param name="event"></param>
-	public static void start(DomainEvent source, DTObject input, boolean byRemoteInvoke) {
-		var queue = new EventQueue(source, input, byRemoteInvoke);
-		raise(queue, input);
+	public static DTObject start(DomainEvent source, DTObject input) {
+		var queue = new EventQueue(source, input);
+		try {
+			return raise(queue, input);
+		} catch (Exception ex) {
+			EventProtector.r  //恢复
+		}
 	}
 
 	private static DTObject raise(EventQueue queue, DTObject input) {
@@ -48,13 +52,6 @@ public final class EventTrigger {
 		}
 
 		EventLog.flushEnd(ctx); // 指示恢复管理器事件队列的操作已经全部完成
-
-		if (queue.byRemoteInvoke()) {
-			// 发布事件被完成的消息
-			ctx.direct(queue.source().name()); // 将上下文切换到源事件
-			publishRaiseSucceeded(args, ctx);
-		}
-
 		return args;
 	}
 
@@ -112,39 +109,6 @@ public final class EventTrigger {
 	private static void subscribeRemoteEventResult(String eventId) {
 		var raiseResultEventName = EventUtil.getRaiseResult(eventId);
 		EventPortal.subscribe(raiseResultEventName, ReceiveResultEventHandler.instance, true);
-	}
-
-	/**
-	 * 
-	 * 发布事件调用成功的结果
-	 * 
-	 * @param args
-	 * @param ctx
-	 */
-	private static void publishRaiseSucceeded(DTObject args, EventContext ctx) {
-		var en = EventUtil.getRaiseResult(ctx.eventId()); // 消息队列的事件名称
-		// 返回事件成功被执行的结果
-		var arg = createPublishRaiseResultArg(args, ctx, null, true);
-		EventPortal.publish(en, arg);
-	}
-
-	private static DTObject createPublishRaiseResultArg(DTObject args, EventContext ctx, String error,
-			boolean isBusinessException) {
-		var output = DTObject.editable();
-
-		output.setString("eventName", ctx.eventName());
-		output.setString("eventId", ctx.eventId());
-
-		if (!StringUtil.isNullOrEmpty(error)) {
-			if (isBusinessException)
-				output.setString("message", error);
-			else
-				output.setString("error", error);
-		}
-
-		output.setObject("args", args);
-		output.setObject("identity", ctx.getIdentity());
-		return output;
 	}
 
 	/**

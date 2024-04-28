@@ -1,5 +1,7 @@
 package apros.codeart.ddd.saga.internal;
 
+import static apros.codeart.i18n.Language.strings;
+
 import java.util.ArrayList;
 
 import com.google.common.collect.Iterables;
@@ -19,10 +21,15 @@ public final class EventLoader {
 		return _events;
 	}
 
-	public static DomainEvent find(String name) {
-		return Iterables.find(_events, (e) -> {
+	public static DomainEvent find(String name, boolean throwError) {
+		var event = Iterables.find(_events, (e) -> {
 			return e.name().equals(name);
 		});
+
+		if (event == null && throwError) {
+			throw new IllegalStateException(strings("codeart.ddd", "NoFoundDomainEvent"));
+		}
+		return event;
 	}
 
 	/**

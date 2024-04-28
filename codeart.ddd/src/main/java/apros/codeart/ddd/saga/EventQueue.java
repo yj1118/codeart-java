@@ -101,16 +101,9 @@ public class EventQueue {
 		return next;
 	}
 
-	private boolean _byRemoteInvoke;
-
-	public boolean byRemoteInvoke() {
-		return _byRemoteInvoke;
-	}
-
-	public EventQueue(DomainEvent source, DTObject input, boolean byRemoteInvoke) {
+	public EventQueue(DomainEvent source, DTObject input) {
 		_instanceId = Guid.compact();
 		_source = source;
-		_byRemoteInvoke = byRemoteInvoke;
 		_pointer = -1;
 		_entries = getEntries(source, input);
 
