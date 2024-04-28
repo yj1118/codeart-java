@@ -60,7 +60,7 @@ public class EventQueue {
 	}
 
 	private static EventEntry createEntry(String name, DomainEvent source) {
-		var local = EventLoader.find(name);
+		var local = EventLoader.find(name, false);
 		if (local == null) {
 			// 远程事件永远是被展开的
 			return new EventEntry(name, null, true, source);
@@ -101,12 +101,24 @@ public class EventQueue {
 		return next;
 	}
 
+	private DTObject _input;
+
+	/**
+	 * 
+	 * 事件的原始输入
+	 * 
+	 * @return
+	 */
+	public DTObject input() {
+		return _input;
+	}
+
 	public EventQueue(DomainEvent source, DTObject input) {
 		_instanceId = Guid.compact();
 		_source = source;
+		_input = input;
 		_pointer = -1;
 		_entries = getEntries(source, input);
-
 	}
 
 	public DTObject getArgs(DTObject args, EventContext ctx) {

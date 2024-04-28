@@ -3,11 +3,9 @@ package apros.codeart.ddd.saga;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-import apros.codeart.UserUIException;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.event.EventPortal;
-import apros.codeart.util.StringUtil;
 import apros.codeart.util.concurrent.ISignal;
 import apros.codeart.util.concurrent.LatchSignal;
 
@@ -16,20 +14,33 @@ final class EventTrigger {
 	private EventTrigger() {
 	}
 
-	/// <summary>
-	/// 开始一个新的事件
-	/// </summary>
-	/// <param name="event"></param>
+	/**
+	 * 
+	 * 开始一个新的事件
+	 * 
+	 * @param source
+	 * @param input
+	 * @return
+	 */
 	public static DTObject start(DomainEvent source, DTObject input) {
 		var queue = new EventQueue(source, input);
 		try {
-			return raise(queue, input);
+			return raise(queue);
 		} catch (Exception ex) {
-			EventProtector.r  //恢复
+			EventProtector.restore(queue.id()); // 恢复
 		}
+		return DTObject.Empty;
 	}
 
-	private static DTObject raise(EventQueue queue, DTObject input) {
+	/**
+	 * 
+	 * 开始一个新的事件
+	 * 
+	 * @param queue
+	 * @return
+	 */
+	public static DTObject raise(EventQueue queue) {
+		var input = queue.input();
 		DTObject args = input.asEditable();
 		EventContext ctx = new EventContext(queue.id(), input);
 
@@ -87,12 +98,6 @@ final class EventTrigger {
 
 			if (error != null) {
 				throw new RemoteEventFailedException(error);
-			}
-
-			var message = output.getString("message", null);
-
-			if (message != null) {
-				throw new UserUIException(message);
 			}
 
 			return output.getObject("args");

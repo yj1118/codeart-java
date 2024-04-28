@@ -1,8 +1,8 @@
 package apros.codeart.ddd;
 
-import apros.codeart.UserUIException;
+import apros.codeart.UIException;
 
-public class ValidationException extends UserUIException {
+public class ValidationException extends UIException {
 
 	/**
 	 * 
