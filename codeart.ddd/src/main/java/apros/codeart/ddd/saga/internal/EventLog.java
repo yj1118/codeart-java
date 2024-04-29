@@ -1,7 +1,5 @@
 package apros.codeart.ddd.saga.internal;
 
-import apros.codeart.ddd.saga.internal.protector.EventReverseQueue;
-import apros.codeart.ddd.saga.internal.trigger.EventContext;
 import apros.codeart.dto.DTObject;
 
 public final class EventLog {
@@ -15,7 +13,7 @@ public final class EventLog {
 	 * @param queue
 	 * @param entry
 	 */
-	public static void flushRaise(EventContext ctx) {
+	public static void flushRaise(String queueId, String eventId) {
 		var logId = ctx.id();
 		// 写入日志
 		var content = DTObject.editable();
@@ -28,13 +26,35 @@ public final class EventLog {
 	/// </summary>
 	/// <param name="queue"></param>
 	/// <param name="entry"></param>
-	public static void flushEnd(EventContext ctx) {
+	public static void flushRaiseEnd(String queueId) {
 		var logId = queueId;
 		// 写入日志
 		EventLog.FlushWrite(logId, EventOperation.End, DTObject.Empty);
 	}
 
-	public static EventReverseQueue find(String queueId) {
+	/**
+	 * 
+	 * 得到队列已执行的事件的条目信息
+	 * 
+	 * @param queueId
+	 * @return
+	 */
+	public static RaisedQueue find(String queueId) {
+
+	}
+
+	/**
+	 * 
+	 * 记录事件已被回溯（对于本地事件，是成功回溯，对于远程事件，是已经成功发送回溯通知）
+	 * 
+	 * @param queueId
+	 * @param eventId
+	 */
+	public static void flushReverse(String queueId, String eventId) {
+
+	}
+
+	public static void flushReverseEnd(String queueId) {
 
 	}
 

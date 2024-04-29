@@ -21,6 +21,6 @@ public final class DDDConfig {
 	}
 
 	static {
-		_objectMeta = ResourceUtil.loadJSON("config/objectMeta.json");
+		_objectMeta = ResourceUtil.loadJSON("codeart/objectMeta.json");
 	}
 }

@@ -1,10 +1,13 @@
 {
+	"archives": [
+	],
+	"log":{
+		"fileName":"logs/app.log"
+	},
 	"identity":{
 		"name":"",
 		"language":""
 	},
-	"archives": [
-	],
 	"db":{
 		"type":"sqlserver",
 		"url":"sqlserver://localhost:1433;databaseName=mydatabase",

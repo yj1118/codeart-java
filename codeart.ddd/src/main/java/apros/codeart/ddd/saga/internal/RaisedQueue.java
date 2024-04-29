@@ -1,8 +1,8 @@
-package apros.codeart.ddd.saga.internal.protector;
+package apros.codeart.ddd.saga.internal;
 
 import apros.codeart.dto.DTObject;
 
-public final class EventReverseQueue {
+public final class RaisedQueue {
 
 	private String _id;
 
@@ -16,7 +16,7 @@ public final class EventReverseQueue {
 		return _identity;
 	}
 
-	public EventEntry next() {
+	public RaisedEntry next() {
 
 	}
 

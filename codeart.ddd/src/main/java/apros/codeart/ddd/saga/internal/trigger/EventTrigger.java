@@ -33,9 +33,9 @@ public final class EventTrigger {
 		try {
 			return raise(queue);
 		} catch (Exception ex) {
-			EventProtector.restore(queue.id()); // 恢复
+			EventProtector.restore(queue.id(), false); // 恢复
+			throw ex;
 		}
-		return DTObject.Empty;
 	}
 
 	/**
@@ -56,7 +56,7 @@ public final class EventTrigger {
 			if (event != null) {
 				String eventName = event.name();
 				ctx.direct(eventName); // 将事件上下文重定向到新的事件上
-				EventLog.flushRaise(ctx); // 一定要确保日志先被正确的写入，否则会有BUG
+				EventLog.flushRaise(ctx.id(), ctx.eventId()); // 一定要确保日志先被正确的写入，否则会有BUG
 				args = queue.getArgs(args, ctx);
 				if (event.local() != null) {
 					// 本地事件，直接执行
@@ -68,7 +68,7 @@ public final class EventTrigger {
 			break;
 		}
 
-		EventLog.flushEnd(ctx); // 指示恢复管理器事件队列的操作已经全部完成
+		EventLog.flushRaiseEnd(queue.id()); // 指示恢复管理器事件队列的操作已经全部完成
 		return args;
 	}
 
@@ -133,20 +133,33 @@ public final class EventTrigger {
 		EventPortal.cleanup(raiseResultEventName);
 	}
 
+	/**
+	 * 
+	 * 接收到远程调用后的返回结果，继续触发事件
+	 * 
+	 * @param eventId
+	 * @param e
+	 */
+	public static void continueRaise(String eventId, DTObject e) {
+		var signal = _signals.get(eventId);
+		if (signal != null)
+			signal.set(e);
+	}
+
 	private static ConcurrentHashMap<String, ISignal<DTObject>> _signals = new ConcurrentHashMap<>();
 
-	private static ISignal<DTObject> createSignal(String id) {
+	private static ISignal<DTObject> createSignal(String eventId) {
 		LatchSignal<DTObject> signal = new LatchSignal<>();
-		_signals.put(id, signal);
+		_signals.put(eventId, signal);
 		return signal;
 	}
 
-	private static void removeSignal(String id) {
-		_signals.remove(id);
+	private static void removeSignal(String eventId) {
+		_signals.remove(eventId);
 	}
 
-	public static ISignal<DTObject> getSignal(String id) {
-		return _signals.get(id);
+	public static ISignal<DTObject> getSignal(String eventId) {
+		return _signals.get(eventId);
 	}
 
 }

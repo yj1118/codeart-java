@@ -1,12 +1,11 @@
 package apros.codeart.ddd.saga.internal.protector;
 
-import com.google.common.base.Strings;
-
 import apros.codeart.context.AppSession;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.saga.DomainEvent;
 import apros.codeart.ddd.saga.internal.EventLog;
 import apros.codeart.ddd.saga.internal.EventUtil;
+import apros.codeart.ddd.saga.internal.RaisedQueue;
 import apros.codeart.ddd.saga.internal.trigger.EventTrigger;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.event.EventPortal;
@@ -17,9 +16,13 @@ public final class EventProtector {
 
 	public static void restore(String queueId, boolean isBackground) {
 
+		Trace trace = new Trace(queueId);
+
 		try {
-			// 找到日志
+
 			var queue = EventLog.find(queueId);
+
+			// 已经没有数据了，表示不需要回溯
 			if (queue == null)
 				return;
 
@@ -31,25 +34,26 @@ public final class EventProtector {
 				// 触发回溯序列事件
 				var event = queue.next();
 				if (event != null) {
-					String eventName = event.name();
+					trace.start(event);
 					if (event.local() != null) {
 						// 本地事件，直接执行
 						reverseLocalEvent(event.local(), event.log());
 					} else {
 						reverseRemoteEvent(event.name(), event.id(), queue);
 					}
+
+					EventLog.flushReverse(queueId, event.id());
+					trace.end(event);
 				}
 				break;
 			}
 
-			EventLog.flushEnd(ctx); // 指示恢复管理器事件队列的操作已经全部完成
-			return args;
+			EventLog.flushReverseEnd(queueId); // 指示恢复管理器事件队列的操作已经全部完成
+			trace.end();
+
 		} catch (Exception ex) {
-			// 恢复期间发生了错误
-			var e = new EventRestoreException(string.Format(Strings.RecoveryEventFailed, queueId), ex);
-			// 写入日志
-			Logger.Fatal(e);
-			throw e;
+			// 恢复期间发生了错误，写入故障转移，留待管理员处理
+			Failover.write(trace);
 		}
 	}
 
@@ -57,10 +61,9 @@ public final class EventProtector {
 		DataContext.newScope(() -> {
 			event.reverse(log);
 		});
-
 	}
 
-	private static void reverseRemoteEvent(String eventName, String eventId, EventReverseQueue queue) {
+	private static void reverseRemoteEvent(String eventName, String eventId, RaisedQueue queue) {
 		// 调用远程事件时会创建一个接收结果的临时队列，有可能该临时队列没有被删除，所以需要在回逆的时候处理一次
 		EventTrigger.cleanupRemoteEventResult(eventId);
 
@@ -69,8 +72,6 @@ public final class EventProtector {
 
 		var remotable = DTObject.editable();
 		remotable.setString("id", queue.id());
-		remotable.setString("eventName", eventName);
-		remotable.setObject("identity", queue.identity());
 
 		EventPortal.publish(reverseEventName, remotable);
 

@@ -55,6 +55,6 @@ public final class AppConfig {
 	private static final DTObject _config;
 
 	static {
-		_config = ResourceUtil.loadJSON("config/app.json");
+		_config = ResourceUtil.loadJSON("codeart/app.json");
 	}
 }

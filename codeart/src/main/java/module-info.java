@@ -2,8 +2,11 @@ module apros.codeart {
 	requires org.objectweb.asm;
 	requires com.google.common;
 	requires org.reflections;
+	requires org.apache.logging.log4j;
+	requires org.apache.logging.log4j.core;
 
 	exports apros.codeart;
+	exports apros.codeart.log;
 	exports apros.codeart.i18n;
 	exports apros.codeart.runtime;
 	exports apros.codeart.context;
