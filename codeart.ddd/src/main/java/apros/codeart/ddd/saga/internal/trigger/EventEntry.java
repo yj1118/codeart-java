@@ -1,4 +1,6 @@
-package apros.codeart.ddd.saga;
+package apros.codeart.ddd.saga.internal.trigger;
+
+import apros.codeart.ddd.saga.DomainEvent;
 
 /**
  * {@name 条目名称，也就是对应的事件名称}

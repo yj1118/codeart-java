@@ -1,7 +1,9 @@
-package apros.codeart.ddd.saga;
+package apros.codeart.ddd.saga.internal.trigger;
 
 import apros.codeart.context.AppSession;
 import apros.codeart.ddd.saga.internal.EventLoader;
+import apros.codeart.ddd.saga.internal.EventUtil;
+import apros.codeart.ddd.saga.internal.protector.EventProtector;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.event.EventPortal;
 import apros.codeart.util.StringUtil;
@@ -11,11 +13,10 @@ final class EventListener {
 	}
 
 	public static void accept(DTObject e) {
+		var queueId = e.getString("id");
 		var eventName = e.getString("eventName");
 		var eventId = e.getString("eventId");
 		var identity = e.getObject("identity");
-
-		String queueId = null;
 
 		boolean throwError = false;
 		try {
@@ -25,8 +26,7 @@ final class EventListener {
 			var input = e.getObject("args");
 			var source = EventLoader.find(eventName, true);
 
-			var queue = new EventQueue(source, input);
-			queueId = queue.id();
+			var queue = new EventQueue(queueId, source, input);
 
 			var args = EventTrigger.raise(queue);
 
@@ -79,18 +79,22 @@ final class EventListener {
 		return output;
 	}
 
-	/// <summary>
-	/// 发布事件调用失败的结果
-	/// </summary>
-
-	static void publishRaiseFailed(String eventName, String eventId, DTObject identity, Exception ex) {
+	/**
+	 * 
+	 * 发布事件调用失败的结果
+	 * 
+	 * @param eventName
+	 * @param eventId
+	 * @param identity
+	 * @param ex
+	 */
+	private static void publishRaiseFailed(String eventName, String eventId, DTObject identity, Exception ex) {
 		var en = EventUtil.getRaiseResult(eventId);// 消息队列的事件名称
 
 		var error = ex.getMessage();
 
 		var arg = createPublishRaiseResultArg(null, eventName, eventId, identity, error);
 		EventPortal.publish(en, arg);
-
 	}
 
 }

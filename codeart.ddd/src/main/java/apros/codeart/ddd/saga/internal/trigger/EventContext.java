@@ -1,4 +1,4 @@
-package apros.codeart.ddd.saga;
+package apros.codeart.ddd.saga.internal.trigger;
 
 import java.util.function.Consumer;
 
@@ -32,7 +32,7 @@ public final class EventContext {
 		return _input;
 	}
 
-	EventContext(String id, DTObject input) {
+	public EventContext(String id, DTObject input) {
 		_id = id;
 		_input = input;
 	}
@@ -49,7 +49,7 @@ public final class EventContext {
 		return _eventId;
 	}
 
-	void direct(String eventName) {
+	public void direct(String eventName) {
 		_eventName = eventName;
 		_eventId = String.format("%s-%s", this.id().toString(), _eventName);
 		_log = null;
@@ -66,7 +66,7 @@ public final class EventContext {
 	 */
 	DTObject getEntryRemotable(DTObject args) {
 		var e = DTObject.editable();
-//		e.setString("id", this.id()); // 环境编号（也是队列编号）
+		e.setString("id", this.id()); // 环境编号（也是队列编号）
 		e.setString("eventId", this.eventId());
 		e.setString("eventName", this.eventName());
 		e.setObject("args", args);

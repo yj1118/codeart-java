@@ -1,15 +1,21 @@
-package apros.codeart.ddd.saga;
+package apros.codeart.ddd.saga.internal.trigger;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import apros.codeart.ddd.repository.DataContext;
+import apros.codeart.ddd.saga.DomainEvent;
+import apros.codeart.ddd.saga.RemoteEventFailedException;
+import apros.codeart.ddd.saga.internal.EventLog;
+import apros.codeart.ddd.saga.internal.EventUtil;
+import apros.codeart.ddd.saga.internal.protector.EventProtector;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.event.EventPortal;
+import apros.codeart.util.Guid;
 import apros.codeart.util.concurrent.ISignal;
 import apros.codeart.util.concurrent.LatchSignal;
 
-final class EventTrigger {
+public final class EventTrigger {
 
 	private EventTrigger() {
 	}
@@ -23,7 +29,7 @@ final class EventTrigger {
 	 * @return
 	 */
 	public static DTObject start(DomainEvent source, DTObject input) {
-		var queue = new EventQueue(source, input);
+		var queue = new EventQueue(Guid.compact(), source, input);
 		try {
 			return raise(queue);
 		} catch (Exception ex) {
@@ -50,7 +56,7 @@ final class EventTrigger {
 			if (event != null) {
 				String eventName = event.name();
 				ctx.direct(eventName); // 将事件上下文重定向到新的事件上
-				EventLog.flushRaise(ctx, eventName); // 一定要确保日志先被正确的写入，否则会有BUG
+				EventLog.flushRaise(ctx); // 一定要确保日志先被正确的写入，否则会有BUG
 				args = queue.getArgs(args, ctx);
 				if (event.local() != null) {
 					// 本地事件，直接执行
@@ -122,7 +128,7 @@ final class EventTrigger {
 	 * 
 	 * @param eventId
 	 */
-	static void cleanupRemoteEventResult(String eventId) {
+	public static void cleanupRemoteEventResult(String eventId) {
 		var raiseResultEventName = EventUtil.getRaiseResult(eventId);
 		EventPortal.cleanup(raiseResultEventName);
 	}

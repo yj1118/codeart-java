@@ -1,11 +1,11 @@
-package apros.codeart.ddd.saga;
+package apros.codeart.ddd.saga.internal;
 
 import java.util.function.Function;
 
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.StringUtil;
 
-final class EventUtil {
+public final class EventUtil {
 
 	private EventUtil() {
 	}

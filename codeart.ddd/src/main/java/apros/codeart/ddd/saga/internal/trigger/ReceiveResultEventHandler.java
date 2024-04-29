@@ -1,5 +1,6 @@
-package apros.codeart.ddd.saga;
+package apros.codeart.ddd.saga.internal.trigger;
 
+import apros.codeart.ddd.saga.internal.DomainEventHandler;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.SafeAccess;
 
@@ -7,7 +8,7 @@ import apros.codeart.util.SafeAccess;
  * 收到调用事件的结果的处理器，当调用事件方获取到执行方的结果时会触发该处理器
  */
 @SafeAccess
-class ReceiveResultEventHandler extends DomainEventHandler {
+public class ReceiveResultEventHandler extends DomainEventHandler {
 	private ReceiveResultEventHandler() {
 	}
 

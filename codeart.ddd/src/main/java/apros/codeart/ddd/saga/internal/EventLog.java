@@ -1,9 +1,10 @@
-package apros.codeart.ddd.saga;
+package apros.codeart.ddd.saga.internal;
 
+import apros.codeart.ddd.saga.internal.protector.EventReverseQueue;
+import apros.codeart.ddd.saga.internal.trigger.EventContext;
 import apros.codeart.dto.DTObject;
-import apros.codeart.util.Guid;
 
-final class EventLog {
+public final class EventLog {
 	private EventLog() {
 	}
 
@@ -14,7 +15,7 @@ final class EventLog {
 	 * @param queue
 	 * @param entry
 	 */
-	public static void flushRaise(EventContext ctx, String eventName) {
+	public static void flushRaise(EventContext ctx) {
 		var logId = ctx.id();
 		// 写入日志
 		var content = DTObject.editable();
@@ -27,10 +28,14 @@ final class EventLog {
 	/// </summary>
 	/// <param name="queue"></param>
 	/// <param name="entry"></param>
-	public static void flushEnd(EventContext ctx,) {
+	public static void flushEnd(EventContext ctx) {
 		var logId = queueId;
 		// 写入日志
 		EventLog.FlushWrite(logId, EventOperation.End, DTObject.Empty);
+	}
+
+	public static EventReverseQueue find(String queueId) {
+
 	}
 
 }

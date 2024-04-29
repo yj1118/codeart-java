@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import com.google.common.collect.ImmutableList;
 
+import apros.codeart.ddd.saga.internal.trigger.EventContext;
 import apros.codeart.dto.DTObject;
 
 public abstract class DomainEvent implements IDomainEvent {
@@ -49,7 +50,7 @@ public abstract class DomainEvent implements IDomainEvent {
 	/**
 	 * 回溯事件
 	 */
-	public abstract void reverse(EventContext context);
+	public abstract void reverse(DTObject log);
 
 //	#
 

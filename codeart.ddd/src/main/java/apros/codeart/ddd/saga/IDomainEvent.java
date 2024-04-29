@@ -1,5 +1,6 @@
 package apros.codeart.ddd.saga;
 
+import apros.codeart.ddd.saga.internal.trigger.EventContext;
 import apros.codeart.dto.DTObject;
 
 public interface IDomainEvent {

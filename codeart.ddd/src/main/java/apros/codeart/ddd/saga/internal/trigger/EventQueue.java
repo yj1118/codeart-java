@@ -1,12 +1,12 @@
-package apros.codeart.ddd.saga;
+package apros.codeart.ddd.saga.internal.trigger;
 
 import java.util.ArrayList;
 
+import apros.codeart.ddd.saga.DomainEvent;
 import apros.codeart.ddd.saga.internal.EventLoader;
 import apros.codeart.dto.DTObject;
-import apros.codeart.util.Guid;
 
-public class EventQueue {
+class EventQueue {
 
 	public String id() {
 		return this.instanceId();
@@ -113,8 +113,8 @@ public class EventQueue {
 		return _input;
 	}
 
-	public EventQueue(DomainEvent source, DTObject input) {
-		_instanceId = Guid.compact();
+	public EventQueue(String id, DomainEvent source, DTObject input) {
+		_instanceId = id;
 		_source = source;
 		_input = input;
 		_pointer = -1;

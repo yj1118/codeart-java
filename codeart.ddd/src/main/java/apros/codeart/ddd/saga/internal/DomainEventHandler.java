@@ -1,4 +1,4 @@
-package apros.codeart.ddd.saga;
+package apros.codeart.ddd.saga.internal;
 
 import apros.codeart.context.AppSession;
 import apros.codeart.dto.DTObject;
@@ -6,7 +6,7 @@ import apros.codeart.mq.TransferData;
 import apros.codeart.mq.event.EventPriority;
 import apros.codeart.mq.event.IEventHandler;
 
-abstract class DomainEventHandler implements IEventHandler {
+public abstract class DomainEventHandler implements IEventHandler {
 
 	public EventPriority getPriority() {
 		return EventPriority.Medium;
