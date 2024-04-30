@@ -1,8 +1,5 @@
 package apros.codeart.ddd.saga;
 
-import static apros.codeart.i18n.Language.strings;
-
-import apros.codeart.ddd.DDDConfig;
 import apros.codeart.util.SafeAccessImpl;
 
 public final class EventLogFactory {
@@ -10,37 +7,36 @@ public final class EventLogFactory {
 	}
 
 	private static class EventLogFactoryHolder {
-		static final IEventLog log;
+		static final IEventLogFactory factory;
 
-		private static IEventLog createLog() {
-			IEventLog log = null;
-			var impl = DDDConfig.eventLogFactoryImplementer();
+		private static IEventLogFactory createFactory() {
+			IEventLogFactory temp = null;
+			var impl = SAGAConfig.eventLogFactoryImplementer();
 			if (impl != null) {
-				var factory = impl.getInstance(IEventLogFactory.class);
-				log = factory.create();
-			} else if (_factory != null)
-				log = _factory.create();
+				temp = impl.getInstance(IEventLogFactory.class);
+			} else if (_registerFactory != null)
+				temp = _registerFactory;
 			else
-				throw new IllegalStateException(strings("codeart.ddd", "UnknownException"));
+				temp = FileEventLogFactory.instance;
 
-			SafeAccessImpl.checkUp(log);
-			return log;
+			SafeAccessImpl.checkUp(temp);
+			return temp;
 		}
 
 		static {
-			log = createLog();
+			factory = createFactory();
 		}
 
 	}
 
 	public static IEventLog getLog() {
-		return EventLogFactoryHolder.log;
+		return EventLogFactoryHolder.factory.create();
 	}
 
-	private static IEventLogFactory _factory;
+	private static IEventLogFactory _registerFactory;
 
 	public static void register(IEventLogFactory factory) {
-		_factory = factory;
+		_registerFactory = factory;
 	}
 
 }

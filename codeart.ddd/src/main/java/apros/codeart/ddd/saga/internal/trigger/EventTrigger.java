@@ -50,6 +50,8 @@ public final class EventTrigger {
 		DTObject args = input.asEditable();
 		EventContext ctx = new EventContext(queue.id(), input);
 
+		EventLog.writeRaiseStart(queue.id());
+
 		while (true) {
 			// 触发队列事件
 			var entry = queue.next(args);

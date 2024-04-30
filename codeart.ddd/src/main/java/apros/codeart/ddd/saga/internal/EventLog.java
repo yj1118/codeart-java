@@ -1,10 +1,22 @@
 package apros.codeart.ddd.saga.internal;
 
 import apros.codeart.ddd.saga.EventLogFactory;
+import apros.codeart.ddd.saga.RaisedEntry;
 import apros.codeart.dto.DTObject;
 
 public final class EventLog {
 	private EventLog() {
+	}
+
+	/**
+	 * 
+	 * 开始触发事件队列
+	 * 
+	 * @param queueId
+	 */
+	public static void writeRaiseStart(String queueId) {
+		var log = EventLogFactory.getLog();
+		log.writeRaiseStart(queueId);
 	}
 
 	/**
@@ -35,6 +47,11 @@ public final class EventLog {
 		log.writeRaiseEnd(queueId);
 	}
 
+	public static void writeReverseStart(String queueId) {
+		var log = EventLogFactory.getLog();
+		log.writeReverseStart(queueId);
+	}
+
 	/**
 	 * 
 	 * 得到已经执行了的事件队列（注意，最后执行的事件在队列的第一项）
@@ -55,9 +72,9 @@ public final class EventLog {
 	 * @param queueId
 	 * @param eventId
 	 */
-	public static void writeReversed(String queueId, String eventName) {
+	public static void writeReversed(RaisedEntry entry) {
 		var log = EventLogFactory.getLog();
-		log.writeReversed(queueId, eventName);
+		log.writeReversed(entry);
 	}
 
 	/**

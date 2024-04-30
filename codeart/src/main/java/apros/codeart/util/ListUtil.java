@@ -11,6 +11,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
 import apros.codeart.bytecode.ClassGenerator;
@@ -116,6 +117,10 @@ public final class ListUtil {
 			list.add(item);
 		}
 		return list;
+	}
+
+	public static <T> List<T> asReadonly(Iterable<T> source) {
+		return ImmutableList.copyOf(source);
 	}
 
 	public static <T, R> ArrayList<R> mapMany(T[] source, Function<T, Iterable<R>> selector) {

@@ -8,6 +8,14 @@ public interface IEventLog {
 
 	/**
 	 * 
+	 * 开始触发事件队列
+	 * 
+	 * @param queueId
+	 */
+	void writeRaiseStart(String queueId);
+
+	/**
+	 * 
 	 * 写入要执行事件 {@eventName} 的日志
 	 * 
 	 * @param queue
@@ -35,6 +43,14 @@ public interface IEventLog {
 
 	/**
 	 * 
+	 * 写入开始回溯的事件日志
+	 * 
+	 * @param queueId
+	 */
+	void writeReverseStart(String queueId);
+
+	/**
+	 * 
 	 * 得到已经执行了的事件队列（注意，按照执行顺序倒序返回，比如：最后执行的事件在队列的第一项）
 	 * 
 	 * @param queueId
@@ -49,7 +65,7 @@ public interface IEventLog {
 	 * @param queueId
 	 * @param eventId
 	 */
-	void writeReversed(String queueId, String eventId);
+	void writeReversed(RaisedEntry entry);
 
 	/**
 	 * 

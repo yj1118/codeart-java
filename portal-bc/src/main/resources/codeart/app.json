@@ -35,6 +35,7 @@
 	},
 	"saga":{
 		"log":{
+			"folder":"",
 			"factory":{
 				"type":"",
 				"arguments":[]

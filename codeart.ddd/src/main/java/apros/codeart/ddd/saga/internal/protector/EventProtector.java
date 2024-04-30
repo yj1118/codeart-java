@@ -19,6 +19,8 @@ public final class EventProtector {
 
 		try {
 
+			EventLog.writeReverseStart(queueId);
+
 			var queue = EventLog.findRaised(queueId);
 
 			// 已经没有数据了，表示不需要回溯
@@ -36,7 +38,7 @@ public final class EventProtector {
 						reverseRemoteEvent(entry.name(), queue);
 					}
 
-					EventLog.writeReversed(queueId, entry.name());
+					EventLog.writeReversed(entry);
 					trace.end(entry);
 				}
 				break;
