@@ -23,10 +23,6 @@ final class FileEventLogger implements IEventLog {
 		_raisePointer = -1;
 	}
 
-	private static String getQueueFolder(String queueId) {
-		return IOUtil.combine(_rootFolder, queueId);
-	}
-
 	@Override
 	public void writeRaiseStart(String queueId) {
 		init(queueId);
@@ -36,13 +32,13 @@ final class FileEventLogger implements IEventLog {
 	@Override
 	public void writeRaise(String queueId, String eventName) {
 		_raisePointer++;
-		var fileName = IOUtil.combine(_folder, String.format("%02d.%s.d", _raisePointer, eventName));
+		var fileName = getEventFileName(_folder, _raisePointer, eventName);
 		IOUtil.atomicNewFile(fileName);
 	}
 
 	@Override
 	public void writeRaiseLog(String queueId, String eventName, DTObject log) {
-		var fileName = IOUtil.combine(_folder, String.format("%02d.%s-log.d", _raisePointer, eventName));
+		var fileName = getEventLogFileName(_folder, _raisePointer, eventName);
 		IOUtil.atomicWrite(fileName, log.getCode());
 	}
 
@@ -61,15 +57,27 @@ final class FileEventLogger implements IEventLog {
 	public List<RaisedEntry> findRaised(String queueId) {
 		var items = new ArrayList<RaisedEntry>();
 
+		IOUtil.search(_folder, "*.{e}", (file) -> {
+			var name = file.getFileName().toString();
+			var temp = name.split(".");
+			var index = Integer.parseInt(temp[0]);
+			var eventName = temp[1];
+
+			var logFileName = getEventLogFileName(_folder, index, eventName);
+			var logCode = IOUtil.readString(logFileName);
+			DTObject log = logCode == null ? DTObject.Empty : DTObject.readonly(logCode);
+			items.add(new RaisedEntry(index, eventName, log));
+		});
+
 		return items;
 	}
 
 	@Override
 	public void writeReversed(RaisedEntry entry) {
 		// 删除回溯文件，就表示回溯完毕了
-		var eventFile = IOUtil.combine(_folder, String.format("%02d.%s.d", entry.index(), entry.name()));
-		var logFile = IOUtil.combine(_folder, String.format("%02d.%s-log.d", _raisePointer, entry.name()));
+		var eventFile = getEventFileName(_folder, entry.index(), entry.name());
 		IOUtil.delete(eventFile);
+		var logFile = getEventLogFileName(_folder, entry.index(), entry.name());
 		IOUtil.delete(logFile);
 	}
 
@@ -77,6 +85,18 @@ final class FileEventLogger implements IEventLog {
 	public void writeReverseEnd(String queueId) {
 		init(queueId);
 		IOUtil.delete(_folder);
+	}
+
+	private static String getQueueFolder(String queueId) {
+		return IOUtil.combine(_rootFolder, queueId);
+	}
+
+	private static String getEventFileName(String folder, int index, String eventName) {
+		return IOUtil.combine(folder, String.format("%02d.%s.e", index, eventName));
+	}
+
+	private static String getEventLogFileName(String folder, int index, String eventName) {
+		return IOUtil.combine(folder, String.format("%02d.%s.l", index, eventName));
 	}
 
 	private static final String _rootFolder;

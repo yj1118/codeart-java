@@ -11,6 +11,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.function.Consumer;
 
 import org.apache.logging.log4j.util.Strings;
 
@@ -123,6 +125,57 @@ public final class IOUtil {
 			}
 		}
 		Files.delete(path);
+	}
+
+	/**
+	 * 
+	 * 查找文件
+	 * 
+	 * @param path
+	 * @param glob   glob 参数用来指定过滤条件。例如，"*.{txt}" 表示过滤所有扩展名为 .txt
+	 *               的文件。可以通过逗号分隔在大括号内添加多个后缀来扩展过滤条件，如 *.{txt,jpg,png}。
+	 * @param action
+	 */
+	public static void search(String path, String glob, Consumer<Path> action) {
+		Path dir = Paths.get(path);
+
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, glob)) {
+			for (Path file : stream) {
+				action.accept(file);
+			}
+		} catch (IOException e) {
+			throw propagate(e);
+		}
+	}
+
+	public static Iterable<Path> search(String path, String glob) {
+
+		var items = new ArrayList<Path>();
+
+		Path dir = Paths.get(path);
+
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, glob)) {
+			for (Path file : stream) {
+				items.add(file);
+			}
+		} catch (IOException e) {
+			throw propagate(e);
+		}
+
+		return items;
+	}
+
+	public static String readString(String path) {
+		Path file = Paths.get(path); // 替换为实际文件路径
+
+		if (!Files.exists(file))
+			return null;
+
+		try {
+			return Files.readString(file);
+		} catch (IOException e) {
+			throw propagate(e);
+		}
 	}
 
 }
