@@ -2,6 +2,7 @@ package apros.codeart.ddd.saga.internal;
 
 import apros.codeart.ddd.metadata.MetadataLoader;
 import apros.codeart.ddd.saga.DomainEvent;
+import apros.codeart.ddd.saga.internal.protector.EventProtector;
 import apros.codeart.ddd.saga.internal.protector.ReverseEventHandler;
 import apros.codeart.ddd.saga.internal.trigger.RaiseEventHandler;
 import apros.codeart.mq.event.EventPortal;
@@ -85,7 +86,7 @@ public final class EventHost {
 		}
 	}
 
-	static void Initialized() {
+	static void initialized() {
 		EventProtector.RestoreAsync();
 		InitTimer();
 	}

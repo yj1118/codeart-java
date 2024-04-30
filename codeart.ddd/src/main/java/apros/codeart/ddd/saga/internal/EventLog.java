@@ -1,5 +1,7 @@
 package apros.codeart.ddd.saga.internal;
 
+import java.util.List;
+
 import apros.codeart.ddd.saga.EventLogFactory;
 import apros.codeart.ddd.saga.RaisedEntry;
 import apros.codeart.dto.DTObject;
@@ -93,6 +95,11 @@ public final class EventLog {
 	public static void writeReverseEnd(String queueId) {
 		var log = EventLogFactory.getLog();
 		log.writeReverseEnd(queueId);
+	}
+
+	public static List<String> findInterrupteds(int top) {
+		var log = EventLogFactory.getLog();
+		return log.findInterrupteds(top);
 	}
 
 }

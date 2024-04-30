@@ -75,4 +75,13 @@ public interface IEventLog {
 	 */
 	void writeReverseEnd(String queueId);
 
+	/**
+	 * 
+	 * 找到 {@top} 条被中断的事件队列的编号
+	 * 
+	 * @param top
+	 * @return
+	 */
+	List<String> findInterrupteds(int top);
+
 }

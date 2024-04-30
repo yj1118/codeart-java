@@ -165,6 +165,21 @@ public final class IOUtil {
 		return items;
 	}
 
+	public static void eachFolder(String path, Consumer<Path> action) {
+		Path dir = Paths.get(path);
+
+		// 使用 try-with-resources 语句确保 DirectoryStream 被正确关闭
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+			for (Path entry : stream) {
+				if (Files.isDirectory(entry)) {
+					action.accept(entry);
+				}
+			}
+		} catch (IOException e) {
+			throw propagate(e);
+		}
+	}
+
 	public static String readString(String path) {
 		Path file = Paths.get(path); // 替换为实际文件路径
 

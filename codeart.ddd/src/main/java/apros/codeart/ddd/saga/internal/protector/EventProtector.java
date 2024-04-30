@@ -1,5 +1,6 @@
 package apros.codeart.ddd.saga.internal.protector;
 
+import apros.codeart.context.AppSession;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.saga.DomainEvent;
 import apros.codeart.ddd.saga.internal.EventLog;
@@ -7,6 +8,7 @@ import apros.codeart.ddd.saga.internal.EventUtil;
 import apros.codeart.ddd.saga.internal.RaisedQueue;
 import apros.codeart.ddd.saga.internal.trigger.EventTrigger;
 import apros.codeart.dto.DTObject;
+import apros.codeart.log.Logger;
 import apros.codeart.mq.event.EventPortal;
 
 public final class EventProtector {
@@ -73,6 +75,31 @@ public final class EventProtector {
 		EventPortal.publish(reverseEventName, remotable);
 
 		// 注意，与“触发事件”不同，我们不需要等待回逆的结果，只用传递回逆的消息即可
+	}
+
+	/**
+	 * 恢复中断的事件（用于机器故障，断电等意外情况）
+	 */
+	public static void restoreInterrupted() {
+		try {
+
+			while (true) {
+
+				var queueIds = EventLog.findInterrupteds(5);
+
+				if (queueIds == null || queueIds.size() == 0)
+					break;
+
+				queueIds.parallelStream().forEach(queueId -> {
+					AppSession.using(() -> {
+						restore(queueId);
+					});
+				});
+			}
+
+		} catch (Exception ex) {
+			Logger.fatal(ex);
+		}
 	}
 
 }

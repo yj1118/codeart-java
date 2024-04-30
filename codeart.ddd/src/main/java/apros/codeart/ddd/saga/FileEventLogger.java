@@ -1,5 +1,7 @@
 package apros.codeart.ddd.saga;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +46,7 @@ final class FileEventLogger implements IEventLog {
 
 	@Override
 	public void writeRaiseEnd(String queueId) {
-		var fileName = IOUtil.combine(_folder, "end");
+		var fileName = getEndFileName(_folder);
 		IOUtil.atomicNewFile(fileName);
 	}
 
@@ -87,6 +89,20 @@ final class FileEventLogger implements IEventLog {
 		IOUtil.delete(_folder);
 	}
 
+	@Override
+	public List<String> findInterrupteds(int top) {
+		var items = new ArrayList<String>(top);
+		IOUtil.eachFolder(_rootFolder, (folder) -> {
+			Path endPath = folder.resolve("end");
+			if (!Files.exists(endPath)) {
+				// 没有end文件，表明被中断了
+				var queueId = folder.getFileName().toString();
+				items.add(queueId);
+			}
+		});
+		return items;
+	}
+
 	private static String getQueueFolder(String queueId) {
 		return IOUtil.combine(_rootFolder, queueId);
 	}
@@ -97,6 +113,10 @@ final class FileEventLogger implements IEventLog {
 
 	private static String getEventLogFileName(String folder, int index, String eventName) {
 		return IOUtil.combine(folder, String.format("%02d.%s.l", index, eventName));
+	}
+
+	private static String getEndFileName(String folder) {
+		return IOUtil.combine(folder, "end");
 	}
 
 	private static final String _rootFolder;
