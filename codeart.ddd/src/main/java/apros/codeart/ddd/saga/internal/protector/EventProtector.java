@@ -1,6 +1,5 @@
 package apros.codeart.ddd.saga.internal.protector;
 
-import apros.codeart.context.AppSession;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.saga.DomainEvent;
 import apros.codeart.ddd.saga.internal.EventLog;
@@ -14,41 +13,36 @@ public final class EventProtector {
 	private EventProtector() {
 	}
 
-	public static void restore(String queueId, boolean isBackground) {
+	public static void restore(String queueId) {
 
 		Trace trace = new Trace(queueId);
 
 		try {
 
-			var queue = EventLog.find(queueId);
+			var queue = EventLog.findRaised(queueId);
 
 			// 已经没有数据了，表示不需要回溯
 			if (queue == null)
 				return;
 
-			if (isBackground) {
-				AppSession.setIdentity(queue.identity());
-			}
-
 			while (true) {
 				// 触发回溯序列事件
-				var event = queue.next();
-				if (event != null) {
-					trace.start(event);
-					if (event.local() != null) {
-						// 本地事件，直接执行
-						reverseLocalEvent(event.local(), event.log());
+				var entry = queue.next();
+				if (entry != null) {
+					trace.start(entry);
+					if (entry.local() != null) {
+						reverseLocalEvent(entry.local(), entry.log());
 					} else {
-						reverseRemoteEvent(event.name(), event.id(), queue);
+						reverseRemoteEvent(entry.name(), queue);
 					}
 
-					EventLog.flushReverse(queueId, event.id());
-					trace.end(event);
+					EventLog.writeReversed(queueId, entry.name());
+					trace.end(entry);
 				}
 				break;
 			}
 
-			EventLog.flushReverseEnd(queueId); // 指示恢复管理器事件队列的操作已经全部完成
+			EventLog.writeReverseEnd(queueId); // 指示恢复管理器事件队列的操作已经全部完成
 			trace.end();
 
 		} catch (Exception ex) {
@@ -63,7 +57,8 @@ public final class EventProtector {
 		});
 	}
 
-	private static void reverseRemoteEvent(String eventName, String eventId, RaisedQueue queue) {
+	private static void reverseRemoteEvent(String eventName, RaisedQueue queue) {
+		var eventId = EventUtil.getEventId(queue.id(), eventName);
 		// 调用远程事件时会创建一个接收结果的临时队列，有可能该临时队列没有被删除，所以需要在回逆的时候处理一次
 		EventTrigger.cleanupRemoteEventResult(eventId);
 

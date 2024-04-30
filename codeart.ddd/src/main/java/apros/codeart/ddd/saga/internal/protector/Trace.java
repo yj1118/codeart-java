@@ -1,6 +1,6 @@
 package apros.codeart.ddd.saga.internal.protector;
 
-import apros.codeart.ddd.saga.internal.RaisedEntry;
+import apros.codeart.ddd.saga.RaisedEntry;
 import apros.codeart.util.StringUtil;
 
 class Trace {
@@ -29,7 +29,7 @@ class Trace {
 	public void start(RaisedEntry event) {
 		_code.append("--- event-start ---");
 		StringUtil.appendLine(_code);
-		StringUtil.appendFormat(_code, "eventName:%s, eventId:%s", event.name(), event.id());
+		StringUtil.appendFormat(_code, "eventName:%s%s", event.index(), event.name());
 		StringUtil.appendLine(_code);
 	}
 

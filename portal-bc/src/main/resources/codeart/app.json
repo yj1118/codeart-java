@@ -32,5 +32,13 @@
 				"timeout":20
 			}
 		}
+	},
+	"saga":{
+		"log":{
+			"factory":{
+				"type":"",
+				"arguments":[]
+			}
+		}
 	}
 }

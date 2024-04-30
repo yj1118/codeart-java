@@ -94,7 +94,7 @@ public final class EventPortal {
 				return null;
 			});
 
-	public static void Register(IPublisherFactory factory) {
+	public static void register(IPublisherFactory factory) {
 		_publisherSetting.register(factory);
 	}
 

@@ -1,6 +1,8 @@
 package apros.codeart.ddd.saga.internal;
 
-import apros.codeart.dto.DTObject;
+import java.util.List;
+
+import apros.codeart.ddd.saga.RaisedEntry;
 
 public final class RaisedQueue {
 
@@ -10,14 +12,24 @@ public final class RaisedQueue {
 		return _id;
 	}
 
-	private DTObject _identity;
+	private List<RaisedEntry> _entries;
 
-	public DTObject identity() {
-		return _identity;
+	public RaisedQueue(String id, List<RaisedEntry> entries) {
+		_id = id;
+		_entries = entries;
+		_pointer = -1;
 	}
+
+	private int _pointer;
 
 	public RaisedEntry next() {
 
+		_pointer++;
+
+		if (_pointer >= _entries.size())
+			return null;
+
+		return _entries.get(_pointer);
 	}
 
 }

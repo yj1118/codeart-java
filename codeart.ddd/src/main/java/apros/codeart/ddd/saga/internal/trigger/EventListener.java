@@ -1,6 +1,5 @@
 package apros.codeart.ddd.saga.internal.trigger;
 
-import apros.codeart.context.AppSession;
 import apros.codeart.ddd.saga.internal.EventLoader;
 import apros.codeart.ddd.saga.internal.EventUtil;
 import apros.codeart.ddd.saga.internal.protector.EventProtector;
@@ -22,12 +21,9 @@ final class EventListener {
 		var queueId = e.getString("id");
 		var eventName = e.getString("eventName");
 		var eventId = e.getString("eventId");
-		var identity = e.getObject("identity");
 
 		boolean throwError = false;
 		try {
-
-			AppSession.setIdentity(identity);
 
 			var input = e.getObject("args");
 			var source = EventLoader.find(eventName, true);
@@ -36,18 +32,18 @@ final class EventListener {
 
 			var args = EventTrigger.raise(queue);
 
-			publishRaiseSuccess(args, eventName, eventId, identity);
+			publishRaiseSuccess(args, eventName, eventId);
 
 		} catch (Exception ex) {
 
 			throwError = true;
 			// 发生了错误就发布出去，通知失败了
-			publishRaiseFailed(eventName, eventId, identity, ex);
+			publishRaiseFailed(eventName, eventId, ex);
 
 			// 恢复
 		} finally {
 			if (throwError && queueId != null)
-				EventProtector.restore(queueId, false);
+				EventProtector.restore(queueId);
 		}
 
 	}
@@ -59,15 +55,14 @@ final class EventListener {
 	 * @param args
 	 * @param ctx
 	 */
-	private static void publishRaiseSuccess(DTObject args, String eventName, String eventId, DTObject identity) {
+	private static void publishRaiseSuccess(DTObject args, String eventName, String eventId) {
 		var en = EventUtil.getRaiseResult(eventId); // 消息队列的事件名称
 		// 返回事件成功被执行的结果
-		var arg = createPublishRaiseResultArg(args, eventName, eventId, identity, null);
+		var arg = createPublishRaiseResultArg(args, eventName, eventId, null);
 		EventPortal.publish(en, arg);
 	}
 
-	private static DTObject createPublishRaiseResultArg(DTObject args, String eventName, String eventId,
-			DTObject identity, String error) {
+	private static DTObject createPublishRaiseResultArg(DTObject args, String eventName, String eventId, String error) {
 		var output = DTObject.editable();
 
 		output.setString("eventName", eventName);
@@ -81,7 +76,6 @@ final class EventListener {
 			output.setObject("args", args);
 		}
 
-		output.setObject("identity", identity);
 		return output;
 	}
 
@@ -94,12 +88,12 @@ final class EventListener {
 	 * @param identity
 	 * @param ex
 	 */
-	private static void publishRaiseFailed(String eventName, String eventId, DTObject identity, Exception ex) {
+	private static void publishRaiseFailed(String eventName, String eventId, Exception ex) {
 		var en = EventUtil.getRaiseResult(eventId);// 消息队列的事件名称
 
 		var error = ex.getMessage();
 
-		var arg = createPublishRaiseResultArg(null, eventName, eventId, identity, error);
+		var arg = createPublishRaiseResultArg(null, eventName, eventId, error);
 		EventPortal.publish(en, arg);
 	}
 
@@ -110,28 +104,8 @@ final class EventListener {
 	 * @param e
 	 */
 	public static void receive(DTObject e) {
-
 		var eventId = e.getString("eventId");
-
 		EventTrigger.continueRaise(eventId, e);
-
-//	     var key = EventEntry.GetEventKey(@event);
-//	     var queue = GetQueueInfo(key);
-//	     EventProtector.UseExistedQueue(queue.Id, (callback) ->
-//	      {
-//	          EventTrigger.Continue(queue.Id, @event, key, callback);
-//	      }, (ex) ->
-//	      {
-//	          if (queue.IsSubqueue)
-//	          {
-//	             //发生了错误就发布出去，通知失败了
-//	             EventTrigger.PublishRaiseFailed(AppContext.Identity, key, ex); //再恢复
-//	         }
-//	          else
-//	          {
-//	             //如果不是外界调用而引起的事件，那么出现错误后只用恢复即可，不需要做额外的处理，内部会处理好
-//	          }
-//	      });
 	}
 
 }

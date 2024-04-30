@@ -2,7 +2,8 @@ package apros.codeart.ddd.saga.internal.trigger;
 
 import java.util.function.Consumer;
 
-import apros.codeart.context.AppSession;
+import apros.codeart.ddd.saga.internal.EventLog;
+import apros.codeart.ddd.saga.internal.EventUtil;
 import apros.codeart.dto.DTObject;
 
 public final class EventContext {
@@ -51,7 +52,7 @@ public final class EventContext {
 
 	public void direct(String eventName) {
 		_eventName = eventName;
-		_eventId = String.format("%s-%s", this.id().toString(), _eventName);
+		_eventId = EventUtil.getEventId(this.id(), _eventName);
 		_log = null;
 	}
 
@@ -70,21 +71,11 @@ public final class EventContext {
 		e.setString("eventId", this.eventId());
 		e.setString("eventName", this.eventName());
 		e.setObject("args", args);
-		e.setObject("identity", this.getIdentity());
 		return e;
 	}
 
-	DTObject getIdentity() {
-		return AppSession.adaptIdentity();
-	}
-
 	void save() {
-		// 此处真实写入文件
-		// 当raise里报错了，这里虽然不会回退，但是由于幂等性，不会引起BUG
+		if (_log != null)
+			EventLog.writeRaiseLog(_id, _eventName, _log);
 	}
-
-	void load() {
-
-	}
-
 }

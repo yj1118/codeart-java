@@ -71,4 +71,9 @@ public final class EventUtil {
 	public static String getEffectiveName(String eventName) {
 		return _getEffectiveName.apply(eventName);
 	}
+
+	public static String getEventId(String queueId, String eventName) {
+		return String.format("%s-%s", queueId, eventName);
+	}
+
 }

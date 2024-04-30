@@ -1,5 +1,6 @@
 package apros.codeart.ddd.saga.internal;
 
+import apros.codeart.ddd.saga.EventLogFactory;
 import apros.codeart.dto.DTObject;
 
 public final class EventLog {
@@ -8,39 +9,43 @@ public final class EventLog {
 
 	/**
 	 * 
-	 * 在触发事件之前，写入一次日志
+	 * 写入要执行事件 {@eventName} 的日志
 	 * 
 	 * @param queue
 	 * @param entry
 	 */
-	public static void flushRaise(String queueId, String eventId) {
-		var logId = ctx.id();
-		// 写入日志
-		var content = DTObject.editable();
-		content["entryId"] = ctx.eventId();
-		EventLog.write(logId, EventOperation.Raise, content);
+	public static void writeRaise(String queueId, String eventName) {
+		var log = EventLogFactory.getLog();
+		log.writeRaise(queueId, eventName);
 	}
 
-	/// <summary>
-	/// 写入并提交被执行完毕的日志
-	/// </summary>
-	/// <param name="queue"></param>
-	/// <param name="entry"></param>
-	public static void flushRaiseEnd(String queueId) {
-		var logId = queueId;
-		// 写入日志
-		EventLog.FlushWrite(logId, EventOperation.End, DTObject.Empty);
+	public static void writeRaiseLog(String queueId, String eventName, DTObject log) {
+		var logger = EventLogFactory.getLog();
+		logger.writeRaiseLog(queueId, eventName, log);
 	}
 
 	/**
 	 * 
-	 * 得到队列已执行的事件的条目信息
+	 * 写入事件已经全部触发完毕的日志
+	 * 
+	 * @param queueId
+	 */
+	public static void writeRaiseEnd(String queueId) {
+		var log = EventLogFactory.getLog();
+		log.writeRaiseEnd(queueId);
+	}
+
+	/**
+	 * 
+	 * 得到已经执行了的事件队列（注意，最后执行的事件在队列的第一项）
 	 * 
 	 * @param queueId
 	 * @return
 	 */
-	public static RaisedQueue find(String queueId) {
-
+	public static RaisedQueue findRaised(String queueId) {
+		var log = EventLogFactory.getLog();
+		var entries = log.findRaised(queueId);
+		return new RaisedQueue(queueId, entries);
 	}
 
 	/**
@@ -50,12 +55,20 @@ public final class EventLog {
 	 * @param queueId
 	 * @param eventId
 	 */
-	public static void flushReverse(String queueId, String eventId) {
-
+	public static void writeReversed(String queueId, String eventName) {
+		var log = EventLogFactory.getLog();
+		log.writeReversed(queueId, eventName);
 	}
 
-	public static void flushReverseEnd(String queueId) {
-
+	/**
+	 * 
+	 * 记录事件已经全部回溯
+	 * 
+	 * @param queueId
+	 */
+	public static void writeReverseEnd(String queueId) {
+		var log = EventLogFactory.getLog();
+		log.writeReverseEnd(queueId);
 	}
 
 }

@@ -3,6 +3,12 @@ package apros.codeart.ddd.saga;
 import apros.codeart.ddd.saga.internal.trigger.EventContext;
 import apros.codeart.dto.DTObject;
 
+/**
+ * 领域事件的设计不能依赖与上下文数据，比如：当前登录者身份等
+ * 
+ * 如果有需要，就将上下文数据以参数形式传递给事件
+ * 
+ */
 public abstract class DomainEvent implements IDomainEvent {
 
 	public DomainEvent() {

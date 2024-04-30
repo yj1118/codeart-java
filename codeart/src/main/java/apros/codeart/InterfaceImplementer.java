@@ -53,18 +53,18 @@ public final class InterfaceImplementer {
 		return instance;
 	}
 
-	/// <summary>
-	/// 不论对象是否为单例，都创造新的实例
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <returns></returns>
-	public <T> T createInstance(Class<T> interfaceType) {
-		var obj = createInstance();
-		var instance = TypeUtil.as(obj, interfaceType);
-		if (instance == null)
-			throw new TypeMismatchException(obj.getClass(), interfaceType);
-		return instance;
-	}
+//	/// <summary>
+//	/// 不论对象是否为单例，都创造新的实例
+//	/// </summary>
+//	/// <typeparam name="T"></typeparam>
+//	/// <returns></returns>
+//	private <T> T createInstance(Class<T> interfaceType) {
+//		var obj = createInstance();
+//		var instance = TypeUtil.as(obj, interfaceType);
+//		if (instance == null)
+//			throw new TypeMismatchException(obj.getClass(), interfaceType);
+//		return instance;
+//	}
 
 	private final Object _syncObject = new Object();
 	private volatile Object _singletonInstance = null;

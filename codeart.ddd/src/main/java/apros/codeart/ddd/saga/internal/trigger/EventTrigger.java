@@ -33,7 +33,7 @@ public final class EventTrigger {
 		try {
 			return raise(queue);
 		} catch (Exception ex) {
-			EventProtector.restore(queue.id(), false); // 恢复
+			EventProtector.restore(queue.id()); // 恢复
 			throw ex;
 		}
 	}
@@ -52,15 +52,15 @@ public final class EventTrigger {
 
 		while (true) {
 			// 触发队列事件
-			var event = queue.next(args);
-			if (event != null) {
-				String eventName = event.name();
+			var entry = queue.next(args);
+			if (entry != null) {
+				String eventName = entry.name();
 				ctx.direct(eventName); // 将事件上下文重定向到新的事件上
-				EventLog.flushRaise(ctx.id(), ctx.eventId()); // 一定要确保日志先被正确的写入，否则会有BUG
+				EventLog.writeRaise(ctx.id(), ctx.eventName()); // 一定要确保日志先被正确的写入，否则会有BUG
 				args = queue.getArgs(args, ctx);
-				if (event.local() != null) {
+				if (entry.local() != null) {
 					// 本地事件，直接执行
-					args = raiseLocalEvent(event.local(), args, ctx);
+					args = raiseLocalEvent(entry.local(), args, ctx);
 				} else {
 					args = raiseRemoteEvent(args, ctx);
 				}
@@ -68,7 +68,7 @@ public final class EventTrigger {
 			break;
 		}
 
-		EventLog.flushRaiseEnd(queue.id()); // 指示恢复管理器事件队列的操作已经全部完成
+		EventLog.writeRaiseEnd(queue.id()); // 指示恢复管理器事件队列的操作已经全部完成
 		return args;
 	}
 
