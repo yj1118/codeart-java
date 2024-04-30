@@ -33,6 +33,10 @@ public final class EventLogFactory {
 		return EventLogFactoryHolder.factory.create();
 	}
 
+	public static IEventLogFactory getFactory() {
+		return EventLogFactoryHolder.factory;
+	}
+
 	private static IEventLogFactory _registerFactory;
 
 	public static void register(IEventLogFactory factory) {

@@ -9,6 +9,13 @@ public final class EventLog {
 	}
 
 	/**
+	 * 程序运行时的事件日志初始化
+	 */
+	public static void init() {
+		EventLogFactory.getFactory().init();
+	}
+
+	/**
 	 * 
 	 * 开始触发事件队列
 	 * 

@@ -8,7 +8,7 @@ import apros.codeart.util.SafeAccess;
  * 收到回溯的请求
  */
 @SafeAccess
-final class ReverseEventHandler extends DomainEventHandler {
+public final class ReverseEventHandler extends DomainEventHandler {
 	private ReverseEventHandler() {
 	}
 

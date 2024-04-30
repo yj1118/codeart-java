@@ -5,6 +5,7 @@ import apros.codeart.ddd.metadata.MetadataLoader;
 import apros.codeart.ddd.remotable.internal.RemotableImpl;
 import apros.codeart.ddd.remotable.internal.RemoteService;
 import apros.codeart.ddd.repository.access.DataModelLoader;
+import apros.codeart.ddd.saga.internal.EventHost;
 import apros.codeart.i18n.Language;
 
 final class DomainHost {
@@ -35,19 +36,12 @@ final class DomainHost {
 
 		// 执行远程能力特性的初始化，收集相关数据
 		RemotableImpl.initialize();
-//
-//		// 触发没有派生类的领域对象的静态构造
-//		foreach(var objectType in TypeIndex){if(DerivedClassAttribute.IsDerived(objectType))continue; // 不执行派生类的
-//		DomainObject.StaticConstructor(objectType);}
-//
-//		// 先执行派生类的
-//		DerivedClassAttribute.Initialize();
-//
+
 		// 远程服务的初始化
 		RemoteService.initialize();
-//
-//		// 领域事件宿主的初始化
-//		EventHost.Initialize();
+
+		// 领域事件宿主的初始化
+		EventHost.initialize();
 	}
 //
 //	/// <summary>
