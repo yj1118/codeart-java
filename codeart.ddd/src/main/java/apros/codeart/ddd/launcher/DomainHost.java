@@ -43,24 +43,18 @@ final class DomainHost {
 		// 领域事件宿主的初始化
 		EventHost.initialize();
 	}
-//
-//	/// <summary>
-//	/// 初始化之后
-//	/// </summary>
-//	internal
-//
-//	static void Initialized() {
-//		EventHost.Initialized();
-//	}
-//
-//	internal
-//
-//	static void Cleanup() {
-//		RemoteService.Cleanup();
-//
-//		EventHost.Cleanup();
-//	}
-//
+
+	/**
+	 * 初始化之后
+	 */
+	public static void initialized() {
+		EventHost.initialized();
+	}
+
+	public static void cleanup() {
+		RemoteService.cleanup();
+		EventHost.cleanup();
+	}
 
 	/**
 	 * 检查领域对象是否已被初始化了

@@ -59,7 +59,7 @@ public final class EventHost {
 		subscribeEvents();
 	}
 
-	static void cleanup() {
+	public static void cleanup() {
 		// 取消订阅
 		cancelEvents();
 		clearTimer();
@@ -86,9 +86,9 @@ public final class EventHost {
 		}
 	}
 
-	static void initialized() {
-		EventProtector.RestoreAsync();
-		InitTimer();
+	public static void initialized() {
+		EventProtector.restoreInterrupted();
+		initTimer();
 	}
 
 	#endregion
