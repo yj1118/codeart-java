@@ -263,7 +263,9 @@ final class FileEventLogger implements IEventLog {
 			folder = config.getString("folder", null);
 		}
 
-		_rootFolder = folder == null ? IOUtil.getCurrentDirectory() : folder;
+		_rootFolder = folder == null
+				? IOUtil.combine(IOUtil.getCurrentDirectory(), "domain-event-log").toAbsolutePath().toString()
+				: folder;
 	}
 
 }

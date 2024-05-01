@@ -62,7 +62,7 @@ final class DataTableInsert {
 
 	/**
 	 * 
-	 * 该方法用于保存数据后，更新基表的信息
+	 * 保存数据后
 	 * 
 	 * @param root
 	 * @param obj
