@@ -38,6 +38,13 @@ public class EventHandler<T> {
 		}
 	}
 
+	/**
+	 * 移除所有挂载的事件
+	 */
+	public void clear() {
+		_observers.clear();
+	}
+
 	public boolean isEmpty() {
 		return _observers == null || _observers.size() == 0;
 	}

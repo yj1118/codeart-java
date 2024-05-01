@@ -487,7 +487,8 @@ public class DataContext implements IDataContext {
 		disposeMirror();
 		disposeBuffer();
 		disposeItems();
-		_committed = null;
+		if (_committed != null)
+			_committed.clear();
 	}
 
 	@Override
