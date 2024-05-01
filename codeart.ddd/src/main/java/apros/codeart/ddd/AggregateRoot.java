@@ -156,6 +156,7 @@ public abstract class AggregateRoot extends EntityObject
 		}
 	}
 
+	// 以下要通过数据湖发送，否则会有BUG，比如断电 todo
 	public void handle(Object sender, RepositoryEventArgs args) {
 		switch (args.eventType()) {
 

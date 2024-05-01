@@ -1,12 +1,11 @@
-package apros.codeart.ddd.saga;
+package apros.codeart.ddd.message;
 
 import apros.codeart.AppConfig;
 import apros.codeart.InterfaceImplementer;
 import apros.codeart.dto.DTObject;
 
-final class SAGAConfig {
-
-	private SAGAConfig() {
+class MessageConfig {
+	private MessageConfig() {
 
 	}
 
@@ -14,7 +13,7 @@ final class SAGAConfig {
 
 	/**
 	 * 
-	 * 领域事件日志工厂的实现
+	 * 领域消息日志工厂的实现
 	 * 
 	 * @return
 	 */
@@ -28,22 +27,15 @@ final class SAGAConfig {
 		if (factory != null)
 			_logFactoryImplementer = InterfaceImplementer.create(factory);
 
-		_retainDays = root.getInt("etain", 0); // 默认永久保留
-	}
-
-	private static int _retainDays;
-
-	public static int retainDays() {
-		return _retainDays;
 	}
 
 	static {
 
-		var saga = AppConfig.section("saga");
-		if (saga != null) {
-			loadEventLog(saga);
+		var msg = AppConfig.section("message");
+		if (msg != null) {
+			loadEventLog(msg);
 		} else {
-			_retainDays = 0;
+
 		}
 
 	}

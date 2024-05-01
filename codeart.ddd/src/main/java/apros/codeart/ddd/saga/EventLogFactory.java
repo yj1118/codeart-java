@@ -2,7 +2,7 @@ package apros.codeart.ddd.saga;
 
 import apros.codeart.util.SafeAccessImpl;
 
-public final class EventLogFactory {
+final class EventLogFactory {
 	private EventLogFactory() {
 	}
 
@@ -11,7 +11,7 @@ public final class EventLogFactory {
 
 		private static IEventLogFactory createFactory() {
 			IEventLogFactory temp = null;
-			var impl = SAGAConfig.eventLogFactoryImplementer();
+			var impl = SAGAConfig.logFactoryImplementer();
 			if (impl != null) {
 				temp = impl.getInstance(IEventLogFactory.class);
 			} else if (_registerFactory != null)

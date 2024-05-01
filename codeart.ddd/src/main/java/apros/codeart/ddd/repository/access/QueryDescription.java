@@ -63,4 +63,6 @@ public record QueryDescription(MapData param, Map<String, Object> items, DataTab
 		return new QueryDescription(param, items, table);
 	}
 
+	public static final QueryDescription empty = new QueryDescription();
+
 }

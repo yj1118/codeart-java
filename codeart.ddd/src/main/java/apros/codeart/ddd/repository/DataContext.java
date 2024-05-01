@@ -434,6 +434,9 @@ public class DataContext implements IDataContext {
 
 						raiseCommittedQueue();
 					}
+
+					this.onCommitted();
+
 				} catch (Exception ex) {
 					throw ex;
 				} finally {
@@ -441,6 +444,22 @@ public class DataContext implements IDataContext {
 					_isCommiting = false;
 				}
 			}
+		}
+	}
+
+	private EventHandler<DataContextEventArgs> _committed;
+
+	public EventHandler<DataContextEventArgs> committed() {
+		if (_committed == null)
+			_committed = new EventHandler<DataContextEventArgs>();
+		return _committed;
+	}
+
+	private void onCommitted() {
+		if (_committed != null) {
+			_committed.raise(this, () -> {
+				return DataContextEventArgs.instance;
+			});
 		}
 	}
 
@@ -468,6 +487,7 @@ public class DataContext implements IDataContext {
 		disposeMirror();
 		disposeBuffer();
 		disposeItems();
+		_committed = null;
 	}
 
 	@Override

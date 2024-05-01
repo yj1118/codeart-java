@@ -13,7 +13,7 @@ import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.repository.sqlserver.SQLServerAgent;
 import apros.codeart.i18n.Language;
 
-final class DataSource {
+public final class DataSource {
 	private DataSource() {
 	}
 
