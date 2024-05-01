@@ -85,7 +85,7 @@ public final class EventProtector {
 
 			while (true) {
 
-				var queueIds = EventLog.findInterrupteds(5);
+				var queueIds = EventLog.findInterrupteds();
 
 				if (queueIds == null || queueIds.size() == 0)
 					break;

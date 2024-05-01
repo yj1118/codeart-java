@@ -8,6 +8,14 @@ public interface IEventLog {
 
 	/**
 	 * 
+	 * 获得一个新的日志唯一标识（也就是事件队列编号）
+	 * 
+	 * @return
+	 */
+	public String newId();
+
+	/**
+	 * 
 	 * 开始触发事件队列
 	 * 
 	 * @param queueId
@@ -77,11 +85,16 @@ public interface IEventLog {
 
 	/**
 	 * 
-	 * 找到 {@top} 条被中断的事件队列的编号
+	 * 找到由于中断的原因要恢复的事件队列编号
 	 * 
 	 * @param top
 	 * @return
 	 */
-	List<String> findInterrupteds(int top);
+	List<String> findInterrupteds();
+
+	/**
+	 * 清理过期的日志
+	 */
+	void clean();
 
 }

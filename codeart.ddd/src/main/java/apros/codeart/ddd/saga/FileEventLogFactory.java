@@ -13,4 +13,9 @@ final class FileEventLogFactory implements IEventLogFactory {
 	public IEventLog create() {
 		return new FileEventLogger();
 	}
+
+	@Override
+	public void init() {
+		// 基于文件系统的日志不需要初始化
+	}
 }

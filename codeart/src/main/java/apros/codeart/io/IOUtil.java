@@ -13,6 +13,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.apache.logging.log4j.util.Strings;
 
@@ -83,12 +84,27 @@ public final class IOUtil {
 		return System.getProperty("user.dir");
 	}
 
-	public static String combine(String... paths) {
+	public static Path combine(Path folder, String... paths) {
+
+		if (paths.length == 0)
+			return folder;
+
+		var current = folder;
+
+		for (var i = 0; i < paths.length; i++) {
+			Path filePath = Paths.get(paths[i]);
+			current = current.resolve(filePath);
+		}
+
+		return current;
+	}
+
+	public static Path combine(String... paths) {
 
 		if (paths.length == 0)
 			return null;
 		if (paths.length == 1)
-			return paths[0];
+			return Paths.get(paths[0]);
 
 		var current = Paths.get(paths[0]);
 
@@ -97,7 +113,12 @@ public final class IOUtil {
 			current = current.resolve(filePath);
 		}
 
-		return current.toString();
+		return current;
+	}
+
+	public static void delete(String path) {
+		Path dir = Paths.get(path);
+		delete(dir);
 	}
 
 	/**
@@ -106,8 +127,7 @@ public final class IOUtil {
 	 * 
 	 * @param path
 	 */
-	public static void delete(String path) {
-		Path dir = Paths.get(path);
+	public static void delete(Path dir) {
 
 		try {
 			deleteDirectoryRecursively(dir);
@@ -165,14 +185,21 @@ public final class IOUtil {
 		return items;
 	}
 
-	public static void eachFolder(String path, Consumer<Path> action) {
+	public static void eachFolder(String path, Function<Path, Boolean> action) {
 		Path dir = Paths.get(path);
+
+		eachFolder(dir, action);
+	}
+
+	public static void eachFolder(Path dir, Function<Path, Boolean> action) {
 
 		// 使用 try-with-resources 语句确保 DirectoryStream 被正确关闭
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
 			for (Path entry : stream) {
 				if (Files.isDirectory(entry)) {
-					action.accept(entry);
+					// 返回false表示终止读取
+					if (!action.apply(entry))
+						break;
 				}
 			}
 		} catch (IOException e) {
@@ -191,6 +218,52 @@ public final class IOUtil {
 		} catch (IOException e) {
 			throw propagate(e);
 		}
+	}
+
+	/**
+	 * 
+	 * 给定的路径下是否有子目录
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public static boolean hasSubdirectory(String path) {
+		Path dir = Paths.get(path);
+
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+			for (Path entry : stream) {
+				if (Files.isDirectory(entry)) {
+					return true;
+				}
+			}
+		} catch (IOException e) {
+			throw propagate(e);
+		}
+		return false;
+	}
+
+	public static boolean hasSub(String path) {
+		Path dir = Paths.get(path);
+		return hasSub(dir);
+	}
+
+	/**
+	 * 
+	 * 是否有子目录或子文件
+	 * 
+	 * @param path
+	 * @return
+	 */
+	public static boolean hasSub(Path dir) {
+
+		try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+			for (Path entry : stream) {
+				return true;
+			}
+		} catch (IOException e) {
+			throw propagate(e);
+		}
+		return false;
 	}
 
 }

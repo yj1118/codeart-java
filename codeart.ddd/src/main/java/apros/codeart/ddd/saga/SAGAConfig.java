@@ -27,6 +27,14 @@ public final class SAGAConfig {
 
 		if (factory != null)
 			_eventLogFactoryImplementer = InterfaceImplementer.create(factory);
+
+		_retainDays = root.getInt("etain", 0); // 默认永久保留
+	}
+
+	private static int _retainDays;
+
+	public static int retainDays() {
+		return _retainDays;
 	}
 
 	static {
@@ -34,6 +42,8 @@ public final class SAGAConfig {
 		var saga = AppConfig.section("saga");
 		if (saga != null) {
 			loadEventLog(saga);
+		} else {
+			_retainDays = 0;
 		}
 
 	}

@@ -11,7 +11,6 @@ import apros.codeart.ddd.saga.internal.EventUtil;
 import apros.codeart.ddd.saga.internal.protector.EventProtector;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.event.EventPortal;
-import apros.codeart.util.Guid;
 import apros.codeart.util.concurrent.ISignal;
 import apros.codeart.util.concurrent.LatchSignal;
 
@@ -29,7 +28,7 @@ public final class EventTrigger {
 	 * @return
 	 */
 	public static DTObject start(DomainEvent source, DTObject input) {
-		var queue = new EventQueue(Guid.compact(), source, input);
+		var queue = new EventQueue(EventLog.newId(), source, input);
 		try {
 			return raise(queue);
 		} catch (Exception ex) {

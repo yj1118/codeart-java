@@ -57,7 +57,7 @@ public class RemoteService {
 		subscribeEvents();
 	}
 
-	static void cleanup() {
+	public static void cleanup() {
 		var tips = RemotableImpl.getTips();
 		for (var tip : tips) {
 

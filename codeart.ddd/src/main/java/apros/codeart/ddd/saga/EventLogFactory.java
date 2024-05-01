@@ -29,7 +29,7 @@ public final class EventLogFactory {
 
 	}
 
-	public static IEventLog getLog() {
+	public static IEventLog createLog() {
 		return EventLogFactoryHolder.factory.create();
 	}
 

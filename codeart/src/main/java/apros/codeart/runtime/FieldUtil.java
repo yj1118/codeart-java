@@ -15,7 +15,7 @@ import apros.codeart.i18n.Language;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
-import apros.codeart.util.ThreadSafe;
+import apros.codeart.util.thread.ThreadSafe;
 
 public final class FieldUtil {
 	private FieldUtil() {

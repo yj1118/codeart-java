@@ -19,12 +19,23 @@ public final class EventLog {
 
 	/**
 	 * 
+	 * 获得一个新的日志唯一标识（也就是事件队列编号）
+	 * 
+	 * @return
+	 */
+	public static String newId() {
+		var log = EventLogFactory.createLog();
+		return log.newId();
+	}
+
+	/**
+	 * 
 	 * 开始触发事件队列
 	 * 
 	 * @param queueId
 	 */
 	public static void writeRaiseStart(String queueId) {
-		var log = EventLogFactory.getLog();
+		var log = EventLogFactory.createLog();
 		log.writeRaiseStart(queueId);
 	}
 
@@ -36,12 +47,12 @@ public final class EventLog {
 	 * @param entry
 	 */
 	public static void writeRaise(String queueId, String eventName) {
-		var log = EventLogFactory.getLog();
+		var log = EventLogFactory.createLog();
 		log.writeRaise(queueId, eventName);
 	}
 
 	public static void writeRaiseLog(String queueId, String eventName, DTObject log) {
-		var logger = EventLogFactory.getLog();
+		var logger = EventLogFactory.createLog();
 		logger.writeRaiseLog(queueId, eventName, log);
 	}
 
@@ -52,12 +63,12 @@ public final class EventLog {
 	 * @param queueId
 	 */
 	public static void writeRaiseEnd(String queueId) {
-		var log = EventLogFactory.getLog();
+		var log = EventLogFactory.createLog();
 		log.writeRaiseEnd(queueId);
 	}
 
 	public static void writeReverseStart(String queueId) {
-		var log = EventLogFactory.getLog();
+		var log = EventLogFactory.createLog();
 		log.writeReverseStart(queueId);
 	}
 
@@ -69,7 +80,7 @@ public final class EventLog {
 	 * @return
 	 */
 	public static RaisedQueue findRaised(String queueId) {
-		var log = EventLogFactory.getLog();
+		var log = EventLogFactory.createLog();
 		var entries = log.findRaised(queueId);
 		return new RaisedQueue(queueId, entries);
 	}
@@ -82,7 +93,7 @@ public final class EventLog {
 	 * @param eventId
 	 */
 	public static void writeReversed(RaisedEntry entry) {
-		var log = EventLogFactory.getLog();
+		var log = EventLogFactory.createLog();
 		log.writeReversed(entry);
 	}
 
@@ -93,13 +104,27 @@ public final class EventLog {
 	 * @param queueId
 	 */
 	public static void writeReverseEnd(String queueId) {
-		var log = EventLogFactory.getLog();
+		var log = EventLogFactory.createLog();
 		log.writeReverseEnd(queueId);
 	}
 
-	public static List<String> findInterrupteds(int top) {
-		var log = EventLogFactory.getLog();
-		return log.findInterrupteds(top);
+	/**
+	 * 
+	 * 找到由于中断的原因要恢复的事件队列编号
+	 * 
+	 * @return
+	 */
+	public static List<String> findInterrupteds() {
+		var log = EventLogFactory.createLog();
+		return log.findInterrupteds();
+	}
+
+	/**
+	 * 清理过期的日志
+	 */
+	public static void clean() {
+		var log = EventLogFactory.createLog();
+		log.clean();
 	}
 
 }

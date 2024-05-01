@@ -35,11 +35,12 @@
 	},
 	"saga":{
 		"log":{
-			"folder":"",
 			"factory":{
 				"type":"",
 				"arguments":[]
-			}
+			},
+			"folder":"",
+			"retain":30
 		}
 	}
 }
