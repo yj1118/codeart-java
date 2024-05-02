@@ -749,6 +749,18 @@ public class DTObject implements INullProxy {
 		}
 	}
 
+	public void each(String findExp, BiConsumer<String, Object> action) {
+		var eo = TypeUtil.as(_root.find(findExp), DTEObject.class);
+		if (eo == null)
+			throw new IllegalStateException(strings("codeart", "TypeMismatch"));
+
+		for (var member : eo.getMembers()) {
+			var name = member.getName();
+			var value = extractValueRef(member);
+			action.accept(name, value);
+		}
+	}
+
 	public DTObject top(String findExp, int count) {
 		ArrayList<DTObject> data = new ArrayList<DTObject>(count);
 

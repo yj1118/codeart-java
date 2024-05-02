@@ -1,6 +1,5 @@
 package apros.codeart.ddd.message;
 
-import apros.codeart.ddd.message.internal.DomainMessagePublisher;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.TransferData;
 import apros.codeart.mq.event.EventPriority;
@@ -17,8 +16,8 @@ public abstract class DomainMessageHandler implements IEventHandler {
 	public void handle(String eventName, TransferData data) {
 		var info = data.info();
 
-		if (!info.exist(DomainMessagePublisher.headerType))
-			return;
+//		if (!info.exist(DomainMessagePublisher.headerType))
+//			return;
 
 		var msgId = info.getString("id");
 		var content = info.getObject("body");

@@ -9,14 +9,14 @@ public final class CQRSConfig {
 
 	}
 
-	private static boolean _fock;
+	private static boolean _master;
 
-	public static boolean fock() {
-		return _fock;
+	public static boolean master() {
+		return _master;
 	}
 
 	private static void init(DTObject config) {
-		_fock = config.getBoolean("fock", false);
+		_master = config.getBoolean("master", false);
 	}
 
 	private static DTObject _section;
@@ -32,7 +32,7 @@ public final class CQRSConfig {
 			init(_section);
 		} else {
 			_section = DTObject.Empty;
-			_fock = false;
+			_master = false;
 		}
 
 	}

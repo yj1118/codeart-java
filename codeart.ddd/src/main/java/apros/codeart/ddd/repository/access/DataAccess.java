@@ -3,6 +3,7 @@ package apros.codeart.ddd.repository.access;
 import java.sql.Connection;
 import java.util.UUID;
 
+import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.MapData;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.DataContext;
@@ -18,20 +19,40 @@ public final class DataAccess {
 		_conn = conn;
 	}
 
+	/**
+	 * 
+	 * 执行sql，并且不复刻指令到其他服务器
+	 * 
+	 * @param sql
+	 */
 	public void execute(String sql) {
-		execute(sql, true);
+		QueryRunner.execute(_conn, sql, null, null);
 	}
 
-	public void execute(String sql, boolean fork) {
-		QueryRunner.execute(_conn, sql, fork);
+	public void execute(String sql, Class<? extends IAggregateRoot> forkAggregateRootType) {
+		QueryRunner.execute(_conn, sql, forkAggregateRootType.getName());
 	}
 
+	public void execute(String sql, String forkAggregate) {
+		QueryRunner.execute(_conn, sql, forkAggregate);
+	}
+
+	/**
+	 * 
+	 * 执行sql，并且不复刻指令到其他服务器
+	 * 
+	 * @param sql
+	 */
 	public int execute(String sql, MapData param) {
-		return execute(sql, param, true);
+		return QueryRunner.execute(_conn, sql, param, null);
 	}
 
-	public int execute(String sql, MapData param, boolean fork) {
-		return QueryRunner.execute(_conn, sql, param, fork);
+	public int execute(String sql, MapData param, Class<? extends IAggregateRoot> forkAggregateRootType) {
+		return QueryRunner.execute(_conn, sql, param, forkAggregateRootType.getName());
+	}
+
+	public int execute(String sql, MapData param, String forkAggregate) {
+		return QueryRunner.execute(_conn, sql, param, forkAggregate);
 	}
 
 	public Object queryScalar(String sql, MapData params) {

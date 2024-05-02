@@ -53,6 +53,7 @@
 		}
 	},
 	"cqrs":{
-		"fork":true
+		"master":true,
+		"slave":["*"]
 	}
 }

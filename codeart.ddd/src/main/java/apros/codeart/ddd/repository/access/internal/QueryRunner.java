@@ -32,7 +32,7 @@ public final class QueryRunner {
 	 * @param conn
 	 * @param sql
 	 */
-	public static void execute(Connection conn, String sql, boolean fork) {
+	public static void execute(Connection conn, String sql, String forkAggregate) {
 
 		try (var stmt = conn.createStatement()) {
 			stmt.execute(sql);
@@ -40,8 +40,8 @@ public final class QueryRunner {
 			throw propagate(e);
 		}
 
-		if (fork) {
-			Forker.dispatch(sql, null);
+		if (forkAggregate != null) {
+			Forker.dispatch(forkAggregate, sql, null);
 		}
 	}
 
@@ -54,13 +54,13 @@ public final class QueryRunner {
 	 * @param param
 	 * @return
 	 */
-	public static int execute(Connection conn, String sql, MapData param, boolean fork) {
+	public static int execute(Connection conn, String sql, MapData param, String forkAggregate) {
 
 		try (PreparedStatement pstmt = getStatement(conn, sql, param);) {
 			var count = pstmt.executeUpdate();
 
-			if (fork) {
-				Forker.dispatch(sql, param);
+			if (forkAggregate != null) {
+				Forker.dispatch(forkAggregate, sql, param);
 			}
 
 			return count;

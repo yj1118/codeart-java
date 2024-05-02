@@ -22,7 +22,7 @@ final class FileMessageLogFactory implements IMessageLogFactory {
 		// 此处要初始化领域消息表
 		var sql = getInitSql();
 		DataContext.newScope((access) -> {
-			access.execute(sql, false);
+			access.execute(sql);
 		});
 	}
 

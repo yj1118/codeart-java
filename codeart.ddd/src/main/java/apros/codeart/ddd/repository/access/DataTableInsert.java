@@ -51,7 +51,7 @@ final class DataTableInsert {
 	private MapData insertData(DomainObject root, DomainObject parent, DomainObject obj) {
 		var data = getInsertData(root, parent, obj);
 
-		DataAccess.getCurrent().execute(this.sqlInsert(), data);
+		DataAccess.getCurrent().execute(this.sqlInsert(), data, _self.root().name());
 
 		return data;
 	}
@@ -145,12 +145,13 @@ final class DataTableInsert {
 		}
 	}
 
-	/// <summary>
-	/// 递增引用次数
-	/// </summary>
-	/// <param name="root"></param>
-	/// <param name="parent"></param>
-	/// <param name="obj"></param>
+	/**
+	 * 
+	 * 递增引用次数
+	 * 
+	 * @param rootId
+	 * @param id
+	 */
 	private void incrementAssociated(Object rootId, Object id) {
 		var data = new MapData();
 		data.put(GeneratedField.RootIdName, rootId);
@@ -158,6 +159,7 @@ final class DataTableInsert {
 
 		var builder = DataSource.getQueryBuilder(IncrementAssociatedQB.class);
 		var sql = builder.build(new QueryDescription(_self));
+		// 递增引用次数不需要复刻
 		DataAccess.getCurrent().execute(sql, data);
 	}
 
@@ -182,7 +184,7 @@ final class DataTableInsert {
 				data.put(slaveIdName, slaveId);
 				data.put(GeneratedField.OrderIndexName, index);
 
-				DataAccess.getCurrent().execute(this.sqlInsert(), data);
+				DataAccess.getCurrent().execute(this.sqlInsert(), data, _self.root().name());
 				index++;
 			}
 		} else {
@@ -216,7 +218,7 @@ final class DataTableInsert {
 				data.put(rootIdName, rootId);
 				data.put(GeneratedField.PrimitiveValueName, value);
 				data.put(GeneratedField.OrderIndexName, index);
-				DataAccess.getCurrent().execute(this.sqlInsert(), data);
+				DataAccess.getCurrent().execute(this.sqlInsert(), data, _self.root().name());
 				index++;
 			}
 		} else {
@@ -229,7 +231,7 @@ final class DataTableInsert {
 				data.put(masterIdName, masterId);
 				data.put(GeneratedField.PrimitiveValueName, value);
 				data.put(GeneratedField.OrderIndexName, index);
-				DataAccess.getCurrent().execute(this.sqlInsert(), data);
+				DataAccess.getCurrent().execute(this.sqlInsert(), data, _self.root().name());
 				index++;
 			}
 		}

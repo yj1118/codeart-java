@@ -23,19 +23,20 @@ public final class DomainMessagePublisher implements IEventObserver<DataContextE
 		publish(_name, _id, _content);
 	}
 
-	public static void publish(String name, String id, DTObject content) {
+	public static void publish(String msgName, String msgId, DTObject content) {
 		// 在这里真实发布消息
 		var data = DTObject.editable();
 		// 消息编号，可以用于幂等性计算
-		data.setBoolean(headerType, true); // 标记为领域消息
-		data.setString("id", id);
+//		data.setBoolean(headerType, true); // 标记为领域消息
+		data.setString("id", msgId);
 		data.combineObject("body", content);
 
-		EventPortal.publish(name, data);
+		EventPortal.publish(msgName, data);
 
 		// 已发布，日志也可以标记为输出了
-		MessageLog.flush(id);
+		MessageLog.flush(msgId);
 	}
 
-	public static final String headerType = "__dm__";
+//	public static final String headerType = "__dm__";
+
 }
