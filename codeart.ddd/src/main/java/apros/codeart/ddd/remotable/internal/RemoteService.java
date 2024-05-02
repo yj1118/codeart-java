@@ -2,9 +2,9 @@ package apros.codeart.ddd.remotable.internal;
 
 import apros.codeart.context.AppSession;
 import apros.codeart.ddd.dynamic.DynamicRoot;
+import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.metadata.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.event.EventPortal;
 import apros.codeart.mq.rpc.client.RPCClient;
 import apros.codeart.mq.rpc.server.RPCServer;
 
@@ -22,15 +22,15 @@ public class RemoteService {
 	}
 
 	public static void notifyUpdated(Class<?> objectType, Object id) {
-		var arg = createEventArg(objectType, id);
-		var eventName = RemoteObjectUpdated.getEventName(objectType);
-		EventPortal.publish(eventName, arg);
+		var content = createEventArg(objectType, id);
+		var messageName = RemoteObjectUpdated.getMessageName(objectType);
+		DomainMessage.send(messageName, content);
 	}
 
 	public static void notifyDeleted(Class<?> objectType, Object id) {
-		var arg = createEventArg(objectType, id);
-		var eventName = RemoteObjectDeleted.getEventName(objectType);
-		EventPortal.publish(eventName, arg);
+		var content = createEventArg(objectType, id);
+		var messageName = RemoteObjectDeleted.getMessageName(objectType);
+		DomainMessage.send(messageName, content);
 	}
 
 	private static DTObject createEventArg(Class<?> objectType, Object id) {

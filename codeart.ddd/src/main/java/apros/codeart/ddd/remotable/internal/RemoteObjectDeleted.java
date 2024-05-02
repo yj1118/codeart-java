@@ -1,8 +1,8 @@
 package apros.codeart.ddd.remotable.internal;
 
+import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.remotable.RemoteObjectHandler;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.event.EventPortal;
 import apros.codeart.util.SafeAccess;
 
 final class RemoteObjectDeleted {
@@ -10,26 +10,26 @@ final class RemoteObjectDeleted {
 	private RemoteObjectDeleted() {
 	}
 
-	public static String getEventName(Class<?> objectType) {
+	public static String getMessageName(Class<?> objectType) {
 		return RemoteActionName.objectDeleted(objectType);
 	}
 
 	public static void subscribe(Class<?> objectType) {
-		var eventName = getEventName(objectType);
-		EventPortal.subscribe(eventName, handler);
+		var messageName = getMessageName(objectType);
+		DomainMessage.subscribe(messageName, handler);
 	}
 
 	public static void cancel(Class<?> remoteType) {
-		var eventName = getEventName(remoteType);
-		EventPortal.cancel(eventName);
+		var messageName = getMessageName(remoteType);
+		DomainMessage.cancel(messageName);
 	}
 
 	@SafeAccess
 	private static class RemoteObjectDeletedHandler extends RemoteObjectHandler {
 
 		@Override
-		protected void handle(DTObject arg) {
-			useDefine(arg, (define, id) -> {
+		protected void handle(DTObject content) {
+			useDefine(content, (define, id) -> {
 				RemotePortal.deleteObject(define, id);
 			});
 		}

@@ -18,14 +18,14 @@ public final class DomainMessage {
 	 * @param name
 	 * @param content
 	 */
-	public static void send(String name, DTObject content) {
+	public static void send(String messageName, DTObject content) {
 
 		var id = Guid.compact();
 		// 这里写日志
-		MessageLog.write(id, name, content);
+		MessageLog.write(id, messageName, content);
 
 		// 挂载事件
-		var publisher = new DomainMessagePublisher(id, name, content);
+		var publisher = new DomainMessagePublisher(id, messageName, content);
 		var dataContext = DataContext.getCurrent();
 		dataContext.committed().add(publisher);
 	}
@@ -37,8 +37,12 @@ public final class DomainMessage {
 	 * @param name
 	 * @param handler
 	 */
-	public static void subscribe(String name, DomainMessageHandler handler) {
-		EventPortal.subscribe(name, handler);
+	public static void subscribe(String messageName, DomainMessageHandler handler) {
+		EventPortal.subscribe(messageName, handler);
+	}
+
+	public static void cancel(String messageName) {
+		EventPortal.cancel(messageName);
 	}
 
 }

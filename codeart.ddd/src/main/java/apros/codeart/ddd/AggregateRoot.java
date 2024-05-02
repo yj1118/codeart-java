@@ -151,8 +151,8 @@ public abstract class AggregateRoot extends EntityObject
 	private void initRemotable() {
 		if (this.remotable()) {
 			// 指示了对象具备远程能力
-			this.updateCommitted().add(this);
-			this.deleteCommitted().add(this);
+			this.updatePreCommit().add(this);
+			this.deletePreCommit().add(this);
 		}
 	}
 
@@ -160,12 +160,12 @@ public abstract class AggregateRoot extends EntityObject
 	public void handle(Object sender, RepositoryEventArgs args) {
 		switch (args.eventType()) {
 
-		case StatusEventType.UpdateCommitted: {
+		case StatusEventType.UpdatePreCommit: {
 			notifyUpdated(sender, args);
 			break;
 		}
 
-		case StatusEventType.DeleteCommitted: {
+		case StatusEventType.DeletePreCommit: {
 			notifyDeleted(sender, args);
 			break;
 		}

@@ -7,27 +7,27 @@ import java.util.function.BiConsumer;
 import apros.codeart.context.AppSession;
 import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.dynamic.DynamicRoot;
+import apros.codeart.ddd.message.DomainMessageHandler;
 import apros.codeart.ddd.metadata.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.TransferData;
 import apros.codeart.mq.event.EventPriority;
-import apros.codeart.mq.event.IEventHandler;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.PrimitiveUtil;
 
-public abstract class RemoteObjectHandler implements IEventHandler {
+public abstract class RemoteObjectHandler extends DomainMessageHandler {
 
+	@Override
 	public EventPriority getPriority() {
 		return EventPriority.High;
 	}
 
-	public void handle(String eventName, TransferData data) {
-		var arg = data.info();
-		AppSession.setIdentity(arg.getObject("identity")); // 先初始化身份
-		handle(arg);
+	@Override
+	public void process(String msgName, String msgId, DTObject content) {
+		AppSession.setIdentity(content.getObject("identity")); // 先初始化身份
+		handle(content);
 	}
 
-	protected abstract void handle(DTObject arg);
+	protected abstract void handle(DTObject content);
 
 //	#region 辅助方法
 
