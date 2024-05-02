@@ -1,7 +1,5 @@
 package apros.codeart.ddd.message;
 
-import java.util.List;
-
 import apros.codeart.ddd.message.internal.MessageEntry;
 import apros.codeart.dto.DTObject;
 
@@ -11,8 +9,6 @@ public interface IMessageLog {
 	void flush(String id);
 
 	MessageEntry find(String id);
-
-	List<String> findInterrupteds();
 
 	void cleanup();
 }

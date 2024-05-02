@@ -43,6 +43,9 @@ final class DomainHost {
 
 		// 领域事件宿主的初始化
 		EventHost.initialize();
+
+		// 领域消息的初始化
+		MessageHost.initialize();
 	}
 
 	/**

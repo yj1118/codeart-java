@@ -10,6 +10,10 @@ public final class MessageLog {
 	}
 
 	public static void write(String id, String name, DTObject content) {
+
+		// 写入日志之前，先写入同步信息
+		AtomicOperation.insert(id);
+
 		var logger = MessageLogFactory.createLog();
 		logger.write(id, name, content);
 	}
@@ -17,6 +21,9 @@ public final class MessageLog {
 	public static void flush(String id) {
 		var logger = MessageLogFactory.createLog();
 		logger.flush(id);
+
+		// 删除日志后，删除同步信息
+		AtomicOperation.delete(id);
 	}
 
 	public static MessageEntry find(String id) {
@@ -31,8 +38,7 @@ public final class MessageLog {
 	 * @return
 	 */
 	public static List<String> findInterrupteds() {
-		var logger = MessageLogFactory.createLog();
-		return logger.findInterrupteds();
+		return AtomicOperation.findInterrupteds();
 	}
 
 	/**
