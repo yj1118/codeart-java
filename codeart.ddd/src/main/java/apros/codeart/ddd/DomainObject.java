@@ -38,9 +38,12 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 
 	private ObjectMeta _meta;
 
-	/// <summary>
-	/// 领域对象的类型，请注意，在动态领域对象下，该类型是对应的领域对象的类型，而不是DynamicRoot、DynamicValueObject等载体对象
-	/// </summary>
+	/**
+	 * 
+	 * 领域对象的类型，请注意，在动态领域对象下，该类型是对应的领域对象的类型，而不是DynamicRoot、DynamicValueObject等载体对象
+	 * 
+	 * @return
+	 */
 	public ObjectMeta meta() {
 		return _meta;
 	}

@@ -37,7 +37,7 @@ public final class EventProtector {
 					if (entry.local() != null) {
 						reverseLocalEvent(entry.local(), entry.log());
 					} else {
-						reverseRemoteEvent(entry.name(), queue);
+						reverseRemoteEvent(entry.name(), entry.index(), queue);
 					}
 
 					EventLog.writeReversed(entry);
@@ -61,8 +61,8 @@ public final class EventProtector {
 		});
 	}
 
-	private static void reverseRemoteEvent(String eventName, RaisedQueue queue) {
-		var eventId = EventUtil.getEventId(queue.id(), eventName);
+	private static void reverseRemoteEvent(String eventName, int entryIndex, RaisedQueue queue) {
+		var eventId = EventUtil.getEventId(queue.id(), eventName, entryIndex);
 		// 调用远程事件时会创建一个接收结果的临时队列，有可能该临时队列没有被删除，所以需要在回逆的时候处理一次
 		EventTrigger.cleanupRemoteEventResult(eventId);
 
@@ -83,19 +83,16 @@ public final class EventProtector {
 	public static void restoreInterrupted() {
 		try {
 
-			while (true) {
+			var queueIds = EventLog.findInterrupteds();
 
-				var queueIds = EventLog.findInterrupteds();
+			if (queueIds == null || queueIds.size() == 0)
+				return;
 
-				if (queueIds == null || queueIds.size() == 0)
-					break;
-
-				queueIds.parallelStream().forEach(queueId -> {
-					AppSession.using(() -> {
-						restore(queueId);
-					});
+			queueIds.parallelStream().forEach(queueId -> {
+				AppSession.using(() -> {
+					restore(queueId);
 				});
-			}
+			});
 
 		} catch (Exception ex) {
 			Logger.fatal(ex);

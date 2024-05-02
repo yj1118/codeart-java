@@ -21,6 +21,25 @@ public final class IOUtil {
 	private IOUtil() {
 	}
 
+	public static Path firstFile(String dir) {
+		Path path = Paths.get(dir);
+		return firstFile(path);
+	}
+
+	public static Path firstFile(Path dir) {
+		try (var stream = Files.list(dir)) {
+			var p = stream.filter(Files::isRegularFile) // 筛选出文件
+					.findFirst(); // 返回第一个文件
+
+			if (p.isPresent())
+				return p.get();
+			return null;
+
+		} catch (IOException e) {
+			throw propagate(e);
+		}
+	}
+
 	/**
 	 * 
 	 * 事务性写入：对于关键数据，可以采用写入临时文件然后重命名的方式。
@@ -185,9 +204,16 @@ public final class IOUtil {
 		return items;
 	}
 
+	public static void eachFolder(String path, Consumer<Path> action) {
+		Path dir = Paths.get(path);
+		eachFolder(dir, (item) -> {
+			action.accept(item);
+			return true;
+		});
+	}
+
 	public static void eachFolder(String path, Function<Path, Boolean> action) {
 		Path dir = Paths.get(path);
-
 		eachFolder(dir, action);
 	}
 
@@ -208,7 +234,11 @@ public final class IOUtil {
 	}
 
 	public static String readString(String path) {
-		Path file = Paths.get(path); // 替换为实际文件路径
+		Path file = Paths.get(path);
+		return readString(file);
+	}
+
+	public static String readString(Path file) {
 
 		if (!Files.exists(file))
 			return null;

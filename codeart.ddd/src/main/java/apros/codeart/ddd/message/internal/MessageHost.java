@@ -4,4 +4,8 @@ public final class MessageHost {
 	private MessageHost() {
 	}
 
+	public static void initialized() {
+		MessageProtector.launch();
+	}
+
 }

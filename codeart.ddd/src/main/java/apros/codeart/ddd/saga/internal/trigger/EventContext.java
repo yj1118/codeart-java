@@ -50,9 +50,20 @@ public final class EventContext {
 		return _eventId;
 	}
 
-	public void direct(String eventName) {
+	private int _index;
+
+	public int index() {
+		return _index;
+	}
+
+	/**
+	 * @param eventName
+	 * @param index     事件被执行的序号
+	 */
+	public void direct(String eventName, int index) {
 		_eventName = eventName;
-		_eventId = EventUtil.getEventId(this.id(), _eventName);
+		_index = index;
+		_eventId = EventUtil.getEventId(this.id(), _eventName, this.index());
 		_log = null;
 	}
 
@@ -76,6 +87,6 @@ public final class EventContext {
 
 	void save() {
 		if (_log != null)
-			EventLog.writeRaiseLog(_id, _eventName, _log);
+			EventLog.writeRaiseLog(_id, _eventName, _index, _log);
 	}
 }

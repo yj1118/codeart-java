@@ -2,7 +2,7 @@ package apros.codeart.ddd.message;
 
 import apros.codeart.util.SafeAccessImpl;
 
-final class MessageLogFactory {
+public final class MessageLogFactory {
 	private MessageLogFactory() {
 	}
 

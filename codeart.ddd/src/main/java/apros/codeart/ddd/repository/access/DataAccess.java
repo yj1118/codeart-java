@@ -71,6 +71,10 @@ public final class DataAccess {
 		return QueryRunner.queryScalars(elementType, _conn, sql, params);
 	}
 
+	public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, MapData params) {
+		return QueryRunner.queryScalars(elementType, _conn, sql, params);
+	}
+
 	public int[] queryScalarInts(String sql, MapData params, QueryLevel level) {
 		sql = supplementLock(sql, level);
 		return QueryRunner.queryScalarInts(_conn, sql, params);

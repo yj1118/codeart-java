@@ -1,10 +1,11 @@
 package apros.codeart.ddd.message;
 
+import apros.codeart.ddd.message.internal.DomainMessagePublisher;
+import apros.codeart.ddd.message.internal.MessageLog;
 import apros.codeart.ddd.repository.DataContext;
-import apros.codeart.ddd.repository.DataContextEventArgs;
 import apros.codeart.dto.DTObject;
+import apros.codeart.mq.event.EventPortal;
 import apros.codeart.util.Guid;
-import apros.codeart.util.IEventObserver;
 
 public final class DomainMessage {
 	private DomainMessage() {
@@ -24,33 +25,20 @@ public final class DomainMessage {
 		MessageLog.write(id, name, content);
 
 		// 挂载事件
-		var sender = new DomainMessageSender(id, name, content);
+		var publisher = new DomainMessagePublisher(id, name, content);
 		var dataContext = DataContext.getCurrent();
-		dataContext.committed().add(sender);
-
+		dataContext.committed().add(publisher);
 	}
 
-	private static class DomainMessageSender implements IEventObserver<DataContextEventArgs> {
-
-		private String _id;
-
-		private String _name;
-
-		private DTObject _content;
-
-		public DomainMessageSender(String id, String name, DTObject content) {
-			_id = id;
-			_name = name;
-			_content = content;
-		}
-
-		@Override
-		public void handle(Object sender, DataContextEventArgs args) {
-			// 在这里真实发布消息
-
-			// 已发布，日志也可以标记为输出了
-			MessageLog.flush(_id);
-		}
-
+	/**
+	 * 
+	 * 订阅消息
+	 * 
+	 * @param name
+	 * @param handler
+	 */
+	public static void subscribe(String name, DomainMessageHandler handler) {
+		EventPortal.subscribe(name, handler);
 	}
+
 }

@@ -33,6 +33,15 @@
 			}
 		}
 	},
+	"message":{
+		"log":{
+			"factory":{
+				"type":"",
+				"arguments":[]
+			},
+			"folder":""
+		}
+	},
 	"saga":{
 		"log":{
 			"factory":{

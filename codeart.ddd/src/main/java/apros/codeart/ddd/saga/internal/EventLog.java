@@ -46,14 +46,14 @@ public final class EventLog {
 	 * @param queue
 	 * @param entry
 	 */
-	public static void writeRaise(String queueId, String eventName) {
+	public static void writeRaise(String queueId, String eventName, int entryIndex) {
 		var log = EventLogFactory.createLog();
-		log.writeRaise(queueId, eventName);
+		log.writeRaise(queueId, eventName, entryIndex);
 	}
 
-	public static void writeRaiseLog(String queueId, String eventName, DTObject log) {
+	public static void writeRaiseLog(String queueId, String eventName, int entryIndex, DTObject log) {
 		var logger = EventLogFactory.createLog();
-		logger.writeRaiseLog(queueId, eventName, log);
+		logger.writeRaiseLog(queueId, eventName, entryIndex, log);
 	}
 
 	/**

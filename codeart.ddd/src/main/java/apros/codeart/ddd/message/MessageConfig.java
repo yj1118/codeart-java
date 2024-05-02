@@ -29,13 +29,19 @@ class MessageConfig {
 
 	}
 
+	private static DTObject _section;
+
+	public static DTObject section() {
+		return _section;
+	}
+
 	static {
 
-		var msg = AppConfig.section("message");
-		if (msg != null) {
-			loadEventLog(msg);
+		var _section = AppConfig.section("message");
+		if (_section != null) {
+			loadEventLog(_section);
 		} else {
-
+			_section = DTObject.Empty;
 		}
 
 	}

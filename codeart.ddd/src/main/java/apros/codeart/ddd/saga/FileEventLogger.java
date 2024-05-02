@@ -17,7 +17,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import apros.codeart.AppConfig;
 import apros.codeart.dto.DTObject;
 import apros.codeart.io.IOUtil;
 import apros.codeart.util.Guid;
@@ -28,8 +27,6 @@ final class FileEventLogger implements IEventLog {
 
 	private String _folder;
 
-	private int _raisePointer;
-
 	private void init(String queueId) {
 		if (_folder == null) {
 			_folder = getQueueFolder(queueId);
@@ -37,7 +34,6 @@ final class FileEventLogger implements IEventLog {
 	}
 
 	FileEventLogger() {
-		_raisePointer = -1;
 	}
 
 	@Override
@@ -53,15 +49,14 @@ final class FileEventLogger implements IEventLog {
 	}
 
 	@Override
-	public void writeRaise(String queueId, String eventName) {
-		_raisePointer++;
-		var fileName = getEventFileName(_folder, _raisePointer, eventName);
+	public void writeRaise(String queueId, String eventName, int entryIndex) {
+		var fileName = getEventFileName(_folder, entryIndex, eventName);
 		IOUtil.atomicNewFile(fileName);
 	}
 
 	@Override
-	public void writeRaiseLog(String queueId, String eventName, DTObject log) {
-		var fileName = getEventLogFileName(_folder, _raisePointer, eventName);
+	public void writeRaiseLog(String queueId, String eventName, int entryIndex, DTObject log) {
+		var fileName = getEventLogFileName(_folder, entryIndex, eventName);
 		IOUtil.atomicWrite(fileName, log.getCode());
 	}
 
@@ -257,11 +252,7 @@ final class FileEventLogger implements IEventLog {
 	private static final String _rootFolder;
 
 	static {
-		var config = AppConfig.section("saga");
-		String folder = null;
-		if (config != null) {
-			folder = config.getString("folder", null);
-		}
+		String folder = SAGAConfig.section().getString("log.folder", null);
 
 		_rootFolder = folder == null
 				? IOUtil.combine(IOUtil.getCurrentDirectory(), "domain-event-log").toAbsolutePath().toString()

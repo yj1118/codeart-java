@@ -27,9 +27,10 @@ public interface IEventLog {
 	 * 写入要执行事件 {@eventName} 的日志
 	 * 
 	 * @param queue
-	 * @param entry
+	 * @param eventName
+	 * @param entryIndex 事件在执行时的序号（也就是队列中的条目序号）
 	 */
-	void writeRaise(String queueId, String eventName);
+	void writeRaise(String queueId, String eventName, int entryIndex);
 
 	/**
 	 * 
@@ -37,9 +38,10 @@ public interface IEventLog {
 	 * 
 	 * @param queueId
 	 * @param eventName
+	 * @param entryIndex 事件在执行时的序号（也就是队列中的条目序号）
 	 * @param log
 	 */
-	void writeRaiseLog(String queueId, String eventName, DTObject log);
+	void writeRaiseLog(String queueId, String eventName, int entryIndex, DTObject log);
 
 	/**
 	 * 

@@ -37,12 +37,19 @@ final class SAGAConfig {
 		return _retainDays;
 	}
 
+	private static DTObject _section;
+
+	public static DTObject section() {
+		return _section;
+	}
+
 	static {
 
-		var saga = AppConfig.section("saga");
-		if (saga != null) {
-			loadEventLog(saga);
+		_section = AppConfig.section("saga");
+		if (_section != null) {
+			loadEventLog(_section);
 		} else {
+			_section = DTObject.Empty;
 			_retainDays = 0;
 		}
 

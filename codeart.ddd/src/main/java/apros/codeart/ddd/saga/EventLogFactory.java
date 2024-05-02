@@ -2,7 +2,7 @@ package apros.codeart.ddd.saga;
 
 import apros.codeart.util.SafeAccessImpl;
 
-final class EventLogFactory {
+public final class EventLogFactory {
 	private EventLogFactory() {
 	}
 

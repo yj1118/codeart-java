@@ -54,10 +54,12 @@ public final class EventTrigger {
 		while (true) {
 			// 触发队列事件
 			var entry = queue.next(args);
+			var entryIndex = queue.entryIndex();
+
 			if (entry != null) {
 				String eventName = entry.name();
-				ctx.direct(eventName); // 将事件上下文重定向到新的事件上
-				EventLog.writeRaise(ctx.id(), ctx.eventName()); // 一定要确保日志先被正确的写入，否则会有BUG
+				ctx.direct(eventName, entryIndex); // 将事件上下文重定向到新的事件上
+				EventLog.writeRaise(ctx.id(), ctx.eventName(), entryIndex); // 一定要确保日志先被正确的写入，否则会有BUG
 				args = queue.getArgs(args, ctx);
 				if (entry.local() != null) {
 					// 本地事件，直接执行

@@ -72,6 +72,10 @@ class EventQueue {
 
 	private int _pointer;
 
+	int entryIndex() {
+		return _pointer;
+	}
+
 	/**
 	 * 
 	 * 获得队列里下一条要执行的事件名称

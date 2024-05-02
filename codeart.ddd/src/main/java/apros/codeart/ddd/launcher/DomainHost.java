@@ -1,6 +1,7 @@
 package apros.codeart.ddd.launcher;
 
 import apros.codeart.ddd.DomainDrivenException;
+import apros.codeart.ddd.message.internal.MessageHost;
 import apros.codeart.ddd.metadata.MetadataLoader;
 import apros.codeart.ddd.remotable.internal.RemotableImpl;
 import apros.codeart.ddd.remotable.internal.RemoteService;
@@ -49,6 +50,7 @@ final class DomainHost {
 	 */
 	public static void initialized() {
 		EventHost.initialized();
+		MessageHost.initialized();
 	}
 
 	public static void cleanup() {
