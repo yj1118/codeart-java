@@ -1,4 +1,4 @@
-package apros.codeart.ddd.repository.access;
+package apros.codeart.ddd.repository.access.internal;
 
 import static apros.codeart.i18n.Language.strings;
 

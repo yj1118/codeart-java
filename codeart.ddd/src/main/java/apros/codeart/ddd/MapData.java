@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import com.google.common.collect.Iterables;
 
+import apros.codeart.dto.DTObject;
 import apros.codeart.util.Guid;
 import apros.codeart.util.StringUtil;
 
@@ -106,6 +107,14 @@ public class MapData implements Iterable<Map.Entry<String, Object>> {
 		if (value == null || Iterables.size(value) == 0)
 			return;
 		_data.put(name, value);
-
 	}
+
+	public DTObject asDTO() {
+		DTObject dto = DTObject.editable();
+		for (var p : _data.entrySet()) {
+			dto.setValue(p.getKey(), p.getValue());
+		}
+		return dto;
+	}
+
 }

@@ -106,7 +106,7 @@ class FileMessageLogger implements IMessageLog {
 					          ([id])
 					    VALUES
 					          '%s');
-					""".formatted(msgId));
+					""".formatted(msgId), false);
 
 			break;
 		}
@@ -129,7 +129,7 @@ class FileMessageLogger implements IMessageLog {
 		}
 		case DatabaseType.SqlServer: {
 
-			access.execute(String.format("DELETE FROM [dbo].[CA_DomainMessage] WHERE id='%s';", msgId));
+			access.execute(String.format("DELETE FROM [dbo].[CA_DomainMessage] WHERE id='%s';", msgId), false);
 
 			break;
 		}

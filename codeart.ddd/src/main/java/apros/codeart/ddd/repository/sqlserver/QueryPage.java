@@ -3,7 +3,7 @@ package apros.codeart.ddd.repository.sqlserver;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.access.DataTable;
 import apros.codeart.ddd.repository.access.QueryPageQB;
-import apros.codeart.ddd.repository.access.SqlDefinition;
+import apros.codeart.ddd.repository.access.internal.SqlDefinition;
 
 class QueryPage extends QueryPageQB {
 

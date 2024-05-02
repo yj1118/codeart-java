@@ -1,4 +1,4 @@
-package apros.codeart.ddd.repository.access;
+package apros.codeart.ddd.repository.access.internal;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import apros.codeart.ddd.MapData;
+import apros.codeart.ddd.repository.access.SqlAny;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;

@@ -3,7 +3,7 @@ package apros.codeart.ddd.repository.sqlserver;
 import java.text.MessageFormat;
 
 import apros.codeart.ddd.EntityObject;
-import apros.codeart.ddd.repository.access.SqlDefinition;
+import apros.codeart.ddd.repository.access.internal.SqlDefinition;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
 

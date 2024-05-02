@@ -1,6 +1,7 @@
-package apros.codeart.ddd.repository.access;
+package apros.codeart.ddd.repository.access.internal;
 
 import apros.codeart.ddd.QueryLevel;
+import apros.codeart.ddd.repository.access.DataSource;
 
 public final class SqlStatement {
 	private SqlStatement() {

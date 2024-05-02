@@ -1,4 +1,4 @@
-package apros.codeart.ddd.repository.access;
+package apros.codeart.ddd.repository.access.internal;
 
 import static apros.codeart.i18n.Language.strings;
 
@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import apros.codeart.ddd.repository.access.SqlColumns;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;

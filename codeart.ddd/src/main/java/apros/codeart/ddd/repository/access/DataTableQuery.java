@@ -15,6 +15,7 @@ import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.MapData;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.Page;
+import apros.codeart.ddd.repository.access.internal.SqlDefinition;
 import apros.codeart.i18n.Language;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.StringUtil;

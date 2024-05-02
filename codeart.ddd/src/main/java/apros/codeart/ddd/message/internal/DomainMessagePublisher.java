@@ -29,7 +29,7 @@ public final class DomainMessagePublisher implements IEventObserver<DataContextE
 		// 消息编号，可以用于幂等性计算
 		data.setBoolean(headerType, true); // 标记为领域消息
 		data.setString("id", id);
-		data.setObject("body", content);
+		data.combineObject("body", content);
 
 		EventPortal.publish(name, data);
 

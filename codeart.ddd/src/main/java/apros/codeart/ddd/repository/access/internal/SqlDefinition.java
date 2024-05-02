@@ -1,4 +1,4 @@
-package apros.codeart.ddd.repository.access;
+package apros.codeart.ddd.repository.access.internal;
 
 import java.util.ArrayList;
 import java.util.function.Function;
@@ -7,6 +7,8 @@ import com.google.common.collect.Iterables;
 
 import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.MapData;
+import apros.codeart.ddd.repository.access.DataTable;
+import apros.codeart.ddd.repository.access.SqlColumns;
 import apros.codeart.i18n.Language;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;

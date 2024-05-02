@@ -1,4 +1,4 @@
-package apros.codeart.ddd.repository.access;
+package apros.codeart.ddd.repository.access.internal;
 
 /**
  * {@code paramName} 匹配的参数名称

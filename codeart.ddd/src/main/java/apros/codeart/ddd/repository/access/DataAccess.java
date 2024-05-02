@@ -6,6 +6,8 @@ import java.util.UUID;
 import apros.codeart.ddd.MapData;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.DataContext;
+import apros.codeart.ddd.repository.access.internal.QueryRunner;
+import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.dto.DTObject;
 
 public final class DataAccess {
@@ -17,11 +19,19 @@ public final class DataAccess {
 	}
 
 	public void execute(String sql) {
-		QueryRunner.execute(_conn, sql);
+		execute(sql, true);
+	}
+
+	public void execute(String sql, boolean fork) {
+		QueryRunner.execute(_conn, sql, fork);
 	}
 
 	public int execute(String sql, MapData param) {
-		return QueryRunner.execute(_conn, sql, param);
+		return execute(sql, param, true);
+	}
+
+	public int execute(String sql, MapData param, boolean fork) {
+		return QueryRunner.execute(_conn, sql, param, fork);
 	}
 
 	public Object queryScalar(String sql, MapData params) {

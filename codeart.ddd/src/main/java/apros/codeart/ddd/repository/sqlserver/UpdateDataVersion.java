@@ -4,8 +4,8 @@ import java.text.MessageFormat;
 
 import apros.codeart.ddd.repository.access.DataTable;
 import apros.codeart.ddd.repository.access.GeneratedField;
-import apros.codeart.ddd.repository.access.SqlStatement;
 import apros.codeart.ddd.repository.access.UpdateDataVersionQB;
+import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess

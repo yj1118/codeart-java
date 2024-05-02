@@ -455,7 +455,16 @@ public class DTObject implements INullProxy {
 		setValueRef(StringUtil.empty(), value, valueCodeIsString);
 	}
 
+	/**
+	 * 
+	 * 该方法会将obj克隆到当前dto中，obj的后续操作和当前dto的后续操作互不相关
+	 * 
+	 * @param findExp
+	 * @param obj
+	 */
 	public void setObject(String findExp, DTObject obj) {
+		if (obj == null)
+			return;
 		validateReadOnly();
 
 		if (StringUtil.isNullOrEmpty(findExp)) {
@@ -468,6 +477,32 @@ public class DTObject implements INullProxy {
 			var query = QueryExpression.create(findExp);
 			_root.setMember(query, (name) -> {
 				var e = (DTEObject) obj.getRoot().clone();
+				e.setName(name);
+				return e;
+			});
+		}
+	}
+
+	/**
+	 * 
+	 * 合并对象，注意，合并后 {@obj} 和 对当前对象共享数据，且 {@obj} 的父亲就变为 当前dto对象了
+	 * 
+	 * 该方法比 setObject 方法高效，但是会对{@obj}造成副作用，所以除非追求极致的性能且{@obj}的副作用确定不影响程序运行，否则不要使用
+	 * 
+	 * @param findExp
+	 * @param obj
+	 */
+	public void combineObject(String findExp, DTObject obj) {
+		if (obj == null)
+			return;
+		validateReadOnly();
+
+		if (StringUtil.isNullOrEmpty(findExp)) {
+			_root = (DTEObject) obj.getRoot();
+		} else {
+			var query = QueryExpression.create(findExp);
+			_root.setMember(query, (name) -> {
+				var e = (DTEObject) obj.getRoot();
 				e.setName(name);
 				return e;
 			});

@@ -1,6 +1,6 @@
 package apros.codeart.ddd.repository.sqlserver;
 
-import apros.codeart.ddd.repository.access.SqlStatement;
+import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.util.StringUtil;
 
 class SqlUpdateBuilder {

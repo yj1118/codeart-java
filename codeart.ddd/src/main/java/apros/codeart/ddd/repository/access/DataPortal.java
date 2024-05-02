@@ -6,6 +6,7 @@ import java.util.function.Function;
 import apros.codeart.ddd.IDomainObject;
 import apros.codeart.ddd.MapData;
 import apros.codeart.ddd.repository.DataContext;
+import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.util.EmptyEventArgs;
 import apros.codeart.util.EventHandler;
 

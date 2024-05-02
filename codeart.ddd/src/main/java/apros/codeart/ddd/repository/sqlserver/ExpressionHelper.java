@@ -6,9 +6,9 @@ import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.access.DataTable;
 import apros.codeart.ddd.repository.access.DataTableType;
 import apros.codeart.ddd.repository.access.GeneratedField;
-import apros.codeart.ddd.repository.access.SqlDefinition;
-import apros.codeart.ddd.repository.access.SqlStatement;
 import apros.codeart.ddd.repository.access.TempDataTableIndex;
+import apros.codeart.ddd.repository.access.internal.SqlDefinition;
+import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.util.StringUtil;
 
 /**

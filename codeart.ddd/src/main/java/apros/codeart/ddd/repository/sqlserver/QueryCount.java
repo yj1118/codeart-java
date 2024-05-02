@@ -4,7 +4,7 @@ import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.access.DataTable;
 import apros.codeart.ddd.repository.access.QueryCountQB;
-import apros.codeart.ddd.repository.access.SqlDefinition;
+import apros.codeart.ddd.repository.access.internal.SqlDefinition;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess

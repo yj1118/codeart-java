@@ -1,4 +1,4 @@
-package apros.codeart.ddd.repository.access;
+package apros.codeart.ddd.repository.access.internal;
 
 import static apros.codeart.runtime.Util.propagate;
 
@@ -13,9 +13,10 @@ import java.util.function.Function;
 import com.google.common.collect.Iterables;
 
 import apros.codeart.ddd.MapData;
-import apros.codeart.ddd.repository.access.QueryFilter.IQueryFilter;
-import apros.codeart.ddd.repository.access.QueryFilter.Row;
-import apros.codeart.ddd.repository.access.QueryFilter.Rows;
+import apros.codeart.ddd.cqrs.internal.Forker;
+import apros.codeart.ddd.repository.access.internal.QueryFilter.IQueryFilter;
+import apros.codeart.ddd.repository.access.internal.QueryFilter.Row;
+import apros.codeart.ddd.repository.access.internal.QueryFilter.Rows;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.LazyIndexer;
 
@@ -31,12 +32,16 @@ public final class QueryRunner {
 	 * @param conn
 	 * @param sql
 	 */
-	public static void execute(Connection conn, String sql) {
+	public static void execute(Connection conn, String sql, boolean fork) {
 
 		try (var stmt = conn.createStatement()) {
 			stmt.execute(sql);
 		} catch (SQLException e) {
 			throw propagate(e);
+		}
+
+		if (fork) {
+			Forker.dispatch(sql, null);
 		}
 	}
 
@@ -49,13 +54,20 @@ public final class QueryRunner {
 	 * @param param
 	 * @return
 	 */
-	public static int execute(Connection conn, String sql, MapData param) {
+	public static int execute(Connection conn, String sql, MapData param, boolean fork) {
 
 		try (PreparedStatement pstmt = getStatement(conn, sql, param);) {
-			return pstmt.executeUpdate();
+			var count = pstmt.executeUpdate();
+
+			if (fork) {
+				Forker.dispatch(sql, param);
+			}
+
+			return count;
 		} catch (SQLException e) {
 			throw propagate(e);
 		}
+
 	}
 
 	public static Object queryScalar(Connection conn, String sql, MapData param) {

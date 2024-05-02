@@ -51,5 +51,8 @@
 			"folder":"",
 			"retain":30
 		}
+	},
+	"cqrs":{
+		"fork":true
 	}
 }
