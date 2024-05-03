@@ -17,6 +17,7 @@ import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.EventHandler;
 import apros.codeart.util.INullProxy;
 import apros.codeart.util.LazyIndexer;
+import apros.codeart.util.ListUtil;
 
 /*
  * 
@@ -714,6 +715,13 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 		if (this.isEmpty())
 			throw new DomainDrivenException(
 					Language.strings("codeart.ddd", "EmptyReadOnly", this.getClass().getName()));
+	}
+
+	public DTObject getData() {
+		return getData(this, (obj) -> {
+			var meta = ObjectMetaLoader.get(obj.getClass());
+			return ListUtil.map(meta.properties(), (p) -> p.name());
+		});
 	}
 
 //	region 辅助方法
