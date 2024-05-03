@@ -14,9 +14,9 @@ public enum StatusEventType {
 	/// </summary>
 	Changed((byte) 2),
 
-	/// <summary>
-	/// 提交新增操作到仓储之前
-	/// </summary>
+	/**
+	 * 提交新增操作到仓储之前
+	 */
 	PreAdd((byte) 3),
 
 	/// <summary>

@@ -14,6 +14,7 @@ import apros.codeart.ddd.StatusEvent;
 import apros.codeart.ddd.StatusEventType;
 import apros.codeart.ddd.ValidationException;
 import apros.codeart.ddd.ValidationResult;
+import apros.codeart.ddd.cqrs.internal.Forker;
 import apros.codeart.ddd.repository.access.DataAccess;
 import apros.codeart.ddd.repository.access.DataConnection;
 import apros.codeart.i18n.Language;
@@ -233,14 +234,17 @@ public class DataContext implements IDataContext {
 		case ScheduledActionType.Create:
 			action.target().onAddPreCommit();
 			statusEventExecute(StatusEventType.AddPreCommit, action.target());
+			Forker.notifyAdd(action.target());
 			break;
 		case ScheduledActionType.Update:
 			action.target().onUpdatePreCommit();
 			statusEventExecute(StatusEventType.UpdatePreCommit, action.target());
+			Forker.notifyUpdate(action.target());
 			break;
 		case ScheduledActionType.Delete:
 			action.target().onDeletePreCommit();
 			statusEventExecute(StatusEventType.DeletePreCommit, action.target());
+			Forker.notifyDelete(action.target());
 			break;
 		}
 	}

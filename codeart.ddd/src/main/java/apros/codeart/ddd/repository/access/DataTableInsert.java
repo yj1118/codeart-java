@@ -51,7 +51,7 @@ final class DataTableInsert {
 	private MapData insertData(DomainObject root, DomainObject parent, DomainObject obj) {
 		var data = getInsertData(root, parent, obj);
 
-		DataAccess.getCurrent().execute(this.sqlInsert(), data, _self.root().name());
+		DataAccess.getCurrent().execute(this.sqlInsert(), data);
 
 		return data;
 	}
@@ -184,7 +184,7 @@ final class DataTableInsert {
 				data.put(slaveIdName, slaveId);
 				data.put(GeneratedField.OrderIndexName, index);
 
-				DataAccess.getCurrent().execute(this.sqlInsert(), data, _self.root().name());
+				DataAccess.getCurrent().execute(this.sqlInsert(), data);
 				index++;
 			}
 		} else {
@@ -218,7 +218,7 @@ final class DataTableInsert {
 				data.put(rootIdName, rootId);
 				data.put(GeneratedField.PrimitiveValueName, value);
 				data.put(GeneratedField.OrderIndexName, index);
-				DataAccess.getCurrent().execute(this.sqlInsert(), data, _self.root().name());
+				DataAccess.getCurrent().execute(this.sqlInsert(), data);
 				index++;
 			}
 		} else {
@@ -231,7 +231,7 @@ final class DataTableInsert {
 				data.put(masterIdName, masterId);
 				data.put(GeneratedField.PrimitiveValueName, value);
 				data.put(GeneratedField.OrderIndexName, index);
-				DataAccess.getCurrent().execute(this.sqlInsert(), data, _self.root().name());
+				DataAccess.getCurrent().execute(this.sqlInsert(), data);
 				index++;
 			}
 		}

@@ -13,7 +13,6 @@ import java.util.function.Function;
 import com.google.common.collect.Iterables;
 
 import apros.codeart.ddd.MapData;
-import apros.codeart.ddd.cqrs.internal.Forker;
 import apros.codeart.ddd.repository.access.internal.QueryFilter.IQueryFilter;
 import apros.codeart.ddd.repository.access.internal.QueryFilter.Row;
 import apros.codeart.ddd.repository.access.internal.QueryFilter.Rows;
@@ -32,16 +31,12 @@ public final class QueryRunner {
 	 * @param conn
 	 * @param sql
 	 */
-	public static void execute(Connection conn, String sql, String forkAggregate) {
+	public static void execute(Connection conn, String sql) {
 
 		try (var stmt = conn.createStatement()) {
 			stmt.execute(sql);
 		} catch (SQLException e) {
 			throw propagate(e);
-		}
-
-		if (forkAggregate != null) {
-			Forker.dispatch(forkAggregate, sql, null);
 		}
 	}
 
@@ -54,16 +49,10 @@ public final class QueryRunner {
 	 * @param param
 	 * @return
 	 */
-	public static int execute(Connection conn, String sql, MapData param, String forkAggregate) {
+	public static int execute(Connection conn, String sql, MapData param) {
 
 		try (PreparedStatement pstmt = getStatement(conn, sql, param);) {
-			var count = pstmt.executeUpdate();
-
-			if (forkAggregate != null) {
-				Forker.dispatch(forkAggregate, sql, param);
-			}
-
-			return count;
+			return pstmt.executeUpdate();
 		} catch (SQLException e) {
 			throw propagate(e);
 		}

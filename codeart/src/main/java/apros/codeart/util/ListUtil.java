@@ -28,10 +28,6 @@ public final class ListUtil {
 		return null;
 	}
 
-	public static <T> boolean contains(Iterable<T> source, Function<T, Boolean> predicate) {
-		return find(source, predicate) != null;
-	}
-
 	public static <T> Iterable<T> filter(Iterable<T> source, Function<T, Boolean> predicate) {
 		ArrayList<T> items = null;
 		for (T item : source) {
@@ -70,6 +66,10 @@ public final class ListUtil {
 				return true;
 		}
 		return false;
+	}
+
+	public static <T> boolean contains(Iterable<T> source, Function<T, Boolean> predicate) {
+		return find(source, predicate) != null;
 	}
 
 	public static <T> boolean contains(Iterable<T> source, T value, BiFunction<T, T, Boolean> equals) {

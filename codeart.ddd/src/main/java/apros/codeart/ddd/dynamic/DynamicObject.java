@@ -76,34 +76,13 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public DTObject getData() {
-		var data = DTObject.editable();
-		for (var property : this.properties()) {
-			var value = this.getValue(property);
-			var obj = TypeUtil.as(value, DynamicObject.class);
-			if (obj != null) {
-				value = obj.getData(); // 对象
-				data.setValue(property.name(), value);
-				continue;
-			}
-
-			var list = TypeUtil.as(value, Iterable.class);
-			if (list != null) {
-				// 集合
-				data.push(property.name(), list, (item) -> {
-					var o = TypeUtil.as(item, DynamicObject.class);
-					if (o != null)
-						return o.getData();
-
-					return DTObject.value(item);
-				});
-				continue;
-			}
-
-			data.setValue(property.name(), value); // 值
-		}
-		return data;
+		return DomainObject.getData(this, (obj) -> {
+			var meta = ObjectMetaLoader.get(this.getClass());
+			return ListUtil.map(meta.properties(), (propertyMeta) -> {
+				return propertyMeta.name();
+			});
+		});
 	}
 
 	private Object getObjectValue(DomainProperty property, DTObject value) {

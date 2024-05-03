@@ -1,20 +1,16 @@
 package apros.codeart.ddd;
 
-import apros.codeart.ddd.remotable.internal.RemotePortal;
 import apros.codeart.ddd.repository.RepositoryEventArgs;
 import apros.codeart.ddd.repository.RepositoryRollbackEventArgs;
 import apros.codeart.util.EventHandler;
-import apros.codeart.util.IEventObserver;
 
 @MergeDomain
 @FrameworkDomain
-public abstract class AggregateRoot extends EntityObject
-		implements IAggregateRoot, IEventObserver<RepositoryEventArgs> {
+public abstract class AggregateRoot extends EntityObject implements IAggregateRoot {
 
 	private AggregateRootEventManager _eventManager;
 
 	public AggregateRoot() {
-		initRemotable();
 		_eventManager = new AggregateRootEventManager(this);
 		this.onConstructed();
 	}
@@ -137,54 +133,6 @@ public abstract class AggregateRoot extends EntityObject
 
 	protected void onceRepositoryCallback(Runnable action) {
 		_eventManager.onceRepositoryCallback(action);
-	}
-
-//	region 内聚根可以具有远程能力
-
-	public boolean remotable() {
-		return this.meta().remotable();
-	}
-
-/// <summary>
-/// 初始化对象的远程能力
-/// </summary>
-	private void initRemotable() {
-		if (this.remotable()) {
-			// 指示了对象具备远程能力
-			this.updatePreCommit().add(this);
-			this.deletePreCommit().add(this);
-		}
-	}
-
-	// 以下要通过数据湖发送，否则会有BUG，比如断电 todo
-	public void handle(Object sender, RepositoryEventArgs args) {
-		switch (args.eventType()) {
-
-		case StatusEventType.UpdatePreCommit: {
-			notifyUpdated(sender, args);
-			break;
-		}
-
-		case StatusEventType.DeletePreCommit: {
-			notifyDeleted(sender, args);
-			break;
-		}
-
-		default:
-			break;
-
-		}
-
-	}
-
-	private static void notifyUpdated(Object sender, RepositoryEventArgs e) {
-		var target = e.target();
-		RemotePortal.notifyUpdated(target.getClass(), target.getIdentity());
-	}
-
-	private static void notifyDeleted(Object sender, RepositoryEventArgs e) {
-		var target = e.target();
-		RemotePortal.notifyDeleted(target.getClass(), target.getIdentity());
 	}
 
 }

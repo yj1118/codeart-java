@@ -53,7 +53,10 @@
 		}
 	},
 	"cqrs":{
-		"master":["*","user","-account"],
+		"master":{
+			"user":["id","name","account"],
+			"account":["createTime"]
+		},
 		"slave":["user"]
 	}
 }
