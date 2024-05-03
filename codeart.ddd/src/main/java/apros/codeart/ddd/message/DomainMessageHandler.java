@@ -20,6 +20,9 @@ public abstract class DomainMessageHandler implements IEventHandler {
 //			return;
 
 		var msgId = info.getString("id");
+
+		// 消息幂等性判断,todo...
+
 		var content = info.getObject("body");
 
 		process(eventName, msgId, content);

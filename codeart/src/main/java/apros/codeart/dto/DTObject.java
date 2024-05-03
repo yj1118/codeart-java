@@ -614,7 +614,7 @@ public class DTObject implements INullProxy {
 	private <T> Iterable<T> getValues(Class<T> itemClass, String findExp, T itemDefaultValue, boolean throwError) {
 		DTEList entity = find(DTEList.class, findExp, throwError);
 		if (entity == null)
-			return ListUtil.empty();
+			return null;
 		return entity.getValues(itemClass, itemDefaultValue, throwError);
 	}
 
@@ -749,6 +749,13 @@ public class DTObject implements INullProxy {
 		}
 	}
 
+	/**
+	 * 
+	 * 以键值对得形式遍历对象，请注意 {@findExp} 对应的成员必须为对象类型
+	 * 
+	 * @param findExp
+	 * @param action
+	 */
 	public void each(String findExp, BiConsumer<String, Object> action) {
 		var eo = TypeUtil.as(_root.find(findExp), DTEObject.class);
 		if (eo == null)

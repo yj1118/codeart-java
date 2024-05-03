@@ -20,12 +20,27 @@ class ReceiveChangedHandler extends DomainMessageHandler {
 	@Override
 	public void process(String msgName, String msgId, DTObject content) {
 
+		var type = content.getByte("type");
 		var aggregate = content.getString("agg");
 
-		// 如果本地有此聚合，那么表示订阅了*，把自己也订阅了，所以不处理
-		if (ObjectMetaLoader.exists(aggregate))
+		if (type == ForkType.DB.getValue()) {
+			forkDB(aggregate, content);
 			return;
+		}
 
+	}
+
+	private static void forkDB(String aggregate, DTObject content) {
+
+		if (ObjectMetaLoader.exists(aggregate)) {
+			// 如果本地有此聚合，那么表示订阅了*，把自己也订阅了，所以不再自动入库
+			return;
+		}
+
+		var branch = BranchFactory.create();
+
+		var store = true;
+		// 自动入库
 		var sql = content.getString("sql");
 
 		if (content.exist("data")) {
@@ -41,9 +56,6 @@ class ReceiveChangedHandler extends DomainMessageHandler {
 				access.execute(sql);
 			});
 		}
-
-		// 分发处理handler，用户注册了就处理，否则不处理
-		todo
 	}
 
 	public static final ReceiveChangedHandler instance = new ReceiveChangedHandler();

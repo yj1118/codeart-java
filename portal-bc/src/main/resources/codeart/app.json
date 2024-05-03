@@ -53,7 +53,7 @@
 		}
 	},
 	"cqrs":{
-		"master":true,
-		"slave":["*"]
+		"master":["*","user","-account"],
+		"slave":["user"]
 	}
 }

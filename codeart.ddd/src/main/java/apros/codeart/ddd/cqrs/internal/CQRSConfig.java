@@ -1,7 +1,11 @@
 package apros.codeart.ddd.cqrs.internal;
 
+import java.util.ArrayList;
+
 import apros.codeart.AppConfig;
+import apros.codeart.ddd.metadata.MetadataLoader;
 import apros.codeart.dto.DTObject;
+import apros.codeart.util.ListUtil;
 
 public final class CQRSConfig {
 
@@ -9,14 +13,45 @@ public final class CQRSConfig {
 
 	}
 
-	private static boolean _master;
+	private static ArrayList<String> _master;
 
-	public static boolean master() {
+	public static Iterable<String> master() {
 		return _master;
 	}
 
 	private static void init(DTObject config) {
-		_master = config.getBoolean("master", false);
+		loadMaster(config);
+	}
+
+	private static void loadMaster(DTObject config) {
+		_master = new ArrayList<String>();
+
+		var temp = config.getStrings("master");
+		if (temp == null)
+			return;
+
+		for (var item : temp) {
+			if (item.equalsIgnoreCase("*")) {
+				for (var domainType : MetadataLoader.getDomainTypes()) {
+					if (_master.contains(domainType.getSimpleName()))
+						return;
+					_master.add(domainType.getSimpleName());
+				}
+				break;
+			}
+
+			if (item.startsWith("-")) {
+				var name = item.substring(1);
+				ListUtil.removeFirst(_master, (t) -> t.equalsIgnoreCase(name));
+				break;
+			}
+			
+			
+			if (_master.contains(item))
+				return;
+			_master.add(item);
+		}
+
 	}
 
 	private static DTObject _section;
@@ -32,7 +67,7 @@ public final class CQRSConfig {
 			init(_section);
 		} else {
 			_section = DTObject.Empty;
-			_master = false;
+			_master = new ArrayList<String>();
 		}
 
 	}
