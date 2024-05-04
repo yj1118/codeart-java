@@ -6,8 +6,10 @@ import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.internal.DTOMapper;
 import apros.codeart.ddd.message.DomainMessage;
+import apros.codeart.ddd.metadata.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
+import apros.codeart.mq.rpc.server.RPCServer;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;
 
@@ -21,7 +23,7 @@ public final class Forker {
 		});
 	});
 
-	private static Master findMaster(String objTypeName, boolean throwError) {
+	public static Master findMaster(String objTypeName, boolean throwError) {
 		var master = _findMaster.apply(objTypeName);
 		if (master == null && throwError) {
 			throw new IllegalStateException(Language.strings("codeart.ddd", "NoMaster", objTypeName));
@@ -100,6 +102,17 @@ public final class Forker {
 
 		var messageName = ActionName.objectUpdated(objectType);
 		DomainMessage.send(messageName, content);
+	}
+
+	public static void initialize() {
+		// 开启获取远程对象的元数据的的rpc服务
+		var masters = CQRSConfig.masters();
+
+		for (var master : masters) {
+			var objectType = ObjectMetaLoader.get(master.name()).objectType();
+			RPCServer.initialize(ActionName.getObjectMeta(objectType), GetObjectMeta.instance);
+		}
+
 	}
 
 //	/**

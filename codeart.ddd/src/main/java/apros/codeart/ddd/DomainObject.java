@@ -12,6 +12,7 @@ import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.ObjectMeta;
 import apros.codeart.ddd.metadata.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
+import apros.codeart.dto.serialization.IDTOSerializable;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.FieldUtil;
 import apros.codeart.runtime.TypeUtil;
@@ -36,7 +37,7 @@ import apros.codeart.util.LazyIndexer;
  * 
  * 
  */
-public abstract class DomainObject implements IDomainObject, INullProxy {
+public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSerializable {
 
 	private ObjectMeta _meta;
 
@@ -729,13 +730,6 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 					Language.strings("codeart.ddd", "EmptyReadOnly", this.getClass().getName()));
 	}
 
-	public DTObject save() {
-		return DTOMapper.toDTO(this, (obj) -> {
-			var meta = ObjectMetaLoader.get(obj.getClass());
-			return meta.properties();
-		}, (p) -> p.name());
-	}
-
 //	region 辅助方法
 
 	/**
@@ -778,4 +772,21 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 	public void load(DTObject data) {
 		DTOMapper.load(this, data);
 	}
+
+	@Override
+	public void serialize(DTObject owner, String name) {
+		if (this.isEmpty())
+			return;
+		// 一次性使用this.getData(),所以可以用combineObject，性能高
+		owner.combineObject(name, this.getData());
+	}
+
+	@Override
+	public DTObject getData() {
+		return DTOMapper.toDTO(this, (obj) -> {
+			var meta = ObjectMetaLoader.get(obj.getClass());
+			return meta.properties();
+		}, (p) -> p.name());
+	}
+
 }

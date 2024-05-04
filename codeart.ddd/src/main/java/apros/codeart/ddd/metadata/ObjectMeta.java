@@ -6,11 +6,12 @@ import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.FrameworkDomain;
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.IDomainObject;
-import apros.codeart.ddd.IDynamicObject;
 import apros.codeart.ddd.IEntityObject;
 import apros.codeart.ddd.IObjectValidator;
 import apros.codeart.ddd.IValueObject;
 import apros.codeart.ddd.MergeDomain;
+import apros.codeart.ddd.dynamic.IDynamicObject;
+import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.ListUtil;
@@ -75,12 +76,6 @@ public class ObjectMeta {
 		return _repositoryTip;
 	}
 
-	private String _schemeCode;
-
-	public String schemeCode() {
-		return _schemeCode;
-	}
-
 	ObjectMeta(String name, Class<?> objectType, DomainObjectCategory category, Iterable<IObjectValidator> validators,
 			ObjectRepositoryTip repositoryTip) {
 		_name = name;
@@ -91,9 +86,12 @@ public class ObjectMeta {
 		_repositoryTip = repositoryTip;
 	}
 
-	void loadComplete() {
-		// 当对象元数据的基本信息全部加载完后，触发该方法
-		_schemeCode = SchemeCode.get(this);
+	public DTObject toDTO() {
+		return SchemeCode.get(this);
+	}
+
+	public DTObject toDTO(Iterable<String> propertyNames) {
+		return SchemeCode.get(this, propertyNames);
 	}
 
 	@Override

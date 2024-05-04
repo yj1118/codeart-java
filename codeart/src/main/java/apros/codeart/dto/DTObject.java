@@ -493,9 +493,16 @@ public class DTObject implements INullProxy {
 	 * @param obj
 	 */
 	public void combineObject(String findExp, DTObject obj) {
+
+		validateReadOnly();
+
 		if (obj == null)
 			return;
-		validateReadOnly();
+
+		if (obj.isReadOnly()) {
+			this.setObject(findExp, obj);
+			return;
+		}
 
 		if (StringUtil.isNullOrEmpty(findExp)) {
 			_root = (DTEObject) obj.getRoot();
@@ -657,12 +664,14 @@ public class DTObject implements INullProxy {
 		return entity.getObjects();
 	}
 
-	/// <summary>
-	/// 向集合追加一个成员
-	/// </summary>
-	/// <param name="findExp"></param>
-	/// <param name="member"></param>
-	private void push(String findExp, DTObject member) {
+	/**
+	 * 
+	 * 向集合追加一个成员
+	 * 
+	 * @param findExp
+	 * @param member
+	 */
+	public void push(String findExp, DTObject member) {
 		validateReadOnly();
 
 		DTEList entity = getOrCreateList(findExp);

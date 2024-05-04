@@ -1,8 +1,10 @@
 {
-	"user": {
-		"name": {
-			"length": {"min":1,"max":2},
-			"required": true
+	"objects":[
+		{
+			"name":"user",
+			"pros":[{
+				"name":"name"
+			}]
 		}
-	}
+	]
 }

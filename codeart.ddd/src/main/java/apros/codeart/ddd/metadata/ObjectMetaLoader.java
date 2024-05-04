@@ -3,14 +3,13 @@ package apros.codeart.ddd.metadata;
 import static apros.codeart.i18n.Language.strings;
 import static apros.codeart.runtime.Util.propagate;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import apros.codeart.ddd.DerivedClassImpl;
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.IDomainObject;
 import apros.codeart.ddd.ObjectValidatorImpl;
-import apros.codeart.ddd.remotable.internal.RemotableImpl;
 import apros.codeart.ddd.repository.ObjectRepositoryImpl;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.FieldUtil;
@@ -21,7 +20,8 @@ public final class ObjectMetaLoader {
 	private ObjectMetaLoader() {
 	}
 
-	private static Map<String, ObjectMeta> _metas = new HashMap<>();
+	// 数据量不大，又不需要区分大小写，所以用 TreeMap<>(String.CASE_INSENSITIVE_ORDER)
+	private static Map<String, ObjectMeta> _metas = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	private static ObjectMeta create(Class<?> domainType) {
 		var typeName = domainType.getSimpleName();
@@ -34,7 +34,6 @@ public final class ObjectMetaLoader {
 		var name = objectType.getSimpleName();
 		var category = getCategory(objectType);
 		var validators = ObjectValidatorImpl.getValidators(objectType);
-		var remotable = RemotableImpl.has(objectType);
 
 		ObjectRepositoryTip repositoryTip = null;
 		var repository = ObjectRepositoryImpl.getTip(objectType, false);
@@ -43,7 +42,7 @@ public final class ObjectMetaLoader {
 					repository.closeMultiTenancy());
 		}
 
-		return new ObjectMeta(name, objectType, category, validators, remotable, repositoryTip);
+		return new ObjectMeta(name, objectType, category, validators, repositoryTip);
 	}
 
 	/**
@@ -94,11 +93,11 @@ public final class ObjectMetaLoader {
 			DerivedClassImpl.init(domainType);
 		}
 
-		// 全部执行完毕后，再触发ObjectMeta完成加载的方法
-		for (var domainType : domainTypes) {
-			var meta = get(domainType);
-			meta.loadComplete();
-		}
+//		// 全部执行完毕后，再触发ObjectMeta完成加载的方法
+//		for (var domainType : domainTypes) {
+//			var meta = get(domainType);
+//			meta.loadComplete();
+//		}
 
 	}
 

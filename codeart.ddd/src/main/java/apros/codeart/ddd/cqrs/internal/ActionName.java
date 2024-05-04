@@ -9,6 +9,21 @@ final class ActionName {
 	private ActionName() {
 	}
 
+	/**
+	 * 
+	 * 对象已更新的事件
+	 * 
+	 * @param type
+	 * @return
+	 */
+	public static String getObjectMeta(Class<?> type) {
+		return _getObjectMeta.apply(type);
+	}
+
+	private static Function<Class<?>, String> _getObjectMeta = LazyIndexer.init((type) -> {
+		return String.format("d:cqrs-get%sMeta", StringUtil.firstToLower(type.getSimpleName()));
+	});
+
 //	public static String getObject(Class<?> type) {
 //		return _getObject.apply(type);
 //	}
@@ -32,7 +47,7 @@ final class ActionName {
 	}
 
 	private static Function<Class<?>, String> _getObjectAdded = LazyIndexer.init((type) -> {
-		return String.format("d:cqrs-{0}Added", StringUtil.firstToLower(type.getSimpleName()));
+		return String.format("d:cqrs-%sAdded", StringUtil.firstToLower(type.getSimpleName()));
 	});
 
 	/**
@@ -47,7 +62,7 @@ final class ActionName {
 	}
 
 	private static Function<Class<?>, String> _getObjectUpdated = LazyIndexer.init((type) -> {
-		return String.format("d:cqrs-{0}Updated", StringUtil.firstToLower(type.getSimpleName()));
+		return String.format("d:cqrs-%sUpdated", StringUtil.firstToLower(type.getSimpleName()));
 	});
 
 	/// <summary>
@@ -60,7 +75,7 @@ final class ActionName {
 	}
 
 	private static Function<Class<?>, String> _getObjectDeleted = LazyIndexer.init((type) -> {
-		return String.format("d:cqrs-{0}Deleted", StringUtil.firstToLower(type.getSimpleName()));
+		return String.format("d:cqrs-%sDeleted", StringUtil.firstToLower(type.getSimpleName()));
 	});
 
 }

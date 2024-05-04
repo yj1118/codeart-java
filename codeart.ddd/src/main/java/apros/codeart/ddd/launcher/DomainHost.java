@@ -1,6 +1,7 @@
 package apros.codeart.ddd.launcher;
 
 import apros.codeart.ddd.DomainDrivenException;
+import apros.codeart.ddd.cqrs.internal.Forker;
 import apros.codeart.ddd.cqrs.internal.RemoteService;
 import apros.codeart.ddd.message.internal.MessageHost;
 import apros.codeart.ddd.metadata.MetadataLoader;
@@ -46,6 +47,9 @@ final class DomainHost {
 
 		// 领域消息的初始化
 		MessageHost.initialize();
+
+		// 复刻数据初始化
+		Forker.initialize();
 	}
 
 	/**
