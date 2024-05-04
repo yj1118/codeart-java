@@ -1,50 +1,64 @@
 package apros.codeart.ddd.cqrs.internal;
 
-import static apros.codeart.i18n.Language.strings;
+import java.util.function.Function;
 
 import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.IAggregateRoot;
+import apros.codeart.ddd.internal.DTOMapper;
+import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.dto.DTObject;
+import apros.codeart.i18n.Language;
+import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;
 
 public final class Forker {
 	private Forker() {
 	}
 
-	private static Master findMaster(String aggregate) {
+	private static Function<String, Master> _findMaster = LazyIndexer.init((objTypeName) -> {
 		return ListUtil.find(CQRSConfig.masters(), (m) -> {
-			return m.name().equalsIgnoreCase(aggregate);
+			return m.name().equalsIgnoreCase(objTypeName);
 		});
+	});
+
+	private static Master findMaster(String objTypeName, boolean throwError) {
+		var master = _findMaster.apply(objTypeName);
+		if (master == null && throwError) {
+			throw new IllegalStateException(Language.strings("codeart.ddd", "NoMaster", objTypeName));
+		}
+
+		return master;
 	}
 
-	private static Master findMaster(Object obj) {
+	private static Master findMaster(Object obj, boolean throwError) {
 		var aggregate = obj.getClass().getSimpleName();
-		return findMaster(aggregate);
+		return findMaster(aggregate, throwError);
 	}
 
 	public static boolean isEnabled(Object obj) {
-		return findMaster(obj) != null;
+		return findMaster(obj, false) != null;
 	}
 
-	public static boolean isEnabled(String aggregate) {
-		return findMaster(aggregate) != null;
-	}
-
-	private static DTObject getData(IAggregateRoot root) {
-		return DomainObject.getData((DomainObject) root, (obj) -> {
-			var master = findMaster(obj);
-			if (master == null)
-				throw new IllegalStateException(strings("codeart.ddd", "NoMaster", obj.getClass().getSimpleName()));
-
-			return master.members();
-		});
+	public static boolean isEnabled(String objTypeName) {
+		return findMaster(objTypeName, false) != null;
 	}
 
 	public static void notifyAdd(IAggregateRoot root) {
 		if (!isEnabled(root))
 			return;
 
-		var data = getData(root);
+		var data = DTOMapper.toDTO((DomainObject) root, (obj) -> {
+			var master = findMaster(obj, true);
+			return master.members();
+		});
+
+		var objectType = root.getClass();
+		var content = DTObject.editable();
+		content.setString("typeName", objectType.getSimpleName());
+		content.combineObject("data", data);
+
+		var messageName = ActionName.objectAdded(objectType);
+		DomainMessage.send(messageName, content);
 
 	}
 
@@ -52,8 +66,25 @@ public final class Forker {
 		if (!isEnabled(root))
 			return;
 
-		var data = getData(root);
+		var data = DTOMapper.toDTO((DomainObject) root, (obj) -> {
+			var master = findMaster(obj, true);
+			if (obj == root) {
+				// 只收集更改了的属性
+				return ListUtil.filter(master.members(), (member) -> {
+					return obj.isPropertyChanged(member);
+				});
+			}
 
+			return master.members();
+		});
+
+		var objectType = root.getClass();
+		var content = DTObject.editable();
+		content.setString("typeName", objectType.getSimpleName());
+		content.combineObject("data", data);
+
+		var messageName = ActionName.objectUpdated(objectType);
+		DomainMessage.send(messageName, content);
 	}
 
 	public static void notifyDelete(IAggregateRoot root) {
@@ -61,6 +92,14 @@ public final class Forker {
 			return;
 
 		var id = root.getIdentity();
+
+		var objectType = root.getClass();
+		var content = DTObject.editable();
+		content.setString("typeName", objectType.getSimpleName());
+		content.setValue("id", id);
+
+		var messageName = ActionName.objectUpdated(objectType);
+		DomainMessage.send(messageName, content);
 	}
 
 //	/**

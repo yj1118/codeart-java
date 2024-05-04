@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import com.google.common.base.Preconditions;
 
+import apros.codeart.ddd.internal.DTOMapper;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.ObjectMeta;
 import apros.codeart.ddd.metadata.ObjectMetaLoader;
@@ -17,7 +18,6 @@ import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.EventHandler;
 import apros.codeart.util.INullProxy;
 import apros.codeart.util.LazyIndexer;
-import apros.codeart.util.ListUtil;
 
 /*
  * 
@@ -473,6 +473,18 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 
 	/**
 	 * 
+	 * 该方法将 {@value} 的值加载到属性 {@propertyName} 中，不会触发业务事件，仅用作装载数据用
+	 * 
+	 * @param propertyName
+	 * @param value
+	 */
+	public void loadValue(String propertyName, Object value) {
+		var oldValue = this.dataProxy().load(propertyName);
+		this.dataProxy().save(propertyName, value, oldValue);
+	}
+
+	/**
+	 * 
 	 * 该方法虽然是公开的，但是 {@code property} 都是由类内部定义的，所以获取值和设置值只能通过常规的属性操作，无法通过该方法
 	 * 
 	 * @param property
@@ -717,11 +729,11 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 					Language.strings("codeart.ddd", "EmptyReadOnly", this.getClass().getName()));
 	}
 
-	public DTObject getData() {
-		return getData(this, (obj) -> {
+	public DTObject save() {
+		return DTOMapper.toDTO(this, (obj) -> {
 			var meta = ObjectMetaLoader.get(obj.getClass());
-			return ListUtil.map(meta.properties(), (p) -> p.name());
-		});
+			return meta.properties();
+		}, (p) -> p.name());
 	}
 
 //	region 辅助方法
@@ -760,128 +772,10 @@ public abstract class DomainObject implements IDomainObject, INullProxy {
 		return objectType.getSimpleName().endsWith("Empty");// 为了不触发得到空对象带来的连锁构造，我们简单的认为空对象的名称末尾是 Empty即可，这也是CA的空对象定义约定
 	}
 
-	@SuppressWarnings("unchecked")
-	public static DTObject getData(DomainObject target, Function<DomainObject, Iterable<String>> getPropertyNames) {
-		var properties = getPropertyNames.apply(target);
-
-		var data = DTObject.editable();
-		for (var property : properties) {
-			var value = target.getValue(property);
-			var obj = TypeUtil.as(value, DomainObject.class);
-			if (obj != null) {
-				value = getData(obj, getPropertyNames); // 对象
-				data.setValue(property, value);
-				continue;
-			}
-
-			var list = TypeUtil.as(value, Iterable.class);
-			if (list != null) {
-				// 集合
-				data.push(property, list, (item) -> {
-					var o = TypeUtil.as(item, DomainObject.class);
-					if (o != null)
-						return getData(o, getPropertyNames); // 对象
-
-					return DTObject.value(item);
-				});
-				continue;
-			}
-
-			data.setValue(property, value); // 值
-		}
-		return data;
+	/**
+	 * 从dto中加载数据
+	 */
+	public void load(DTObject data) {
+		DTOMapper.load(this, data);
 	}
-
-//	/**
-//	 * 从dto中加载数据
-//	 */
-//	@SuppressWarnings("unchecked")
-//	public void load(DTObject data) {
-//		for (var property : this.properties()) {
-//			var value = data.getValue(property.name(), false);
-//			if (value == null)
-//				continue;
-//
-//			var obj = TypeUtil.as(value, DTObject.class);
-//			if (obj != null) {
-//				this.setValue(property, getObjectValue(property, obj));
-//				continue;
-//			}
-//
-//			var objs = TypeUtil.as(value, Iterable.class);
-//			if (objs != null) {
-//				this.setValue(property, getListValue(property, objs));
-//				continue;
-//			}
-//			this.setValue(property, getPrimitiveValue(property, value));
-//		}
-//	}
-
-//	@SuppressWarnings("unchecked")
-//	public DTObject getData() {
-//		var data = DTObject.editable();
-//		for (var property : this.properties()) {
-//			var value = this.getValue(property);
-//			var obj = TypeUtil.as(value, DynamicObject.class);
-//			if (obj != null) {
-//				value = obj.getData(); // 对象
-//				data.setValue(property.name(), value);
-//				continue;
-//			}
-//
-//			var list = TypeUtil.as(value, Iterable.class);
-//			if (list != null) {
-//				// 集合
-//				data.push(property.name(), list, (item) -> {
-//					var o = TypeUtil.as(item, DynamicObject.class);
-//					if (o != null)
-//						return o.getData();
-//
-//					return DTObject.value(item);
-//				});
-//				continue;
-//			}
-//
-//			data.setValue(property.name(), value); // 值
-//		}
-//		return data;
-//	}
-//
-//	private Object getListValue(DomainProperty property, Iterable<DTObject> values) {
-//		var list = new DynamicCollection(property);
-//		list.setParent(this);
-//
-//		switch (property.category()) {
-//		case DomainPropertyCategory.AggregateRootList:
-//		case DomainPropertyCategory.EntityObjectList:
-//		case DomainPropertyCategory.ValueObjectList: {
-//			var elementType = property.monotype();
-//			for (DTObject value : values) {
-//				var obj = createInstance(elementType, value);
-//				list.add(obj);
-//			}
-//			return list;
-//		}
-//		case DomainPropertyCategory.PrimitiveList: {
-//			for (DTObject value : values) {
-//				if (!value.isSingleValue())
-//					throw new DomainDrivenException(
-//							Language.strings("DynamicObjectLoadError", this.getClass().getName()));
-//				list.add(value.getValue());
-//			}
-//			return list;
-//		}
-//		default:
-//			throw new DomainDrivenException(Language.strings("DynamicObjectLoadError", this.getClass().getName()));
-//		}
-//
-//	}
-//
-//	private Object getPrimitiveValue(DomainProperty property, Object value) {
-//		if (property.category() == DomainPropertyCategory.Primitive) {
-//			return PrimitiveUtil.convert(value, property.monotype());
-//		}
-//		throw new DomainDrivenException(Language.strings("DynamicObjectLoadError", this.getClass().getName()));
-//	}
-
 }

@@ -1,5 +1,6 @@
 package apros.codeart.ddd.remotable.internal;
 
+import apros.codeart.ddd.cqrs.internal.RemoteActionName;
 import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.remotable.RemoteObjectHandler;
 import apros.codeart.dto.DTObject;

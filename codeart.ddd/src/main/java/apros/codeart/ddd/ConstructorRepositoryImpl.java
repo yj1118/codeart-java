@@ -62,8 +62,13 @@ public class ConstructorRepositoryImpl {
 		return _parameters;
 	}
 
-	public static ConstructorRepositoryImpl getTip(Class<?> objectType) {
-		return _getTip.apply(objectType);
+	public static ConstructorRepositoryImpl getTip(Class<?> objectType, boolean throwError) {
+		var tip = _getTip.apply(objectType);
+		if (tip == null && throwError) {
+			throw new DomainDrivenException(
+					Language.strings("codeart.ddd", "NoRepositoryConstructor", objectType.getName()));
+		}
+		return tip;
 	}
 
 	private static Function<Class<?>, ConstructorRepositoryImpl> _getTip = LazyIndexer.init((objectType) -> {
@@ -75,8 +80,7 @@ public class ConstructorRepositoryImpl {
 			});
 
 			if (target == null) {
-				throw new DomainDrivenException(
-						Language.strings("codeart.ddd", "NoRepositoryConstructor", objectType.getName()));
+				return null;
 			}
 
 			return new ConstructorRepositoryImpl(target);

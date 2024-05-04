@@ -1,10 +1,10 @@
 package apros.codeart.ddd.launcher;
 
 import apros.codeart.ddd.DomainDrivenException;
+import apros.codeart.ddd.cqrs.internal.RemoteService;
 import apros.codeart.ddd.message.internal.MessageHost;
 import apros.codeart.ddd.metadata.MetadataLoader;
 import apros.codeart.ddd.remotable.internal.RemotableImpl;
-import apros.codeart.ddd.remotable.internal.RemoteService;
 import apros.codeart.ddd.repository.access.DataModelLoader;
 import apros.codeart.ddd.saga.internal.EventHost;
 import apros.codeart.i18n.Language;

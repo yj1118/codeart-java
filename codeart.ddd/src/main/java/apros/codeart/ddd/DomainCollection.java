@@ -202,4 +202,20 @@ public class DomainCollection<E> extends ArrayList<E>
 		markChanged();
 	}
 
+//	public static Object create(Class<?> elementType, DomainProperty propertyInParent) {
+//		try (var cg = ClassGenerator.define()) {
+//
+//			try (var mg = cg.defineMethodPublicStatic("getList", List.class)) {
+//				mg.newList().asReadonlyList();
+//			}
+//
+//			var cls = cg.toClass();
+//
+//			var method = cls.getDeclaredMethod("getList");
+//			return method.invoke(null);
+//		} catch (Exception e) {
+//			throw propagate(e);
+//		}
+//	}
+
 }

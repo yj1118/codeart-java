@@ -1,7 +1,8 @@
-package apros.codeart.ddd.remotable.internal;
+package apros.codeart.ddd.cqrs.internal;
 
 import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.remotable.RemoteObjectHandler;
+import apros.codeart.ddd.remotable.internal.RemotePortal;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.SafeAccess;
 

@@ -3,20 +3,14 @@ package apros.codeart.ddd.dynamic;
 import java.util.ArrayList;
 
 import apros.codeart.ddd.DDDConfig;
-import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.DomainObject;
-import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.FrameworkDomain;
 import apros.codeart.ddd.MergeDomain;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.ObjectMetaLoader;
 import apros.codeart.ddd.repository.ConstructorRepository;
 import apros.codeart.dto.DTObject;
-import apros.codeart.i18n.Language;
-import apros.codeart.runtime.Activator;
 import apros.codeart.runtime.TypeUtil;
-import apros.codeart.util.ListUtil;
-import apros.codeart.util.PrimitiveUtil;
 
 @MergeDomain
 @FrameworkDomain
@@ -39,130 +33,16 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 		this.onConstructed();
 	}
 
-	private Iterable<DomainProperty> _properties;
-
-	public Iterable<DomainProperty> properties() {
-		if (_properties == null) {
-			var meta = ObjectMetaLoader.get(this.getClass());
-			_properties = ListUtil.map(meta.properties(), (propertyMeta) -> {
-				return DomainProperty.getProperty(this.getClass(), propertyMeta.name());
-			});
-		}
-		return _properties;
-	}
-
-	/**
-	 * 从dto中加载数据
-	 */
-	@SuppressWarnings("unchecked")
-	public void load(DTObject data) {
-		for (var property : this.properties()) {
-			var value = data.getValue(property.name(), false);
-			if (value == null)
-				continue;
-
-			var obj = TypeUtil.as(value, DTObject.class);
-			if (obj != null) {
-				this.setValue(property, getObjectValue(property, obj));
-				continue;
-			}
-
-			var objs = TypeUtil.as(value, Iterable.class);
-			if (objs != null) {
-				this.setValue(property, getListValue(property, objs));
-				continue;
-			}
-			this.setValue(property, getPrimitiveValue(property, value));
-		}
-	}
-
-	public DTObject getData() {
-		return DomainObject.getData(this, (obj) -> {
-			var meta = ObjectMetaLoader.get(this.getClass());
-			return ListUtil.map(meta.properties(), (propertyMeta) -> {
-				return propertyMeta.name();
-			});
-		});
-	}
-
-	private Object getObjectValue(DomainProperty property, DTObject value) {
-		switch (property.category()) {
-		case DomainPropertyCategory.AggregateRoot:
-		case DomainPropertyCategory.EntityObject:
-		case DomainPropertyCategory.ValueObject: {
-
-			var objType = property.monotype();
-			return createInstance(objType, value);
-		}
-		default:
-			throw new DomainDrivenException(Language.strings("DynamicObjectLoadError", this.getClass().getName()));
-		}
-
-	}
-
-	private Object getListValue(DomainProperty property, Iterable<DTObject> values) {
-		var list = new DynamicCollection(property);
-		list.setParent(this);
-
-		switch (property.category()) {
-		case DomainPropertyCategory.AggregateRootList:
-		case DomainPropertyCategory.EntityObjectList:
-		case DomainPropertyCategory.ValueObjectList: {
-			var elementType = property.monotype();
-			for (DTObject value : values) {
-				var obj = createInstance(elementType, value);
-				list.add(obj);
-			}
-			return list;
-		}
-		case DomainPropertyCategory.PrimitiveList: {
-			for (DTObject value : values) {
-				if (!value.isSingleValue())
-					throw new DomainDrivenException(
-							Language.strings("DynamicObjectLoadError", this.getClass().getName()));
-				list.add(value.getValue());
-			}
-			return list;
-		}
-		default:
-			throw new DomainDrivenException(Language.strings("DynamicObjectLoadError", this.getClass().getName()));
-		}
-
-	}
-
-	private Object getPrimitiveValue(DomainProperty property, Object value) {
-		if (property.category() == DomainPropertyCategory.Primitive) {
-			return PrimitiveUtil.convert(value, property.monotype());
-		}
-		throw new DomainDrivenException(Language.strings("DynamicObjectLoadError", this.getClass().getName()));
-	}
-
-	/// <summary>
-	/// 以<paramref name="data"/>为数据格式创建前定义的类型的实例
-	/// </summary>
-	/// <param name="data"></param>
-	static DomainObject createInstance(Class<?> objectType, DTObject data) {
-		if (!objectType.isAssignableFrom(IDynamicObject.class)) {
-			throw new DomainDrivenException(Language.strings("NotSupportRefNative"));
-		}
-
-		if (data.isEmpty())
-			return DomainObject.getEmpty(objectType);
-		DynamicObject obj = (DynamicObject) Activator.createInstance(objectType);
-		// 加载数据
-		obj.load(data);
-		return obj;
-	}
-
 	/**
 	 * 将对象 {@target} 的数据同步到当前对象中
 	 * 
 	 * @param target
 	 */
 	public void sync(DynamicObject target) {
-		for (var property : this.properties()) {
-			var value = target.getValue(property);
-			this.setValue(property, value);
+		var meta = ObjectMetaLoader.get(this.getClass());
+		for (var property : meta.properties()) {
+			var value = target.getValue(property.name());
+			this.loadValue(property.name(), value);
 		}
 	}
 
@@ -185,10 +65,11 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 	 */
 	protected <T extends DynamicRoot> void fillRefRoots(ArrayList<T> roots, ArrayList<Object> processed,
 			Class<T> rootType) {
-		for (var property : this.properties()) {
+		var meta = ObjectMetaLoader.get(this.getClass());
+		for (var property : meta.properties()) {
 			switch (property.category()) {
 			case DomainPropertyCategory.AggregateRoot: {
-				var value = this.getValue(property);
+				var value = this.getValue(property.name());
 				if (processed.contains(value))
 					continue;
 				processed.add(value);
@@ -202,7 +83,7 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 				break;
 			case DomainPropertyCategory.EntityObject:
 			case DomainPropertyCategory.ValueObject: {
-				var value = this.getValue(property);
+				var value = this.getValue(property.name());
 				if (processed.contains(value))
 					continue;
 				processed.add(value);
@@ -214,7 +95,7 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 			}
 				break;
 			case DomainPropertyCategory.AggregateRootList: {
-				var value = this.getValue(property);
+				var value = this.getValue(property.name());
 				if (processed.contains(value))
 					continue;
 				processed.add(value);
@@ -235,7 +116,7 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 				break;
 			case DomainPropertyCategory.EntityObjectList:
 			case DomainPropertyCategory.ValueObjectList: {
-				var value = this.getValue(property);
+				var value = this.getValue(property.name());
 				if (processed.contains(value))
 					continue;
 				processed.add(value);

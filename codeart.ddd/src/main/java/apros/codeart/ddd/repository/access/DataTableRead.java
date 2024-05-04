@@ -233,7 +233,7 @@ final class DataTableRead {
 	private DomainObject constructObject(Class<?> objectType, MapData data, QueryLevel level) {
 
 		try {
-			var constructorTip = ConstructorRepositoryImpl.getTip(objectType);
+			var constructorTip = ConstructorRepositoryImpl.getTip(objectType, true);
 			var constructor = constructorTip.constructor();
 			var args = createArguments(constructorTip, data, level);
 			return (DomainObject) constructor.newInstance(args);
@@ -261,7 +261,7 @@ final class DataTableRead {
 							String.format("%s.%s", propertyTip.declaringType().getName(), propertyTip.name())));
 				}
 
-				obj.setValue(propertyTip.getProperty(), value);
+				obj.loadValue(propertyTip.name(), value);
 			}
 		}
 	}
