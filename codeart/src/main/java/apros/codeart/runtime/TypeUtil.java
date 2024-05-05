@@ -5,6 +5,8 @@ import static apros.codeart.runtime.Util.propagate;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -203,6 +205,36 @@ public final class TypeUtil {
 
 	public static TypeCode getTypeCode(Class<?> clazz) {
 		return _getTypeCode.apply(clazz);
+	}
+
+	/**
+	 * 
+	 * // 创建 泛型类 的实例，表示 rawType<T0,T1...Ts>
+	 * 
+	 * @param rawType
+	 * @param genericsType
+	 * @return
+	 */
+	public static Class<?> getClass(Class<?> rawType, Class<?>... Ts) {
+		Type type = new ParameterizedType() {
+			@Override
+			public Type[] getActualTypeArguments() {
+				return Ts;
+			}
+
+			@Override
+			public Type getRawType() {
+				return rawType;
+			}
+
+			@Override
+			public Type getOwnerType() {
+				// 不是内部类，所以返回null
+				return null;
+			}
+		};
+		// 返回 DomainCollection<T> 的 Class 对象
+		return (Class<?>) type;
 	}
 
 }

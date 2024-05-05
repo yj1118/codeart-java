@@ -17,5 +17,5 @@ public class RaiseEventHandler extends DomainEventHandler {
 		EventListener.accept(e);
 	}
 
-	public static final RaiseEventHandler instance = new RaiseEventHandler();
+	public static final RaiseEventHandler Instance = new RaiseEventHandler();
 }

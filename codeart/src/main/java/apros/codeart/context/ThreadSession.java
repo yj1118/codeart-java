@@ -38,6 +38,6 @@ public final class ThreadSession implements IAppSession {
 		return local.get() != null;
 	}
 
-	public static final ThreadSession instance = new ThreadSession();
+	public static final ThreadSession Instance = new ThreadSession();
 
 }

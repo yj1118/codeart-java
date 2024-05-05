@@ -122,7 +122,7 @@ public final class EventTrigger {
 
 	private static void subscribeRemoteEventResult(String eventId) {
 		var raiseResultEventName = EventUtil.getRaiseResult(eventId);
-		EventPortal.subscribe(raiseResultEventName, ReceiveResultEventHandler.instance, true);
+		EventPortal.subscribe(raiseResultEventName, ReceiveResultEventHandler.Instance, true);
 	}
 
 	/**

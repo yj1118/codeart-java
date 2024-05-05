@@ -8,10 +8,10 @@ public final class Logger {
 
 	public static void write(DTObject content) {
 		var code = content.getCode();
-		FileLogger.instance.info(code);
+		FileLogger.Instance.info(code);
 	}
 
 	public static void fatal(Exception ex) {
-		FileLogger.instance.error(ex);
+		FileLogger.Instance.error(ex);
 	}
 }

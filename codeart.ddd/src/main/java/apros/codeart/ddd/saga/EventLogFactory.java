@@ -17,7 +17,7 @@ public final class EventLogFactory {
 			} else if (_registerFactory != null)
 				temp = _registerFactory;
 			else
-				temp = FileEventLogFactory.instance;
+				temp = FileEventLogFactory.Instance;
 
 			SafeAccessImpl.checkUp(temp);
 			return temp;

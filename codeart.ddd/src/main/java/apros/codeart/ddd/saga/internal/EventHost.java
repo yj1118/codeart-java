@@ -25,7 +25,7 @@ public final class EventHost {
 
 		var raiseName = EventUtil.getRaise(event.name());
 		// 作为事件的提供方，我们订阅了触发事件，这样当外界发布了“触发事件”后，这里就可以收到消息并且执行事件
-		EventPortal.subscribe(raiseName, RaiseEventHandler.instance);
+		EventPortal.subscribe(raiseName, RaiseEventHandler.Instance);
 	}
 
 	/**
@@ -36,7 +36,7 @@ public final class EventHost {
 	 */
 	private static void subscribeReverse(DomainEvent event) {
 		var reverseName = EventUtil.getReverse(event.name());
-		EventPortal.subscribe(reverseName, ReverseEventHandler.instance);
+		EventPortal.subscribe(reverseName, ReverseEventHandler.Instance);
 	}
 
 	private static void cancelRaise(DomainEvent event) {

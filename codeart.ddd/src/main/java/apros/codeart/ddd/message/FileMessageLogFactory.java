@@ -7,11 +7,11 @@ final class FileMessageLogFactory implements IMessageLogFactory {
 	private FileMessageLogFactory() {
 	}
 
-	public static final IMessageLogFactory instance = new FileMessageLogFactory();
+	public static final IMessageLogFactory Instance = new FileMessageLogFactory();
 
 	@Override
 	public IMessageLog create() {
-		return FileMessageLogger.instance;
+		return FileMessageLogger.Instance;
 	}
 
 	@Override

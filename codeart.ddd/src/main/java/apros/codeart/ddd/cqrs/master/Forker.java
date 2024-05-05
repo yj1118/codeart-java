@@ -112,7 +112,7 @@ public final class Forker {
 
 		for (var master : masters) {
 			var objectType = ObjectMetaLoader.get(master.name()).objectType();
-			RPCServer.initialize(ActionName.getObjectMeta(objectType), GetObjectMeta.instance);
+			RPCServer.initialize(ActionName.getObjectMeta(objectType), GetObjectMeta.Instance);
 		}
 
 	}

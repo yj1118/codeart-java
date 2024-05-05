@@ -122,12 +122,52 @@ public final class ClassGenerator implements AutoCloseable {
 
 	/**
 	 * 
+	 * 静态构造，注意该方法只能执行一次
+	 * 
+	 * @return
+	 */
+	public MethodGenerator defineStaticConstructor() {
+		return defineMethod(Opcodes.ACC_STATIC, "<clinit>", void.class, null);
+	}
+
+	/**
+	 * 
 	 * 定义一个无参的公开的构造函数
 	 * 
 	 * @return
 	 */
 	public MethodGenerator definePublicConstructor() {
 		return defineConstructor(Opcodes.ACC_PUBLIC, null);
+	}
+
+	public FieldGenerator defineStaticFinalField(String name, Class<?> fieldType) {
+		return defineField(true, true, true, name, Type.getDescriptor(fieldType));
+	}
+
+	/**
+	 * 
+	 * 创建一个字段，该字段的类型是由字符串指定
+	 * 
+	 * @param name
+	 */
+	public FieldGenerator defineStaticFinalField(String name, String typeName) {
+		return defineField(true, true, true, name, String.format("L%s;", typeName));
+	}
+
+	public FieldGenerator defineField(boolean isPublic, boolean isStatic, boolean isFinal, String name,
+			String fieldType) {
+		int access = 0;
+		if (isPublic)
+			access += Opcodes.ACC_PUBLIC;
+
+		if (isStatic)
+			access += Opcodes.ACC_STATIC;
+
+		if (isFinal)
+			access += Opcodes.ACC_FINAL;
+
+		var visitor = _cw.visitField(access, name, fieldType, null, null);
+		return new FieldGenerator(visitor);
 	}
 
 	public void save() {
@@ -178,5 +218,4 @@ public final class ClassGenerator implements AutoCloseable {
 			return defineClass(name, _classData, 0, _classData.length);
 		}
 	}
-
 }

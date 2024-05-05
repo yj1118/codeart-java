@@ -9,7 +9,7 @@ class FileMessageLogger implements IMessageLog {
 	private FileMessageLogger() {
 	}
 
-	public static final FileMessageLogger instance = new FileMessageLogger();
+	public static final FileMessageLogger Instance = new FileMessageLogger();
 
 	@Override
 	public void write(String id, String name, DTObject content) {

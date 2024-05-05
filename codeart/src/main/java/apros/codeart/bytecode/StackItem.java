@@ -1,6 +1,6 @@
 package apros.codeart.bytecode;
 
-class StackItem {
+public class StackItem {
 
 	private Class<?> _valueType;
 

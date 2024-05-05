@@ -7,7 +7,7 @@ public final class MessageLogFactory {
 	}
 
 	private static class MessageLogFactoryHolder {
-		static final IMessageLogFactory factory;
+		static final IMessageLogFactory Factory;
 
 		private static IMessageLogFactory createFactory() {
 			IMessageLogFactory temp = null;
@@ -17,24 +17,24 @@ public final class MessageLogFactory {
 			} else if (_registerFactory != null)
 				temp = _registerFactory;
 			else
-				temp = FileMessageLogFactory.instance;
+				temp = FileMessageLogFactory.Instance;
 
 			SafeAccessImpl.checkUp(temp);
 			return temp;
 		}
 
 		static {
-			factory = createFactory();
+			Factory = createFactory();
 		}
 
 	}
 
 	public static IMessageLog createLog() {
-		return MessageLogFactoryHolder.factory.create();
+		return MessageLogFactoryHolder.Factory.create();
 	}
 
 	public static IMessageLogFactory getFactory() {
-		return MessageLogFactoryHolder.factory;
+		return MessageLogFactoryHolder.Factory;
 	}
 
 	private static IMessageLogFactory _registerFactory;

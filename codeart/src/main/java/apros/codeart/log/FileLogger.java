@@ -39,5 +39,5 @@ class FileLogger {
 		ctx.start(config);
 	}
 
-	public static final Logger instance = LogManager.getLogger(FileLogger.class);
+	public static final Logger Instance = LogManager.getLogger(FileLogger.class);
 }

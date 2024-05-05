@@ -17,5 +17,5 @@ public class ReceiveResultEventHandler extends DomainEventHandler {
 		EventListener.receive(e);
 	}
 
-	public static final ReceiveResultEventHandler instance = new ReceiveResultEventHandler();
+	public static final ReceiveResultEventHandler Instance = new ReceiveResultEventHandler();
 }

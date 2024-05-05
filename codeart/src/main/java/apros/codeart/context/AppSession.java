@@ -90,7 +90,7 @@ public final class AppSession {
 	}
 
 	private static IAppSession getCurrent() {
-		return ThreadSession.instance;
+		return ThreadSession.Instance;
 	}
 
 	/**

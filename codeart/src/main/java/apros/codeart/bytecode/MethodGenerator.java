@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -175,6 +174,11 @@ public class MethodGenerator implements AutoCloseable {
 		_evalStack.push(String.class);
 	}
 
+	public void load(Class<?> value) {
+		_visitor.visitLdcInsn(value);
+		_evalStack.push(Class.class);
+	}
+
 	/**
 	 * 声明变量
 	 * 
@@ -312,24 +316,43 @@ public class MethodGenerator implements AutoCloseable {
 		return this;
 	}
 
+	public MethodGenerator assignStaticField(String fieldName, String fieldTypeName, Runnable loadValue) {
+
+		loadValue.run();
+
+		_visitor.visitFieldInsn(Opcodes.PUTSTATIC, _owner.getClassName(), fieldName,
+				String.format("L%s;", fieldTypeName));
+		return this;
+	}
+
+	public MethodGenerator assignStaticField(String fieldName, Class<?> fieldType, Runnable loadValue) {
+
+		loadValue.run();
+
+		_visitor.visitFieldInsn(Opcodes.PUTSTATIC, _owner.getClassName(), fieldName,
+				DynamicUtil.getInternalName(fieldType));
+
+		_evalStack.pop();
+
+		return this;
+	}
+
 	/**
 	 * 
 	 * 加载方法执行时的参数类型信息
 	 * 
 	 * @return
 	 */
-	private Class<?>[] getArgClasses() {
-		var argCount = _evalStack.size() - 1;
+	private Class<?>[] getArgClasses(int offset) {
+		var argCount = _evalStack.size() - offset;
 		var argClasses = new Class<?>[argCount];
 
-		var pointer = argCount - 1;
+		var pointer = argCount;
 		// 弹出栈，并且收集参数
-		while (_evalStack.size() > 0) {
+		while (pointer > 0) {
 			var item = _evalStack.pop();
-			if (_evalStack.size() == 0)
-				break; // 不收集最后一个，因为这是对象自身，不是传递的参数，不能作为方法的参数查找
-			argClasses[pointer] = item.getValueType();
 			pointer--;
+			argClasses[pointer] = item.getValueType();
 		}
 		return argClasses;
 	}
@@ -362,7 +385,7 @@ public class MethodGenerator implements AutoCloseable {
 			if (loadParameters != null)
 				loadParameters.run();
 
-			var argClasses = getArgClasses();
+			var argClasses = getArgClasses(1); // 栈顶第一个值是this，不作为参数，所以1
 
 			var descriptor = DynamicUtil.getConstructorDescriptor(argClasses);
 
@@ -427,7 +450,7 @@ public class MethodGenerator implements AutoCloseable {
 			if (loadParameters != null)
 				loadParameters.run();
 
-			var argClasses = getArgClasses();
+			var argClasses = getArgClasses(1); // 栈顶第一个值是this，不作为参数，所以1
 
 			Method method = cls.getMethod(methodName, argClasses);
 			var isInterface = cls.isInterface();
@@ -436,7 +459,39 @@ public class MethodGenerator implements AutoCloseable {
 			var descriptor = DynamicUtil.getMethodDescriptor(method);
 			var owner = DynamicUtil.getInternalName(cls); // info.getType().getName()
 
-			_visitor.visitMethodInsn(opcode, owner, method.getName(), descriptor, isInterface);
+			_visitor.visitMethodInsn(opcode, owner, methodName, descriptor, isInterface);
+
+			_evalStack.exitFrame(); // 调用完毕，离开栈帧
+
+			var returnType = method.getReturnType();
+			if (returnType != void.class) {
+				_evalStack.push(returnType); // 返回值会给与父级栈
+			}
+
+		} catch (Exception ex) {
+			throw propagate(ex);
+		}
+		return this;
+	}
+
+	public MethodGenerator invokeStatic(Class<?> targetType, String methodName, Runnable loadParameters) {
+
+		try {
+
+			_evalStack.enterFrame(); // 新建立栈帧
+
+			// 加载参数
+			if (loadParameters != null)
+				loadParameters.run();
+
+			var argClasses = getArgClasses(0);
+
+			Method method = targetType.getMethod(methodName, argClasses);
+
+			var descriptor = DynamicUtil.getMethodDescriptor(method);
+			var owner = DynamicUtil.getInternalName(targetType); // info.getType().getName()
+
+			_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, owner, methodName, descriptor, false);
 
 			_evalStack.exitFrame(); // 调用完毕，离开栈帧
 
@@ -795,6 +850,45 @@ public class MethodGenerator implements AutoCloseable {
 
 //	 #endregion
 
+	public MethodGenerator newObject(String objectTypeName) {
+		return newObject(objectTypeName, null);
+	}
+
+	/**
+	 * 
+	 * 该方法主要是为了解决正在建立的类A有字段要引用类A，导致还没有具体的Class<?>的问题
+	 * 
+	 * @param objectTypeName
+	 * @param loadCtorPrms
+	 * @return
+	 */
+	public MethodGenerator newObject(String objectTypeName, Runnable loadCtorPrms) {
+		StackAssert.assertCount(_evalStack, 0);
+
+		// 加载要创建对象的类的类型到操作数栈上
+		_visitor.visitTypeInsn(Opcodes.NEW, objectTypeName);
+		_evalStack.push(Object.class); // 为了保证栈同步，这里放入Object.class占位
+
+		// 复制操作数栈顶的对象引用，因为构造函数调用需要消耗对象引用
+		_visitor.visitInsn(Opcodes.DUP);
+		_evalStack.push(Object.class); // 为了保证栈同步，这里放入Object.class占位
+
+		// 加载构造函数参数到操作数栈上（如果有的话）
+		if (loadCtorPrms != null)
+			loadCtorPrms.run();
+
+		var argClasses = getArgClasses(2);
+
+		var descriptor = DynamicUtil.getConstructorDescriptor(argClasses);
+		// 调用构造函数，并传入构造函数所需的参数
+		_visitor.visitMethodInsn(Opcodes.INVOKESPECIAL, objectTypeName, "<init>", descriptor, false);
+
+		_evalStack.pop(1); // 参数已经弹出，这里弹出对象的引用（引用有两个，这里弹出其中一个）
+
+		StackAssert.assertCount(_evalStack, 1); // 对象的引用在栈顶
+		return this;
+	}
+
 	public MethodGenerator newObject(Class<?> objectType) {
 		return newObject(objectType, null);
 	}
@@ -818,16 +912,7 @@ public class MethodGenerator implements AutoCloseable {
 		if (loadCtorPrms != null)
 			loadCtorPrms.run();
 
-		var argCount = _evalStack.size() - 2;
-		var argClasses = new Class<?>[argCount];
-
-		var pointer = argCount;
-		// 弹出栈，并且收集参数
-		while (pointer > 0) {
-			var item = _evalStack.pop();
-			pointer--;
-			argClasses[pointer] = item.getValueType();
-		}
+		var argClasses = getArgClasses(2);
 
 		var descriptor = DynamicUtil.getConstructorDescriptor(argClasses);
 		// 调用构造函数，并传入构造函数所需的参数
@@ -988,14 +1073,27 @@ public class MethodGenerator implements AutoCloseable {
 	 * @param annClass
 	 */
 	public void addAnnotation(Class<?> annClass) {
-		String desc = Type.getDescriptor(annClass);
-		_visitor.visitAnnotation(desc, true);
+		addAnnotation(annClass, null);
 	}
 
-	public void addAnnotation(Class<?> annClass, Consumer<AnnPrmsFiller> fill) {
+	public void addAnnotation(Class<?> annClass, Consumer<AnnotationOperation> fill) {
 		String desc = Type.getDescriptor(annClass);
 		var ag = _visitor.visitAnnotation(desc, true);
-		fill.accept(new AnnPrmsFiller(ag));
+		if (fill != null)
+			fill.accept(new AnnotationOperation(ag));
+		ag.visitEnd();
+	}
+
+	/**
+	 * 
+	 * 调用 java.lang.Class.forName({@code className}) 方法，并将其结果压入操作数栈中。
+	 * 
+	 * @param className
+	 */
+	public void classForName(String className) {
+		_visitor.visitLdcInsn(className);
+		_visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Class", "forName",
+				"(Ljava/lang/String;)Ljava/lang/Class;", false);
 	}
 
 	public void close() {
@@ -1010,26 +1108,5 @@ public class MethodGenerator implements AutoCloseable {
 		_evalStack = null;
 		_visitor = null;
 		_locals = null;
-	}
-
-	public static class AnnPrmsFiller {
-
-		private AnnotationVisitor _av;
-
-		AnnPrmsFiller(AnnotationVisitor av) {
-			_av = av;
-		}
-
-		/**
-		 * 
-		 * 为注解添加参数
-		 * 
-		 * @param name
-		 * @param value
-		 */
-		public void add(String name, Object value) {
-			_av.visit(name, value);
-		}
-
 	}
 }

@@ -17,5 +17,5 @@ public final class ReverseEventHandler extends DomainEventHandler {
 		EventListener.reverse(e);
 	}
 
-	public static final ReverseEventHandler instance = new ReverseEventHandler();
+	public static final ReverseEventHandler Instance = new ReverseEventHandler();
 }

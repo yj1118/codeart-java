@@ -7,7 +7,7 @@ final class FileEventLogFactory implements IEventLogFactory {
 	private FileEventLogFactory() {
 	}
 
-	public static final IEventLogFactory instance = new FileEventLogFactory();
+	public static final IEventLogFactory Instance = new FileEventLogFactory();
 
 	@Override
 	public IEventLog create() {

@@ -91,7 +91,7 @@ public class EvaluationStack {
 		return _current.matchType(expectedCount);
 	}
 
-	static class StackFrame {
+	public static class StackFrame {
 
 		private LinkedList<StackItem> _items;
 

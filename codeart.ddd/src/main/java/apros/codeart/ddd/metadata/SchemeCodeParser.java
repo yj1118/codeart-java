@@ -3,10 +3,13 @@ package apros.codeart.ddd.metadata;
 import static apros.codeart.runtime.Util.propagate;
 
 import apros.codeart.bytecode.ClassGenerator;
+import apros.codeart.bytecode.MethodGenerator;
+import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.dynamic.DynamicEntity;
 import apros.codeart.ddd.dynamic.DynamicObject;
 import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.repository.ConstructorRepository;
+import apros.codeart.ddd.repository.PropertyRepository;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 
@@ -15,19 +18,50 @@ final class SchemeCodeParser {
 	private SchemeCodeParser() {
 	}
 
+	/*
+	 * 
+	 * 在使用 ASM 生成字节码时，ASM 不会检查字段的类型描述符是否指向已存在的类。因此，你可以在生成类 A 的字节码时引用类 B，即使类 B
+	 * 的字节码尚未生成。
+	 * 
+	 * 然而，在实际运行时加载类 A 或者使用类 A 的字段时，如果类 B 尚未被加载或者定义，就会抛出 NoClassDefFoundError 或者
+	 * ClassNotFoundException。因此，在生成字节码时，你需要确保所有的类型引用都是有效的，否则在运行时可能会出现问题。
+	 * 
+	 * 
+	 * 
+	 * 
+	 */
+
 	public static Class<?> generate(DTObject scheme) {
 
-		var typeName = scheme.getString("name");
+		var className = scheme.getString("name");
 		var category = DomainObjectCategory.valueOf(scheme.getByte("category"));
 		var superClass = getDomainClass(category);
 
-		try (var cg = ClassGenerator.define(typeName, superClass)) {
+		try (var cg = ClassGenerator.define(className, superClass)) {
+			generateConstructor(cg);
 
-			generateDefaultConstructor(cg);
+			// 静态构造的方法
+			// staticConstructorMethod
+			try (var scm = cg.definePublicConstructor()) {
+				generateEmpty(className, cg, scm);
 
-			generateEmptyConstructor(cg);
+				// var declaringType = Class.forName("User");
+				scm.declare(Class.class, "declaringType");
+				scm.assign("declaringType", () -> {
+					scm.classForName(className);
+				});
 
-//			DomainProperty.register(null, null, null)
+				// 生成领域属性
+				var props = scheme.getObjects("props", false);
+
+				if (props != null) {
+
+					for (var prop : props) {
+						generateDomainProperty(prop, cg, scm);
+					}
+
+				}
+			}
 
 			return cg.toClass();
 
@@ -36,16 +70,23 @@ final class SchemeCodeParser {
 		}
 	}
 
-	private static void generateDefaultConstructor(ClassGenerator cg) {
-		var g = cg.definePublicConstructor();
-		g.invokeSuper(); // 执行super();
-		// 执行 this.onConstructed();
-		g.invoke(() -> {
-			g.loadThis();
-		}, "onConstructed", null);
+	private static void generateConstructor(ClassGenerator cg) {
+		generateDefaultConstructor(cg);
+		generateEmptyConstructor(cg);
+	}
 
-		// 打上标签
-		g.addAnnotation(ConstructorRepository.class);
+	private static void generateDefaultConstructor(ClassGenerator cg) {
+		try (var g = cg.definePublicConstructor()) {
+			// 打上标签
+			g.addAnnotation(ConstructorRepository.class);
+
+			g.invokeSuper(); // 执行super();
+			// 执行 this.onConstructed();
+			g.invoke(() -> {
+				g.loadThis();
+			}, "onConstructed", null);
+
+		}
 
 // 		示例代码：
 //		@ConstructorRepository
@@ -57,16 +98,17 @@ final class SchemeCodeParser {
 	}
 
 	private static void generateEmptyConstructor(ClassGenerator cg) {
-		var g = cg.definePublicConstructor((args) -> {
+		try (var g = cg.definePublicConstructor((args) -> {
 			args.add("isEmpty", boolean.class);
-		});
-		g.invokeSuper(() -> {
-			g.loadVariable("isEmpty");
-		}); // 执行super(isEmpty);
-		// 执行 this.onConstructed();
-		g.invoke(() -> {
-			g.loadThis();
-		}, "onConstructed", null);
+		})) {
+			g.invokeSuper(() -> {
+				g.loadVariable("isEmpty");
+			}); // 执行super(isEmpty);
+			// 执行 this.onConstructed();
+			g.invoke(() -> {
+				g.loadThis();
+			}, "onConstructed", null);
+		}
 
 // 		示例代码：
 //		User(boolean isEmpty) {
@@ -86,6 +128,101 @@ final class SchemeCodeParser {
 			return DynamicObject.class;
 		}
 		throw new IllegalArgumentException(Language.strings("codeart.ddd", "NoDomainClass", category.value()));
+	}
+
+	private static void generateEmpty(String className, ClassGenerator cg, MethodGenerator scm) {
+		try (var fg = cg.defineStaticFinalField("Empty", className)) {
+		}
+
+		scm.assignStaticField("Empty", className, () -> {
+			scm.newObject(className, () -> {
+				scm.load(true);
+			});
+		});
+		// 示例代码
+		// public static final User Empty = new User(true);
+	}
+
+	private static void generateDomainProperty(DTObject property, ClassGenerator cg, MethodGenerator scm) {
+
+		try {
+
+			var propertyName = property.getString("name");
+			var category = DomainPropertyCategory.valueOf(property.getByte("category"));
+			var monotype = property.getString("monotype");
+			var lazy = property.getBoolean("lazy");
+
+			try (var fg = cg.defineStaticFinalField(propertyName, DomainProperty.class)) {
+				if (lazy) {
+					fg.addAnnotation(PropertyRepository.class, (ag) -> {
+						ag.add("lazy", true);
+					});
+				}
+			}
+
+			switch (category) {
+			case DomainPropertyCategory.Primitive: {
+				var valueType = Class.forName(monotype);
+				scm.assignStaticField(propertyName, DomainProperty.class, () -> {
+					scm.invokeStatic(DomainProperty.class, "register", () -> {
+						scm.load(propertyName);
+						scm.load(valueType);
+						scm.loadVariable("declaringType");
+					});
+				});
+
+				// public static final DomainProperty TimeProperty =
+				// DomainProperty.register("time", DateTime.class, User.class);
+			}
+				break;
+			case DomainPropertyCategory.PrimitiveList: {
+				var elementType = Class.forName(monotype);
+				scm.assignStaticField(propertyName, DomainProperty.class, () -> {
+					scm.invokeStatic(DomainProperty.class, "registerCollection", () -> {
+						scm.load(propertyName);
+						scm.load(elementType);
+						scm.loadVariable("declaringType");
+					});
+				});
+
+				// private static final DomainProperty TimesProperty =
+				// DomainProperty.registerCollection("time", DateTime.class,User.class);
+
+			}
+				break;
+			case DomainPropertyCategory.ValueObject:
+			case DomainPropertyCategory.AggregateRoot:
+			case DomainPropertyCategory.EntityObject: {
+				var valueTypeName = monotype;
+				scm.assignStaticField(propertyName, DomainProperty.class, () -> {
+					scm.invokeStatic(DomainProperty.class, "register", () -> {
+						scm.load(propertyName);
+						scm.classForName(valueTypeName);
+						scm.loadVariable("declaringType");
+					});
+				});
+			}
+				break;
+			case DomainPropertyCategory.ValueObjectList:
+			case DomainPropertyCategory.EntityObjectList:
+			case DomainPropertyCategory.AggregateRootList: {
+				var elementTypeName = monotype;
+				scm.assignStaticField(propertyName, DomainProperty.class, () -> {
+					scm.invokeStatic(DomainProperty.class, "registerCollection", () -> {
+						scm.load(propertyName);
+						scm.classForName(elementTypeName);
+						scm.loadVariable("declaringType");
+					});
+				});
+			}
+				break;
+			default:
+				break;
+			}
+		} catch (ClassNotFoundException e) {
+			throw propagate(e);
+		}
+
 	}
 
 }

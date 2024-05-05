@@ -47,5 +47,5 @@ final class GetRemoteObject implements IRPCHandler {
 		return arg.getString("schemaCode");
 	}
 
-	public static final GetRemoteObject instance = new GetRemoteObject();
+	public static final GetRemoteObject Instance = new GetRemoteObject();
 }

@@ -462,7 +462,7 @@ public class DataContext implements IDataContext {
 	private void onCommitted() {
 		if (_committed != null) {
 			_committed.raise(this, () -> {
-				return DataContextEventArgs.instance;
+				return DataContextEventArgs.Instance;
 			});
 		}
 	}

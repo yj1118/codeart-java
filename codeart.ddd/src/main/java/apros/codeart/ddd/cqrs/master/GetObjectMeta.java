@@ -22,5 +22,5 @@ final class GetObjectMeta implements IRPCHandler {
 		return new TransferData(AppSession.language(), scheme);
 	}
 
-	public static final GetObjectMeta instance = new GetObjectMeta();
+	public static final GetObjectMeta Instance = new GetObjectMeta();
 }

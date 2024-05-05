@@ -5,5 +5,5 @@ public class DataContextEventArgs {
 	private DataContextEventArgs() {
 	}
 
-	public static final DataContextEventArgs instance = new DataContextEventArgs();
+	public static final DataContextEventArgs Instance = new DataContextEventArgs();
 }
