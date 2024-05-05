@@ -7,7 +7,7 @@ import java.util.LinkedList;
 
 import org.objectweb.asm.Label;
 
-final class ScopeStack {
+public final class ScopeStack {
 
 	private LinkedList<CodeScope> _scopes;
 

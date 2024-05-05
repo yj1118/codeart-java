@@ -1,7 +1,7 @@
 package apros.codeart.ddd.remotable.internal;
 
 import apros.codeart.ddd.QueryLevel;
-import apros.codeart.ddd.cqrs.internal.RemoteService;
+import apros.codeart.ddd.cqrs.slave.RemoteService;
 import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.dynamic.IDynamicRepository;
 import apros.codeart.ddd.repository.DataContext;

@@ -1,13 +1,14 @@
-package apros.codeart.ddd;
+package apros.codeart.ddd.repository;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.function.Function;
 
+import apros.codeart.ddd.MapData;
+import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.ObjectMeta;
 import apros.codeart.ddd.metadata.PropertyMeta;
-import apros.codeart.ddd.repository.Repository;
 import apros.codeart.runtime.Util;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.StringUtil;

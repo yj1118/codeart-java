@@ -11,8 +11,6 @@ import java.util.function.Function;
 
 import com.google.common.collect.Iterables;
 
-import apros.codeart.ddd.ConstructorParameterInfo;
-import apros.codeart.ddd.ConstructorRepositoryImpl;
 import apros.codeart.ddd.DerivedClassImpl;
 import apros.codeart.ddd.DomainCollection;
 import apros.codeart.ddd.DomainObject;
@@ -27,6 +25,8 @@ import apros.codeart.ddd.MapData;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.PropertyMeta;
+import apros.codeart.ddd.repository.ConstructorParameterInfo;
+import apros.codeart.ddd.repository.ConstructorRepositoryImpl;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.Activator;

@@ -1,4 +1,4 @@
-package apros.codeart.ddd;
+package apros.codeart.ddd.repository;
 
 import static apros.codeart.runtime.Util.propagate;
 
@@ -7,6 +7,7 @@ import java.util.function.Function;
 
 import com.google.common.collect.ImmutableList;
 
+import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.metadata.ObjectMeta;
 import apros.codeart.ddd.metadata.ObjectMetaLoader;
 import apros.codeart.i18n.Language;

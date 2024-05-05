@@ -14,7 +14,7 @@ import apros.codeart.ddd.StatusEvent;
 import apros.codeart.ddd.StatusEventType;
 import apros.codeart.ddd.ValidationException;
 import apros.codeart.ddd.ValidationResult;
-import apros.codeart.ddd.cqrs.internal.Forker;
+import apros.codeart.ddd.cqrs.master.Forker;
 import apros.codeart.ddd.repository.access.DataAccess;
 import apros.codeart.ddd.repository.access.DataConnection;
 import apros.codeart.i18n.Language;

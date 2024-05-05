@@ -23,11 +23,17 @@ public final class ClassGenerator implements AutoCloseable {
 		return _className;
 	}
 
-	private ClassGenerator(int access, String className, Class<?> subClass) {
+	private Class<?> _superClass;
+
+	public Class<?> superClass() {
+		return _superClass;
+	}
+
+	private ClassGenerator(int access, String className, Class<?> superClass) {
 		_cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-		String subClassName = Type.getInternalName(subClass);
+		String superClassName = Type.getInternalName(superClass);
 //		String.format("com/apros/codeart/runtime/%s", className)
-		_cw.visit(Opcodes.V1_8, access, className, null, subClassName, null);
+		_cw.visit(Opcodes.V1_8, access, className, null, superClassName, null);
 		_className = className;
 	}
 
@@ -38,8 +44,8 @@ public final class ClassGenerator implements AutoCloseable {
 		return String.format("DynamicClass_%s", guid);
 	}
 
-	public static ClassGenerator define(Class<?> subClass) {
-		return new ClassGenerator(Opcodes.ACC_PUBLIC, randomClassName(), subClass);
+	public static ClassGenerator define(Class<?> superClass) {
+		return new ClassGenerator(Opcodes.ACC_PUBLIC, randomClassName(), superClass);
 	}
 
 	public static ClassGenerator define() {
@@ -50,8 +56,8 @@ public final class ClassGenerator implements AutoCloseable {
 		return new ClassGenerator(Opcodes.ACC_PUBLIC, className, Object.class);
 	}
 
-	public static ClassGenerator define(String className, Class<?> subClass) {
-		return new ClassGenerator(Opcodes.ACC_PUBLIC, className, subClass);
+	public static ClassGenerator define(String className, Class<?> superClass) {
+		return new ClassGenerator(Opcodes.ACC_PUBLIC, className, superClass);
 	}
 
 	// endregion
@@ -79,7 +85,7 @@ public final class ClassGenerator implements AutoCloseable {
 		String descriptor = Type.getMethodDescriptor(Type.getType(returnClass), types);
 		MethodVisitor visitor = _cw.visitMethod(access, name, descriptor, null, null);
 
-		return new MethodGenerator(visitor, access, returnClass, args);
+		return new MethodGenerator(this, visitor, access, returnClass, args);
 	}
 
 	public MethodGenerator defineMethodPublic(boolean isStatic, final String name, final Class<?> returnClass,
@@ -101,6 +107,27 @@ public final class ClassGenerator implements AutoCloseable {
 			Consumer<IArgumenter> getArgs) {
 
 		return defineMethodPublic(true, name, returnClass, getArgs);
+	}
+
+	/**
+	 * 定义一个构造函数
+	 */
+	public MethodGenerator defineConstructor(final int access, Consumer<IArgumenter> getArgs) {
+		return defineMethod(access, "<init>", void.class, getArgs);
+	}
+
+	public MethodGenerator definePublicConstructor(Consumer<IArgumenter> getArgs) {
+		return defineConstructor(Opcodes.ACC_PUBLIC, getArgs);
+	}
+
+	/**
+	 * 
+	 * 定义一个无参的公开的构造函数
+	 * 
+	 * @return
+	 */
+	public MethodGenerator definePublicConstructor() {
+		return defineConstructor(Opcodes.ACC_PUBLIC, null);
 	}
 
 	public void save() {

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
@@ -66,7 +67,11 @@ public class MethodGenerator implements AutoCloseable {
 		return _scopeStack;
 	}
 
-	MethodGenerator(MethodVisitor visitor, int access, Class<?> returnClass, Iterable<MethodParameter> prms) {
+	private ClassGenerator _owner;
+
+	MethodGenerator(ClassGenerator owner, MethodVisitor visitor, int access, Class<?> returnClass,
+			Iterable<MethodParameter> prms) {
+		_owner = owner;
 		_visitor = visitor;
 		_isStatic = (access & Opcodes.ACC_STATIC) != 0;
 		_returnClass = returnClass;
@@ -78,7 +83,7 @@ public class MethodGenerator implements AutoCloseable {
 		_locals = new VariableCollection(this);
 		_evalStack = new EvaluationStack();
 		_scopeStack = new ScopeStack(this, prms);
-		_visitor.visitCode();
+		_visitor.visitCode(); // 表示开始方法的代码生成
 	}
 
 	public void loadThis() {
@@ -308,6 +313,72 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	/**
+	 * 
+	 * 加载方法执行时的参数类型信息
+	 * 
+	 * @return
+	 */
+	private Class<?>[] getArgClasses() {
+		var argCount = _evalStack.size() - 1;
+		var argClasses = new Class<?>[argCount];
+
+		var pointer = argCount - 1;
+		// 弹出栈，并且收集参数
+		while (_evalStack.size() > 0) {
+			var item = _evalStack.pop();
+			if (_evalStack.size() == 0)
+				break; // 不收集最后一个，因为这是对象自身，不是传递的参数，不能作为方法的参数查找
+			argClasses[pointer] = item.getValueType();
+			pointer--;
+		}
+		return argClasses;
+	}
+
+	/**
+	 * 
+	 * 执行 super() 方法
+	 * 
+	 * @param loadParameters
+	 * @return
+	 */
+	public MethodGenerator invokeSuper() {
+		return invokeSuper(null);
+	}
+
+	/**
+	 * 
+	 * 执行 super() 方法
+	 * 
+	 * @param loadParameters
+	 * @return
+	 */
+	public MethodGenerator invokeSuper(Runnable loadParameters) {
+		try {
+
+			_evalStack.enterFrame(); // 新建立栈帧
+			this.loadThis(); // 加载自身
+
+			// 加载参数
+			if (loadParameters != null)
+				loadParameters.run();
+
+			var argClasses = getArgClasses();
+
+			var descriptor = DynamicUtil.getConstructorDescriptor(argClasses);
+
+			var superTypeName = DynamicUtil.getInternalName(_owner.superClass());
+
+			_visitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superTypeName, "<init>", descriptor, false);
+
+			_evalStack.exitFrame(); // 调用完毕，离开栈帧
+
+		} catch (Exception ex) {
+			throw propagate(ex);
+		}
+		return this;
+	}
+
+	/**
 	 * 执行实例方法
 	 * 
 	 * @param express
@@ -349,25 +420,14 @@ public class MethodGenerator implements AutoCloseable {
 		try {
 
 			_evalStack.enterFrame(); // 新建立栈帧
-			loadTarget.run(); // 先加载变量自身，作为实例方法的第一个参数（this）
+			loadTarget.run(); // 先加载目标，作为实例方法的第一个参数（this）
 			var cls = _evalStack.peek().getValueType();
 
 			// 加载参数
 			if (loadParameters != null)
 				loadParameters.run();
 
-			var argCount = _evalStack.size() - 1;
-			var argClasses = new Class<?>[argCount];
-
-			var pointer = argCount - 1;
-			// 弹出栈，并且收集参数
-			while (_evalStack.size() > 0) {
-				var item = _evalStack.pop();
-				if (_evalStack.size() == 0)
-					break; // 不收集最后一个，因为这是对象自身，不是传递的参数，不能作为方法的参数查找
-				argClasses[pointer] = item.getValueType();
-				pointer--;
-			}
+			var argClasses = getArgClasses();
 
 			Method method = cls.getMethod(methodName, argClasses);
 			var isInterface = cls.isInterface();
@@ -921,6 +981,23 @@ public class MethodGenerator implements AutoCloseable {
 		throw new IllegalArgumentException(strings("codeart", "UnknownException"));
 	}
 
+	/**
+	 * 
+	 * 添加无参注解
+	 * 
+	 * @param annClass
+	 */
+	public void addAnnotation(Class<?> annClass) {
+		String desc = Type.getDescriptor(annClass);
+		_visitor.visitAnnotation(desc, true);
+	}
+
+	public void addAnnotation(Class<?> annClass, Consumer<AnnPrmsFiller> fill) {
+		String desc = Type.getDescriptor(annClass);
+		var ag = _visitor.visitAnnotation(desc, true);
+		fill.accept(new AnnPrmsFiller(ag));
+	}
+
 	public void close() {
 		if (_isbroken)
 			return; // 代码已毁坏
@@ -933,5 +1010,26 @@ public class MethodGenerator implements AutoCloseable {
 		_evalStack = null;
 		_visitor = null;
 		_locals = null;
+	}
+
+	public static class AnnPrmsFiller {
+
+		private AnnotationVisitor _av;
+
+		AnnPrmsFiller(AnnotationVisitor av) {
+			_av = av;
+		}
+
+		/**
+		 * 
+		 * 为注解添加参数
+		 * 
+		 * @param name
+		 * @param value
+		 */
+		public void add(String name, Object value) {
+			_av.visit(name, value);
+		}
+
 	}
 }

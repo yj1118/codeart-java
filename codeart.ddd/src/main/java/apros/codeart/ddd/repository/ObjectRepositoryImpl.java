@@ -27,19 +27,9 @@ public class ObjectRepositoryImpl {
 		_objectType = value;
 	}
 
-	/**
-	 * 关闭多租户功能，这意味着即使配置文件开启了多租户特性，目标对象也不会启动多租户功能
-	 */
-	private boolean _closeMultiTenancy;
-
-	public boolean closeMultiTenancy() {
-		return _closeMultiTenancy;
-	}
-
 	public ObjectRepositoryImpl(Class<?> objectType, Class<?> repositoryInterfaceType, boolean closeMultiTenancy) {
 		_objectType = objectType;
 		_repositoryInterfaceType = repositoryInterfaceType;
-		_closeMultiTenancy = closeMultiTenancy;
 	}
 
 	public static ObjectRepositoryImpl getTip(Class<?> objectType, boolean checkUp) {

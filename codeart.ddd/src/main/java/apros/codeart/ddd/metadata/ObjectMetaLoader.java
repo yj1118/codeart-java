@@ -38,8 +38,7 @@ public final class ObjectMetaLoader {
 		ObjectRepositoryTip repositoryTip = null;
 		var repository = ObjectRepositoryImpl.getTip(objectType, false);
 		if (repository != null) {
-			repositoryTip = new ObjectRepositoryTip(repository.repositoryInterfaceType(),
-					repository.closeMultiTenancy());
+			repositoryTip = new ObjectRepositoryTip(repository.repositoryInterfaceType());
 		}
 
 		return new ObjectMeta(name, objectType, category, validators, repositoryTip);

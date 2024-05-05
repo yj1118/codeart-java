@@ -1,4 +1,4 @@
-package apros.codeart.ddd.cqrs.internal;
+package apros.codeart.ddd.cqrs.slave;
 
 import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.remotable.RemoteObjectHandler;

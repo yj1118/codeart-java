@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import apros.codeart.ddd.ConstructorParameterInfo;
 import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.IAggregateRoot;
@@ -15,6 +14,7 @@ import apros.codeart.ddd.metadata.ObjectMeta;
 import apros.codeart.ddd.metadata.ObjectMetaLoader;
 import apros.codeart.ddd.metadata.ObjectRepositoryTip;
 import apros.codeart.ddd.metadata.PropertyMeta;
+import apros.codeart.ddd.repository.ConstructorParameterInfo;
 import apros.codeart.ddd.repository.Page;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;

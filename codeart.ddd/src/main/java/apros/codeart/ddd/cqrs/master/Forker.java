@@ -1,9 +1,11 @@
-package apros.codeart.ddd.cqrs.internal;
+package apros.codeart.ddd.cqrs.master;
 
 import java.util.function.Function;
 
 import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.IAggregateRoot;
+import apros.codeart.ddd.cqrs.ActionName;
+import apros.codeart.ddd.cqrs.CQRSConfig;
 import apros.codeart.ddd.internal.DTOMapper;
 import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.metadata.ObjectMetaLoader;

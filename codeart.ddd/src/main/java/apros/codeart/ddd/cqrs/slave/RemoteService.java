@@ -1,4 +1,4 @@
-package apros.codeart.ddd.cqrs.internal;
+package apros.codeart.ddd.cqrs.slave;
 
 import apros.codeart.ddd.remotable.internal.RemotableImpl;
 import apros.codeart.mq.rpc.server.RPCServer;

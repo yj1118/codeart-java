@@ -61,3 +61,6 @@
 //	public static final ReceiveChangedHandler instance = new ReceiveChangedHandler();
 //
 //}
+package apros.codeart.ddd.cqrs.slave;
+
+

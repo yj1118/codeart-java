@@ -1,5 +1,5 @@
 module apros.codeart {
-	requires org.objectweb.asm;
+	requires transitive org.objectweb.asm;
 	requires com.google.common;
 	requires org.reflections;
 	requires org.apache.logging.log4j;
@@ -16,6 +16,7 @@ module apros.codeart {
 	exports apros.codeart.util;
 	exports apros.codeart.util.concurrent;
 	exports apros.codeart.util.thread;
+	exports apros.codeart.bytecode;
 	exports apros.codeart.dto;
 	exports apros.codeart.dto.serialization;
 	exports apros.codeart.mq;

@@ -1,8 +1,9 @@
 package apros.codeart.ddd.launcher;
 
 import apros.codeart.ddd.DomainDrivenException;
-import apros.codeart.ddd.cqrs.internal.Forker;
-import apros.codeart.ddd.cqrs.internal.RemoteService;
+import apros.codeart.ddd.cqrs.master.Forker;
+import apros.codeart.ddd.cqrs.slave.Brancher;
+import apros.codeart.ddd.cqrs.slave.RemoteService;
 import apros.codeart.ddd.message.internal.MessageHost;
 import apros.codeart.ddd.metadata.MetadataLoader;
 import apros.codeart.ddd.remotable.internal.RemotableImpl;
@@ -33,6 +34,9 @@ final class DomainHost {
 		// 以下代码执行顺序不能变
 
 		var domainTypes = MetadataLoader.load();
+
+		// 首先要初始化分支，分支会下载远程对象的定义
+		Brancher.initialize();
 
 		DataModelLoader.load(domainTypes);
 

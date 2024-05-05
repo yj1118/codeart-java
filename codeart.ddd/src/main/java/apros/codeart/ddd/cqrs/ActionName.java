@@ -1,11 +1,11 @@
-package apros.codeart.ddd.cqrs.internal;
+package apros.codeart.ddd.cqrs;
 
 import java.util.function.Function;
 
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.StringUtil;
 
-final class ActionName {
+public final class ActionName {
 	private ActionName() {
 	}
 
@@ -17,11 +17,15 @@ final class ActionName {
 	 * @return
 	 */
 	public static String getObjectMeta(Class<?> type) {
-		return _getObjectMeta.apply(type);
+		return _getObjectMeta.apply(type.getSimpleName());
 	}
 
-	private static Function<Class<?>, String> _getObjectMeta = LazyIndexer.init((type) -> {
-		return String.format("d:cqrs-get%sMeta", StringUtil.firstToLower(type.getSimpleName()));
+	public static String getObjectMeta(String typeName) {
+		return _getObjectMeta.apply(typeName);
+	}
+
+	private static Function<String, String> _getObjectMeta = LazyIndexer.init((String typeName) -> {
+		return String.format("d:cqrs-getMeta-%s", typeName.toLowerCase());
 	});
 
 //	public static String getObject(Class<?> type) {

@@ -1,4 +1,4 @@
-package apros.codeart.ddd.cqrs.internal;
+package apros.codeart.ddd.cqrs.master;
 
 import apros.codeart.context.AppSession;
 import apros.codeart.ddd.metadata.ObjectMetaLoader;

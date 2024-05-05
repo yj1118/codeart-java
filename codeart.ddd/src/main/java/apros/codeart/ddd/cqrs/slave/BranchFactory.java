@@ -1,4 +1,4 @@
-package apros.codeart.ddd.cqrs.internal;
+package apros.codeart.ddd.cqrs.slave;
 
 final class BranchFactory {
 	private BranchFactory() {

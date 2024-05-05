@@ -20,6 +20,7 @@ final class SchemeCodeReader {
 
 		var data = DTObject.editable();
 		data.setString("name", meta.name());
+		data.setByte("category", meta.category().value());
 
 		for (var propertyName : propertyNames) {
 			var tip = meta.findProperty(propertyName);
@@ -34,8 +35,8 @@ final class SchemeCodeReader {
 	private static DTObject mapProperty(PropertyMeta tip) {
 		var data = DTObject.editable();
 		data.setString("name", tip.name());
+		data.setByte("category", tip.category().value());
 		data.setString("monotype", tip.monotype().getSimpleName());
-		data.setBoolean("isCollection", tip.isCollection());
 		data.setBoolean("lazy", tip.lazy());
 
 		for (var validator : tip.validators()) {
