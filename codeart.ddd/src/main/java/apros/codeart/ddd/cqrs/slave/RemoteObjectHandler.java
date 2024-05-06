@@ -1,4 +1,4 @@
-package apros.codeart.ddd.remotable;
+package apros.codeart.ddd.cqrs.slave;
 
 import apros.codeart.context.AppSession;
 import apros.codeart.ddd.message.DomainMessageHandler;

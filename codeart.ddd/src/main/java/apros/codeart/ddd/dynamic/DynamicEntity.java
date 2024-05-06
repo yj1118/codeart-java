@@ -1,9 +1,9 @@
 package apros.codeart.ddd.dynamic;
 
-import apros.codeart.ddd.ConstructorRepository;
 import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.IEntityObject;
+import apros.codeart.ddd.repository.ConstructorRepository;
 
 public class DynamicEntity extends DynamicObject implements IEntityObject {
 

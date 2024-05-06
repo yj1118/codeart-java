@@ -6,7 +6,6 @@ import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.cqrs.ActionName;
 import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
-import apros.codeart.ddd.remotable.RemoteObjectHandler;
 import apros.codeart.ddd.repository.ConstructorRepositoryImpl;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.access.DataPortal;

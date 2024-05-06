@@ -3,7 +3,6 @@ package apros.codeart.ddd.launcher;
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.cqrs.master.Forker;
 import apros.codeart.ddd.cqrs.slave.Brancher;
-import apros.codeart.ddd.cqrs.slave.RemoteService;
 import apros.codeart.ddd.message.internal.MessageHost;
 import apros.codeart.ddd.metadata.internal.MetadataLoader;
 import apros.codeart.ddd.repository.access.DataModelLoader;
@@ -39,9 +38,6 @@ final class DomainHost {
 
 		DataModelLoader.load(domainTypes);
 
-		// 远程服务的初始化
-		RemoteService.initialize();
-
 		// 领域事件宿主的初始化
 		EventHost.initialize();
 
@@ -61,7 +57,6 @@ final class DomainHost {
 	}
 
 	public static void cleanup() {
-		RemoteService.cleanup();
 		EventHost.cleanup();
 		Forker.cleanup();
 		Brancher.cleanup();
