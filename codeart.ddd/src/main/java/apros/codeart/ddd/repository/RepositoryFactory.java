@@ -1,46 +1,22 @@
 package apros.codeart.ddd.repository;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.IRepository;
+import apros.codeart.ddd.dynamic.IDynamicObject;
+import apros.codeart.ddd.repository.access.SqlDynamicRepository;
 import apros.codeart.i18n.Language;
-import apros.codeart.runtime.Activator;
+import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.LazyIndexer;
+import apros.codeart.util.SafeAccessImpl;
 
 class RepositoryFactory {
 
 	public static Class<?> getRepositoryType(Class<?> repositoryInterfaceType) {
-		var repository = getRepositoryTypeImpl(repositoryInterfaceType);
-		if (repository == null)
-			throw new DomainDrivenException(String.format("NotFoundRepository", repositoryInterfaceType.getName()));
-		return repository;
-	}
-
-	/**
-	 * 
-	 * 获取仓储实现的类型
-	 * 
-	 * @param repositoryInterfaceType
-	 * @return
-	 */
-	private static Class<?> getRepositoryTypeImpl(Class<?> repositoryInterfaceType) {
-		var type = getRepositoryTypeByRegister(repositoryInterfaceType);
-		if (type == null) {
-			type = getRepositoryTypeByAgree(repositoryInterfaceType);
-		}
-		return type;
-	}
-
-	private static Class<?> getRepositoryTypeByRegister(Class<?> repositoryInterfaceType) {
-		return RepositoryRegistrar.getRepositoryType(repositoryInterfaceType);
-	}
-
-	private static Class<?> getRepositoryTypeByAgree(Class<?> repositoryInterfaceType) {
-		// 例如：UserSubsytem.IUserRepository的仓储就是UserSubsytem.UserRepository
-		var repositoryName = String.format("%s.%s", repositoryInterfaceType.getPackageName(),
-				repositoryInterfaceType.getSimpleName().substring(1)); // substring(1) 是移除I
-		return Class.forName(repositoryInterfaceType.getModule(), repositoryName);
+		return _getRepositoryType.apply(repositoryInterfaceType);
 	}
 
 	/**
@@ -51,25 +27,37 @@ class RepositoryFactory {
 	 * @return
 	 */
 	public static Object create(Class<?> repositoryInterfaceType) {
-		return _cache.apply(repositoryInterfaceType);
+		return _getRepositoryInstance.apply(repositoryInterfaceType);
 	}
 
-	private static Function<Class<?>, Object> _cache = LazyIndexer.init((repositoryInterfaceType) -> {
-		var repository = createRepositoryImpl(repositoryInterfaceType);
-		if (repository == null)
-			throw new DomainDrivenException(
-					Language.strings("codeart.ddd", "NotFoundRepository", repositoryInterfaceType.getName()));
-		return repository;
-	});
+	private final static Map<Class<?>, Object> _registers = new HashMap<Class<?>, Object>();
 
-	private static Object createRepositoryImpl(Class<?> repositoryInterfaceType) {
-		var repository = RepositoryRegistrar.getRepository(repositoryInterfaceType);
-		if (repository == null) {
-			// 没有在注册里找到，那么根据名称约定
-			var repositoryType = getRepositoryTypeByAgree(repositoryInterfaceType);
-			repository = Activator.createInstance(repositoryType);
-		}
-		return repository;
+	private static final Function<Class<?>, Object> _getRepositoryInstance = LazyIndexer
+			.init((repositoryInterfaceType) -> {
+				var repository = _registers.get(repositoryInterfaceType);
+				if (repository != null)
+					return repository;
+				var instanceType = getRepositoryTypeByAgree(repositoryInterfaceType);
+				if (instanceType != null) {
+					return SafeAccessImpl.createSingleton(instanceType);
+				}
+				throw new DomainDrivenException(
+						Language.strings("codeart.ddd", "NotFoundRepository", repositoryInterfaceType.getName()));
+			});
+
+	/**
+	 * 
+	 * 按照约定名称得到仓储实例的类型
+	 * 
+	 * @param repositoryInterfaceType
+	 * @return
+	 */
+	private static Class<?> getRepositoryTypeByAgree(Class<?> repositoryInterfaceType) {
+		// 例如：UserSubsytem.IUserRepository的仓储就是UserSubsytem.UserRepository
+		// substring(1) 是移除I
+		var repositoryName = repositoryInterfaceType.getSimpleName().substring(1);
+		return TypeUtil.getClass(repositoryName);
+//		return Class.forName(repositoryInterfaceType.getModule(), repositoryName);
 	}
 
 	/**
@@ -80,6 +68,51 @@ class RepositoryFactory {
 	 * @param repository
 	 */
 	public static <T extends IRepository> void register(Class<?> repositoryInterfaceType, T repository) {
-		RepositoryRegistrar.register(repositoryInterfaceType, repository);
+		SafeAccessImpl.checkUp(repository);
+		_registers.put(repositoryInterfaceType, repository);
 	}
+
+	private static final Function<Class<?>, Class<?>> _getRepositoryType = LazyIndexer
+			.init((repositoryInterfaceType) -> {
+				var repository = _registers.get(repositoryInterfaceType);
+				if (repository != null)
+					return repository.getClass();
+
+				var instanceType = getRepositoryTypeByAgree(repositoryInterfaceType);
+				if (instanceType != null) {
+					return instanceType;
+				}
+				throw new DomainDrivenException(
+						Language.strings("codeart.ddd", "NotFoundRepository", repositoryInterfaceType.getName()));
+			});
+
+	// 通过实体类型得到仓储
+
+	public static Object getRepositoryByObject(Class<?> objectType) {
+		return _getRepositoryByObject.apply(objectType);
+	}
+
+	private static final Function<Class<?>, Object> _getRepositoryByObject = LazyIndexer.init((objectType) -> {
+
+		for (var p : _registers.entrySet()) {
+			var repository = (AbstractRepository<?>) p.getValue();
+			if (repository.getRootType() == objectType)
+				return repository;
+		}
+
+		// 通过约定找
+		// 例如：UserSubsytem.IUserRepository的仓储就是UserSubsytem.UserRepository
+		var repositoryName = String.format("%sRepository", objectType.getSimpleName());
+		if (TypeUtil.exists(repositoryName)) {
+			var repositoryType = TypeUtil.getClass(repositoryName);
+			return SafeAccessImpl.createSingleton(repositoryType);
+		}
+
+		// 都找不到，那么就判断是否为动态类型，如果是，则返回动态类型的通用仓储
+		if (objectType.isAssignableFrom(IDynamicObject.class))
+			return new SqlDynamicRepository(objectType.getSimpleName());
+
+		throw new DomainDrivenException(Language.strings("codeart.ddd", "NotFoundRepository", objectType.getName()));
+	});
+
 }

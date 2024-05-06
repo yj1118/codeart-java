@@ -25,11 +25,13 @@ public final class Repository {
 		RepositoryFactory.register(repositoryInterfaceType, repository);
 	}
 
-	/// <summary>
-	/// 创建一个仓储对象，同一类型的仓储对象会被缓存
-	/// </summary>
-	/// <typeparam name="TRepository"></typeparam>
-	/// <returns></returns>
+	/**
+	 * 创建一个仓储对象，同一类型的仓储对象会被缓存
+	 * 
+	 * @param <T>
+	 * @param repositoryInterfaceType
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	public static <T extends IRepository> T create(Class<T> repositoryInterfaceType) {
 		return (T) RepositoryFactory.create(repositoryInterfaceType);
@@ -52,8 +54,7 @@ public final class Repository {
 	public static Method getMethodFromRepository(Class<?> objectType, String methodName) {
 		if (StringUtil.isNullOrEmpty(methodName))
 			return null;
-		var objectTip = ObjectRepositoryImpl.getTip(objectType, true);
-		var repositoryType = RepositoryFactory.getRepositoryType(objectTip.repositoryInterfaceType());
+		var repositoryType = RepositoryFactory.getRepositoryByObject(objectType).getClass();
 
 		var method = MethodUtil.resolveByName(repositoryType, methodName);
 		if (method == null)
@@ -64,16 +65,11 @@ public final class Repository {
 
 //	#region 远程对象
 
+	@SuppressWarnings("unchecked")
 	public static <T extends IRepository> T create(String rootTypeName) {
 		var objectType = ObjectMetaLoader.get(rootTypeName).objectType();
-
+		return (T) RepositoryFactory.getRepositoryByObject(objectType);
 	}
-	
-	
-	private static Function<IRepository> 
-	
-	
-	
 
 //	#endregion
 
