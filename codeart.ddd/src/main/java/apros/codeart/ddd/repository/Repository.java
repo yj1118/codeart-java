@@ -4,6 +4,7 @@ import java.lang.reflect.Method;
 
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.IRepository;
+import apros.codeart.ddd.dynamic.IDynamicRepository;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.MethodUtil;
@@ -63,14 +64,27 @@ public final class Repository {
 		return method;
 	}
 
-//	#region 远程对象
-
-	@SuppressWarnings("unchecked")
-	public static <T extends IRepository> T create(String rootTypeName) {
+	/**
+	 * 
+	 * 根据对象名称获得对应的仓储
+	 * 
+	 * @param <T>
+	 * @param rootTypeName
+	 * @return
+	 */
+	public static IRepository create(String rootTypeName) {
 		var objectType = ObjectMetaLoader.get(rootTypeName).objectType();
-		return (T) RepositoryFactory.getRepositoryByObject(objectType);
+		return RepositoryFactory.getRepositoryByObject(objectType);
 	}
 
-//	#endregion
-
+	/**
+	 * 
+	 * 获得动态类型得仓储
+	 * 
+	 * @param dynamicTypeName
+	 * @return
+	 */
+	public static IDynamicRepository createDynamic(String dynamicTypeName) {
+		return (IDynamicRepository) create(dynamicTypeName);
+	}
 }

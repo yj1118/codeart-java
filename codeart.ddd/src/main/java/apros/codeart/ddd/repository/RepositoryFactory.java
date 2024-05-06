@@ -88,11 +88,11 @@ class RepositoryFactory {
 
 	// 通过实体类型得到仓储
 
-	public static Object getRepositoryByObject(Class<?> objectType) {
+	public static IRepository getRepositoryByObject(Class<?> objectType) {
 		return _getRepositoryByObject.apply(objectType);
 	}
 
-	private static final Function<Class<?>, Object> _getRepositoryByObject = LazyIndexer.init((objectType) -> {
+	private static final Function<Class<?>, IRepository> _getRepositoryByObject = LazyIndexer.init((objectType) -> {
 
 		for (var p : _registers.entrySet()) {
 			var repository = (AbstractRepository<?>) p.getValue();
@@ -105,7 +105,7 @@ class RepositoryFactory {
 		var repositoryName = String.format("%sRepository", objectType.getSimpleName());
 		if (TypeUtil.exists(repositoryName)) {
 			var repositoryType = TypeUtil.getClass(repositoryName);
-			return SafeAccessImpl.createSingleton(repositoryType);
+			return (IRepository) SafeAccessImpl.createSingleton(repositoryType);
 		}
 
 		// 都找不到，那么就判断是否为动态类型，如果是，则返回动态类型的通用仓储

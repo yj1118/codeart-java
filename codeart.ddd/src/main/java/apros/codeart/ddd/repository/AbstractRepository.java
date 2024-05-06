@@ -2,6 +2,7 @@ package apros.codeart.ddd.repository;
 
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.IRepository;
+import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.StatusEvent;
 import apros.codeart.ddd.StatusEventType;
 
@@ -19,6 +20,11 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 	protected void registerRollbackAdd(IAggregateRoot obj) {
 		var args = new RepositoryRollbackEventArgs(obj, this, RepositoryAction.Add);
 		DataContext.getCurrent().registerRollback(args);
+	}
+
+	@SuppressWarnings("unchecked")
+	public final TRoot find(Object id, QueryLevel level) {
+		return (TRoot) findRoot(id, level);
 	}
 
 	@SuppressWarnings("unchecked")
