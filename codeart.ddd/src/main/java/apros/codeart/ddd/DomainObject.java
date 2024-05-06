@@ -246,8 +246,12 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 	 * @param property
 	 */
 	void setPropertyChanged(DomainProperty property) {
-		_machine.setPropertyChanged(property.name());
-		duplicateMachineSetPropertyChanged(property.name());
+		this.setPropertyChanged(property.name());
+	}
+
+	void setPropertyChanged(String propertyName) {
+		_machine.setPropertyChanged(propertyName);
+		duplicateMachineSetPropertyChanged(propertyName);
 	}
 
 	/**
@@ -478,10 +482,15 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 	 * 
 	 * @param propertyName
 	 * @param value
+	 * @param markChanged  加载数据后，是否标记属性为已改变的
 	 */
-	public void loadValue(String propertyName, Object value) {
+	public void loadValue(String propertyName, Object value, boolean markChanged) {
 		var oldValue = this.dataProxy().load(propertyName);
 		this.dataProxy().save(propertyName, value, oldValue);
+
+		if (markChanged)
+			this.setPropertyChanged(propertyName);
+
 	}
 
 	/**
@@ -766,11 +775,15 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 		return objectType.getSimpleName().endsWith("Empty");// 为了不触发得到空对象带来的连锁构造，我们简单的认为空对象的名称末尾是 Empty即可，这也是CA的空对象定义约定
 	}
 
+	public void load(DTObject data) {
+		DTOMapper.load(this, data, false);
+	}
+
 	/**
 	 * 从dto中加载数据
 	 */
-	public void load(DTObject data) {
-		DTOMapper.load(this, data);
+	public void load(DTObject data, boolean markChanged) {
+		DTOMapper.load(this, data, markChanged);
 	}
 
 	@Override

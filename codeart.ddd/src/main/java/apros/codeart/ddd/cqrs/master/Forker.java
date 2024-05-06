@@ -111,10 +111,18 @@ public final class Forker {
 		var masters = CQRSConfig.masters();
 
 		for (var master : masters) {
+			// 虽然可以直接用名称，但是需要通过get验证下
 			var objectType = ObjectMetaLoader.get(master.name()).objectType();
 			RPCServer.initialize(ActionName.getObjectMeta(objectType), GetObjectMeta.Instance);
 		}
+	}
 
+	public static void cleanup() {
+		var masters = CQRSConfig.masters();
+
+		for (var master : masters) {
+			RPCServer.close(ActionName.getObjectMeta(master.name()));
+		}
 	}
 
 //	/**

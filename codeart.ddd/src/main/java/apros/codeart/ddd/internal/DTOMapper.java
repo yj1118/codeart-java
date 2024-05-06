@@ -68,7 +68,7 @@ public final class DTOMapper {
 	 * 从dto中加载数据
 	 */
 	@SuppressWarnings("unchecked")
-	public static void load(DomainObject target, DTObject data) {
+	public static void load(DomainObject target, DTObject data, boolean markChanged) {
 		var meta = ObjectMetaLoader.get(target.getClass());
 
 		for (var property : meta.properties()) {
@@ -78,16 +78,16 @@ public final class DTOMapper {
 
 			var obj = TypeUtil.as(value, DTObject.class);
 			if (obj != null) {
-				target.loadValue(property.name(), getObjectValue(target, property, obj));
+				target.loadValue(property.name(), getObjectValue(target, property, obj), markChanged);
 				continue;
 			}
 
 			var objs = TypeUtil.as(value, Iterable.class);
 			if (objs != null) {
-				target.loadValue(property.name(), getListValue(target, property, objs));
+				target.loadValue(property.name(), getListValue(target, property, objs), markChanged);
 				continue;
 			}
-			target.loadValue(property.name(), getPrimitiveValue(target, property, value));
+			target.loadValue(property.name(), getPrimitiveValue(target, property, value), markChanged);
 		}
 	}
 
@@ -152,7 +152,7 @@ public final class DTOMapper {
 			return DomainObject.getEmpty(objectType);
 
 		var obj = constructObject(objectType, data);
-		load(obj, data);
+		load(obj, data, false);
 		return obj;
 	}
 

@@ -137,7 +137,7 @@ public class DataTable {
 		return _middle;
 	}
 
-	void middle(DataTable value) {
+	void setMiddle(DataTable value) {
 		_middle = value;
 	}
 
@@ -552,7 +552,7 @@ public class DataTable {
 
 	private DataTableCommon _common;
 
-	DataTable(Class<?> objectType, DataTableType type, String name, Iterable<IDataField> objectFields,
+	public DataTable(Class<?> objectType, DataTableType type, String name, Iterable<IDataField> objectFields,
 			DataTable chainRoot, DataTable master, IDataField memberField) {
 
 		_id = DataTableUtil.getId(memberField, chainRoot, name);

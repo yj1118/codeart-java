@@ -12,10 +12,10 @@ import apros.codeart.ddd.repository.access.DataPortal;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.SafeAccess;
 
-class RemoteObjectUpdated {
+class RemoteObjectDeleted {
 
 	public static void subscribe(String typeName) {
-		var messageName = ActionName.objectUpdated(typeName);
+		var messageName = ActionName.objectDeleted(typeName);
 		DomainMessage.subscribe(messageName, handler);
 	}
 
@@ -25,29 +25,23 @@ class RemoteObjectUpdated {
 	}
 
 	@SafeAccess
-	private static class RemoteObjectUpdatedHandler extends RemoteObjectHandler {
+	private static class RemoteObjectDeletedHandler extends RemoteObjectHandler {
 
 		@SuppressWarnings("unchecked")
 		@Override
 		protected void handle(DTObject content) {
 
 			var typeName = content.getString("typeName");
-			var data = content.getObject("data");
+			var id = content.getValue("id");
 			var domainType = (Class<? extends IDomainObject>) ObjectMetaLoader.get(typeName).objectType();
 
 			DataContext.using(() -> {
-
-				var id = data.getValue("id");
 				var obj = (DomainObject) DataPortal.querySingle(domainType, id, QueryLevel.Single);
-
-				// 加载数据，并标记为已改变
-				obj.load(data, true);
-
-				DataPortal.update(obj);
+				DataPortal.delete(obj);
 			});
 
 		}
 	}
 
-	private static final RemoteObjectUpdatedHandler handler = new RemoteObjectUpdatedHandler();
+	private static final RemoteObjectDeletedHandler handler = new RemoteObjectDeletedHandler();
 }

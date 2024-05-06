@@ -93,16 +93,18 @@ final class DataTableRead {
 		return list;
 	}
 
-	/// <summary>
-	/// 读取基础数据的集合值
-	/// </summary>
-	/// <param name="tip"></param>
-	/// <param name="prmTip"></param>
-	/// <param name="parent"></param>
-	/// <param name="rootId"></param>
-	/// <param name="masterId"></param>
-	/// <param name="level"></param>
-	/// <returns></returns>
+	/**
+	 * 
+	 * 读取基础数据的集合值
+	 * 
+	 * @param tip
+	 * @param prmTip
+	 * @param parent
+	 * @param rootId
+	 * @param masterId
+	 * @param level
+	 * @return
+	 */
 	@SuppressWarnings("unchecked")
 	Object readValues(PropertyMeta tip, ConstructorParameterInfo prmTip, DomainObject parent, Object rootId,
 			Object masterId, QueryLevel level) {
@@ -187,14 +189,6 @@ final class DataTableRead {
 		return obj;
 	}
 
-	/// <summary>
-	///
-	/// </summary>
-	/// <param
-	/// name="defineType">如果是动态领域对象，那么该类型为定义领域属性的类型（也就是定义类型），否则是对象的实际类型</param>
-	/// <param name="objectType">实际存在内存中的实际类型</param>
-	/// <param name="data"></param>
-	/// <returns></returns>
 	private DomainObject createObjectImpl(Class<?> defineType, Class<?> objectType, MapData data, QueryLevel level) {
 		// 构造对象
 		DomainObject obj = constructObject(objectType, data, level);
@@ -242,12 +236,15 @@ final class DataTableRead {
 		}
 	}
 
-	/// <summary>
-	/// 加载属性
-	/// </summary>
-	/// <param name="objectType"></param>
-	/// <param name="data"></param>
-	/// <param name="obj"></param>
+	/**
+	 * 
+	 * 加载属性
+	 * 
+	 * @param objectType
+	 * @param data
+	 * @param obj
+	 * @param level
+	 */
 	private void loadProperties(Class<?> objectType, MapData data, DomainObject obj, QueryLevel level) {
 		var propertyTips = PropertyMeta.getProperties(objectType); // 此处不必考虑是否为派生类，直接赋值所有属性
 		for (var propertyTip : propertyTips) {

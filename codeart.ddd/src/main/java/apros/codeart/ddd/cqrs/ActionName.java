@@ -39,6 +39,10 @@ public final class ActionName {
 //		return String.format("d:get{0}", type.getSimpleName());
 //	});
 
+	public static String objectAdded(String typeName) {
+		return _getObjectAdded.apply(typeName);
+	}
+
 	/**
 	 * 
 	 * 对象已更新的事件
@@ -47,12 +51,16 @@ public final class ActionName {
 	 * @return
 	 */
 	public static String objectAdded(Class<?> type) {
-		return _getObjectAdded.apply(type);
+		return _getObjectAdded.apply(type.getSimpleName());
 	}
 
-	private static Function<Class<?>, String> _getObjectAdded = LazyIndexer.init((type) -> {
-		return String.format("d:cqrs-%sAdded", StringUtil.firstToLower(type.getSimpleName()));
+	private static Function<String, String> _getObjectAdded = LazyIndexer.init((typeName) -> {
+		return String.format("d:cqrs-%sAdded", StringUtil.firstToLower(typeName));
 	});
+
+	public static String objectUpdated(Class<?> type) {
+		return _getObjectUpdated.apply(type.getSimpleName());
+	}
 
 	/**
 	 * 
@@ -61,25 +69,29 @@ public final class ActionName {
 	 * @param type
 	 * @return
 	 */
-	public static String objectUpdated(Class<?> type) {
-		return _getObjectUpdated.apply(type);
+	public static String objectUpdated(String typeName) {
+		return _getObjectUpdated.apply(typeName);
 	}
 
-	private static Function<Class<?>, String> _getObjectUpdated = LazyIndexer.init((type) -> {
-		return String.format("d:cqrs-%sUpdated", StringUtil.firstToLower(type.getSimpleName()));
+	private static Function<String, String> _getObjectUpdated = LazyIndexer.init((typeName) -> {
+		return String.format("d:cqrs-%sUpdated", StringUtil.firstToLower(typeName));
 	});
+
+	public static String objectDeleted(Class<?> type) {
+		return objectDeleted(type.getSimpleName());
+	}
 
 	/// <summary>
 	/// 对象已删除
 	/// </summary>
 	/// <param name="type"></param>
 	/// <returns></returns>
-	public static String objectDeleted(Class<?> type) {
-		return _getObjectDeleted.apply(type);
+	public static String objectDeleted(String typeName) {
+		return _getObjectDeleted.apply(typeName);
 	}
 
-	private static Function<Class<?>, String> _getObjectDeleted = LazyIndexer.init((type) -> {
-		return String.format("d:cqrs-%sDeleted", StringUtil.firstToLower(type.getSimpleName()));
+	private static Function<String, String> _getObjectDeleted = LazyIndexer.init((typeName) -> {
+		return String.format("d:cqrs-%sDeleted", StringUtil.firstToLower(typeName));
 	});
 
 }

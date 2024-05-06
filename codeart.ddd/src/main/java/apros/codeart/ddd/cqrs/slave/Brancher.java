@@ -13,6 +13,8 @@ public final class Brancher {
 
 	public static void initialize() {
 		loadRemoteObjectMeta();
+
+		subscribeEvents();
 	}
 
 	private static void loadRemoteObjectMeta() {
@@ -30,6 +32,31 @@ public final class Brancher {
 		return RPCClient.invoke(methodName, (arg) -> {
 			arg.setString("name", name);
 		}).info();
+	}
+
+	private static void subscribeEvents() {
+		var slaves = CQRSConfig.slaves();
+		for (var slave : slaves) {
+			RemoteObjectAdded.subscribe(slave.name());
+			RemoteObjectUpdated.subscribe(slave.name());
+			RemoteObjectDeleted.subscribe(slave.name());
+		}
+	}
+
+	/**
+	 * 取消订阅
+	 */
+	private static void cancelEvents() {
+		var slaves = CQRSConfig.slaves();
+		for (var slave : slaves) {
+			RemoteObjectAdded.cancel(slave.name());
+			RemoteObjectUpdated.cancel(slave.name());
+			RemoteObjectDeleted.cancel(slave.name());
+		}
+	}
+
+	public static void cleanup() {
+		cancelEvents();
 	}
 
 }

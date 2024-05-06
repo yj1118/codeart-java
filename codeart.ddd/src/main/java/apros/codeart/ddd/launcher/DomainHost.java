@@ -6,7 +6,6 @@ import apros.codeart.ddd.cqrs.slave.Brancher;
 import apros.codeart.ddd.cqrs.slave.RemoteService;
 import apros.codeart.ddd.message.internal.MessageHost;
 import apros.codeart.ddd.metadata.internal.MetadataLoader;
-import apros.codeart.ddd.remotable.internal.RemotableImpl;
 import apros.codeart.ddd.repository.access.DataModelLoader;
 import apros.codeart.ddd.saga.internal.EventHost;
 import apros.codeart.i18n.Language;
@@ -40,9 +39,6 @@ final class DomainHost {
 
 		DataModelLoader.load(domainTypes);
 
-		// 执行远程能力特性的初始化，收集相关数据
-		RemotableImpl.initialize();
-
 		// 远程服务的初始化
 		RemoteService.initialize();
 
@@ -67,6 +63,8 @@ final class DomainHost {
 	public static void cleanup() {
 		RemoteService.cleanup();
 		EventHost.cleanup();
+		Forker.cleanup();
+		Brancher.cleanup();
 	}
 
 	/**

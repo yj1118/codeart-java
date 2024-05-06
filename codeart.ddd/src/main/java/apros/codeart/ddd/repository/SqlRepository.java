@@ -6,7 +6,7 @@ import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.MapData;
 import apros.codeart.ddd.QueryLevel;
-import apros.codeart.ddd.repository.access._DataPortal;
+import apros.codeart.ddd.repository.access.DataPortal;
 
 public abstract class SqlRepository<TRoot extends IAggregateRoot> extends AbstractRepository<TRoot> {
 
@@ -15,21 +15,21 @@ public abstract class SqlRepository<TRoot extends IAggregateRoot> extends Abstra
 	@Override
 	protected void persistAddRoot(TRoot obj) {
 		DataContext.using(() -> {
-			_DataPortal.insert((DomainObject) obj);
+			DataPortal.insert((DomainObject) obj);
 		});
 	}
 
 	@Override
 	protected void persistUpdateRoot(TRoot obj) {
 		DataContext.using(() -> {
-			_DataPortal.update((DomainObject) obj);
+			DataPortal.update((DomainObject) obj);
 		});
 	}
 
 	@Override
 	protected void persistDeleteRoot(TRoot obj) {
 		DataContext.using(() -> {
-			_DataPortal.delete((DomainObject) obj);
+			DataPortal.delete((DomainObject) obj);
 		});
 	}
 
@@ -37,7 +37,7 @@ public abstract class SqlRepository<TRoot extends IAggregateRoot> extends Abstra
 
 	@Override
 	protected TRoot persistFind(Object id, QueryLevel level) {
-		return _DataPortal.querySingle(this.getRootType(), id, level);
+		return DataPortal.querySingle(this.getRootType(), id, level);
 	}
 
 	/// <summary>
@@ -54,7 +54,7 @@ public abstract class SqlRepository<TRoot extends IAggregateRoot> extends Abstra
 			var dataContext = DataContext.getCurrent();
 			// 执行查询，并且向数据上下文中注册查询结果
 			return dataContext.registerQueried(objectType, level, () -> {
-				return _DataPortal.querySingle(objectType, expression, fillArg, level);
+				return DataPortal.querySingle(objectType, expression, fillArg, level);
 			});
 		});
 	}
@@ -72,7 +72,7 @@ public abstract class SqlRepository<TRoot extends IAggregateRoot> extends Abstra
 			var dataContext = DataContext.getCurrent();
 			// 执行查询，并且向数据上下文中注册查询结果
 			return dataContext.registerCollectionQueried(objectType, level, () -> {
-				return _DataPortal.query(objectType, expression, fillArg, level);
+				return DataPortal.query(objectType, expression, fillArg, level);
 			});
 
 		});
@@ -90,7 +90,7 @@ public abstract class SqlRepository<TRoot extends IAggregateRoot> extends Abstra
 		return DataContext.using(() -> {
 			var dataContext = DataContext.getCurrent();
 			return dataContext.registerPageQueried(objectType, level, () -> {
-				return _DataPortal.query(objectType, expression, pageIndex, pageSize, fillArg);
+				return DataPortal.query(objectType, expression, pageIndex, pageSize, fillArg);
 			});
 
 		});
@@ -99,7 +99,7 @@ public abstract class SqlRepository<TRoot extends IAggregateRoot> extends Abstra
 	public <T extends IAggregateRoot> int getCount(Class<T> objectType, String expression, Consumer<MapData> fillArg,
 			QueryLevel level) {
 		return DataContext.using(() -> {
-			return _DataPortal.getCount(objectType, expression, fillArg, level);
+			return DataPortal.getCount(objectType, expression, fillArg, level);
 		});
 	}
 
