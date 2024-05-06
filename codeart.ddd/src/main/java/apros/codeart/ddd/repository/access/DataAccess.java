@@ -87,9 +87,17 @@ public final class DataAccess {
 		return QueryRunner.queryScalars(_conn, sql, params);
 	}
 
+	public Iterable<Object> queryScalars(String sql, MapData params) {
+		return queryScalars(sql, params, QueryLevel.None);
+	}
+
 	public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, MapData params, QueryLevel level) {
 		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryScalars(elementType, _conn, sql, params);
+	}
+
+	public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, MapData params) {
+		return queryScalars(elementType, sql, params, QueryLevel.None);
 	}
 
 	public int[] queryScalarInts(String sql, MapData params, QueryLevel level) {
