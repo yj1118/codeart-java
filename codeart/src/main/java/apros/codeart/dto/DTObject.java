@@ -12,6 +12,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import org.apache.logging.log4j.util.Strings;
+
 import com.google.common.collect.Iterables;
 
 import apros.codeart.context.AppSession;
@@ -760,7 +762,17 @@ public class DTObject implements INullProxy {
 
 	/**
 	 * 
-	 * 以键值对得形式遍历对象，请注意 {@findExp} 对应的成员必须为对象类型
+	 * 以键值对的形式遍历对象
+	 * 
+	 * @param action
+	 */
+	public void each(BiConsumer<String, Object> action) {
+		each(Strings.EMPTY, action);
+	}
+
+	/**
+	 * 
+	 * 以键值对的形式遍历对象，请注意 {@findExp} 对应的成员必须为对象类型
 	 * 
 	 * @param findExp
 	 * @param action

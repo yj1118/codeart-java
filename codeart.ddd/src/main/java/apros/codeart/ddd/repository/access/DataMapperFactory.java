@@ -4,7 +4,7 @@ import java.util.function.Function;
 
 import apros.codeart.ddd.IRepository;
 import apros.codeart.ddd.metadata.ObjectMeta;
-import apros.codeart.ddd.metadata.ObjectMetaLoader;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.Repository;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.SafeAccessImpl;

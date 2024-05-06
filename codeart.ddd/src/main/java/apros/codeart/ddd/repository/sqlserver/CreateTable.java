@@ -2,11 +2,11 @@ package apros.codeart.ddd.repository.sqlserver;
 
 import com.google.common.collect.Iterables;
 
-import apros.codeart.ddd.repository.access.AccessUtil;
 import apros.codeart.ddd.repository.access.CreateTableQB;
 import apros.codeart.ddd.repository.access.DataTable;
 import apros.codeart.ddd.repository.access.DbType;
 import apros.codeart.ddd.repository.access.IDataField;
+import apros.codeart.ddd.repository.access.internal.AccessUtil;
 import apros.codeart.util.SafeAccess;
 import apros.codeart.util.StringUtil;
 

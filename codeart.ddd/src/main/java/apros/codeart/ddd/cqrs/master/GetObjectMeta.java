@@ -1,7 +1,7 @@
 package apros.codeart.ddd.cqrs.master;
 
 import apros.codeart.context.AppSession;
-import apros.codeart.ddd.metadata.ObjectMetaLoader;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.TransferData;
 import apros.codeart.mq.rpc.server.IRPCHandler;

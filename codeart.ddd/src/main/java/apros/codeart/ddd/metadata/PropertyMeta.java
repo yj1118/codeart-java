@@ -7,6 +7,7 @@ import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.IEmptyable;
 import apros.codeart.ddd.IPropertyDataLoader;
 import apros.codeart.ddd.IPropertyValidator;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.runtime.TypeUtil;
 
 public class PropertyMeta {

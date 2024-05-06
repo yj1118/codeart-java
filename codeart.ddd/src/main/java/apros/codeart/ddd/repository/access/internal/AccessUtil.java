@@ -1,7 +1,10 @@
-package apros.codeart.ddd.repository.access;
+package apros.codeart.ddd.repository.access.internal;
+
+import java.lang.annotation.Annotation;
 
 import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.metadata.PropertyMeta;
+import apros.codeart.ddd.repository.access.GeneratedField;
 import apros.codeart.ddd.validation.ASCIIStringValidator;
 import apros.codeart.ddd.validation.StringLengthValidator;
 import apros.codeart.runtime.TypeUtil;
@@ -34,4 +37,16 @@ public final class AccessUtil {
 		return meta.name().equalsIgnoreCase(EntityObject.IdPropertyName);
 	}
 
+	/**
+	 * 
+	 * 对仓储化有影响的验证器
+	 * 
+	 * @param validatorAnnType
+	 * @return
+	 */
+	public static boolean hasImpact(Class<? extends Annotation> validatorAnnType) {
+		if (validatorAnnType.equals(StringLengthValidator.class) || validatorAnnType.equals(ASCIIStringValidator.class))
+			return true;
+		return false;
+	}
 }

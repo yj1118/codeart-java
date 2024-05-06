@@ -1,5 +1,8 @@
 package apros.codeart.ddd.metadata;
 
+import apros.codeart.ddd.IDomainObject;
+import apros.codeart.ddd.metadata.internal.SchemeCodeParser;
+import apros.codeart.ddd.metadata.internal.SchemeCodeReader;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.ListUtil;
 
@@ -21,6 +24,10 @@ public final class SchemeCode {
 
 	public static DTObject get(ObjectMeta meta, Iterable<String> propertyNames) {
 		return SchemeCodeReader.read(meta, propertyNames);
+	}
+
+	public static Class<? extends IDomainObject> parse(DTObject scheme) {
+		return SchemeCodeParser.generate(scheme);
 	}
 
 //	public static String get(ObjectMeta meta) {

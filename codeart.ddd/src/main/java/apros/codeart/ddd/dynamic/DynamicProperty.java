@@ -8,7 +8,7 @@ import apros.codeart.ddd.dynamic.internal.TypeDefine;
 import apros.codeart.ddd.dynamic.internal.TypeEntry;
 import apros.codeart.ddd.dynamic.internal.ValueEntry;
 import apros.codeart.ddd.metadata.ObjectMeta;
-import apros.codeart.ddd.metadata.ObjectMetaLoader;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;

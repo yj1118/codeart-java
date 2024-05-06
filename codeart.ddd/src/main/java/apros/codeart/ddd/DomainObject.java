@@ -10,7 +10,7 @@ import com.google.common.base.Preconditions;
 import apros.codeart.ddd.internal.DTOMapper;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.ObjectMeta;
-import apros.codeart.ddd.metadata.ObjectMetaLoader;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
 import apros.codeart.dto.serialization.IDTOSerializable;
 import apros.codeart.i18n.Language;

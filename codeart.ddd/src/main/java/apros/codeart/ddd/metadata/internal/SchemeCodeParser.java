@@ -1,19 +1,24 @@
-package apros.codeart.ddd.metadata;
+package apros.codeart.ddd.metadata.internal;
 
 import static apros.codeart.runtime.Util.propagate;
 
 import apros.codeart.bytecode.ClassGenerator;
+import apros.codeart.bytecode.FieldGenerator;
 import apros.codeart.bytecode.MethodGenerator;
 import apros.codeart.ddd.DomainProperty;
+import apros.codeart.ddd.IDomainObject;
 import apros.codeart.ddd.dynamic.DynamicEntity;
 import apros.codeart.ddd.dynamic.DynamicObject;
 import apros.codeart.ddd.dynamic.DynamicRoot;
+import apros.codeart.ddd.metadata.DomainObjectCategory;
+import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.repository.ConstructorRepository;
 import apros.codeart.ddd.repository.PropertyRepository;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
+import apros.codeart.runtime.TypeUtil;
 
-final class SchemeCodeParser {
+public final class SchemeCodeParser {
 
 	private SchemeCodeParser() {
 	}
@@ -31,7 +36,8 @@ final class SchemeCodeParser {
 	 * 
 	 */
 
-	public static Class<?> generate(DTObject scheme) {
+	@SuppressWarnings("unchecked")
+	public static Class<? extends IDomainObject> generate(DTObject scheme) {
 
 		var className = scheme.getString("name");
 		var category = DomainObjectCategory.valueOf(scheme.getByte("category"));
@@ -63,7 +69,7 @@ final class SchemeCodeParser {
 				}
 			}
 
-			return cg.toClass();
+			return (Class<? extends IDomainObject>) cg.toClass();
 
 		} catch (Exception e) {
 			throw propagate(e);
@@ -153,11 +159,13 @@ final class SchemeCodeParser {
 			var lazy = property.getBoolean("lazy");
 
 			try (var fg = cg.defineStaticFinalField(propertyName, DomainProperty.class)) {
+				// 为领域属性打上标签
 				if (lazy) {
 					fg.addAnnotation(PropertyRepository.class, (ag) -> {
 						ag.add("lazy", true);
 					});
 				}
+				appendValidators(property, fg);
 			}
 
 			switch (category) {
@@ -221,6 +229,33 @@ final class SchemeCodeParser {
 			}
 		} catch (ClassNotFoundException e) {
 			throw propagate(e);
+		}
+
+	}
+
+	private static void appendValidators(DTObject property, FieldGenerator fg) {
+
+		var vals = property.getObjects("vals", false);
+		if (vals == null)
+			return;
+
+		for (DTObject val : vals) {
+			var name = val.getString("name");
+
+			var valType = TypeUtil.getClass(name);
+			if (valType == null)
+				continue; // 没有找到验证器类型，证明是远程端自己定义的，不必理会
+
+			if (val.exist("data")) {
+				fg.addAnnotation(valType, (ag) -> {
+					val.each("data", (n, v) -> {
+						ag.add(n, v);
+					});
+				});
+			} else {
+				fg.addAnnotation(valType);
+			}
+
 		}
 
 	}

@@ -11,6 +11,7 @@ import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.ObjectMeta;
 import apros.codeart.ddd.metadata.PropertyMeta;
+import apros.codeart.ddd.repository.access.internal.AccessUtil;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;

@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableList;
 
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.metadata.ObjectMeta;
-import apros.codeart.ddd.metadata.ObjectMetaLoader;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.i18n.Language;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;

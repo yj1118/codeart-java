@@ -1,4 +1,4 @@
-package apros.codeart.ddd.metadata;
+package apros.codeart.ddd.metadata.internal;
 
 import static apros.codeart.i18n.Language.strings;
 import static apros.codeart.runtime.Util.propagate;
@@ -10,6 +10,9 @@ import apros.codeart.ddd.DerivedClassImpl;
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.IDomainObject;
 import apros.codeart.ddd.ObjectValidatorImpl;
+import apros.codeart.ddd.metadata.DomainObjectCategory;
+import apros.codeart.ddd.metadata.ObjectMeta;
+import apros.codeart.ddd.metadata.ObjectRepositoryTip;
 import apros.codeart.ddd.repository.ObjectRepositoryImpl;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.FieldUtil;

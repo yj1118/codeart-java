@@ -1,8 +1,10 @@
-package apros.codeart.ddd.metadata;
+package apros.codeart.ddd.metadata.internal;
 
+import apros.codeart.ddd.metadata.ObjectMeta;
+import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.dto.DTObject;
 
-final class SchemeCodeReader {
+public final class SchemeCodeReader {
 	private SchemeCodeReader() {
 	}
 
@@ -42,7 +44,10 @@ final class SchemeCodeReader {
 		for (var validator : tip.validators()) {
 			var val = DTObject.editable();
 			val.setString("name", validator.getClass().getSimpleName());
-			val.combineObject("data", validator.getData());
+			var valData = validator.getData();
+			if (valData != null && !valData.isEmpty()) {
+				val.combineObject("data", valData);
+			}
 			data.push("vals", val);
 		}
 

@@ -4,6 +4,7 @@ import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.PropertyValidatorImpl;
 import apros.codeart.ddd.ValidationResult;
+import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 
 public class StringLengthValidator extends PropertyValidatorImpl {
@@ -41,4 +42,13 @@ public class StringLengthValidator extends PropertyValidatorImpl {
 	}
 
 	public static final String ErrorCode = "StringLengthError";
+
+	@Override
+	public DTObject getData() {
+		// 请注意，数据格式要与注解的属性对应上
+		DTObject data = DTObject.editable();
+		data.setInt("min", this.min());
+		data.setInt("max", this.max());
+		return data;
+	}
 }

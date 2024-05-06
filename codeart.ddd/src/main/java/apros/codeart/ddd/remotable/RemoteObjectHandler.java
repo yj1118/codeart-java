@@ -8,7 +8,7 @@ import apros.codeart.context.AppSession;
 import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.message.DomainMessageHandler;
-import apros.codeart.ddd.metadata.ObjectMetaLoader;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.event.EventPriority;
 import apros.codeart.runtime.TypeUtil;

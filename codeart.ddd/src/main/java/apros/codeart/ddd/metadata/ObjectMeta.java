@@ -76,8 +76,8 @@ public class ObjectMeta {
 		return _repositoryTip;
 	}
 
-	ObjectMeta(String name, Class<?> objectType, DomainObjectCategory category, Iterable<IObjectValidator> validators,
-			ObjectRepositoryTip repositoryTip) {
+	public ObjectMeta(String name, Class<?> objectType, DomainObjectCategory category,
+			Iterable<IObjectValidator> validators, ObjectRepositoryTip repositoryTip) {
 		_name = name;
 		_objectType = objectType;
 		_category = category;

@@ -1,10 +1,11 @@
 package apros.codeart.ddd.repository.access;
 
 import apros.codeart.ddd.EntityObject;
-import apros.codeart.ddd.metadata.ObjectMetaLoader;
 import apros.codeart.ddd.metadata.PropertyAccessLevel;
 import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.metadata.ValueMeta;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
+import apros.codeart.ddd.repository.access.internal.AccessUtil;
 import apros.codeart.util.Guid;
 import apros.codeart.util.ListUtil;
 

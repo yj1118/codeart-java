@@ -3,7 +3,7 @@ package apros.codeart.ddd.repository.access;
 import java.util.function.Function;
 
 import apros.codeart.ddd.IDomainObject;
-import apros.codeart.ddd.metadata.ObjectMetaLoader;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.util.LazyIndexer;
 
 public final class DataModelLoader {

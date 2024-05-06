@@ -10,10 +10,10 @@ import java.util.function.BiFunction;
 import com.google.common.base.Objects;
 
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
-import apros.codeart.ddd.metadata.ObjectMetaLoader;
 import apros.codeart.ddd.metadata.PropertyAccessLevel;
 import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.metadata.ValueMeta;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.PropertyRepository;
 import apros.codeart.ddd.repository.PropertyRepositoryImpl;
 import apros.codeart.runtime.FieldUtil;

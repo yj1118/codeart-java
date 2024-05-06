@@ -9,7 +9,7 @@ import java.util.function.Supplier;
 import apros.codeart.TestSupport;
 import apros.codeart.ddd.IDomainObject;
 import apros.codeart.ddd.metadata.DomainObjectCategory;
-import apros.codeart.ddd.metadata.ObjectMetaLoader;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.util.ListUtil;
 
 /**

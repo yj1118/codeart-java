@@ -5,7 +5,7 @@ import java.util.function.Function;
 
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.DomainObject;
-import apros.codeart.ddd.metadata.MetadataLoader;
+import apros.codeart.ddd.metadata.internal.MetadataLoader;
 import apros.codeart.ddd.remotable.Remotable;
 import apros.codeart.i18n.Language;
 import apros.codeart.util.LazyIndexer;

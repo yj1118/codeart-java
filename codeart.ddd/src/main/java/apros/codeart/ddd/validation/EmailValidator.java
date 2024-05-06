@@ -6,6 +6,7 @@ import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.PropertyValidatorImpl;
 import apros.codeart.ddd.ValidationResult;
+import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.util.StringUtil;
 
@@ -32,5 +33,11 @@ public class EmailValidator extends PropertyValidatorImpl {
 			result.append(property.name(), "email",
 					Language.strings("codeart.ddd", "IncorrectEmailFormat", property.call()));
 
+	}
+
+	@Override
+	public DTObject getData() {
+		// 没有数据可以提供传输时使用
+		return null;
 	}
 }
