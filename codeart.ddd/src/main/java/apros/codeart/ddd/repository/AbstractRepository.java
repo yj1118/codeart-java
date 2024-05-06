@@ -2,14 +2,13 @@ package apros.codeart.ddd.repository;
 
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.IRepository;
-import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.StatusEvent;
 import apros.codeart.ddd.StatusEventType;
 
 public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends PersistRepository
 		implements IRepository {
 
-	protected abstract Class<TRoot> getRootType();
+	protected abstract Class<? extends TRoot> getRootType();
 
 	// #region 增加数据
 
@@ -23,11 +22,11 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 	}
 
 	@SuppressWarnings("unchecked")
-	public void addRoot(IAggregateRoot obj) {
+	public final void addRoot(IAggregateRoot obj) {
 		add((TRoot) obj);
 	}
 
-	public void add(TRoot obj) {
+	public final void add(TRoot obj) {
 		if (obj.isEmpty())
 			return;
 
@@ -43,7 +42,7 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void persistAdd(IAggregateRoot obj) {
+	public final void persistAdd(IAggregateRoot obj) {
 		if (obj.isEmpty())
 			return;
 		TRoot root = (TRoot) obj;
@@ -57,21 +56,21 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 
 //	region 修改数据
 
-	protected void registerRollbackUpdate(IAggregateRoot obj) {
+	protected final void registerRollbackUpdate(IAggregateRoot obj) {
 		var args = new RepositoryRollbackEventArgs(obj, this, RepositoryAction.Update);
 		DataContext.getCurrent().registerRollback(args);
 	}
 
-	protected void registerUpdated(IAggregateRoot obj) {
+	protected final void registerUpdated(IAggregateRoot obj) {
 		DataContext.getCurrent().registerUpdated(obj, this);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void updateRoot(IAggregateRoot obj) {
+	public final void updateRoot(IAggregateRoot obj) {
 		update((TRoot) obj);
 	}
 
-	public void update(TRoot obj) {
+	public final void update(TRoot obj) {
 		if (obj.isEmpty())
 			return;
 
@@ -87,7 +86,7 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void persistUpdate(IAggregateRoot obj) {
+	public final void persistUpdate(IAggregateRoot obj) {
 		if (obj.isEmpty())
 			return;
 		TRoot root = (TRoot) obj;
@@ -101,21 +100,21 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 
 //	region 删除数据
 
-	protected void registerRollbackDelete(IAggregateRoot obj) {
+	protected final void registerRollbackDelete(IAggregateRoot obj) {
 		var args = new RepositoryRollbackEventArgs(obj, this, RepositoryAction.Delete);
 		DataContext.getCurrent().registerRollback(args);
 	}
 
-	protected void registerDeleted(IAggregateRoot obj) {
+	protected final void registerDeleted(IAggregateRoot obj) {
 		DataContext.getCurrent().registerDeleted(obj, this);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void deleteRoot(IAggregateRoot obj) {
+	public final void deleteRoot(IAggregateRoot obj) {
 		update((TRoot) obj);
 	}
 
-	public void delete(TRoot obj) {
+	public final void delete(TRoot obj) {
 		if (obj.isEmpty())
 			return;
 
@@ -131,7 +130,7 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void persistDelete(IAggregateRoot obj) {
+	public final void persistDelete(IAggregateRoot obj) {
 		if (obj.isEmpty())
 			return;
 		TRoot root = (TRoot) obj;
@@ -144,18 +143,5 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 	}
 
 	protected abstract void persistDeleteRoot(TRoot obj);
-
-	@Override
-	public IAggregateRoot findRoot(Object id, QueryLevel level) {
-		IAggregateRoot[] results = new IAggregateRoot[1];
-		DataContext.using(() -> {
-			results[0] = DataContext.getCurrent().registerQueried(this.getRootType(), level, () -> {
-				return persistFind(id, level);
-			});
-		});
-		return results[0];
-	}
-
-	protected abstract TRoot persistFind(Object id, QueryLevel level);
 
 }

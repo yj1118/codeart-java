@@ -3,7 +3,6 @@ package apros.codeart.ddd.repository.access;
 import java.util.HashMap;
 import java.util.Map;
 
-import apros.codeart.ddd.QueryLevel;
 import apros.codeart.util.SafeAccessImpl;
 
 public abstract class DatabaseAgent implements IDatabaseAgent {
@@ -20,11 +19,4 @@ public abstract class DatabaseAgent implements IDatabaseAgent {
 	public <T extends IQueryBuilder> T getQueryBuilder(Class<T> qbClass) {
 		return (T) _queryBuilders.get(qbClass);
 	}
-
-	@Override
-	public String supplementLock(String sql, QueryLevel level) {
-		// 默认情况下，数据库不会通过sql干涉锁（sqlserver例外）
-		return sql;
-	}
-
 }

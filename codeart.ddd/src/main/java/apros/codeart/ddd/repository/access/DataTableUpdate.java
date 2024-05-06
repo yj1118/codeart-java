@@ -73,7 +73,7 @@ final class DataTableUpdate {
 			data.put(EntityObject.IdPropertyName, DataTableUtil.getObjectId(obj));
 
 			var sql = getUpdateSql(data);
-			DataAccess.getCurrent().execute(sql, data);
+			DataAccess.current().execute(sql, data);
 
 			// 更新代理对象中的数据
 			((DataProxyImpl) obj.dataProxy()).originalData().update(data);
@@ -107,7 +107,7 @@ final class DataTableUpdate {
 		data.put(EntityObject.IdPropertyName, id);
 
 		// 更新版本号
-		DataAccess.getCurrent().execute(getUpdateVersionSql(), data);
+		DataAccess.current().execute(getUpdateVersionSql(), data);
 
 		// 更新代理对象的版本号
 		var dataVersion = _self.type() == DataTableType.AggregateRoot ? _self.getDataVersion(id)
@@ -459,7 +459,7 @@ final class DataTableUpdate {
 		var builder = DataSource.getQueryBuilder(DecrementAssociatedQB.class);
 		var sql = builder.build(new QueryDescription(_self));
 		// 递减引用次数不需要复刻
-		DataAccess.getCurrent().execute(sql, data);
+		DataAccess.current().execute(sql, data);
 	}
 
 }

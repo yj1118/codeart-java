@@ -7,9 +7,11 @@ import apros.codeart.ddd.MapData;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.access.internal.QueryRunner;
-import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.dto.DTObject;
 
+/**
+ * 所有查询都要通过该对象，由该对象传递锁定级别给DataContext
+ */
 public final class DataAccess {
 
 	private Connection _conn;
@@ -38,95 +40,88 @@ public final class DataAccess {
 		return QueryRunner.execute(_conn, sql, param);
 	}
 
-	public Object queryScalar(String sql, MapData params) {
+	public Object queryScalar(String sql, MapData params, QueryLevel level) {
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryScalar(_conn, sql, params);
 	}
 
-	public Object queryScalar(String sql, MapData params, QueryLevel level) {
-		sql = supplementLock(sql, level);
-		return QueryRunner.queryScalar(_conn, sql, params);
+	public Object queryScalar(String sql, MapData params) {
+		return queryScalar(sql, params, QueryLevel.None);
 	}
 
 	public <T> T queryScalar(Class<T> valueType, String sql, MapData param, QueryLevel level) {
-		sql = supplementLock(sql, level);
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryScalar(valueType, _conn, sql, param);
 	}
 
-	public int queryScalarInt(String sql, MapData params) {
-		return QueryRunner.queryScalarInt(_conn, sql, params);
+	public <T> T queryScalar(Class<T> valueType, String sql, MapData param) {
+		return queryScalar(valueType, sql, param, QueryLevel.None);
 	}
 
 	public int queryScalarInt(String sql, MapData params, QueryLevel level) {
-		sql = supplementLock(sql, level);
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryScalarInt(_conn, sql, params);
 	}
 
 	public long queryScalarLong(String sql, MapData params, QueryLevel level) {
-		sql = supplementLock(sql, level);
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryScalarLong(_conn, sql, params);
 	}
 
-	public long queryScalarLong(String sql) {
+	public long queryScalarLong(String sql, QueryLevel level) {
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryScalarLong(_conn, sql, null);
 	}
 
+	public long queryScalarLong(String sql) {
+		return queryScalarLong(sql, QueryLevel.None);
+	}
+
 	public UUID queryScalarGuid(String sql, MapData params, QueryLevel level) {
-		sql = supplementLock(sql, level);
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryScalarGuid(_conn, sql, params);
 	}
 
 	public Iterable<Object> queryScalars(String sql, MapData params, QueryLevel level) {
-		sql = supplementLock(sql, level);
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryScalars(_conn, sql, params);
 	}
 
 	public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, MapData params, QueryLevel level) {
-		sql = supplementLock(sql, level);
-		return QueryRunner.queryScalars(elementType, _conn, sql, params);
-	}
-
-	public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, MapData params) {
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryScalars(elementType, _conn, sql, params);
 	}
 
 	public int[] queryScalarInts(String sql, MapData params, QueryLevel level) {
-		sql = supplementLock(sql, level);
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryScalarInts(_conn, sql, params);
 	}
 
 	public DTObject queryDTO(String sql, MapData params, QueryLevel level) {
-		sql = supplementLock(sql, level);
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryDTO(_conn, sql, params);
 	}
 
 	public Iterable<DTObject> queryDTOs(String sql, MapData params, QueryLevel level) {
-		sql = supplementLock(sql, level);
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryDTOs(_conn, sql, params);
 	}
 
 	public MapData queryRow(String sql, MapData params, QueryLevel level) {
-		sql = supplementLock(sql, level);
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryRow(_conn, sql, params);
-	}
-
-	public MapData queryRow(String sql, MapData params) {
-		return QueryRunner.queryRow(_conn, sql, params);
-	}
-
-	public Iterable<MapData> queryRows(String sql, MapData params) {
-		return QueryRunner.queryRows(_conn, sql, params);
 	}
 
 	public Iterable<MapData> queryRows(String sql, MapData params, QueryLevel level) {
-		sql = supplementLock(sql, level);
+		DataContext.getCurrent().openLock(level);
 		return QueryRunner.queryRows(_conn, sql, params);
 	}
 
-	private static String supplementLock(String sql, QueryLevel level) {
-		return SqlStatement.supplementLock(sql, level);
+	public Iterable<MapData> queryRows(String sql, MapData params) {
+		return queryRows(sql, params, QueryLevel.None);
 	}
 
-	public static DataAccess getCurrent() {
+	public static DataAccess current() {
 		if (!DataContext.existCurrent())
 			return null;
 		return DataContext.getCurrent().connection().access();

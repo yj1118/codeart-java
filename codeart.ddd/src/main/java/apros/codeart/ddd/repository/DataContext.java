@@ -103,13 +103,13 @@ public class DataContext implements IDataContext {
 		_buffer.remove(objectType, id);
 	}
 
-	public IAggregateRoot obtainBuffer(Class<?> objectType, Object id, int dataVersion, Supplier<IAggregateRoot> load,
+	public IAggregateRoot obtainBuffer(Class<?> objectType, Object id, Supplier<IAggregateRoot> load,
 			boolean isMirror) {
 
 		if (_buffer == null)
 			_buffer = new DomainBufferImpl();
 
-		var obj = _buffer.obtain(objectType, id, dataVersion, load);
+		var obj = _buffer.obtain(objectType, id, load);
 
 		if (isMirror)
 			addMirror(obj);
@@ -155,35 +155,6 @@ public class DataContext implements IDataContext {
 
 	private boolean isLockQuery(QueryLevel level) {
 		return level.equals(QueryLevel.HoldSingle) || level.equals(QueryLevel.Single) || level.equals(QueryLevel.Share);
-	}
-
-//	region 领域对象查询服务
-
-	/**
-	 * 向数据上下文注册查询，该方法会控制锁和同步查询结果
-	 */
-	public <T extends IAggregateRoot> T registerQueried(Class<T> objectType, QueryLevel level,
-			Supplier<T> persistQuery) {
-		this.openLock(level);
-		return persistQuery.get();
-	}
-
-	/**
-	 * 向数据上下文注册集合查询，该方法会控制锁和同步查询结果
-	 */
-	public <T extends IAggregateRoot> Iterable<T> registerCollectionQueried(Class<T> objectType, QueryLevel level,
-			Supplier<Iterable<T>> persistQuery) {
-		this.openLock(level);
-		return persistQuery.get();
-	}
-
-	/**
-	 * 向数据上下文注册查询，该方法会控制锁和同步查询结果
-	 */
-	public <T extends IAggregateRoot> Page<T> registerPageQueried(Class<T> objectType, QueryLevel level,
-			Supplier<Page<T>> persistQuery) {
-		this.openLock(level);
-		return persistQuery.get();
 	}
 
 //	region 执行计划

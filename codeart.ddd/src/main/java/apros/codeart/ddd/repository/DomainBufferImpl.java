@@ -55,9 +55,9 @@ class DomainBufferImpl {
 
 //	 #region 在缓冲池中加载或创建对象
 
-	public IAggregateRoot obtain(Class<?> objectType, Object id, int dataVersion, Supplier<IAggregateRoot> load) {
+	public IAggregateRoot obtain(Class<?> objectType, Object id, Supplier<IAggregateRoot> load) {
 		var uniqueKey = getUniqueKey(objectType, id);
-		return obtainImpl(uniqueKey, dataVersion, load);
+		return obtainImpl(uniqueKey, load);
 	}
 
 	/// <summary>
@@ -68,12 +68,11 @@ class DomainBufferImpl {
 	/// <param name="dataVersion"></param>
 	/// <param name="load"></param>
 	/// <returns></returns>
-	private IAggregateRoot obtainImpl(String uniqueKey, int dataVersion, Supplier<IAggregateRoot> load) {
+	private IAggregateRoot obtainImpl(String uniqueKey, Supplier<IAggregateRoot> load) {
 		var result = ListUtil.find(_items, (t) -> t.uniqueKey().equals(uniqueKey));
 
 		if (result != null) {
-			if (result.dataVersion() == dataVersion)
-				return result;
+			return result;
 		}
 
 		// 更新缓冲区

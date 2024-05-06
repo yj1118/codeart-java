@@ -9,11 +9,10 @@ public interface IDynamicRepository extends IRepository {
 	 * 
 	 * 从仓储中根据编号加载动态根对象
 	 * 
-	 * @param <T>
-	 * @param rootType
+	 * @param typeName
 	 * @param id
 	 * @param level
 	 * @return
 	 */
-	<T extends DynamicRoot> T find(Class<T> rootType, Object id, QueryLevel level);
+	DynamicRoot find(String typeName, Object id, QueryLevel level);
 }

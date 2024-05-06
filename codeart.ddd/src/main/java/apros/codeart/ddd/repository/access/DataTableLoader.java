@@ -114,7 +114,7 @@ final class DataTableLoader {
 		// 需要创建EntityObject从表和中间表
 		var slave = createEntityObject(root, master, memberField, objectType);
 		var middle = createMiddleTable(slave, memberField);
-		slave.middle(middle);
+		slave.setMiddle(middle);
 		return slave;
 	}
 
@@ -165,7 +165,7 @@ final class DataTableLoader {
 			Class<?> objectType) {
 		var slave = createValueObject(root, master, memberField, objectType);
 		var middle = createMiddleTable(slave, memberField);
-		slave.middle(middle);
+		slave.setMiddle(middle);
 		return slave;
 	}
 
@@ -195,7 +195,7 @@ final class DataTableLoader {
 		// 字段为根对象的集合，那么仅创建中间表
 		var slave = createAggregateRoot(root, master, memberField, objectType);
 		var middle = createMiddleTable(slave, memberField);
-		slave.middle(middle);
+		slave.setMiddle(middle);
 		return slave;
 	}
 

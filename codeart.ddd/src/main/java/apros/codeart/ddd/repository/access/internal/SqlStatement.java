@@ -1,6 +1,5 @@
 package apros.codeart.ddd.repository.access.internal;
 
-import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.access.DataSource;
 
 public final class SqlStatement {
@@ -25,17 +24,6 @@ public final class SqlStatement {
 	 */
 	public static String unQualifier(String field) {
 		return DataSource.getAgent().unQualifier(field);
-	}
-
-	/**
-	 * 为sql补充锁提示
-	 * 
-	 * @param sql
-	 * @param level
-	 * @return
-	 */
-	public static String supplementLock(String sql, QueryLevel level) {
-		return DataSource.getAgent().supplementLock(sql, level);
 	}
 
 	/**

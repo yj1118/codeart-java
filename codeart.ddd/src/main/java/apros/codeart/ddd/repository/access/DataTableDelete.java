@@ -80,7 +80,7 @@ final class DataTableDelete {
 		data.put(EntityObject.IdPropertyName, id);
 
 		var sql = getDeleteSql();
-		DataAccess.getCurrent().execute(sql, data);
+		DataAccess.current().execute(sql, data);
 	}
 
 	private String getDeleteSql() {
@@ -315,7 +315,7 @@ final class DataTableDelete {
 		data.put(GeneratedField.SlaveIdName, slaveId);
 
 		var sql = getDeleteSql();
-		DataAccess.getCurrent().execute(sql, data);
+		DataAccess.current().execute(sql, data);
 	}
 
 	void deleteMiddle(DomainObject root, DomainObject master, DomainObject slave) {
@@ -334,7 +334,7 @@ final class DataTableDelete {
 			data.put(GeneratedField.SlaveIdName, slaveId);// slaveId有可能为空，因为是根据master删除，但是没有关系，sql会处理slaveId为空的情况
 
 			var sql = this.getDeleteSql();
-			DataAccess.getCurrent().execute(sql, data);
+			DataAccess.current().execute(sql, data);
 		} else {
 			var masterId = master == null ? null : DataTableUtil.getObjectId(master);
 			var data = new MapData();
@@ -343,7 +343,7 @@ final class DataTableDelete {
 			data.put(GeneratedField.SlaveIdName, slaveId);
 
 			var sql = this.getDeleteSql();
-			DataAccess.getCurrent().execute(sql, data);
+			DataAccess.current().execute(sql, data);
 		}
 	}
 
@@ -356,7 +356,7 @@ final class DataTableDelete {
 			data.put(GeneratedField.RootIdName, rootId);
 
 			var sql = this.getDeleteSql();
-			DataAccess.getCurrent().execute(sql, data);
+			DataAccess.current().execute(sql, data);
 		} else {
 			var masterId = master == null ? null : DataTableUtil.getObjectId(master);
 			var data = new MapData();
@@ -364,7 +364,7 @@ final class DataTableDelete {
 			data.put(GeneratedField.MasterIdName, masterId);
 
 			var sql = this.getDeleteSql();
-			DataAccess.getCurrent().execute(sql, data);
+			DataAccess.current().execute(sql, data);
 		}
 	}
 

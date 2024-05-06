@@ -214,6 +214,38 @@ public class DomainProperty {
 	}
 
 	/**
+	 * 
+	 * 通过领域属性的类型名称来注册领域属性，该方法非常适用于动态领域对象
+	 * 
+	 * @param name
+	 * @param propertyTypeName
+	 * @param declaringType
+	 * @param defaultValue
+	 * @return
+	 */
+	public static DomainProperty register(String name, String propertyTypeName, Class<?> declaringType,
+			Object defaultValue) {
+
+		var propertyType = ObjectMetaLoader.get(propertyTypeName).objectType();
+		return register(name, false, propertyType, declaringType, (obj, pro) -> {
+			return defaultValue;
+		});
+	}
+
+	/**
+	 * 通过领域属性的类型名称来注册集合
+	 * 
+	 * @param name
+	 * @param elementType
+	 * @param declaringType
+	 * @return
+	 */
+	public static DomainProperty registerCollection(String name, String elementTypeName, Class<?> declaringType) {
+		var elementType = ObjectMetaLoader.get(elementTypeName).objectType();
+		return register(name, true, elementType, declaringType, null);
+	}
+
+	/**
 	 * 注册集合
 	 * 
 	 * @param name

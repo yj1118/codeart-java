@@ -1,16 +1,20 @@
-package apros.codeart.ddd.repository.access;
+package apros.codeart.ddd.repository;
 
 import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
-import apros.codeart.util.SafeAccess;
 
-@SafeAccess
-public class SqlDynamicRepository extends SqlRepository<DynamicRoot> {
+/**
+ * 不是基于sql存储的动态对象的仓储
+ * 
+ * 使用该类作为基类需要自行实现仓储方法
+ * 
+ */
+public abstract class DynamicRepository extends AbstractRepository<DynamicRoot> {
 
 	private Class<? extends DynamicRoot> _rootType;
 
 	@SuppressWarnings("unchecked")
-	public SqlDynamicRepository(String typeName) {
+	public DynamicRepository(String typeName) {
 		_rootType = (Class<? extends DynamicRoot>) ObjectMetaLoader.get(typeName).objectType();
 	}
 
@@ -18,4 +22,5 @@ public class SqlDynamicRepository extends SqlRepository<DynamicRoot> {
 	protected Class<? extends DynamicRoot> getRootType() {
 		return _rootType;
 	}
+
 }

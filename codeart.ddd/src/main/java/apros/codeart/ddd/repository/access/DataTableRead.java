@@ -258,7 +258,7 @@ final class DataTableRead {
 							String.format("%s.%s", propertyTip.declaringType().getName(), propertyTip.name())));
 				}
 
-				obj.loadValue(propertyTip.name(), value);
+				obj.loadValue(propertyTip.name(), value, false);
 			}
 		}
 	}
@@ -630,7 +630,7 @@ final class DataTableRead {
 		var description = QueryDescription.createBy(param, expression, QueryLevel.None, _self);
 		var sql = qb.build(description);
 
-		return DataAccess.getCurrent().queryScalar(sql, param);
+		return DataAccess.current().queryScalar(sql, param);
 	}
 
 	/**
@@ -653,7 +653,7 @@ final class DataTableRead {
 			param.put(GeneratedField.MasterIdName, masterId);
 		}
 
-		return DataAccess.getCurrent().queryRows(sql, param);
+		return DataAccess.current().queryRows(sql, param);
 	}
 
 	/**
@@ -676,7 +676,7 @@ final class DataTableRead {
 			param.put(GeneratedField.MasterIdName, masterId);
 		}
 
-		return DataAccess.getCurrent().queryRows(sql, param);
+		return DataAccess.current().queryRows(sql, param);
 	}
 
 //	#endregion

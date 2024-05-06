@@ -1,20 +1,9 @@
 package apros.codeart.ddd.repository.access;
 
-import apros.codeart.ddd.QueryLevel;
-
 /**
  * 数据库代理
  */
 public interface IDatabaseAgent {
-
-	/**
-	 * 
-	 * 为sql补充锁提示
-	 * 
-	 * @param sql
-	 * @return
-	 */
-	String supplementLock(String sql, QueryLevel level);
 
 	/**
 	 * 获得自增编号的sql

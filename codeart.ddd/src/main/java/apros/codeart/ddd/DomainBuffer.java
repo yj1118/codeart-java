@@ -24,10 +24,10 @@ public final class DomainBuffer {
 			DataContext.getCurrent().removeBuffer(objectType, id);
 	}
 
-	public static IAggregateRoot obtain(Class<?> objectType, Object id, int dataVersion, Supplier<IAggregateRoot> load,
+	public static IAggregateRoot obtain(Class<?> objectType, Object id, Supplier<IAggregateRoot> load,
 			boolean isMirror) {
 		if (DataContext.existCurrent())
-			return DataContext.getCurrent().obtainBuffer(objectType, id, dataVersion, load, isMirror);
+			return DataContext.getCurrent().obtainBuffer(objectType, id, load, isMirror);
 
 		throw new IllegalStateException(strings("codeart.ddd", "UnknownException"));
 	}

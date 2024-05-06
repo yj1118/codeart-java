@@ -137,17 +137,16 @@ final class DataTableQuery {
 	private Object getObjectFromEntry(MapData entry, QueryLevel level) {
 		if (_self.type() == DataTableType.AggregateRoot) {
 			Object id = entry.get(EntityObject.IdPropertyName);
-			int dataVersion = (int) entry.get(GeneratedField.DataVersionName);
 			String typeKey = (String) entry.get(GeneratedField.TypeKeyName);
 			var table = StringUtil.isNullOrEmpty(typeKey) ? _self : DataTableUtil.getDataTable(typeKey);
 
 			if (level.code() == QueryLevel.MirroringCode) {
 				// 镜像查询会在加入到当前会话中的对象缓冲区，不同的会话有各自的镜像对象，同一个会话的同一个对象的镜像只有一个
-				return DomainBuffer.obtain(table.objectType(), id, dataVersion, () -> {
+				return DomainBuffer.obtain(table.objectType(), id, () -> {
 					return (IAggregateRoot) table.loadObject(id, QueryLevel.Mirroring); // 由于查询条目的时候已经锁了数据，所以此处不用再锁定
 				}, true);
 			} else {
-				return DomainBuffer.obtain(table.objectType(), id, dataVersion, () -> {
+				return DomainBuffer.obtain(table.objectType(), id, () -> {
 					return (IAggregateRoot) table.loadObject(id, QueryLevel.None); // 由于查询条目的时候已经锁了数据，所以此处不用再锁定
 				}, false);
 			}
@@ -188,7 +187,7 @@ final class DataTableQuery {
 
 		var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
 
-		return DataAccess.getCurrent().queryScalarInt(sql, param);
+		return DataAccess.current().queryScalarInt(sql, param, level);
 	}
 
 //	/**
@@ -268,7 +267,7 @@ final class DataTableQuery {
 		var description = QueryDescription.createBy(param, expression, level, _self);
 		var sql = query.build(description);
 
-		return DataAccess.getCurrent().queryRow(sql, param);
+		return DataAccess.current().queryRow(sql, param, level);
 	}
 
 	private Iterable<MapData> executeQueryEntries(Class<? extends IQueryBuilder> qbType, String expression,
@@ -278,7 +277,7 @@ final class DataTableQuery {
 
 		var qb = DataSource.getQueryBuilder(qbType);
 		var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
-		return DataAccess.getCurrent().queryRows(sql, param);
+		return DataAccess.current().queryRows(sql, param, level);
 	}
 
 	/// <summary>
@@ -415,7 +414,7 @@ final class DataTableQuery {
 		var qb = DataSource.getQueryBuilder(QueryObjectQB.class);
 		var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
 
-		var data = DataAccess.getCurrent().queryRow(sql, param);
+		var data = DataAccess.current().queryRow(sql, param, level);
 		return _self.createObject(objectType, data, level);
 	}
 
@@ -524,7 +523,7 @@ final class DataTableQuery {
 		var qb = DataSource.getQueryBuilder(GetAssociatedQB.class);
 		var sql = qb.build(new QueryDescription(_self));
 
-		return DataAccess.getCurrent().queryScalarInt(sql, data);
+		return DataAccess.current().queryScalarInt(sql, data, QueryLevel.None);
 	}
 
 //	#endregion

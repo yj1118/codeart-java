@@ -1,6 +1,5 @@
 package apros.codeart.ddd.repository.sqlserver;
 
-import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.access.ClearTableQB;
 import apros.codeart.ddd.repository.access.CreateTableQB;
 import apros.codeart.ddd.repository.access.DatabaseAgent;
@@ -40,17 +39,42 @@ public class SQLServerAgent extends DatabaseAgent {
 		this.registerQueryBuilder(QueryPageQB.class, QueryPage.Instance);
 	}
 
-	@Override
-	public String supplementLock(String sql, QueryLevel level) {
-		return LockSql.get(sql, level);
-	}
-
 	public static final IDatabaseAgent Instance = new SQLServerAgent();
 
 	@Override
 	public String getIncrIdSql(String tableName) {
-		// TODO Auto-generated method stub
-		return null;
+		String increment = String.format("%sIncrement", tableName);
+
+		StringBuilder sql = new StringBuilder();
+		StringUtil.appendLine(sql, "begin transaction;");
+		StringUtil.appendFormat(sql, "if(object_id('[%s]') is null)", increment);
+		StringUtil.appendLine(sql, "begin");
+		StringUtil.appendLine(sql, "	create table [" + increment + "]([value] [bigint] NOT NULL,CONSTRAINT [PK_"
+				+ increment
+				+ "] PRIMARY KEY CLUSTERED ([value] ASC)WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]) ON [PRIMARY];");
+
+		StringUtil.appendLine(sql, "end");
+		StringUtil.appendFormat(sql, "if(not exists(select 1 from [%s] with(xlock,holdlock)))", increment);
+		StringUtil.appendLine(sql);
+		StringUtil.appendLine(sql, "begin");
+
+		StringUtil.appendFormat(sql, " insert into [{0}](value) values(1);", increment);
+		StringUtil.appendLine(sql);
+		StringUtil.appendLine(sql, " select cast(1 as bigint) as value;");
+		StringUtil.appendLine(sql, "end");
+
+		StringUtil.appendLine(sql, "else");
+		StringUtil.appendLine(sql, "begin");
+
+		StringUtil.appendFormat(sql, " update [{0}] set [value]=[value]+1;", increment);
+		StringUtil.appendLine(sql);
+
+		StringUtil.appendFormat(sql, "select value from [{0}] with(nolock);", increment);
+		StringUtil.appendLine(sql);
+
+		StringUtil.appendLine(sql, "end");
+		StringUtil.appendLine(sql, "commit;");
+		return sql.toString();
 	}
 
 	/**
@@ -58,8 +82,7 @@ public class SQLServerAgent extends DatabaseAgent {
 	 */
 	@Override
 	public int getStringIndexableMaxLength() {
-		// TODO Auto-generated method stub
-		return 0;
+		return 400;
 	}
 
 	@Override

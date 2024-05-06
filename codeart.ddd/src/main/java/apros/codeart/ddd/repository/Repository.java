@@ -1,15 +1,10 @@
 package apros.codeart.ddd.repository;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-
-import com.google.common.collect.Iterables;
 
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.IRepository;
-import apros.codeart.ddd.QueryLevel;
-import apros.codeart.ddd.dynamic.DynamicRoot;
-import apros.codeart.ddd.remotable.internal.RemotePortal;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.MethodUtil;
 import apros.codeart.util.StringUtil;
@@ -69,28 +64,16 @@ public final class Repository {
 
 //	#region 远程对象
 
-	/// <summary>
-	/// 查找远程根对象
-	/// </summary>
-	/// <param name="id"></param>
-	/// <returns></returns>
-	public static <T extends DynamicRoot> T findRemoteRoot(Class<T> objectType, Object id) {
-		return RemotePortal.getObject(objectType, id, QueryLevel.None);
-	}
+	public static <T extends IRepository> T create(String rootTypeName) {
+		var objectType = ObjectMetaLoader.get(rootTypeName).objectType();
 
-	public static <T extends DynamicRoot> T findRemoteRootWithLock(Class<T> objectType, Object id) {
-		return RemotePortal.getObject(objectType, id, QueryLevel.Single);
 	}
-
-	public static <T extends DynamicRoot> Iterable<T> findRemoteRoots(Class<T> objectType, Iterable<Object> ids) {
-		var items = new ArrayList<T>(Iterables.size(ids));
-
-		for (var id : ids) {
-			var item = Repository.findRemoteRoot(objectType, id);
-			items.add(item);
-		}
-		return items;
-	}
+	
+	
+	private static Function<IRepository> 
+	
+	
+	
 
 //	#endregion
 
