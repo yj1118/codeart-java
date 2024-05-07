@@ -258,7 +258,7 @@ public final class AppSession {
 		return locale().getLanguage();
 	}
 
-	public static void language(String language) {
+	public static void setLanguage(String language) {
 		locale(language);
 	}
 

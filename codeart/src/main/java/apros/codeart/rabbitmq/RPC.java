@@ -1,5 +1,9 @@
 package apros.codeart.rabbitmq;
 
+import java.util.function.Function;
+
+import apros.codeart.util.LazyIndexer;
+
 public final class RPC {
 
 	private RPC() {
@@ -10,23 +14,15 @@ public final class RPC {
 	 */
 	public static final Policy Policy;
 
-	static RPC() {
-		Policy = getPolicy();
+	static {
+		Policy = RabbitMQConfig.find("rpc", 1, false, false);
 	}
 
-	private static Policy GetPolicy() {
-		var policy = RabbitMQConfiguration.Current.PolicyGroupConfig.GetPolicy("rpc");
-
-		// 由于远程调用是一次性的,服务端也会应答消息，所以我们不需要发布者确认和持久化消息
-		return new Policy(policy.Name, policy.Server, policy.User, policy.PrefetchCount, false, false);
+	public static String getServerQueue(String method) {
+		return _getServerQueue.apply(method);
 	}
 
-	public static string GetServerQueue(string method) {
-		return _getServerQueue(method);
-	}
-
-	private static Func<string, string> _getServerQueue = LazyIndexer.Init<string, string>((method)=>
-	{
-		return string.Format("rpc-{0}", method);
+	private static Function<String, String> _getServerQueue = LazyIndexer.init((method) -> {
+		return String.format("rpc-%s", method.toLowerCase());
 	});
 }

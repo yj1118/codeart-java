@@ -8,5 +8,5 @@ public interface IMessageHandler {
 	 * 
 	 * @param msg
 	 */
-	void handle(Message msg);
+	void handle(RabbitBus sender, Message msg);
 }

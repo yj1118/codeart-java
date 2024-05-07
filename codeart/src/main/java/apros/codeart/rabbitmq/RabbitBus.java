@@ -21,7 +21,7 @@ import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;
 import apros.codeart.util.LazyIndexer;
 
-class RabbitBus implements AutoCloseable {
+public class RabbitBus implements AutoCloseable {
 
 	private Policy _policy;
 
@@ -179,7 +179,7 @@ class RabbitBus implements AutoCloseable {
 				}, (requeue) -> {
 					reject(envelope, requeue);
 				});
-				_messageHandler.handle(message);
+				_messageHandler.handle(this, message);
 			});
 		}
 	}
@@ -197,6 +197,14 @@ class RabbitBus implements AutoCloseable {
 			this.channel().basicReject(envelope.getDeliveryTag(), requeue);
 		} catch (IOException e) {
 			throw propagate(e);
+		}
+	}
+
+	public static int getMessageCount(Policy policy, String queue) throws Exception {
+		try (var temp = ConnectionManager.borrow(policy)) {
+			Channel channel = temp.getItem();
+			var dok = channel.queueDeclarePassive(queue);
+			return dok.getMessageCount();
 		}
 	}
 

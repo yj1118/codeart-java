@@ -15,13 +15,21 @@
 		"password":"Rw$510th%v"
 	},
 	"mq":{
+		"impl":"rabbitMQ",
+		"rabbitMQ":[
+			{
+				"name":"rpc",
+				"host":"127.0.0.1",
+				"vhost":"sj",
+				"uid":"sa",
+				"pwd":"Q!1"
+			}
+		],
 		"event":{
-			"impl":"rabbitMQ",
 			"subscriber.group":"PortalService"
 		},
 		"rpc":{
-			"impl":"rabbitMQ",
-			"client.timeout":20
+			"client.timeout":60
 		}
 	},
 	"message":{
