@@ -16,7 +16,6 @@ import org.apache.logging.log4j.util.Strings;
 
 import com.google.common.collect.Iterables;
 
-import apros.codeart.context.AppSession;
 import apros.codeart.dto.serialization.IDTOSerializable;
 import apros.codeart.dto.serialization.internal.DTObjectMapper;
 import apros.codeart.i18n.Language;
@@ -1215,11 +1214,13 @@ public class DTObject implements INullProxy {
 //	#endregion
 
 	static DTObject obtain(DTEObject root, boolean readonly) {
-		return AppSession.registerItem(new DTObject(root, readonly));
+		return new DTObject(root, readonly);
+//		return AppSession.registerItem(new DTObject(root, readonly));
 	}
 
 	static DTObject obtain() {
-		return AppSession.registerItem(new DTObject(DTEObject.obtainEditable(StringUtil.empty()), false));
+		return new DTObject(DTEObject.obtainEditable(StringUtil.empty()), false);
+//		return AppSession.registerItem(new DTObject(DTEObject.obtainEditable(StringUtil.empty()), false));
 	}
 
 }

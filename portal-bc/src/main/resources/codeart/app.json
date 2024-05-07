@@ -16,21 +16,12 @@
 	},
 	"mq":{
 		"event":{
-			"publisher":{
-				"factory":{
-					"type":"",
-					"arguments":[]
-				}
-			}
+			"impl":"rabbitMQ",
+			"subscriber.group":"PortalService"
 		},
 		"rpc":{
-			"client":{
-				"factory":{
-					"type":"",
-					"arguments":[]
-				},
-				"timeout":20
-			}
+			"impl":"rabbitMQ",
+			"client.timeout":20
 		}
 	},
 	"message":{

@@ -69,6 +69,13 @@ public class PoolConfig {
 		this(initialSegmentCapacity, maxSegmentCapacity, 2, maxSegmentCount);
 	}
 
+	/**
+	 * 
+	 * 分段数量起始为2，不限制分段数量的池
+	 * 
+	 * @param initialSegmentCapacity
+	 * @param maxSegmentCapacity
+	 */
 	public PoolConfig(int initialSegmentCapacity, int maxSegmentCapacity) {
 		this(initialSegmentCapacity, maxSegmentCapacity, 2, 0);
 	}

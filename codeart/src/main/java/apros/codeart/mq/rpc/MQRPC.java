@@ -73,12 +73,7 @@ public final class MQRPC {
 		}
 
 		private void loadClient(DTObject root) {
-			var factory = root.getObject("client.factory", null);
-
-			if (factory != null)
-				_clientFactoryImplementer = InterfaceImplementer.create(factory);
-
-			_clientTimeout = root.getInt("timeout", 20); // 默认20秒超时
+			_clientTimeout = root.getInt("client.timeout", 20); // 默认20秒超时
 		}
 
 		private void loadServer(DTObject root) {

@@ -92,15 +92,12 @@ final class MQEvent {
 		}
 
 		private void loadSubscriber(DTObject root) {
-			var node = root.getObject("subscriber", null);
-			if (node == null)
-				return;
 
-			_subscriberGroup = node.getString("group", "default");
+			_subscriberGroup = root.getString("subscriber.group", "default");
 
-			var factory = node.getObject("factory");
-			if (factory != null)
-				_subscriberFactoryImplementer = InterfaceImplementer.create(factory);
+//			var factory = node.getObject("factory");
+//			if (factory != null)
+//				_subscriberFactoryImplementer = InterfaceImplementer.create(factory);
 		}
 
 	}

@@ -50,19 +50,40 @@ public class QueryExpression {
 	}
 
 	private String getSegment(String queryString) {
-		var segment = queryString;
-		int dot = queryString.indexOf('.');
-		if (dot > -1)
-			segment = StringUtil.substr(queryString, 0, dot);
-		return segment;
+
+		if (queryString.startsWith("@")) { // @可以把.当作一个整体表达式
+			var segment = StringUtil.substr(queryString, 1);
+			int dot = segment.indexOf('@');
+			if (dot > -1)
+				segment = StringUtil.substr(segment, 0, dot - 1);
+			return segment;
+		} else {
+			var segment = queryString;
+
+			int dot = queryString.indexOf('.');
+			if (dot > -1)
+				segment = StringUtil.substr(queryString, 0, dot);
+			return segment;
+		}
 	}
 
 	private QueryExpression parseNext(String queryString) {
-		int dot = queryString.indexOf('.');
-		if (dot == -1)
+		if (queryString.startsWith("@")) {
+			var segment = StringUtil.substr(queryString, 1);
+			int dot = segment.indexOf('@');
+			if (dot > -1) {
+				segment = StringUtil.substr(segment, dot);
+				return QueryExpression.create(segment);
+			}
+			// @xxx.xx 后面没有@了，所以next为null
 			return null;
-		var nextQueryString = StringUtil.substr(queryString, dot + 1);
-		return QueryExpression.create(nextQueryString);
+		} else {
+			int dot = queryString.indexOf('.');
+			if (dot == -1)
+				return null;
+			var nextQueryString = StringUtil.substr(queryString, dot + 1);
+			return QueryExpression.create(nextQueryString);
+		}
 	}
 
 	private static Function<String, QueryExpression> _getExpression = LazyIndexer.init((queryString) -> {

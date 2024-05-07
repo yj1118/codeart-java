@@ -30,7 +30,7 @@ import apros.codeart.runtime.TypeUtil;
  * 
  * @param <T>
  */
-public class Pool<T> {
+public class Pool<T> implements AutoCloseable {
 
 	private final Function<Boolean, T> _itemFactory;
 	/**
@@ -185,6 +185,11 @@ public class Pool<T> {
 			return;
 		_isDisposed.setRelease(true);
 		_dual.dispose();
+	}
+
+	@Override
+	public void close() {
+		this.dispose();
 	}
 
 }

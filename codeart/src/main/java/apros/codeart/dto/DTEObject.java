@@ -13,7 +13,6 @@ import java.util.function.Function;
 
 import com.google.common.collect.Iterables;
 
-import apros.codeart.context.AppSession;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
@@ -319,7 +318,8 @@ public final class DTEObject extends DTEntity {
 	 * @return
 	 */
 	public static DTEObject obtainEditable(String name) {
-		return AppSession.registerItem(new DTEObject(false, name, new LinkedList<DTEntity>()));
+		return new DTEObject(false, name, new LinkedList<DTEntity>());
+//		return AppSession.registerItem(new DTEObject(false, name, new LinkedList<DTEntity>()));
 	}
 
 	/**
