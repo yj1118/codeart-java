@@ -3,7 +3,7 @@ package apros.codeart.rabbitmq;
 import apros.codeart.AppConfig;
 import apros.codeart.util.ListUtil;
 
-final class RabbitMQConfig {
+public final class RabbitMQConfig {
 	private RabbitMQConfig() {
 
 	}

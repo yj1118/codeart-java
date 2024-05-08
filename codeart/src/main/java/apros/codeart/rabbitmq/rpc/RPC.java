@@ -1,7 +1,9 @@
-package apros.codeart.rabbitmq;
+package apros.codeart.rabbitmq.rpc;
 
 import java.util.function.Function;
 
+import apros.codeart.rabbitmq.Policy;
+import apros.codeart.rabbitmq.RabbitMQConfig;
 import apros.codeart.util.LazyIndexer;
 
 public final class RPC {

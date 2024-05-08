@@ -131,7 +131,7 @@ class DualMatrix {
 
 		for (var i = 0; i < segments.length(); i++) {
 			var seg = segments.getAcquire(i);
-			if (!seg.tryGrow()) {
+			if (!seg.tryIncrease()) {
 				// 所有的分段是统一调整大小的，所以不会有这种情况
 				throw new IllegalStateException(strings("codeart", "UnknownException"));
 			}
@@ -269,7 +269,7 @@ class DualMatrix {
 
 		for (var i = 0; i < segments.length(); i++) {
 			var seg = segments.getAcquire(i);
-			if (!seg.tryShrink()) {
+			if (!seg.tryReduce()) {
 				// 所有的分段是统一调整大小的，所以不会有这种情况
 				throw new IllegalStateException(strings("codeart", "UnknownException"));
 			}

@@ -11,7 +11,8 @@ import org.apache.logging.log4j.util.Strings;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.DefaultConsumer;
+import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.Envelope;
 
 import apros.codeart.i18n.Language;
@@ -67,16 +68,24 @@ public class RabbitBus implements AutoCloseable {
 	 * @param routingKey
 	 * @throws Exception
 	 */
-	public void queueDeclare(String queue, String exchange, String routingKey) throws Exception {
+	public void queueDeclare(String queue, String exchange, String routingKey) {
 		queueDeclare(queue);
-		this.channel().queueBind(queue, exchange, routingKey);
+		try {
+			this.channel().queueBind(queue, exchange, routingKey);
+		} catch (Exception ex) {
+			throw propagate(ex);
+		}
 	}
 
-	public void queueDeclare(String queue) throws Exception {
-		if (this.policy().persistentMessages()) {
-			this.channel().queueDeclare(queue, true, false, false, null);
-		} else {
-			this.channel().queueDeclare(queue, false, false, true, null); // 最后一个true表示不持久化的消息，服务器端分发后就删除，适用于rpc模式
+	public void queueDeclare(String queue) {
+		try {
+			if (this.policy().persistentMessages()) {
+				this.channel().queueDeclare(queue, true, false, false, null);
+			} else {
+				this.channel().queueDeclare(queue, false, false, true, null); // 最后一个true表示不持久化的消息，服务器端分发后就删除，适用于rpc模式
+			}
+		} catch (Exception ex) {
+			throw propagate(ex);
 		}
 	}
 
@@ -86,9 +95,14 @@ public class RabbitBus implements AutoCloseable {
 	 * @return 返回队列名称
 	 * @throws Exception
 	 */
-	public String tempQueueDeclare() throws Exception {
-		// 临时队列是由rabbit分配名称、只有自己可以看见、用后就删除的队列
-		return this.channel().queueDeclare(Strings.EMPTY, false, true, true, null).getQueue();
+	public String tempQueueDeclare() {
+		try {
+			// 临时队列是由rabbit分配名称、只有自己可以看见、用后就删除的队列
+			return this.channel().queueDeclare(Strings.EMPTY, false, true, true, null).getQueue();
+		} catch (Exception ex) {
+			throw propagate(ex);
+		}
+
 	}
 
 	/// <summary>
@@ -112,28 +126,33 @@ public class RabbitBus implements AutoCloseable {
 	/// </summary>
 	/// <param name="message"></param>
 	public void publish(String exchange, String routingKey, TransferData data,
-			Consumer<BasicProperties.Builder> setProperties) throws Exception {
-		var body = TransferData.serialize(data);
-		var propsBuilder = new BasicProperties.Builder().contentEncoding("utf-8").contentType("text/plain");
+			Consumer<BasicProperties.Builder> setProperties) {
 
-		if (setProperties != null) {
-			setProperties.accept(propsBuilder);
-		}
+		try {
+			var body = TransferData.serialize(data);
+			var propsBuilder = new BasicProperties.Builder().contentEncoding("utf-8").contentType("text/plain");
 
-		var channel = this.channel();
+			if (setProperties != null) {
+				setProperties.accept(propsBuilder);
+			}
 
-		if (this.policy().persistentMessages()) {
-			propsBuilder.deliveryMode(2); // 设置为持久化消息
-			var properties = propsBuilder.build();
+			var channel = this.channel();
 
-			if (this.policy().publisherConfirms()) {
-				confirmPublish(exchange, routingKey, properties, body);
-			} else
+			if (this.policy().persistentMessages()) {
+				propsBuilder.deliveryMode(2); // 设置为持久化消息
+				var properties = propsBuilder.build();
+
+				if (this.policy().publisherConfirms()) {
+					confirmPublish(exchange, routingKey, properties, body);
+				} else
+					channel.basicPublish(exchange, routingKey, properties, body);
+			} else {
+				propsBuilder.deliveryMode(1); // 设置为非持久化消息
+				var properties = propsBuilder.build();
 				channel.basicPublish(exchange, routingKey, properties, body);
-		} else {
-			propsBuilder.deliveryMode(1); // 设置为非持久化消息
-			var properties = propsBuilder.build();
-			channel.basicPublish(exchange, routingKey, properties, body);
+			}
+		} catch (Exception e) {
+			throw new RabbitMQException(Language.strings("codeart", "PublishMessageFailed", routingKey));
 		}
 	}
 
@@ -150,34 +169,60 @@ public class RabbitBus implements AutoCloseable {
 
 	private IMessageHandler _messageHandler = null;
 
-	public void consume(String queue, IMessageHandler handler) throws Exception {
+	public void consume(String queue, IMessageHandler handler, boolean autoAck) {
 		_messageHandler = handler;
-		accept(queue, false);
+		accept(queue, autoAck);
 	}
 
-	private void accept(String queue, boolean autoAck) throws Exception {
-
-		var consumer = new DefaultConsumer(this.channel()) {
-			@Override
-			public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) {
-				messageReceived(envelope, properties, body);
+	private void accept(String queue, boolean autoAck) {
+		try {
+			DeliverCallback deliverCallback = null;
+			if (autoAck) {
+				deliverCallback = (consumerTag, delivery) -> {
+					messageReceivedByAutoAck(consumerTag, delivery);
+				};
+			} else {
+				// 手动应答
+				deliverCallback = (consumerTag, delivery) -> {
+					messageReceived(consumerTag, delivery);
+				};
 			}
-		};
 
-		this.channel().basicConsume(queue, autoAck, consumer);
+			this.channel().basicConsume(queue, autoAck, deliverCallback, consumerTag -> {
+			});
+		} catch (IOException e) {
+			throw propagate(e);
+		}
 	}
 
-	private void messageReceived(Envelope envelope, BasicProperties properties, byte[] body) {
-		// 此处必须异步，否则会阻塞RPCServer接收处理消息，导致一个请求处理完后才处理下一个请求，吞吐量大幅度降低Task.Run(() =>
+	private void messageReceivedByAutoAck(String consumerTag, Delivery delivery) {
+		// 此处必须异步，否则会阻塞接收处理消息，导致一个请求处理完后才处理下一个请求，吞吐量大幅度降低
+		try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+			executor.submit(() -> {
+
+				var content = TransferData.deserialize(delivery.getBody());
+
+				var message = new Message(content, delivery.getProperties(), () -> {
+
+				}, (requeue) -> {
+
+				});
+				_messageHandler.handle(this, message);
+			});
+		}
+	}
+
+	private void messageReceived(String consumerTag, Delivery delivery) {
+		// 此处必须异步，否则会阻塞RPCServer接收处理消息，导致一个请求处理完后才处理下一个请求，吞吐量大幅度降低
 		try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 			executor.submit(() -> {
 				// DTObject content = DTObject.Create(e.Body);
-				var content = TransferData.deserialize(body);
+				var content = TransferData.deserialize(delivery.getBody());
 
-				var message = new Message(content, properties, () -> {
-					ack(envelope);
+				var message = new Message(content, delivery.getProperties(), () -> {
+					ack(delivery.getEnvelope());
 				}, (requeue) -> {
-					reject(envelope, requeue);
+					reject(delivery.getEnvelope(), requeue);
 				});
 				_messageHandler.handle(this, message);
 			});
@@ -200,12 +245,17 @@ public class RabbitBus implements AutoCloseable {
 		}
 	}
 
-	public static int getMessageCount(Policy policy, String queue) throws Exception {
+	public static int getMessageCount(Policy policy, String queue) {
 		try (var temp = ConnectionManager.borrow(policy)) {
-			Channel channel = temp.getItem();
-			var dok = channel.queueDeclarePassive(queue);
-			return dok.getMessageCount();
+			try {
+				Channel channel = temp.getItem();
+				var dok = channel.queueDeclarePassive(queue);
+				return dok.getMessageCount();
+			} catch (IOException e) {
+				throw propagate(e);
+			}
 		}
+
 	}
 
 	@Override

@@ -21,6 +21,10 @@ public class TransferData {
 		return _info;
 	}
 
+	public void setInfo(DTObject info) {
+		_info = info;
+	}
+
 //	#region 二进制传输（如果需要的话）
 
 	private int _binaryDataTotalLength;

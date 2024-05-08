@@ -55,7 +55,7 @@ public final class RPCEvents {
 
 	public static final EventHandler<ServerClosedArgs> serverClosed = new EventHandler<ServerClosedArgs>();
 
-	static void raiseServerClosed(Object sender, ServerClosedArgs arg) {
+	public static void raiseServerClosed(Object sender, ServerClosedArgs arg) {
 		serverClosed.raise(sender, () -> {
 			return arg;
 		});
@@ -70,7 +70,7 @@ public final class RPCEvents {
 	/// <summary>
 	/// RPC服务器已关闭的事件
 	/// </summary>
-	public class ServerErrorArgs {
+	public static class ServerErrorArgs {
 
 		private Exception _exception;
 
@@ -85,7 +85,7 @@ public final class RPCEvents {
 
 	public static final EventHandler<ServerErrorArgs> serverError = new EventHandler<ServerErrorArgs>();
 
-	static void raiseServerError(Object sender, ServerErrorArgs arg) {
+	public static void raiseServerError(Object sender, ServerErrorArgs arg) {
 		serverError.raise(sender, () -> {
 			return arg;
 		});

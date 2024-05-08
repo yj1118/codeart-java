@@ -4,6 +4,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
+import apros.codeart.util.Algorithm;
+
 final class DualVector implements AutoCloseable {
 
 	// 在扩容的时候可以反复切换
@@ -109,7 +111,7 @@ final class DualVector implements AutoCloseable {
 	 * @return
 	 * 
 	 */
-	boolean tryGrow() {
+	boolean tryIncrease() {
 		if (_initialCapacity == _maxCapacity)
 			return false;
 
@@ -121,8 +123,7 @@ final class DualVector implements AutoCloseable {
 		// oldCapacity >> 1 是将 oldCapacity 右移一位的结果，相当于 oldCapacity
 		// 的一半。将这个值加到原始容量上，得到的就是新容量，即原始容量的150%。
 		// 在这里是将片段数为原数量的1.5倍
-		int newCount = oldCount + Math.max(1, oldCount >> 1);
-		newCount = Math.min(newCount, _maxCapacity); // 确保不能超过maxCapacity
+		int newCount = Algorithm.increaseByOnePointFive(oldCount, _maxCapacity);
 
 		int oldDualIndex = _dualIndex.getAcquire();
 		var dest = new AtomicResidentItemArray(newCount); // 双片段组，一共也就2个
@@ -155,7 +156,7 @@ final class DualVector implements AutoCloseable {
 	 * 
 	 * @return
 	 */
-	boolean tryShrink() {
+	boolean tryReduce() {
 
 		if (_initialCapacity == _maxCapacity)
 			return false;
@@ -165,7 +166,7 @@ final class DualVector implements AutoCloseable {
 
 		var src = this.container();
 		int oldCount = src.length();
-		int newCount = Math.max(_initialCapacity, (int) ((float) oldCount / 1.5F));
+		int newCount = Algorithm.reduceByOnePointFive(oldCount, _initialCapacity);
 		int oldDualIndex = _dualIndex.getAcquire();
 
 		var dest = new AtomicResidentItemArray(newCount); // 双片段组，一共也就2个
@@ -196,7 +197,7 @@ final class DualVector implements AutoCloseable {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() {
 		this.dispose();
 	}
 
