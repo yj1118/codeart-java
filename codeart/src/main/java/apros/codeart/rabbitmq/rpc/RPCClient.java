@@ -26,7 +26,7 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
 	private boolean _success;
 
 	public RPCClient(int secondsTimeout) {
-		_busItem = RabbitBus.borrow(RPC.Policy);
+		_busItem = RabbitBus.borrow(RPC.ClientPolicy);
 		initConsumer();
 		_signal = new LatchSignal<TransferData>();
 		_secondsTimeout = secondsTimeout;
@@ -35,7 +35,7 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
 	private void initConsumer() {
 		RabbitBus bus = _busItem.getItem();
 		_tempQueue = bus.tempQueueDeclare();
-		bus.consume(_tempQueue, this, true);
+		bus.consume(_tempQueue, this);
 	}
 
 	public TransferData invoke(String method, DTObject arg) {

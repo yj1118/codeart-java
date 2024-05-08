@@ -169,46 +169,22 @@ public class RabbitBus implements AutoCloseable {
 
 	private IMessageHandler _messageHandler = null;
 
-	public void consume(String queue, IMessageHandler handler, boolean autoAck) {
+	public void consume(String queue, IMessageHandler handler) {
 		_messageHandler = handler;
-		accept(queue, autoAck);
+		// 不论什么应用，都需要手工应答，主要是为了避免不做限制，导致服务器资源耗尽
+		accept(queue, false);
 	}
 
 	private void accept(String queue, boolean autoAck) {
 		try {
-			DeliverCallback deliverCallback = null;
-			if (autoAck) {
-				deliverCallback = (consumerTag, delivery) -> {
-					messageReceivedByAutoAck(consumerTag, delivery);
-				};
-			} else {
-				// 手动应答
-				deliverCallback = (consumerTag, delivery) -> {
-					messageReceived(consumerTag, delivery);
-				};
-			}
+			DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+				messageReceived(consumerTag, delivery);
+			};
 
 			this.channel().basicConsume(queue, autoAck, deliverCallback, consumerTag -> {
 			});
 		} catch (IOException e) {
 			throw propagate(e);
-		}
-	}
-
-	private void messageReceivedByAutoAck(String consumerTag, Delivery delivery) {
-		// 此处必须异步，否则会阻塞接收处理消息，导致一个请求处理完后才处理下一个请求，吞吐量大幅度降低
-		try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-			executor.submit(() -> {
-
-				var content = TransferData.deserialize(delivery.getBody());
-
-				var message = new Message(content, delivery.getProperties(), () -> {
-
-				}, (requeue) -> {
-
-				});
-				_messageHandler.handle(this, message);
-			});
 		}
 	}
 
@@ -255,7 +231,6 @@ public class RabbitBus implements AutoCloseable {
 				throw propagate(e);
 			}
 		}
-
 	}
 
 	@Override

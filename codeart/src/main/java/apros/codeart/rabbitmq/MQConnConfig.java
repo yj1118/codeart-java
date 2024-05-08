@@ -8,7 +8,11 @@ package apros.codeart.rabbitmq;
  * 
  * {@code virtualHost} 虚拟主机名称
  * 
+ * {@code username} 访问消息队列的用户名
+ * 
+ * {@code password} 访问消息队列的密码
+ * 
  */
-public record Server(String host, String virtualHost) {
+public record MQConnConfig(String host, String virtualHost, String username, String password) {
 
 }

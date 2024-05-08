@@ -7,19 +7,7 @@ import apros.codeart.util.StringUtil;
 
 public final class Policy {
 
-	private String _name;
-
-	/**
-	 * 
-	 * 策略名称
-	 * 
-	 * @return
-	 */
-	public String name() {
-		return _name;
-	}
-
-	private Server _server;
+	private MQConnConfig _connConfig;
 
 	/**
 	 * 
@@ -27,25 +15,17 @@ public final class Policy {
 	 * 
 	 * @return
 	 */
-	public Server server() {
-		return _server;
-	}
-
-	private User _user;
-
-	public User user() {
-		return _user;
+	public MQConnConfig connConfig() {
+		return _connConfig;
 	}
 
 	private int _prefetchCount;
 
 	/**
 	 * 
-	 * 消费者在开启acknowledge的情况下，对接收到的消息可以根据业务的需要异步对消息进行确认。
-	 * 然而在实际使用过程中，由于消费者自身处理能力有限，从rabbitMQ获取一定数量的消息后，
-	 * 希望rabbitmq不再将队列中的消息推送过来，当对消息处理完后（即对消息进行了ack，并且有能力处理更多的消息）
-	 * 再接收来自队列的消息。在这种场景下，我们可以通过设置PrefetchCount来达到这种效果。
-	 * 如果PrefetchCount设置为50，表示最多同时处理50个消息，多余的消息RabbitMQ会堆积在服务器或者给其他的消费者处理
+	 * 如果PrefetchCount设置为5，表示最多同时处理5个消息，多余的消息RabbitMQ会堆积在服务器或者给其他的消费者处理
+	 * 
+	 * 根据消费者的处理速度和网络条件，适当增加 prefetchCount 可以减少网络往返次数，从而提高整体的消息处理吞吐量。
 	 * 
 	 * @return
 	 */
@@ -91,11 +71,8 @@ public final class Policy {
 		return _connectionString;
 	}
 
-	public Policy(String name, Server server, User user, int prefetchCount, boolean publisherConfirms,
-			boolean persistentMessages) {
-		_name = name;
-		_server = server;
-		_user = user;
+	public Policy(MQConnConfig connConfig, int prefetchCount, boolean publisherConfirms, boolean persistentMessages) {
+		_connConfig = connConfig;
 		_prefetchCount = prefetchCount;
 		_publisherConfirms = publisherConfirms;
 		_persistentMessages = persistentMessages;
@@ -104,10 +81,10 @@ public final class Policy {
 
 	private String getConnectionString() {
 		StringBuilder code = new StringBuilder();
-		StringUtil.appendFormat(code, "host=%s;", this.server().host());
-		StringUtil.appendFormat(code, "virtualHost=%s;", this.server().virtualHost());
-		StringUtil.appendFormat(code, "username=%s;", this.user().name());
-		StringUtil.appendFormat(code, "password=%s;", this.user().password());
+		StringUtil.appendFormat(code, "host=%s;", this.connConfig().host());
+		StringUtil.appendFormat(code, "virtualHost=%s;", this.connConfig().virtualHost());
+		StringUtil.appendFormat(code, "username=%s;", this.connConfig().username());
+		StringUtil.appendFormat(code, "password=%s;", this.connConfig().password());
 		StringUtil.appendFormat(code, "prefetchcount=%s;", this.prefetchCount());
 
 		if (this.publisherConfirms()) {
@@ -137,9 +114,9 @@ public final class Policy {
 	}
 
 	void init(ConnectionFactory factory) {
-		factory.setHost(this.server().host());
-		factory.setVirtualHost(this.server().virtualHost());
-		factory.setUsername(this.user().name());
-		factory.setPassword(this.user().password());
+		factory.setHost(this.connConfig().host());
+		factory.setVirtualHost(this.connConfig().virtualHost());
+		factory.setUsername(this.connConfig().username());
+		factory.setPassword(this.connConfig().password());
 	}
 }

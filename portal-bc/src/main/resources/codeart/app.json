@@ -29,7 +29,8 @@
 			"subscriber.group":"PortalService"
 		},
 		"rpc":{
-			"client.timeout":60
+			"server.maxConcurrency":5,
+			"client.timeout":20
 		}
 	},
 	"message":{

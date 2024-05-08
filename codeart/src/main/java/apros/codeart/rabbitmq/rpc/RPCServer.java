@@ -37,17 +37,17 @@ public class RPCServer implements IServer, AutoCloseable, IMessageHandler {
 		_handler = handler;
 	}
 
+	public int getMessageCount() {
+		return RabbitBus.getMessageCount(RPC.ServerPolicy, _queue);
+	}
+
 	public void open() {
 		if (_item != null)
 			return;
-		_item = RabbitBus.borrow(RPC.Policy);
-		RabbitBus host = _item.getItem();
-		host.queueDeclare(_queue);
-		// 自动应答，一旦接收到消息，就确认消息，并且业务就被另外个虚拟线程处理
-		// 在rpc模式中，客户端有超时处理，而且我们并不需要高可靠性、一致性或数据完整性，但是需要高吞吐量
-		// 所以自动应答很适合rpc模式
-		// 如果单server都无法满足吞吐量，那么就开多个微服务端
-		host.consume(_queue, this, true);
+		_item = RabbitBus.borrow(RPC.ServerPolicy);
+		RabbitBus bus = _item.getItem();
+		bus.queueDeclare(_queue);
+		bus.consume(_queue, this);
 	}
 
 	public void handle(RabbitBus sender, Message msg) {

@@ -8,7 +8,7 @@ public final class RabbitMQConfig {
 
 	}
 
-	public static Policy find(String name, int prefetchCount, boolean publisherConfirms, boolean persistentMessages) {
+	public static MQConnConfig find(String name) {
 		var mq = AppConfig.section("mq");
 		if (mq == null)
 			return null;
@@ -26,8 +26,7 @@ public final class RabbitMQConfig {
 		var uid = t.getString("uid");
 		var pwd = t.getString("pwd");
 
-		return new Policy(name, new Server(host, vhost), new User(uid, pwd), prefetchCount, publisherConfirms,
-				persistentMessages);
+		return new MQConnConfig(host, vhost, uid, pwd);
 
 	}
 

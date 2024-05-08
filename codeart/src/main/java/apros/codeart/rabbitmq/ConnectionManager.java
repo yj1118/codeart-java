@@ -53,12 +53,10 @@ final class ConnectionManager implements AutoCloseable {
 			if (_policy.publisherConfirms())
 				channel.confirmSelect();
 
-			if (_policy.prefetchCount() == 1) {
-				// 作此设计就是为了实现这 RabbitMQ 服务器将会确保在消费者没有确认当前消息之前，不会向该消费者发送多于一个未被确认的消息。
-				// 这用于消费者，这有助于实现更加公平的负载均衡，因为它确保一个消费者在处理完当前消息并发送确认之前，不会接收到更多消息。
-				channel.basicQos(1);
-			} else
-				channel.basicQos(0, _policy.prefetchCount(), false);
+			// 如果_policy.prefetchCount()为1，作此设计就是为了实现这 RabbitMQ
+			// 服务器将会确保在消费者没有确认当前消息之前，不会向该消费者发送多于一个未被确认的消息。
+			// 这用于消费者，这有助于实现更加公平的负载均衡，因为它确保一个消费者在处理完当前消息并发送确认之前，不会接收到更多消息。
+			channel.basicQos(_policy.prefetchCount());
 			return channel;
 		} catch (Exception e) {
 			throw propagate(e);
