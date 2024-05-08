@@ -2,7 +2,7 @@ package apros.codeart.rabbitmq.event;
 
 import java.util.function.Function;
 
-import apros.codeart.rabbitmq.Policy;
+import apros.codeart.rabbitmq.MQConnConfig;
 import apros.codeart.rabbitmq.RabbitMQConfig;
 import apros.codeart.util.LazyIndexer;
 
@@ -14,10 +14,10 @@ final class Event {
 	/**
 	 * 事件采用的消息的策略
 	 */
-	public static final Policy Policy;
+	public static final MQConnConfig ConnConfig;
 
 	static {
-		Policy = RabbitMQConfig.find("event", 1, true, true);
+		ConnConfig = RabbitMQConfig.find("event");
 	}
 
 	public static String getServerQueue(String method) {
