@@ -30,12 +30,12 @@ class RPCServerCluster implements IServer, AutoCloseable {
 
 	private final LinkedList<RPCServer> _waiteDispose = new LinkedList<RPCServer>();
 
-	private final int _maxConcurrency;
+	private final RPCServerConfig _config;
 
-	public RPCServerCluster(String method, int maxConcurrency) {
+	public RPCServerCluster(String method) {
 		_name = method;
-		_maxConcurrency = maxConcurrency;
-		_queue = RPC.getServerQueue(method);
+		_config = RPCConfig.getServerConfig(method);
+		_queue = RPCConfig.getServerQueue(method);
 	}
 
 	public void initialize(IRPCHandler handler) {
@@ -49,7 +49,7 @@ class RPCServerCluster implements IServer, AutoCloseable {
 	 * @return
 	 */
 	public int getMessageCount() {
-		return RabbitBus.getMessageCount(RPC.ServerPolicy, _queue);
+		return RabbitBus.getMessageCount(RPCConfig.ServerPolicy, _queue);
 	}
 
 	private void increase() {
@@ -120,27 +120,34 @@ class RPCServerCluster implements IServer, AutoCloseable {
 
 		var serverCount = _items.size();
 
-		if (serverCount >= _maxConcurrency) // 服务个数已达到最大值
-			return;
-
 		var currentBacklog = this.getMessageCount();
 
 		if (currentBacklog == 0) {
 			// 积压量等于0就要考虑是否减少服务了
 			this.tryReduce(serverCount);
 		} else {
-			// 如果当前积压量还大于上次积压量，证明积压量在上升
-			if (currentBacklog >= _lastBacklog) {
-				// 消息积压量在增加，增加一个服务分担
-				this.increase();
-			}
-			// 以下代码不用执行
-//			else if (currentBacklog < _lastBacklog) {
-			// 积压量大于0，但是已经开始减少了，这时候什么也不用做
-//			}
+			// 有积压，尝试扩容
+			this.tryIncrease(serverCount, currentBacklog);
 		}
 
 		this.resetTrace(currentBacklog);
+	}
+
+	private void tryIncrease(int serverCount, int currentBacklog) {
+		var maxConcurrency = _config.maxConcurrency();
+		// 当maxConcurrency为0，表示不限制并发数
+		if (maxConcurrency != 0 && serverCount >= maxConcurrency) // 服务个数已达到最大值
+			return;
+
+		// 如果当前积压量还大于上次积压量，证明积压量在上升
+		if (currentBacklog >= _lastBacklog) {
+			// 消息积压量在增加，增加一个服务分担
+			this.increase();
+		}
+		// 以下代码不用执行
+//		else if (currentBacklog < _lastBacklog) {
+		// 积压量大于0，但是已经开始减少了，这时候什么也不用做
+//		}
 	}
 
 	private void tryReduce(int serverCount) {

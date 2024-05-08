@@ -2,14 +2,15 @@ package apros.codeart.rabbitmq.rpc;
 
 import java.util.function.Function;
 
+import apros.codeart.mq.rpc.MQRPC;
 import apros.codeart.rabbitmq.MQConnConfig;
 import apros.codeart.rabbitmq.Policy;
 import apros.codeart.rabbitmq.RabbitMQConfig;
 import apros.codeart.util.LazyIndexer;
 
-final class RPC {
+final class RPCConfig {
 
-	private RPC() {
+	private RPCConfig() {
 	}
 
 	/**
@@ -32,11 +33,31 @@ final class RPC {
 		ClientPolicy = new Policy(ConnConfig, 1, false, false);
 	}
 
+	/**
+	 * 
+	 * 获得rpc方法对应得配置信息
+	 * 
+	 * @param method
+	 * @return
+	 */
+	public static RPCServerConfig getServerConfig(String method) {
+		return _getServerConfig.apply(method);
+	}
+
 	public static String getServerQueue(String method) {
 		return _getServerQueue.apply(method);
 	}
 
 	private static Function<String, String> _getServerQueue = LazyIndexer.init((method) -> {
 		return String.format("rpc-%s", method.toLowerCase());
+	});
+
+	private static Function<String, RPCServerConfig> _getServerConfig = LazyIndexer.init((method) -> {
+		var maxConcurrency = MQRPC.section().getInt(String.format("server.maxConcurrency.%s", method), -1);
+		if (maxConcurrency < 0)
+			maxConcurrency = MQRPC.section().getInt("server.maxConcurrency", 10);
+
+		return new RPCServerConfig(maxConcurrency);
+
 	});
 }

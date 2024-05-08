@@ -12,16 +12,25 @@ public final class MQRPC {
 
 		private static final RPCConfig Config;
 
+		private static final DTObject Section;
+
 		static {
 
 			Config = new RPCConfig();
 
 			var mq = AppConfig.section("mq");
+			DTObject rpc = null;
 			if (mq != null) {
-				var eventNode = mq.getObject("rpc", null);
-				Config.loadFrom(eventNode);
+				rpc = mq.getObject("rpc", null);
+				Config.loadFrom(rpc);
 			}
+
+			Section = rpc == null ? DTObject.Empty : rpc;
 		}
+	}
+
+	public static DTObject section() {
+		return MQRPCHolder.Section;
 	}
 
 	public static InterfaceImplementer getClientFactoryImplementer() {

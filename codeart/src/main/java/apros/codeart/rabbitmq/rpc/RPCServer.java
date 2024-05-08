@@ -43,7 +43,7 @@ class RPCServer implements AutoCloseable, IMessageHandler {
 	public void open() {
 		if (_item != null)
 			return;
-		_item = RabbitBus.borrow(RPC.ServerPolicy);
+		_item = RabbitBus.borrow(RPCConfig.ServerPolicy);
 		RabbitBus bus = _item.getItem();
 		bus.queueDeclare(_queue);
 		bus.consume(_queue, this);

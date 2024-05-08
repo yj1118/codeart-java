@@ -30,6 +30,7 @@
 		},
 		"rpc":{
 			"server.maxConcurrency":5,
+			"server.maxConcurrency.registerUser":2,
 			"client.timeout":20
 		}
 	},

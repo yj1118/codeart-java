@@ -26,7 +26,7 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
 	private boolean _success;
 
 	public RPCClient(int secondsTimeout) {
-		_busItem = RabbitBus.borrow(RPC.ClientPolicy);
+		_busItem = RabbitBus.borrow(RPCConfig.ClientPolicy);
 		initConsumer();
 		_signal = new LatchSignal<TransferData>();
 		_secondsTimeout = secondsTimeout;
@@ -49,7 +49,7 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
 		dto.combineObject("arg", arg);
 
 		var data = new TransferData(AppSession.language(), dto);
-		var routingKey = RPC.getServerQueue(method); // 将服务器端的方法名称作为路由键
+		var routingKey = RPCConfig.getServerQueue(method); // 将服务器端的方法名称作为路由键
 		bus.publish(Strings.EMPTY, routingKey, data, (properties) -> {
 			properties.replyTo(_tempQueue);
 			properties.correlationId(_correlationId);
@@ -82,8 +82,13 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
 		}
 	}
 
+	/**
+	 * 清理客户端资源，以便可以重用
+	 */
+	@Override
 	public void clear() {
 		_correlationId = Strings.EMPTY;
+		// _busItem 不用释放，可以继续使用
 	}
 
 	@Override
