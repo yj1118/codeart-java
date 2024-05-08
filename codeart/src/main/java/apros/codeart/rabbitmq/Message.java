@@ -1,6 +1,8 @@
 package apros.codeart.rabbitmq;
 
-import java.util.function.Consumer;
+import java.time.Duration;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 
@@ -36,16 +38,16 @@ public final class Message {
 		return _properties;
 	}
 
-	private Runnable _ack;
+	private Supplier<Duration> _ack;
 
 	/**
 	 * 回复消息队列，提示消息已成功处理
 	 */
-	public void success() {
-		_ack.run();
+	public Duration success() {
+		return _ack.get();
 	}
 
-	private Consumer<Boolean> _reject;
+	private Function<Boolean, Duration> _reject;
 
 	/**
 	 * 
@@ -53,11 +55,12 @@ public final class Message {
 	 * 
 	 * @param requeue true:提示RabbitMQ服务器重发消息给下一个订阅者，false:提示RabbitMQ服务器把消息从队列中移除
 	 */
-	public void failed(boolean requeue) {
-		_reject.accept(requeue);
+	public Duration failed(boolean requeue) {
+		return _reject.apply(requeue);
 	}
 
-	Message(TransferData content, BasicProperties properties, Runnable ack, Consumer<Boolean> reject) {
+	Message(TransferData content, BasicProperties properties, Supplier<Duration> ack,
+			Function<Boolean, Duration> reject) {
 		_content = content;
 		_properties = properties;
 		_ack = ack;

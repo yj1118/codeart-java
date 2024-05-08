@@ -1,5 +1,7 @@
 package apros.codeart.rabbitmq.rpc;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.logging.log4j.util.Strings;
 
 import apros.codeart.context.AppSession;
@@ -7,14 +9,13 @@ import apros.codeart.dto.DTObject;
 import apros.codeart.log.Logger;
 import apros.codeart.mq.TransferData;
 import apros.codeart.mq.rpc.server.IRPCHandler;
-import apros.codeart.mq.rpc.server.IServer;
 import apros.codeart.mq.rpc.server.RPCEvents;
 import apros.codeart.pooling.IPoolItem;
 import apros.codeart.rabbitmq.IMessageHandler;
 import apros.codeart.rabbitmq.Message;
 import apros.codeart.rabbitmq.RabbitBus;
 
-public class RPCServer implements IServer, AutoCloseable, IMessageHandler {
+class RPCServer implements AutoCloseable, IMessageHandler {
 
 	private IRPCHandler _handler;
 
@@ -28,17 +29,15 @@ public class RPCServer implements IServer, AutoCloseable, IMessageHandler {
 
 	private IPoolItem _item;
 
-	public RPCServer(String method) {
-		_name = method;
-		_queue = RPC.getServerQueue(method);
-	}
+	private RPCServerCluster _cluster;
 
-	public void initialize(IRPCHandler handler) {
+	private AtomicBoolean _closed;
+
+	public RPCServer(RPCServerCluster cluster, String queue, IRPCHandler handler) {
+		_cluster = cluster;
+		_queue = queue;
 		_handler = handler;
-	}
-
-	public int getMessageCount() {
-		return RabbitBus.getMessageCount(RPC.ServerPolicy, _queue);
+		_closed = new AtomicBoolean(false);
 	}
 
 	public void open() {
@@ -75,7 +74,15 @@ public class RPCServer implements IServer, AutoCloseable, IMessageHandler {
 				var arg = new RPCEvents.ServerErrorArgs(ex);
 				RPCEvents.raiseServerError(this, arg);
 			} finally {
-				msg.success();
+				// 不论业务上是否报错，始终是对消息处理完毕了，所以success
+				var elapsed = msg.success();
+
+				if (_closed.getAcquire()) {
+					// 先关闭
+					this.dispose();
+				}
+
+				_cluster.messagesProcessed(elapsed);
 			}
 		});
 	}
@@ -99,11 +106,22 @@ public class RPCServer implements IServer, AutoCloseable, IMessageHandler {
 		return result;
 	}
 
-	@Override
-	public void close() {
+	public boolean disposed() {
+		return _item == null;
+	}
+
+	public void dispose() {
 		if (_item != null) {
 			_item.close();
 			_item = null;
 		}
+	}
+
+	/**
+	 * 直到下次处理完一个请求后才会真正关闭
+	 */
+	@Override
+	public void close() {
+		_closed.setRelease(true);
 	}
 }

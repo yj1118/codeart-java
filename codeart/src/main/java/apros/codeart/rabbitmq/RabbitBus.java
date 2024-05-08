@@ -3,7 +3,7 @@ package apros.codeart.rabbitmq;
 import static apros.codeart.runtime.Util.propagate;
 
 import java.io.IOException;
-import java.util.concurrent.Executors;
+import java.time.Duration;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -169,7 +169,15 @@ public class RabbitBus implements AutoCloseable {
 
 	private IMessageHandler _messageHandler = null;
 
+	/**
+	 * 消费者标识
+	 */
+	private String _consumerTag;
+
 	public void consume(String queue, IMessageHandler handler) {
+		if (_consumerTag != null)
+			throw new RabbitMQException(Language.strings("codeart", "MoreConsume", queue));
+
 		_messageHandler = handler;
 		// 不论什么应用，都需要手工应答，主要是为了避免不做限制，导致服务器资源耗尽
 		accept(queue, false);
@@ -181,7 +189,7 @@ public class RabbitBus implements AutoCloseable {
 				messageReceived(consumerTag, delivery);
 			};
 
-			this.channel().basicConsume(queue, autoAck, deliverCallback, consumerTag -> {
+			_consumerTag = this.channel().basicConsume(queue, autoAck, deliverCallback, consumerTag -> {
 			});
 		} catch (IOException e) {
 			throw propagate(e);
@@ -189,20 +197,28 @@ public class RabbitBus implements AutoCloseable {
 	}
 
 	private void messageReceived(String consumerTag, Delivery delivery) {
-		// 此处必须异步，否则会阻塞RPCServer接收处理消息，导致一个请求处理完后才处理下一个请求，吞吐量大幅度降低
-		try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-			executor.submit(() -> {
-				// DTObject content = DTObject.Create(e.Body);
-				var content = TransferData.deserialize(delivery.getBody());
 
-				var message = new Message(content, delivery.getProperties(), () -> {
-					ack(delivery.getEnvelope());
-				}, (requeue) -> {
-					reject(delivery.getEnvelope(), requeue);
-				});
-				_messageHandler.handle(this, message);
-			});
-		}
+		long startTime = System.currentTimeMillis();
+
+		var content = TransferData.deserialize(delivery.getBody());
+
+		var message = new Message(content, delivery.getProperties(), () -> {
+			ack(delivery.getEnvelope());
+			long endTime = System.currentTimeMillis();
+			return Duration.ofMillis(endTime - startTime);
+		}, (requeue) -> {
+			reject(delivery.getEnvelope(), requeue);
+			long endTime = System.currentTimeMillis();
+			return Duration.ofMillis(endTime - startTime);
+		});
+		_messageHandler.handle(this, message);
+
+//		// 此处必须异步，否则会阻塞RPCServer接收处理消息，导致一个请求处理完后才处理下一个请求，吞吐量大幅度降低
+//		try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+//			executor.submit(() -> {
+//				
+//			});
+//		}
 	}
 
 	private void ack(Envelope envelope) {
@@ -233,9 +249,30 @@ public class RabbitBus implements AutoCloseable {
 		}
 	}
 
+	private void clear() {
+		// 取消消费
+		this.cancel();
+	}
+
+	/**
+	 * 取消消费
+	 */
+	public void cancel() {
+		if (_consumerTag == null)
+			return;
+		try {
+			this.channel().basicCancel(_consumerTag);
+			_consumerTag = null;
+		} catch (IOException e) {
+			throw propagate(e);
+		}
+	}
+
 	@Override
 	public void close() {
+		// 销毁bus，就要把它用到的通道资源归还
 		if (_channelItem != null) {
+			this.cancel();
 			_channelItem.back();
 			_channelItem = null;
 			_channel = null;
@@ -250,7 +287,10 @@ public class RabbitBus implements AutoCloseable {
 	private static Function<Policy, Pool<RabbitBus>> _getPool = LazyIndexer.init((policy) -> {
 		return new Pool<RabbitBus>(RabbitBus.class, new PoolConfig(10, 200), (isTempItem) -> {
 			return new RabbitBus(policy);
-		}, null, (bus) -> {
+		}, (bus) -> {
+			// 归还bus，需要取消消费
+			bus.clear();
+		}, (bus) -> {
 			bus.close();
 		});
 	});

@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import com.google.common.collect.ImmutableList;
@@ -132,16 +133,26 @@ public final class ListUtil {
 		return list;
 	}
 
-	public static <T> T removeFirst(Iterable<T> source, Function<T, Boolean> predicate) {
+	public static <T> T removeFirst(Iterable<T> source, Predicate<T> predicate) {
 		var iterator = source.iterator();
 		while (iterator.hasNext()) {
 			T item = iterator.next();
-			if (predicate.apply(item)) {
+			if (predicate.test(item)) {
 				iterator.remove(); // 使用迭代器的 remove() 方法安全删除当前元素
 				return item;
 			}
 		}
 		return null;
+	}
+
+	public static <T> void remove(Iterable<T> source, Predicate<T> predicate) {
+		var iterator = source.iterator();
+		while (iterator.hasNext()) {
+			T item = iterator.next();
+			if (predicate.test(item)) {
+				iterator.remove();
+			}
+		}
 	}
 
 	public static <T> void addRange(AbstractList<T> source, Iterable<T> collection) {

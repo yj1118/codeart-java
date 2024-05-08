@@ -21,7 +21,7 @@ final class RPCServerFactory implements IServerFactory {
 	private static ArrayList<IServer> _servers = new ArrayList<IServer>();
 
 	private static Function<String, IServer> _getServer = LazyIndexer.init((method) -> {
-		var server = new RPCServer(method);
+		var server = new RPCServerCluster(method);
 		_servers.add(server);
 		return server;
 	});
