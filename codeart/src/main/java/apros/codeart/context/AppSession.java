@@ -7,11 +7,8 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-import apros.codeart.dto.DTObject;
 import apros.codeart.pooling.Pool;
 import apros.codeart.runtime.MethodUtil;
-import apros.codeart.util.EventHandler;
-import apros.codeart.util.StringUtil;
 import apros.codeart.util.localeUtil;
 
 /**
@@ -189,81 +186,6 @@ public final class AppSession {
 			return null;
 		return (T) item;
 	}
-
-//	public static Object getItem(String name) {
-//		return current().getItem(name);
-//	}
-
-	// # region 会话级别的身份和语言
-
-	/**
-	 * 当前应用程序会话使用的身份
-	 * 
-	 * @return
-	 */
-	public static DTObject identity() {
-		return AppSession.getItem("__SessionIdentity");
-	}
-
-	public static void setIdentity(DTObject value) {
-		AppSession.setItem("SessionIdentity", value);
-		identityChanged.raise(getCurrent(), () -> value);
-	}
-
-	private static void initIdentity() {
-		if (identity() == null)
-			setIdentity(DTObject.editable());
-	}
-
-	/**
-	 * 
-	 * 适配身份，如果会话里有，就用会话的，否则就用项目配置的统一身份
-	 * 
-	 * @return
-	 */
-	public static DTObject adaptIdentity() {
-		var identity = AppSession.identity();
-		return identity != null ? identity : GlobalContext.identity();
-	}
-
-	/**
-	 * 当会话的身份发生改变时触发
-	 */
-	public final static EventHandler<DTObject> identityChanged = new EventHandler<DTObject>();
-
-	/**
-	 * 负责人编号
-	 * 
-	 * @return
-	 */
-	public static String principalId() {
-		var i = identity();
-		return i == null ? StringUtil.empty() : i.getString("principalId", StringUtil.empty());
-	}
-
-	public static void setPrincipalId(String value) {
-		initIdentity();
-		identity().setValue("principalId", value);
-	}
-
-	/**
-	 * 
-	 * 身份里自带的信息
-	 * 
-	 * @return
-	 */
-	public static DTObject data() {
-		var i = identity();
-		return i == null ? DTObject.Empty : i.getObject("data", DTObject.Empty);
-	}
-
-	public static void setData(DTObject value) {
-		initIdentity();
-		var i = identity();
-		i.setObject("data", value);
-	}
-
-	// # endregion
 
 	public static String language() {
 		return locale().getLanguage();
