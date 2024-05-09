@@ -60,14 +60,14 @@ class DomainBufferImpl {
 		return obtainImpl(uniqueKey, load);
 	}
 
-	/// <summary>
-	/// 从缓存区中创建或者获取数据
-	/// </summary>
-	/// <param name="tip"></param>
-	/// <param name="getCacheKey"></param>
-	/// <param name="dataVersion"></param>
-	/// <param name="load"></param>
-	/// <returns></returns>
+	/**
+	 * 
+	 * 从缓存区中创建或者获取数据
+	 * 
+	 * @param uniqueKey
+	 * @param load
+	 * @return
+	 */
 	private IAggregateRoot obtainImpl(String uniqueKey, Supplier<IAggregateRoot> load) {
 		var result = ListUtil.find(_items, (t) -> t.uniqueKey().equals(uniqueKey));
 
@@ -78,12 +78,9 @@ class DomainBufferImpl {
 		// 更新缓冲区
 		var root = load.get();
 
-		if (result != null) {
-			// 删除老数据
-			ListUtil.removeFirst(_items, (t) -> t.uniqueKey().equals(uniqueKey));
+		if (root != null) {
+			_items.add(root);
 		}
-
-		_items.add(root);
 		return root;
 	}
 

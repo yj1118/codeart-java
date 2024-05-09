@@ -1,6 +1,6 @@
 package apros.codeart.bytecode;
 
-class MethodParameter {
+public class MethodParameter {
 	private String _name;
 
 	public String getName() {

@@ -65,7 +65,7 @@ public final class IOBuffer {
 				});
 	});
 
-	private static record SizeConfig(int value, int minSegmentCapacity, int maxSegmentCapacity) {
+	public static record SizeConfig(int value, int minSegmentCapacity, int maxSegmentCapacity) {
 
 	}
 
