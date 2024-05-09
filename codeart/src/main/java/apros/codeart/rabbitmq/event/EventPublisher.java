@@ -29,7 +29,6 @@ class EventPublisher implements IPublisher {
 			} catch (Exception e) {
 				throw propagate(e);
 			}
-
 		}
 	}
 

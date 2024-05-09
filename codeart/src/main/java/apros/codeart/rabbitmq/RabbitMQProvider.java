@@ -8,7 +8,9 @@ import apros.codeart.rabbitmq.event.EventPublisherFactory;
 import apros.codeart.rabbitmq.event.EventSubscriberFactory;
 import apros.codeart.rabbitmq.rpc.RPCClientFactory;
 import apros.codeart.rabbitmq.rpc.RPCServerFactory;
+import apros.codeart.util.SafeAccess;
 
+@SafeAccess
 public final class RabbitMQProvider implements IMQProvider {
 
 	@Override
@@ -24,5 +26,4 @@ public final class RabbitMQProvider implements IMQProvider {
 		RPCClient.register(RPCClientFactory.Instance);
 		RPCServer.Register(RPCServerFactory.Instance);
 	}
-
 }
