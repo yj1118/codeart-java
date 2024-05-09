@@ -38,7 +38,7 @@ public final class DomainMessage {
 	 * @param handler
 	 */
 	public static void subscribe(String messageName, DomainMessageHandler handler) {
-		EventPortal.subscribe(messageName, handler);
+		EventPortal.subscribe(messageName, handler, true);
 	}
 
 	public static void cancel(String messageName) {

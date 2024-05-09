@@ -3,14 +3,8 @@ package apros.codeart.ddd.cqrs.slave;
 import apros.codeart.context.AppSession;
 import apros.codeart.ddd.message.DomainMessageHandler;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.event.EventPriority;
 
 public abstract class RemoteObjectHandler extends DomainMessageHandler {
-
-	@Override
-	public EventPriority getPriority() {
-		return EventPriority.High;
-	}
 
 	@Override
 	public void process(String msgName, String msgId, DTObject content) {

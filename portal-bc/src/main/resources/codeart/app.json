@@ -26,7 +26,9 @@
 			}
 		],
 		"event":{
-			"subscriber.group":"PortalService"
+			"subscriber.group":"PortalService",
+			"subscriber.maxConcurrency":5,
+			"subscriber.maxConcurrency.UserUpdated":2
 		},
 		"rpc":{
 			"server.maxConcurrency":5,

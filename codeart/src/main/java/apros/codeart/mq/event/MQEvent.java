@@ -4,7 +4,7 @@ import apros.codeart.AppConfig;
 import apros.codeart.InterfaceImplementer;
 import apros.codeart.dto.DTObject;
 
-final class MQEvent {
+public final class MQEvent {
 	private MQEvent() {
 	}
 
@@ -12,16 +12,25 @@ final class MQEvent {
 
 		private static final EventConfig Config;
 
+		private static final DTObject Section;
+
 		static {
 
 			Config = new EventConfig();
 
 			var mq = AppConfig.section("mq");
+			DTObject event = null;
 			if (mq != null) {
-				var eventNode = mq.getObject("event", null);
-				Config.loadFrom(eventNode);
+				event = mq.getObject("event", null);
+				Config.loadFrom(event);
 			}
+
+			Section = event == null ? DTObject.Empty : event;
 		}
+	}
+
+	public static DTObject section() {
+		return MQEventHolder.Section;
 	}
 
 	public static InterfaceImplementer getPublisherFactoryImplementer() {

@@ -23,7 +23,7 @@ public interface ISubscriber {
 	void addHandler(IEventHandler handler);
 
 	/**
-	 * 释放事件资源
+	 * 移除订阅者，释放事件资源，删除队列
 	 */
-	void cleanup();
+	void remove();
 }

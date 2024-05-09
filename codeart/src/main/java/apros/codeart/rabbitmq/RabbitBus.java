@@ -51,11 +51,16 @@ public class RabbitBus implements AutoCloseable {
 	 * @param type
 	 * @throws IOException
 	 */
-	public void exchangeDeclare(String exchange, String type) throws IOException {
-		if (this.policy().persistentMessages()) {
-			this.channel().exchangeDeclare(exchange, type, true, false, null);
-		} else {
-			this.channel().exchangeDeclare(exchange, type, false, true, null);
+	public void exchangeDeclare(String exchange, String type) {
+
+		try {
+			if (this.policy().persistentMessages()) {
+				this.channel().exchangeDeclare(exchange, type, true, false, null);
+			} else {
+				this.channel().exchangeDeclare(exchange, type, false, true, null);
+			}
+		} catch (Exception ex) {
+			throw propagate(ex);
 		}
 	}
 
@@ -105,19 +110,24 @@ public class RabbitBus implements AutoCloseable {
 
 	}
 
-	/// <summary>
-	/// 删除队列
-	/// </summary>
-	/// <param name="queue"></param>
-	public void queueDelete(String queue) throws Exception {
-		if (channelIsClosed()) // 如果连接已关闭，证明该队列已经被删除，不必重复删除
-			return;
-		this.channel().queueDelete(queue);
+	/**
+	 * 
+	 * 删除队列
+	 * 
+	 * @param queue
+	 * @throws Exception
+	 */
+	public void queueDelete(String queue) {
+		try {
+			this.channel().queueDelete(queue);
+		} catch (Exception ex) {
+			throw propagate(ex);
+		}
 	}
 
-	private boolean channelIsClosed() {
-		return this.channel() != null && !this.channel().isOpen();
-	}
+//	private boolean channelIsClosed() {
+//		return this.channel() != null && !this.channel().isOpen();
+//	}
 
 //	#region 发布消息
 

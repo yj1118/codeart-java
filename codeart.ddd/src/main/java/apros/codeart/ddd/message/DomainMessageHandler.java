@@ -2,15 +2,9 @@ package apros.codeart.ddd.message;
 
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.TransferData;
-import apros.codeart.mq.event.EventPriority;
 import apros.codeart.mq.event.IEventHandler;
 
 public abstract class DomainMessageHandler implements IEventHandler {
-
-	@Override
-	public EventPriority getPriority() {
-		return EventPriority.Medium;
-	}
 
 	@Override
 	public void handle(String eventName, TransferData data) {

@@ -39,6 +39,17 @@ public final class AppSession {
 		}
 	}
 
+	public static <T> T using(Supplier<T> action) {
+		try {
+			initialize();
+			return action.get();
+		} catch (Exception ex) {
+			throw propagate(ex);
+		} finally {
+			dispose();
+		}
+	}
+
 	private static void initialize() throws Exception {
 		if (exists())
 			return; // 当前回话已存在，不用初始化

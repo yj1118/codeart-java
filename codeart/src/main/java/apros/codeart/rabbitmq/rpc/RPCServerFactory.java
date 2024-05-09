@@ -5,6 +5,7 @@ import java.util.function.Function;
 
 import apros.codeart.mq.rpc.server.IServer;
 import apros.codeart.mq.rpc.server.IServerFactory;
+import apros.codeart.rabbitmq.internal.ConsumerClusterFactory;
 import apros.codeart.util.LazyIndexer;
 
 final class RPCServerFactory implements IServerFactory {
@@ -23,6 +24,9 @@ final class RPCServerFactory implements IServerFactory {
 	private static Function<String, IServer> _getServer = LazyIndexer.init((method) -> {
 		var server = new RPCServerCluster(method);
 		_servers.add(server);
+
+		ConsumerClusterFactory.add(server);
+
 		return server;
 	});
 

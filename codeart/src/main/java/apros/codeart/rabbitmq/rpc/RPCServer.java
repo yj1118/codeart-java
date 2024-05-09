@@ -1,6 +1,6 @@
 package apros.codeart.rabbitmq.rpc;
 
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.time.Duration;
 
 import org.apache.logging.log4j.util.Strings;
 
@@ -11,35 +11,25 @@ import apros.codeart.mq.TransferData;
 import apros.codeart.mq.rpc.server.IRPCHandler;
 import apros.codeart.mq.rpc.server.RPCEvents;
 import apros.codeart.pooling.IPoolItem;
-import apros.codeart.rabbitmq.IMessageHandler;
 import apros.codeart.rabbitmq.Message;
 import apros.codeart.rabbitmq.RabbitBus;
+import apros.codeart.rabbitmq.internal.Consumer;
 
-class RPCServer implements AutoCloseable, IMessageHandler {
+class RPCServer extends Consumer implements AutoCloseable {
 
 	private IRPCHandler _handler;
 
 	private String _queue;
 
-	private String _name;
-
-	public String getName() {
-		return _name;
-	}
-
 	private IPoolItem _item;
 
-	private RPCServerCluster _cluster;
-
-	private AtomicBoolean _closed;
-
 	public RPCServer(RPCServerCluster cluster, String queue, IRPCHandler handler) {
-		_cluster = cluster;
+		super(cluster);
 		_queue = queue;
 		_handler = handler;
-		_closed = new AtomicBoolean(false);
 	}
 
+	@Override
 	public void open() {
 		if (_item != null)
 			return;
@@ -49,9 +39,11 @@ class RPCServer implements AutoCloseable, IMessageHandler {
 		bus.consume(_queue, this);
 	}
 
-	public void handle(RabbitBus sender, Message msg) {
+	@Override
+	protected Duration processMessage(RabbitBus sender, Message msg) {
 
-		AppSession.using(() -> {
+		return AppSession.using(() -> {
+			Duration elapsed = null;
 			try {
 				AppSession.setLanguage(msg.language());
 
@@ -75,15 +67,9 @@ class RPCServer implements AutoCloseable, IMessageHandler {
 				RPCEvents.raiseServerError(this, arg);
 			} finally {
 				// 不论业务上是否报错，始终是对消息处理完毕了，所以success
-				var elapsed = msg.success();
-
-				if (_closed.getAcquire()) {
-					// 先关闭
-					this.dispose();
-				}
-
-				_cluster.messagesProcessed(elapsed);
+				elapsed = msg.success();
 			}
+			return elapsed;
 		});
 	}
 
@@ -106,6 +92,7 @@ class RPCServer implements AutoCloseable, IMessageHandler {
 		return result;
 	}
 
+	@Override
 	public boolean disposed() {
 		return _item == null;
 	}
@@ -115,13 +102,5 @@ class RPCServer implements AutoCloseable, IMessageHandler {
 			_item.close();
 			_item = null;
 		}
-	}
-
-	/**
-	 * 直到下次处理完一个请求后才会真正关闭
-	 */
-	@Override
-	public void close() {
-		_closed.setRelease(true);
 	}
 }

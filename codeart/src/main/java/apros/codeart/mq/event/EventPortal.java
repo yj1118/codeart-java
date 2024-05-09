@@ -25,8 +25,13 @@ public final class EventPortal {
 		return getPublisherFactory().create();
 	}
 
-	public static void subscribe(String eventName, IEventHandler handler) {
-		subscribe(eventName, handler, false);
+	/**
+	 * @param eventName
+	 * @param handler
+	 * @param cluster   是否需要集群支持
+	 */
+	public static void subscribe(String eventName, IEventHandler handler, boolean cluster) {
+		subscribe(eventName, handler, cluster, false);
 	}
 
 	/**
@@ -36,25 +41,23 @@ public final class EventPortal {
 	 * @param handler
 	 * @param startUp   false:不立即启动订阅器，由全局方法StartUp统一调度，适用于程序初始化期间挂载订阅,true:立即启动订阅器
 	 */
-	public static void subscribe(String eventName, IEventHandler handler, boolean startUp) {
-		var subscriber = createSubscriber(eventName);
+	public static void subscribe(String eventName, IEventHandler handler, boolean cluster, boolean startUp) {
+		var subscriber = createSubscriber(eventName, cluster);
 		subscriber.addHandler(handler);
 		if (startUp)
 			subscriber.accept();
 	}
 
-	private static ISubscriber createSubscriber(String eventName) {
-		var group = MQEvent.getSubscriberGroup();
-		return getSubscriberFactory().create(eventName, group);
+	private static ISubscriber createSubscriber(String eventName, boolean cluster) {
+		return getSubscriberFactory().create(eventName, cluster);
 	}
 
 	private static ISubscriber removeSubscriber(String eventName) {
-		var group = MQEvent.getSubscriberGroup();
-		return getSubscriberFactory().remove(eventName, group);
+		return getSubscriberFactory().remove(eventName);
 	}
 
 	public static void cancel(String eventName) {
-		var subscriber = createSubscriber(eventName);
+		var subscriber = getSubscriberFactory().get(eventName);
 		subscriber.stop();
 	}
 
@@ -69,14 +72,14 @@ public final class EventPortal {
 	}
 
 	/**
-	 * 主动释放事件资源
+	 * 移除事件
 	 * 
 	 * @param eventName
 	 */
-	public static void cleanup(String eventName) {
+	public static void remove(String eventName) {
 		var subscriber = removeSubscriber(eventName);
 		if (subscriber != null)
-			subscriber.cleanup();
+			subscriber.remove();
 	}
 
 //	region 获取和注册工厂

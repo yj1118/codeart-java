@@ -2,8 +2,6 @@ package apros.codeart.rabbitmq.event;
 
 import static apros.codeart.runtime.Util.propagate;
 
-import java.io.IOException;
-
 import apros.codeart.context.AppSession;
 import apros.codeart.dto.DTObject;
 import apros.codeart.mq.TransferData;
@@ -28,7 +26,7 @@ class EventPublisher implements IPublisher {
 				bus.exchangeDeclare(EventConfig.Exchange, "topic");
 				var routingKey = eventName;
 				bus.publish(EventConfig.Exchange, routingKey, new TransferData(AppSession.language(), arg), null);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				throw propagate(e);
 			}
 

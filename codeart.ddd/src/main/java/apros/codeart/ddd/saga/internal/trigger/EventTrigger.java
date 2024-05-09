@@ -122,7 +122,8 @@ public final class EventTrigger {
 
 	private static void subscribeRemoteEventResult(String eventId) {
 		var raiseResultEventName = EventUtil.getRaiseResult(eventId);
-		EventPortal.subscribe(raiseResultEventName, ReceiveResultEventHandler.Instance, true);
+		// 单方面接收返回值，不需要集群支持
+		EventPortal.subscribe(raiseResultEventName, ReceiveResultEventHandler.Instance, false);
 	}
 
 	/**
@@ -133,7 +134,7 @@ public final class EventTrigger {
 	 */
 	public static void cleanupRemoteEventResult(String eventId) {
 		var raiseResultEventName = EventUtil.getRaiseResult(eventId);
-		EventPortal.cleanup(raiseResultEventName);
+		EventPortal.remove(raiseResultEventName);
 	}
 
 	/**

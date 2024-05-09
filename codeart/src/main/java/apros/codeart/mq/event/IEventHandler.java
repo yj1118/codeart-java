@@ -14,6 +14,4 @@ public interface IEventHandler {
 	 */
 	void handle(String eventName, TransferData data);
 
-	EventPriority getPriority();
-
 }
