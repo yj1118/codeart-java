@@ -4,7 +4,7 @@ import java.time.Duration;
 
 import apros.codeart.mq.event.IEventHandler;
 import apros.codeart.mq.event.ISubscriber;
-import apros.codeart.rabbitmq.internal.IConsumerCluster;
+import apros.codeart.rabbitmq.IConsumerCluster;
 
 class EventSubscriberClusterTemp implements IConsumerCluster, ISubscriber {
 

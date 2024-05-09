@@ -1,11 +1,7 @@
-package apros.codeart.rabbitmq.internal;
+package apros.codeart.rabbitmq;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import apros.codeart.rabbitmq.IMessageHandler;
-import apros.codeart.rabbitmq.Message;
-import apros.codeart.rabbitmq.RabbitBus;
 
 public abstract class Consumer implements IConsumer, IMessageHandler {
 

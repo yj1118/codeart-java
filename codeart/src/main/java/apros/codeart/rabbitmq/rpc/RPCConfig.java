@@ -3,10 +3,10 @@ package apros.codeart.rabbitmq.rpc;
 import java.util.function.Function;
 
 import apros.codeart.mq.rpc.MQRPC;
+import apros.codeart.rabbitmq.ConsumerConfig;
 import apros.codeart.rabbitmq.MQConnConfig;
 import apros.codeart.rabbitmq.Policy;
 import apros.codeart.rabbitmq.RabbitMQConfig;
-import apros.codeart.rabbitmq.internal.ConsumerConfig;
 import apros.codeart.util.LazyIndexer;
 
 final class RPCConfig {

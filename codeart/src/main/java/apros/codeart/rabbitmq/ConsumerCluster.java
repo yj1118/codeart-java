@@ -1,4 +1,4 @@
-package apros.codeart.rabbitmq.internal;
+package apros.codeart.rabbitmq;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -7,8 +7,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
-import apros.codeart.rabbitmq.Policy;
-import apros.codeart.rabbitmq.RabbitBus;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.thread.Timer;
 import apros.codeart.util.thread.Timer.LoopType;

@@ -11,9 +11,9 @@ import apros.codeart.mq.TransferData;
 import apros.codeart.mq.rpc.server.IRPCHandler;
 import apros.codeart.mq.rpc.server.RPCEvents;
 import apros.codeart.pooling.IPoolItem;
+import apros.codeart.rabbitmq.Consumer;
 import apros.codeart.rabbitmq.Message;
 import apros.codeart.rabbitmq.RabbitBus;
-import apros.codeart.rabbitmq.internal.Consumer;
 
 class RPCServer extends Consumer implements AutoCloseable {
 

@@ -5,10 +5,10 @@ import java.util.function.Function;
 
 import apros.codeart.mq.rpc.server.IServer;
 import apros.codeart.mq.rpc.server.IServerFactory;
-import apros.codeart.rabbitmq.internal.ConsumerClusterFactory;
+import apros.codeart.rabbitmq.ConsumerClusterFactory;
 import apros.codeart.util.LazyIndexer;
 
-final class RPCServerFactory implements IServerFactory {
+public final class RPCServerFactory implements IServerFactory {
 
 	public IServer create(String method) {
 		return _getServer.apply(method);

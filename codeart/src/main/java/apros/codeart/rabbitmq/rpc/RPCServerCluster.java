@@ -2,7 +2,7 @@ package apros.codeart.rabbitmq.rpc;
 
 import apros.codeart.mq.rpc.server.IRPCHandler;
 import apros.codeart.mq.rpc.server.IServer;
-import apros.codeart.rabbitmq.internal.ConsumerCluster;
+import apros.codeart.rabbitmq.ConsumerCluster;
 
 class RPCServerCluster extends ConsumerCluster<RPCServer> implements IServer {
 

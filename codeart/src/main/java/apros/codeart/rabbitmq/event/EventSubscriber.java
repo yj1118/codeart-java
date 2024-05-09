@@ -8,10 +8,10 @@ import apros.codeart.log.Logger;
 import apros.codeart.mq.event.IEventHandler;
 import apros.codeart.mq.event.ISubscriber;
 import apros.codeart.pooling.IPoolItem;
+import apros.codeart.rabbitmq.Consumer;
+import apros.codeart.rabbitmq.IConsumerCluster;
 import apros.codeart.rabbitmq.Message;
 import apros.codeart.rabbitmq.RabbitBus;
-import apros.codeart.rabbitmq.internal.Consumer;
-import apros.codeart.rabbitmq.internal.IConsumerCluster;
 import apros.codeart.util.SafeAccessImpl;
 import apros.codeart.util.thread.Parallel;
 

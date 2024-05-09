@@ -1,4 +1,4 @@
-package apros.codeart.rabbitmq.internal;
+package apros.codeart.rabbitmq;
 
 public record ConsumerConfig(int maxConcurrency) {
 

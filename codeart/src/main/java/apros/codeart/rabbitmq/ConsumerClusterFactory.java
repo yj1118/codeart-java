@@ -1,4 +1,4 @@
-package apros.codeart.rabbitmq.internal;
+package apros.codeart.rabbitmq;
 
 import java.util.ArrayList;
 
