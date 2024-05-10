@@ -81,6 +81,10 @@ public final class ListUtil {
 		return false;
 	}
 
+	public static <T> boolean contains(T[] source, Function<T, Boolean> predicate) {
+		return find(source, predicate) != null;
+	}
+
 	public static <T> T first(Iterable<T> source) {
 		for (T item : source) {
 			return item;

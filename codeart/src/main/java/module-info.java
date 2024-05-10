@@ -24,6 +24,7 @@ module apros.codeart {
 	exports apros.codeart.mq.event;
 	exports apros.codeart.mq.rpc.server;
 	exports apros.codeart.mq.rpc.client;
+	exports apros.codeart.service;
 
 	opens apros.codeart;
 }

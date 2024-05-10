@@ -14,7 +14,8 @@ public class PreStart {
 	}
 
 	private static void setupProvier() {
-		if (StringUtil.isNullOrEmpty(MQConfig.Impl()) || MQConfig.Impl().equalsIgnoreCase("rabbitMQ")) {
+		var providerName = MQConfig.provider();
+		if (StringUtil.isNullOrEmpty(providerName) || providerName.equalsIgnoreCase("rabbitMQ")) {
 			// 不用单例，可以回收，节约内存
 			var provider = new RabbitMQProvider();
 			provider.setup();
@@ -23,7 +24,7 @@ public class PreStart {
 		var providerTypes = Activator.getSubTypesOf(IMQProvider.class);
 		for (var type : providerTypes) {
 			var provider = SafeAccessImpl.createSingleton(type);
-			if (provider.name().equalsIgnoreCase(MQConfig.Impl())) {
+			if (provider.name().equalsIgnoreCase(providerName)) {
 				provider.setup();
 				return;
 			}

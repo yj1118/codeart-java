@@ -13,16 +13,16 @@ public final class MQConfig {
 
 		private static final DTObject Section;
 
-		private static final String Impl;
+		private static final String Provider;
 
 		static {
 
 			var section = AppConfig.section("mq");
 			if (section != null) {
-				Impl = section.getString("impl", Strings.EMPTY);
+				Provider = section.getString("provider", Strings.EMPTY);
 			} else {
 				section = DTObject.Empty;
-				Impl = Strings.EMPTY;
+				Provider = Strings.EMPTY;
 			}
 
 			Section = section;
@@ -33,8 +33,8 @@ public final class MQConfig {
 		return Holder.Section;
 	}
 
-	public static String Impl() {
-		return Holder.Impl;
+	public static String provider() {
+		return Holder.Provider;
 	}
 
 }
