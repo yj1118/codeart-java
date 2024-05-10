@@ -9,11 +9,11 @@ public final class RabbitMQConfig {
 	}
 
 	public static MQConnConfig find(String name) {
-		var mq = AppConfig.section("mq");
+		var mq = AppConfig.section("rabbitMQ");
 		if (mq == null)
 			return null;
 
-		var ps = mq.getObjects("rabbitmq", false);
+		var ps = mq.getObjects("servers", false);
 		if (ps == null)
 			return null;
 

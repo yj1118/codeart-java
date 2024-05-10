@@ -1,35 +1,16 @@
 package apros.codeart.echo.event;
 
 import apros.codeart.ActionPriority;
+import apros.codeart.ModuleInstaller;
 import apros.codeart.PreApplicationStart;
 import apros.codeart.echo.EchoConfig;
-import apros.codeart.echo.IEchoProvider;
 import apros.codeart.rabbitmq.event.RabbitMQEventProvider;
-import apros.codeart.runtime.Activator;
-import apros.codeart.util.SafeAccessImpl;
-import apros.codeart.util.StringUtil;
 
 @PreApplicationStart(ActionPriority.Low)
 public class PreStart {
 	public static void initialize() {
-		setupProvier();
+		var providerName = EchoConfig.eventSection().getString("provider", null);
+		// 安装事件节点下的提供者，该提供者一定安装的是订阅和分发事件的模块
+		ModuleInstaller.setup(providerName, RabbitMQEventProvider.class);
 	}
-
-	private static void setupProvier() {
-		var providerName = EchoConfig.eventSection().getString("provider", "rabbitMQ-event");
-		if (StringUtil.isNullOrEmpty(providerName)) {
-			var provider = new RabbitMQEventProvider();
-			provider.setup();
-		}
-
-		var providerTypes = Activator.getSubTypesOf(IEchoProvider.class);
-		for (var type : providerTypes) {
-			var provider = SafeAccessImpl.createSingleton(type);
-			if (provider.name().equalsIgnoreCase(providerName)) {
-				provider.setup();
-				return;
-			}
-		}
-	}
-
 }
