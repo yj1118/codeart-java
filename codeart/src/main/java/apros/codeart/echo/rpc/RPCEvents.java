@@ -1,4 +1,4 @@
-package apros.codeart.mq.rpc.server;
+package apros.codeart.echo.rpc;
 
 import apros.codeart.util.EventHandler;
 

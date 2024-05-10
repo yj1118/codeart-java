@@ -1,16 +1,14 @@
 package apros.codeart.ddd.cqrs.master;
 
-import apros.codeart.context.AppSession;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.TransferData;
-import apros.codeart.mq.rpc.server.IRPCHandler;
+import apros.codeart.echo.rpc.IRPCHandler;
 
 final class GetObjectMeta implements IRPCHandler {
 	private GetObjectMeta() {
 	}
 
-	public TransferData process(String method, DTObject arg) {
+	public DTObject process(String method, DTObject arg) {
 
 		var name = arg.getString("name");
 
@@ -19,7 +17,7 @@ final class GetObjectMeta implements IRPCHandler {
 
 		var scheme = meta.toDTO(master.members());
 
-		return new TransferData(AppSession.language(), scheme);
+		return scheme;
 	}
 
 	public static final GetObjectMeta Instance = new GetObjectMeta();

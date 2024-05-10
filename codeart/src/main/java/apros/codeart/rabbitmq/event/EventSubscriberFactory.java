@@ -3,9 +3,9 @@ package apros.codeart.rabbitmq.event;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import apros.codeart.mq.event.ISubscriber;
-import apros.codeart.mq.event.ISubscriberFactory;
-import apros.codeart.mq.event.MQEvent;
+import apros.codeart.echo.event.ISubscriber;
+import apros.codeart.echo.event.ISubscriberFactory;
+import apros.codeart.echo.event.MQEvent;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess

@@ -1,23 +1,21 @@
 package apros.codeart.ddd.message;
 
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.TransferData;
-import apros.codeart.mq.event.IEventHandler;
+import apros.codeart.echo.event.IEventHandler;
 
 public abstract class DomainMessageHandler implements IEventHandler {
 
 	@Override
-	public void handle(String eventName, TransferData data) {
-		var info = data.info();
+	public void handle(String eventName, DTObject data) {
 
 //		if (!info.exist(DomainMessagePublisher.headerType))
 //			return;
 
-		var msgId = info.getString("id");
+		var msgId = data.getString("id");
 
 		// 消息幂等性判断,todo...
 
-		var content = info.getObject("body");
+		var content = data.getObject("body");
 
 		process(eventName, msgId, content);
 	}

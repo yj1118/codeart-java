@@ -12,7 +12,7 @@ module apros.codeart.ddd {
 	exports apros.codeart.ddd.metadata;
 	exports apros.codeart.ddd.dynamic;
 	exports apros.codeart.ddd.launcher;
-	exports apros.codeart.ddd.console;
+	exports apros.codeart.ddd.service;
 
 	opens apros.codeart.ddd;
 }

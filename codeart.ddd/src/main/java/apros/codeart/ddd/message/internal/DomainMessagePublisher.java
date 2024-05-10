@@ -2,7 +2,7 @@ package apros.codeart.ddd.message.internal;
 
 import apros.codeart.ddd.repository.DataContextEventArgs;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.event.EventPortal;
+import apros.codeart.echo.event.EventPortal;
 import apros.codeart.util.IEventObserver;
 
 public final class DomainMessagePublisher implements IEventObserver<DataContextEventArgs> {

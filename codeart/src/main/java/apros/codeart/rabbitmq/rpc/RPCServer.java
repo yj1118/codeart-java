@@ -6,10 +6,10 @@ import org.apache.logging.log4j.util.Strings;
 
 import apros.codeart.context.AppSession;
 import apros.codeart.dto.DTObject;
+import apros.codeart.echo.TransferData;
+import apros.codeart.echo.rpc.IRPCHandler;
+import apros.codeart.echo.rpc.RPCEvents;
 import apros.codeart.log.Logger;
-import apros.codeart.mq.TransferData;
-import apros.codeart.mq.rpc.server.IRPCHandler;
-import apros.codeart.mq.rpc.server.RPCEvents;
 import apros.codeart.pooling.IPoolItem;
 import apros.codeart.rabbitmq.Consumer;
 import apros.codeart.rabbitmq.Message;
@@ -48,9 +48,9 @@ class RPCServer extends Consumer implements AutoCloseable {
 				AppSession.setLanguage(msg.language());
 
 				var content = msg.content();
-				var info = content.info();
-				var method = info.getString("method");
-				var arg = info.getObject("arg");
+				var body = content.body();
+				var method = body.getString("method");
+				var arg = body.getObject("arg");
 
 				var result = process(method, arg);
 
@@ -74,22 +74,15 @@ class RPCServer extends Consumer implements AutoCloseable {
 	}
 
 	private TransferData process(String method, DTObject arg) {
-		TransferData result;
-		DTObject info = DTObject.editable();
+		DTObject body = DTObject.editable();
 		try {
-			result = _handler.process(method, arg);
-
-			info.setString("status", "success");
-			info.combineObject("returnValue", result.info());
-
-			result.setInfo(info);
+			var result = _handler.process(method, arg);
+			body.combineObject("data", result);
 		} catch (Exception ex) {
 			Logger.fatal(ex);
-			info.setString("status", "fail");
-			info.setString("message", ex.getMessage());
-			result = new TransferData(AppSession.language(), info);
+			body.setString("error", ex.getMessage());
 		}
-		return result;
+		return new TransferData(AppSession.language(), body);
 	}
 
 	@Override

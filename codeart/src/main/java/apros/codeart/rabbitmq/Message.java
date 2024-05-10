@@ -6,7 +6,7 @@ import java.util.function.Supplier;
 
 import com.rabbitmq.client.AMQP.BasicProperties;
 
-import apros.codeart.mq.TransferData;
+import apros.codeart.echo.TransferData;
 
 public final class Message {
 

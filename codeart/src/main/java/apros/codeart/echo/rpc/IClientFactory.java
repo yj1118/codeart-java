@@ -1,4 +1,4 @@
-package apros.codeart.mq.rpc.client;
+package apros.codeart.echo.rpc;
 
 public interface IClientFactory {
 	IClient create(ClientConfig config);

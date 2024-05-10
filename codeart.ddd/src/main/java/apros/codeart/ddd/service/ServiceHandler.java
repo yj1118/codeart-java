@@ -1,76 +1,51 @@
 package apros.codeart.ddd.service;
 
+import com.google.common.base.Strings;
+
 import apros.codeart.UIException;
 import apros.codeart.dto.DTObject;
+import apros.codeart.echo.rpc.IRPCHandler;
 import apros.codeart.i18n.Language;
-import apros.codeart.mq.TransferData;
-import apros.codeart.mq.rpc.server.IRPCHandler;
+import apros.codeart.log.Logger;
+import apros.codeart.util.StringUtil;
 
 public class ServiceHandler implements IRPCHandler {
 
 	@Override
-	public TransferData process(String method, DTObject args) {
-		
-		if (!ServiceHost.isEnabled()) 
-			throw new UIException(Language.strings("codeart.ddd","StartingService"));
+	public DTObject process(String method, DTObject args) {
 
-	       DTObject returnValue = null;
-	       DTObject status = null;
-	       int dataLength = 0;
-	       byte[] content = null;
+		if (!ServiceHost.isEnabled())
+			throw new UIException(Language.strings("codeart.ddd", "StartingService"));
 
-	       try
-	       {
-	           var request = ServiceRequest.Create(arg);
-	           InitIdentity(request);
+		DTObject result = null;
+		String error = null;
 
-	           if (request.TransmittedLength == null)
-	           {
-	               returnValue = ProcessService(request);
-	           }
-	           else
-	           {
-	               var result = ProcessDownloadService(request);
-	               returnValue = result.Info;
-	               dataLength = result.DataLength;
-	               content = result.Content;
-	           }
-	           
-	           status = ServiceHostUtil.Success;
-	       }
-	       catch (Exception ex)
-	       {
-	           Logger.Fatal(ex);
-	           status = ServiceHostUtil.CreateFailed(ex);
-	       }
+		try {
+			var serviceName = args.getString("serviceName", StringUtil.empty());
+			var data = args.getObject("data", DTObject.Empty);
 
-	       var reponse = DTObject.Create();
-	       reponse["status"] = status;
-	       reponse["returnValue"] = returnValue;
-	       return new TransferData(AppSession.Language, reponse, dataLength, content);
+			var provider = ServiceProviderFactory.get(serviceName);
+			result = provider.invoke(data);
+
+		} catch (Exception ex) {
+			Logger.fatal(ex);
+			error = ex.getMessage();
+		}
+
+		var reponse = DTObject.editable();
+		if (!Strings.isNullOrEmpty(error)) {
+			reponse.setString("error", error);
+		}
+
+		if (result != null)
+			reponse.combineObject("data", result);
+
+		return reponse;
 	}
-	
-	
-	   protected ServiceHandler() { }
 
-	   private void InitIdentity(ServiceRequest request)
-	   {
-	       AppSession.Identity = request.Identity;
-	   }
+	protected ServiceHandler() {
+	}
 
-
-	   private DTObject ProcessService(ServiceRequest request)
-	   {
-	       var provider = ServiceProviderFactory.Create(request);
-	       return provider.Invoke(request);
-	   }
-
-	   private BinaryData ProcessDownloadService(ServiceRequest request)
-	   {
-	       var provider = ServiceProviderFactory.Create(request);
-	       return provider.InvokeBinary(request);
-	   }
-
-	   public static readonly MQServiceHandler Instance = new MQServiceHandler();
+	public static final ServiceHandler Instance = new ServiceHandler();
 
 }

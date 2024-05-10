@@ -8,8 +8,8 @@ import apros.codeart.ddd.saga.internal.EventUtil;
 import apros.codeart.ddd.saga.internal.RaisedQueue;
 import apros.codeart.ddd.saga.internal.trigger.EventTrigger;
 import apros.codeart.dto.DTObject;
+import apros.codeart.echo.event.EventPortal;
 import apros.codeart.log.Logger;
-import apros.codeart.mq.event.EventPortal;
 
 public final class EventProtector {
 	private EventProtector() {

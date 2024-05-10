@@ -4,7 +4,7 @@ import apros.codeart.ddd.message.internal.DomainMessagePublisher;
 import apros.codeart.ddd.message.internal.MessageLog;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.event.EventPortal;
+import apros.codeart.echo.event.EventPortal;
 import apros.codeart.util.Guid;
 
 public final class DomainMessage {

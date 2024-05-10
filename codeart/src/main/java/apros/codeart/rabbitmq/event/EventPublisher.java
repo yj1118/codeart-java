@@ -4,8 +4,8 @@ import static apros.codeart.runtime.Util.propagate;
 
 import apros.codeart.context.AppSession;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.TransferData;
-import apros.codeart.mq.event.IPublisher;
+import apros.codeart.echo.TransferData;
+import apros.codeart.echo.event.IPublisher;
 import apros.codeart.rabbitmq.RabbitBus;
 import apros.codeart.util.SafeAccess;
 

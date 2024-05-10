@@ -1,4 +1,4 @@
-package apros.codeart.mq.event;
+package apros.codeart.echo.event;
 
 /**
  * 事件订阅器工厂

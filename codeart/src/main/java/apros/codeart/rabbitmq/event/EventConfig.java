@@ -2,7 +2,7 @@ package apros.codeart.rabbitmq.event;
 
 import java.util.function.Function;
 
-import apros.codeart.mq.event.MQEvent;
+import apros.codeart.echo.event.MQEvent;
 import apros.codeart.rabbitmq.ConsumerConfig;
 import apros.codeart.rabbitmq.MQConnConfig;
 import apros.codeart.rabbitmq.Policy;

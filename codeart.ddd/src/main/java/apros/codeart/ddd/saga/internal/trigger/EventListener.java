@@ -4,7 +4,7 @@ import apros.codeart.ddd.saga.internal.EventLoader;
 import apros.codeart.ddd.saga.internal.EventUtil;
 import apros.codeart.ddd.saga.internal.protector.EventProtector;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.event.EventPortal;
+import apros.codeart.echo.event.EventPortal;
 import apros.codeart.util.StringUtil;
 
 final class EventListener {

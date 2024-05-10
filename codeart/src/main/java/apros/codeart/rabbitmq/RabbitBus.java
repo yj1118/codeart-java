@@ -15,8 +15,8 @@ import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.Delivery;
 import com.rabbitmq.client.Envelope;
 
+import apros.codeart.echo.TransferData;
 import apros.codeart.i18n.Language;
-import apros.codeart.mq.TransferData;
 import apros.codeart.pooling.IPoolItem;
 import apros.codeart.pooling.Pool;
 import apros.codeart.pooling.PoolConfig;

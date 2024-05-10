@@ -1,7 +1,7 @@
 package apros.codeart.rabbitmq.event;
 
-import apros.codeart.mq.event.IEventHandler;
-import apros.codeart.mq.event.ISubscriber;
+import apros.codeart.echo.event.IEventHandler;
+import apros.codeart.echo.event.ISubscriber;
 import apros.codeart.rabbitmq.ConsumerCluster;
 
 class EventSubscriberCluster extends ConsumerCluster<EventSubscriber> implements ISubscriber {

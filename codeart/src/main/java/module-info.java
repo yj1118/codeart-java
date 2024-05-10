@@ -20,11 +20,10 @@ module apros.codeart {
 	exports apros.codeart.bytecode;
 	exports apros.codeart.dto;
 	exports apros.codeart.dto.serialization;
-	exports apros.codeart.mq;
-	exports apros.codeart.mq.event;
-	exports apros.codeart.mq.rpc.server;
-	exports apros.codeart.mq.rpc.client;
-	exports apros.codeart.service;
+	exports apros.codeart.echo;
+	exports apros.codeart.echo.event;
+	exports apros.codeart.echo.rpc.server;
+	exports apros.codeart.echo.rpc.client;
 
 	opens apros.codeart;
 }

@@ -1,8 +1,6 @@
-package apros.codeart.mq.event;
+package apros.codeart.echo.event;
 
-import apros.codeart.InterfaceImplementer;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.FactorySetting;
 
 public final class EventPortal {
 
@@ -85,37 +83,23 @@ public final class EventPortal {
 //	region 获取和注册工厂
 
 	static IPublisherFactory getPublisherFactory() {
-		return _publisherSetting.getFactory();
+		return _publichserFactory;
 	}
 
-	private static FactorySetting<IPublisherFactory> _publisherSetting = new FactorySetting<IPublisherFactory>(
-			IPublisherFactory.class, () -> {
-				InterfaceImplementer impl = MQEvent.getPublisherFactoryImplementer();
-				if (impl != null) {
-					return impl.getInstance(IPublisherFactory.class);
-				}
-				return null;
-			});
+	private static IPublisherFactory _publichserFactory;
 
 	public static void register(IPublisherFactory factory) {
-		_publisherSetting.register(factory);
+		_publichserFactory = factory;
 	}
 
 	static ISubscriberFactory getSubscriberFactory() {
-		return _subscriberSetting.getFactory();
+		return _subscriberFactory;
 	}
 
-	private static FactorySetting<ISubscriberFactory> _subscriberSetting = new FactorySetting<ISubscriberFactory>(
-			ISubscriberFactory.class, () -> {
-				InterfaceImplementer impl = MQEvent.getSubscriberFactoryImplementer();
-				if (impl != null) {
-					return impl.getInstance(ISubscriberFactory.class);
-				}
-				return null;
-			});
+	private static ISubscriberFactory _subscriberFactory;
 
 	public static void register(ISubscriberFactory factory) {
-		_subscriberSetting.register(factory);
+		_subscriberFactory = factory;
 	}
 
 //	#endregion

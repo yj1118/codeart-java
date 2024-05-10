@@ -1,34 +1,30 @@
 package apros.codeart.rabbitmq.rpc;
 
-import java.util.ArrayList;
-import java.util.function.Function;
+import java.util.HashMap;
 
-import apros.codeart.mq.rpc.server.IServer;
-import apros.codeart.mq.rpc.server.IServerFactory;
+import apros.codeart.echo.rpc.IRPCHandler;
+import apros.codeart.echo.rpc.IServer;
+import apros.codeart.echo.rpc.IServerFactory;
 import apros.codeart.rabbitmq.ConsumerClusterFactory;
-import apros.codeart.util.LazyIndexer;
 
 public final class RPCServerFactory implements IServerFactory {
 
-	public IServer create(String method) {
-		return _getServer.apply(method);
+	public void register(String method, IRPCHandler handler) {
+		var server = new RPCServerCluster(method, handler);
+		_servers.put(method, server);
+		ConsumerClusterFactory.add(server);
+	}
+
+	public IServer get(String method) {
+		return _servers.get(method);
 	}
 
 	@Override
 	public Iterable<IServer> getAll() {
-		return _servers;
+		return _servers.values();
 	}
 
-	private static ArrayList<IServer> _servers = new ArrayList<IServer>();
-
-	private static Function<String, IServer> _getServer = LazyIndexer.init((method) -> {
-		var server = new RPCServerCluster(method);
-		_servers.add(server);
-
-		ConsumerClusterFactory.add(server);
-
-		return server;
-	});
+	private static final HashMap<String, IServer> _servers = new HashMap<String, IServer>();
 
 	public static final RPCServerFactory Instance = new RPCServerFactory();
 

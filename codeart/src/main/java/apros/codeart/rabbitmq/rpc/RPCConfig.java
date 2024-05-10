@@ -2,7 +2,7 @@ package apros.codeart.rabbitmq.rpc;
 
 import java.util.function.Function;
 
-import apros.codeart.mq.rpc.MQRPC;
+import apros.codeart.echo.rpc.EChoRPC;
 import apros.codeart.rabbitmq.ConsumerConfig;
 import apros.codeart.rabbitmq.MQConnConfig;
 import apros.codeart.rabbitmq.Policy;
@@ -54,9 +54,9 @@ final class RPCConfig {
 	});
 
 	private static Function<String, ConsumerConfig> _getServerConfig = LazyIndexer.init((method) -> {
-		var maxConcurrency = MQRPC.section().getInt(String.format("server.maxConcurrency.%s", method), -1);
+		var maxConcurrency = EChoRPC.section().getInt(String.format("server.maxConcurrency.%s", method), -1);
 		if (maxConcurrency < 0)
-			maxConcurrency = MQRPC.section().getInt("server.maxConcurrency", 10);
+			maxConcurrency = EChoRPC.section().getInt("server.maxConcurrency", 10);
 
 		return new ConsumerConfig(maxConcurrency);
 

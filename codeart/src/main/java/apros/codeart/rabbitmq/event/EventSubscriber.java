@@ -4,9 +4,9 @@ import java.time.Duration;
 import java.util.ArrayList;
 
 import apros.codeart.context.AppSession;
+import apros.codeart.echo.event.IEventHandler;
+import apros.codeart.echo.event.ISubscriber;
 import apros.codeart.log.Logger;
-import apros.codeart.mq.event.IEventHandler;
-import apros.codeart.mq.event.ISubscriber;
 import apros.codeart.pooling.IPoolItem;
 import apros.codeart.rabbitmq.Consumer;
 import apros.codeart.rabbitmq.IConsumerCluster;
@@ -116,7 +116,7 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
 		// 如果事件内部被程序员抛出了异常，那么会被写入日志，并且提示RabbitMQ服务器重发消息给下一个订阅者，重新处理
 		// 在这种情况下，由于事件会挂载多个，其中一个出错，前面执行的事件也会被重复执行，所以我们要保证事件的幂等性
 		Duration elapsed = null;
-		var arg = message.content();
+		var arg = message.content().body();
 		var language = message.language();
 		try {
 

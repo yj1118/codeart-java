@@ -3,11 +3,11 @@ package apros.codeart.ddd.service;
 import java.util.Scanner;
 
 import apros.codeart.App;
+import apros.codeart.echo.rpc.RPCEvents;
+import apros.codeart.echo.rpc.RPCEvents.ServerClosedArgs;
+import apros.codeart.echo.rpc.RPCEvents.ServerErrorArgs;
+import apros.codeart.echo.rpc.RPCEvents.ServerOpenedArgs;
 import apros.codeart.i18n.Language;
-import apros.codeart.mq.rpc.server.RPCEvents;
-import apros.codeart.mq.rpc.server.RPCEvents.ServerClosedArgs;
-import apros.codeart.mq.rpc.server.RPCEvents.ServerErrorArgs;
-import apros.codeart.mq.rpc.server.RPCEvents.ServerOpenedArgs;
 import apros.codeart.util.IEventObserver;
 
 public final class ServiceHost {

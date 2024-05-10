@@ -1,12 +1,10 @@
-package apros.codeart.mq.rpc.server;
+package apros.codeart.echo.rpc;
 
 public interface IServer {
 	/// <summary>
 	/// 服务的名称
 	/// </summary>
 	String getName();
-
-	void initialize(IRPCHandler handler);
 
 	void open();
 

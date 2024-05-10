@@ -10,8 +10,8 @@ import apros.codeart.ddd.internal.DTOMapper;
 import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
+import apros.codeart.echo.rpc.RPCServer;
 import apros.codeart.i18n.Language;
-import apros.codeart.mq.rpc.server.RPCServer;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;
 

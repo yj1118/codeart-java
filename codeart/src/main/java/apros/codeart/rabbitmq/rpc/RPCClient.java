@@ -6,15 +6,16 @@ import org.apache.logging.log4j.util.Strings;
 
 import apros.codeart.context.AppSession;
 import apros.codeart.dto.DTObject;
+import apros.codeart.echo.TransferData;
+import apros.codeart.echo.rpc.IClient;
 import apros.codeart.i18n.Language;
-import apros.codeart.mq.TransferData;
-import apros.codeart.mq.rpc.client.IClient;
 import apros.codeart.pooling.IPoolItem;
 import apros.codeart.rabbitmq.IMessageHandler;
 import apros.codeart.rabbitmq.Message;
 import apros.codeart.rabbitmq.RabbitBus;
 import apros.codeart.rabbitmq.RabbitMQException;
 import apros.codeart.util.Guid;
+import apros.codeart.util.StringUtil;
 import apros.codeart.util.concurrent.LatchSignal;
 
 public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
@@ -38,7 +39,7 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
 		bus.consume(_tempQueue, this);
 	}
 
-	public TransferData invoke(String method, DTObject arg) {
+	public DTObject invoke(String method, DTObject arg) {
 		RabbitBus bus = _busItem.getItem();
 
 		_success = false;
@@ -61,15 +62,14 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
 			throw new RabbitMQException(Language.strings("codeart", "RequestTimeout", method));
 		}
 
-		var info = result.info();
+		var body = result.body();
+		var error = body.getString("error", "null");
 
-		if (info.getString("status").equals("fail")) {
-			var msg = info.getString("message");
-			throw new RabbitMQException(msg);
+		if (StringUtil.isNullOrEmpty(error)) {
+			throw new RabbitMQException(error);
 		}
 
-		result.setInfo(info.getObject("returnValue"));
-		return result;
+		return body;
 	}
 
 	@Override

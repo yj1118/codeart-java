@@ -1,8 +1,8 @@
 package apros.codeart.rabbitmq.rpc;
 
-import apros.codeart.mq.rpc.client.ClientConfig;
-import apros.codeart.mq.rpc.client.IClient;
-import apros.codeart.mq.rpc.client.IClientFactory;
+import apros.codeart.echo.rpc.ClientConfig;
+import apros.codeart.echo.rpc.IClient;
+import apros.codeart.echo.rpc.IClientFactory;
 
 public final class RPCClientFactory implements IClientFactory {
 	public IClient create(ClientConfig config) {

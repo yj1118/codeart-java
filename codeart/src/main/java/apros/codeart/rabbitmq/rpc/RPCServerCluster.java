@@ -1,16 +1,10 @@
 package apros.codeart.rabbitmq.rpc;
 
-import apros.codeart.mq.rpc.server.IRPCHandler;
-import apros.codeart.mq.rpc.server.IServer;
+import apros.codeart.echo.rpc.IRPCHandler;
+import apros.codeart.echo.rpc.IServer;
 import apros.codeart.rabbitmq.ConsumerCluster;
 
 class RPCServerCluster extends ConsumerCluster<RPCServer> implements IServer {
-
-	private IRPCHandler _handler;
-
-	public IRPCHandler handler() {
-		return _handler;
-	}
 
 	private final String _name;
 
@@ -18,16 +12,12 @@ class RPCServerCluster extends ConsumerCluster<RPCServer> implements IServer {
 		return _name;
 	}
 
-	public RPCServerCluster(String method) {
+	public RPCServerCluster(String method, IRPCHandler handler) {
 		super(RPCConfig.ServerPolicy, RPCConfig.getServerConfig(method), RPCConfig.getServerQueue(method),
 				(cluster) -> {
 					var rc = (RPCServerCluster) cluster;
-					return new RPCServer(rc, cluster.queue(), rc.handler());
+					return new RPCServer(rc, cluster.queue(), handler);
 				});
 		_name = method;
-	}
-
-	public void initialize(IRPCHandler handler) {
-		_handler = handler;
 	}
 }

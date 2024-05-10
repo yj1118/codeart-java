@@ -5,7 +5,7 @@ import apros.codeart.ddd.cqrs.CQRSConfig;
 import apros.codeart.ddd.metadata.SchemeCode;
 import apros.codeart.ddd.metadata.internal.MetadataLoader;
 import apros.codeart.dto.DTObject;
-import apros.codeart.mq.rpc.client.RPCClient;
+import apros.codeart.echo.rpc.RPCClient;
 
 public final class Brancher {
 	private Brancher() {
@@ -31,7 +31,7 @@ public final class Brancher {
 		var methodName = ActionName.getObjectMeta(name);
 		return RPCClient.invoke(methodName, (arg) -> {
 			arg.setString("name", name);
-		}).info();
+		});
 	}
 
 	private static void subscribeEvents() {

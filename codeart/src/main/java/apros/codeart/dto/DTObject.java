@@ -497,7 +497,7 @@ public class DTObject implements INullProxy {
 
 		validateReadOnly();
 
-		if (obj == null)
+		if (obj == null || obj.isEmpty())
 			return;
 
 		if (obj.isReadOnly()) {

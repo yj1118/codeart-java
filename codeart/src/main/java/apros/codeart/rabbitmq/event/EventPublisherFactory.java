@@ -1,7 +1,7 @@
 package apros.codeart.rabbitmq.event;
 
-import apros.codeart.mq.event.IPublisher;
-import apros.codeart.mq.event.IPublisherFactory;
+import apros.codeart.echo.event.IPublisher;
+import apros.codeart.echo.event.IPublisherFactory;
 import apros.codeart.util.SafeAccess;
 
 /**

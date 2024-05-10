@@ -6,7 +6,7 @@ import apros.codeart.ddd.saga.DomainEvent;
 import apros.codeart.ddd.saga.internal.protector.EventProtector;
 import apros.codeart.ddd.saga.internal.protector.ReverseEventHandler;
 import apros.codeart.ddd.saga.internal.trigger.RaiseEventHandler;
-import apros.codeart.mq.event.EventPortal;
+import apros.codeart.echo.event.EventPortal;
 import apros.codeart.util.thread.Timer;
 
 public final class EventHost {

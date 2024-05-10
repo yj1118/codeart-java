@@ -1,6 +1,4 @@
-package apros.codeart.mq.rpc.client;
-
-import apros.codeart.mq.rpc.MQRPC;
+package apros.codeart.echo.rpc;
 
 public class ClientConfig {
 
@@ -20,5 +18,5 @@ public class ClientConfig {
 		_timeout = timeout;
 	}
 
-	public static final ClientConfig Instance = new ClientConfig(MQRPC.clientTimeout());
+	public static final ClientConfig Instance = new ClientConfig(EChoRPC.clientTimeout());
 }

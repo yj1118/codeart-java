@@ -1,4 +1,4 @@
-package apros.codeart.mq.event;
+package apros.codeart.echo.event;
 
 import apros.codeart.dto.DTObject;
 
