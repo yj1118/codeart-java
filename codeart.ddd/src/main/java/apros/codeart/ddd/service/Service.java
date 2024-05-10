@@ -1,4 +1,4 @@
-package apros.codeart.service;
+package apros.codeart.ddd.service;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

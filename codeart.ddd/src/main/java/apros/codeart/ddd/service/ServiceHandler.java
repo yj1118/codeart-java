@@ -1,14 +1,18 @@
-package apros.codeart.service;
+package apros.codeart.ddd.service;
 
+import apros.codeart.UIException;
 import apros.codeart.dto.DTObject;
+import apros.codeart.i18n.Language;
 import apros.codeart.mq.TransferData;
 import apros.codeart.mq.rpc.server.IRPCHandler;
 
-public class MQServiceHandler implements IRPCHandler {
+public class ServiceHandler implements IRPCHandler {
 
 	@Override
 	public TransferData process(String method, DTObject args) {
-		if (!MQServiceHost.IsEnabled) throw new UserUIException("正在启动服务，请稍候");
+		
+		if (!ServiceHost.isEnabled()) 
+			throw new UIException(Language.strings("codeart.ddd","StartingService"));
 
 	       DTObject returnValue = null;
 	       DTObject status = null;
@@ -47,7 +51,7 @@ public class MQServiceHandler implements IRPCHandler {
 	}
 	
 	
-	   protected MQServiceHandler() { }
+	   protected ServiceHandler() { }
 
 	   private void InitIdentity(ServiceRequest request)
 	   {

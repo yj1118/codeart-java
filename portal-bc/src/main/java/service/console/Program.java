@@ -1,10 +1,10 @@
 package service.console;
 
-import apros.codeart.ddd.console.ServiceHost;
+import apros.codeart.ddd.service.ConsoleServiceHost;
 
 public class Program {
 
 	public static void main(String[] args) {
-		ServiceHost.start();
+		ConsoleServiceHost.start();
 	}
 }

@@ -1,17 +1,18 @@
-package apros.codeart.service;
+package apros.codeart.ddd.service;
 
-import java.io.Console;
+import java.util.Scanner;
 
 import apros.codeart.App;
+import apros.codeart.i18n.Language;
 import apros.codeart.mq.rpc.server.RPCEvents;
 import apros.codeart.mq.rpc.server.RPCEvents.ServerClosedArgs;
 import apros.codeart.mq.rpc.server.RPCEvents.ServerErrorArgs;
 import apros.codeart.mq.rpc.server.RPCEvents.ServerOpenedArgs;
 import apros.codeart.util.IEventObserver;
 
-public final class ConsoleServiceHost {
+public final class ServiceHost {
 
-	private ConsoleServiceHost() {
+	private ServiceHost() {
 	}
 
 	private static volatile boolean _isEnabled;
@@ -27,33 +28,51 @@ public final class ConsoleServiceHost {
 	public static void start(Runnable initialize) {
 		_isEnabled = false;
 
+		System.out.println(Language.strings("codeart.ddd", "StartServiceHost"));
+
 		RPCEvents.serverOpened.add(new ServerOpenedObserver());
 		RPCEvents.serverError.add(new ServerErrorObserver());
 		RPCEvents.serverClosed.add(new ServerClosedObserver());
 
-		App.initialize();
+		// 要从框架/子系统/服务宿主 3大块里找定义
+		App.initialize("codeart", "subsystem", "service");
 
 		if (initialize != null)
 			initialize.run();
 
 		App.initialized();
 
-		Console.WriteLine(MQ.Strings.CloseServiceHost);
+		System.out.println(Language.strings("codeart.ddd", "CloseServiceHost"));
 
 		_isEnabled = true;
-		Console.ReadLine();
+		readLine();
+
+		System.out.println(Language.strings("codeart.ddd", "CloseingServiceHost"));
 
 		App.dispose();
 
 		_isEnabled = false;
+
+		App.disposed();
+
+		System.out.println(Language.strings("codeart.ddd", "ClosedServiceHost"));
+	}
+
+	private static void readLine() {
+		Scanner scanner = new Scanner(System.in);
+
+		// 使用nextLine方法读取一行
+		scanner.nextLine();
+
+		// 关闭Scanner对象
+		scanner.close();
 	}
 
 	private static class ServerOpenedObserver implements IEventObserver<ServerOpenedArgs> {
 
 		@Override
 		public void handle(Object sender, ServerOpenedArgs args) {
-			Console.WriteLine(string.Format(MQ.Strings.ServiceIsOpen, arg.MethodName));
-
+			System.out.println(Language.strings("codeart.ddd", "ServiceIsOpen", args.methodName()));
 		}
 	}
 
@@ -61,7 +80,7 @@ public final class ConsoleServiceHost {
 
 		@Override
 		public void handle(Object sender, ServerErrorArgs args) {
-			Console.WriteLine(arg.Exception.GetCompleteMessage());
+			System.out.println(args.exception().getMessage());
 		}
 	}
 
@@ -69,7 +88,7 @@ public final class ConsoleServiceHost {
 
 		@Override
 		public void handle(Object sender, ServerClosedArgs args) {
-			Console.WriteLine(string.Format(MQ.Strings.ServiceIsClose, arg.MethodName));
+			System.out.println(Language.strings("codeart.ddd", "ServiceIsClose", args.methodName()));
 		}
 	}
 
