@@ -5,11 +5,7 @@ import static apros.codeart.runtime.Util.propagate;
 
 import apros.codeart.runtime.MethodUtil;
 
-public record ActionItem(Class<?> type, String methodName, ActionPriority priority) {
-
-	public byte priorityValue() {
-		return priority.getValue();
-	}
+public record ActionItem(Class<?> type, String methodName) {
 
 	public void run() {
 

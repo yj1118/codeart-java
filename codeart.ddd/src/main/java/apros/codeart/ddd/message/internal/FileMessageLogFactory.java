@@ -5,7 +5,7 @@ import apros.codeart.ddd.message.IMessageLogFactory;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess
-final class FileMessageLogFactory implements IMessageLogFactory {
+public final class FileMessageLogFactory implements IMessageLogFactory {
 	private FileMessageLogFactory() {
 	}
 

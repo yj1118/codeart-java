@@ -255,7 +255,7 @@ final class FileEventLogger implements IEventLog {
 	private static final String _rootFolder;
 
 	static {
-		String folder = SAGAConfig.section().getString("log.folder", null);
+		String folder = SAGAConfig.section().getString("@log.folder", null);
 
 		_rootFolder = folder == null
 				? IOUtil.combine(IOUtil.getCurrentDirectory(), "domain-event-log").toAbsolutePath().toString()

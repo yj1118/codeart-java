@@ -7,7 +7,7 @@ import apros.codeart.echo.rpc.IServer;
 import apros.codeart.echo.rpc.IServerFactory;
 import apros.codeart.rabbitmq.ConsumerClusterFactory;
 
-public final class RPCServerFactory implements IServerFactory {
+public final class RabbitMQRPCServerFactory implements IServerFactory {
 
 	public void register(String method, IRPCHandler handler) {
 		var server = new RPCServerCluster(method, handler);
@@ -26,6 +26,6 @@ public final class RPCServerFactory implements IServerFactory {
 
 	private static final HashMap<String, IServer> _servers = new HashMap<String, IServer>();
 
-	public static final RPCServerFactory Instance = new RPCServerFactory();
+	public static final RabbitMQRPCServerFactory Instance = new RabbitMQRPCServerFactory();
 
 }

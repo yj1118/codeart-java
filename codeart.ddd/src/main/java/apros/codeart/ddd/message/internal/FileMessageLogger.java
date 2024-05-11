@@ -50,7 +50,7 @@ class FileMessageLogger implements IMessageLog {
 	private static final String _rootFolder;
 
 	static {
-		var folder = MessageConfig.section().getString("log.folder", null);
+		var folder = MessageConfig.section().getString("@log.folder", null);
 
 		_rootFolder = folder == null
 				? IOUtil.combine(IOUtil.getCurrentDirectory(), "domain-message-log").toAbsolutePath().toString()

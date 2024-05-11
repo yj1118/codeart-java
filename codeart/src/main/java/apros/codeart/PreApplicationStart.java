@@ -12,5 +12,4 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface PreApplicationStart {
 	String method() default "initialize";
-	ActionPriority value() default ActionPriority.User;
 }

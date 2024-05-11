@@ -5,7 +5,7 @@ import apros.codeart.ddd.saga.IEventLogFactory;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess
-final class FileEventLogFactory implements IEventLogFactory {
+public final class FileEventLogFactory implements IEventLogFactory {
 	private FileEventLogFactory() {
 	}
 

@@ -12,5 +12,4 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface PostApplicationStart {
 	String method() default "initialized";
-	ActionPriority value() default ActionPriority.User;
 }

@@ -1,10 +1,12 @@
 package apros.codeart.echo.rpc;
 
+import apros.codeart.rabbitmq.rpc.RabbitMQRPCServerFactory;
+
 public final class RPCServerFactory {
 	private RPCServerFactory() {
 	}
 
-	private static IServerFactory _factory;
+	private static IServerFactory _factory = RabbitMQRPCServerFactory.Instance;
 
 	public static IServerFactory get() {
 		return _factory;

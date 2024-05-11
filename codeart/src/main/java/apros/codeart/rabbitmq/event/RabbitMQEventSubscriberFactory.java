@@ -9,7 +9,7 @@ import apros.codeart.echo.event.ISubscriberFactory;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess
-public class EventSubscriberFactory implements ISubscriberFactory {
+public class RabbitMQEventSubscriberFactory implements ISubscriberFactory {
 
 	public ISubscriber create(String eventName, boolean cluster) {
 		var subscriber = _map.get(eventName);
@@ -50,6 +50,6 @@ public class EventSubscriberFactory implements ISubscriberFactory {
 		return subscriber;
 	}
 
-	public static final EventSubscriberFactory Instance = new EventSubscriberFactory();
+	public static final RabbitMQEventSubscriberFactory Instance = new RabbitMQEventSubscriberFactory();
 
 }

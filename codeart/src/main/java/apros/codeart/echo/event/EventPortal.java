@@ -1,6 +1,8 @@
 package apros.codeart.echo.event;
 
 import apros.codeart.dto.DTObject;
+import apros.codeart.rabbitmq.event.RabbitMQEventPublisherFactory;
+import apros.codeart.rabbitmq.event.RabbitMQEventSubscriberFactory;
 
 public final class EventPortal {
 
@@ -86,7 +88,7 @@ public final class EventPortal {
 		return _publichserFactory;
 	}
 
-	private static IPublisherFactory _publichserFactory;
+	private static IPublisherFactory _publichserFactory = RabbitMQEventPublisherFactory.Instance;
 
 	public static void register(IPublisherFactory factory) {
 		_publichserFactory = factory;
@@ -96,7 +98,7 @@ public final class EventPortal {
 		return _subscriberFactory;
 	}
 
-	private static ISubscriberFactory _subscriberFactory;
+	private static ISubscriberFactory _subscriberFactory = RabbitMQEventSubscriberFactory.Instance;
 
 	public static void register(ISubscriberFactory factory) {
 		_subscriberFactory = factory;

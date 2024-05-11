@@ -13,5 +13,4 @@ import java.lang.annotation.Target;
 public @interface PreApplicationEnd {
 
 	String method() default "dispose";
-	ActionPriority value() default ActionPriority.User;
 }

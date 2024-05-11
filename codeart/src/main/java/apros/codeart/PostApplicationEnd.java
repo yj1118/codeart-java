@@ -12,5 +12,4 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface PostApplicationEnd {
 	String method() default "disposed";
-	ActionPriority value() default ActionPriority.User;
 }

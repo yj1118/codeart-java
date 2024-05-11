@@ -10,7 +10,7 @@ public final class SAGAConfig {
 	}
 
 	private static void loadEventLog(DTObject root) {
-		_retainDays = root.getInt("etain", 0); // 默认永久保留
+		_retainDays = root.getInt("@log.retain", 0); // 默认永久保留
 	}
 
 	private static int _retainDays;

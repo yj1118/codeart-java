@@ -12,7 +12,6 @@
 	},
 	"service.provider":"mq-service.publisher",
 	"event":{
-		"provider":"rabbitMQ",
 		"rabbitmq.server":{"host":"127.0.0.1","vhost":"sj","uid":"sa","pwd":"Q!1"},
 		"subscriber.group":"PortalService",
 		"subscriber.maxConcurrency":5,
@@ -26,17 +25,11 @@
 		"client.timeout":20
 	},
 	"message":{
-		"log":{
-			"provider":"file-message.log",
-			"folder":""
-		}
+		"log.folder":""
 	},
 	"saga":{
-		"log":{
-			"provider":"file-saga.log",
-			"folder":"",
-			"retain":30
-		}
+		"log.folder":"",
+		"log.retain":30
 	},
 	"cqrs":{
 		"master":{

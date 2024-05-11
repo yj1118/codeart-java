@@ -8,12 +8,12 @@ import apros.codeart.util.SafeAccess;
  * 为事件提供广播服务的广播器
  */
 @SafeAccess
-public class EventPublisherFactory implements IPublisherFactory {
+public class RabbitMQEventPublisherFactory implements IPublisherFactory {
 
 	public IPublisher create() {
 		return EventPublisher.Instance;
 	}
 
-	public static final EventPublisherFactory Instance = new EventPublisherFactory();
+	public static final RabbitMQEventPublisherFactory Instance = new RabbitMQEventPublisherFactory();
 
 }
