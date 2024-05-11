@@ -113,7 +113,7 @@ public final class Forker {
 		for (var master : masters) {
 			// 虽然可以直接用名称，但是需要通过get验证下
 			var objectType = ObjectMetaLoader.get(master.name()).objectType();
-			RPCServer.initialize(ActionName.getObjectMeta(objectType), GetObjectMeta.Instance);
+			RPCServer.register(ActionName.getObjectMeta(objectType), GetObjectMeta.Instance);
 		}
 	}
 

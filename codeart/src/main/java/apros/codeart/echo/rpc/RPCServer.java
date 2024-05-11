@@ -11,7 +11,7 @@ public final class RPCServer {
 	 * @param handler
 	 */
 	public static void register(String method, IRPCHandler handler) {
-		_factory.register(method, handler);
+		RPCServerFactory.get().register(method, handler);
 	}
 
 	/// <summary>
@@ -19,7 +19,7 @@ public final class RPCServer {
 	/// </summary>
 	/// <param name="method"></param>
 	static void open() {
-		var servers = _factory.getAll();
+		var servers = RPCServerFactory.get().getAll();
 		for (var server : servers) {
 			server.open();
 			RPCEvents.raiseServerOpened(server, new RPCEvents.ServerOpenedArgs(server.getName()));
@@ -27,14 +27,8 @@ public final class RPCServer {
 	}
 
 	public static void close(String method) {
-		var server = _factory.get(method);
+		var server = RPCServerFactory.get().get(method);
 		RPCEvents.raiseServerClosed(server, new RPCEvents.ServerClosedArgs(method));
-	}
-
-	private static IServerFactory _factory;
-
-	public static void Register(IServerFactory factory) {
-		_factory = factory;
 	}
 
 }

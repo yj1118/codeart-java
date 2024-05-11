@@ -22,14 +22,8 @@ public class RPCClient {
 
 //	 #region 获取客户端实例
 
-	private static IClientFactory _factory;
-
-	public static void register(IClientFactory factory) {
-		_factory = factory;
-	}
-
 	private static Pool<IClient> _pool = new Pool<IClient>(IClient.class, new PoolConfig(10, 500), (isTempItem) -> {
-		return _factory.create(ClientConfig.Instance);
+		return RPCClientFactory.get().create(ClientConfig.Instance);
 	}, (client) -> {
 		client.clear();
 	});
