@@ -3,8 +3,7 @@ package apros.codeart.ddd.service.mq;
 import com.google.common.base.Strings;
 
 import apros.codeart.UIException;
-import apros.codeart.ddd.launcher.ConsoleLauncher;
-import apros.codeart.ddd.service.IServiceProvider;
+import apros.codeart.ddd.service.ServiceHost;
 import apros.codeart.ddd.service.ServiceProviderFactory;
 import apros.codeart.dto.DTObject;
 import apros.codeart.echo.rpc.IRPCHandler;
@@ -17,7 +16,7 @@ public class ServiceHandler implements IRPCHandler {
 	@Override
 	public DTObject process(String method, DTObject args) {
 
-		if (!ConsoleLauncher.isEnabled())
+		if (!ServiceHost.isEnabled())
 			throw new UIException(Language.strings("codeart.ddd", "StartingService"));
 
 		DTObject result = null;
