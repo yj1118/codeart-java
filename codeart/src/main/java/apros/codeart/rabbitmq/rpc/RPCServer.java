@@ -15,6 +15,9 @@ import apros.codeart.rabbitmq.Consumer;
 import apros.codeart.rabbitmq.Message;
 import apros.codeart.rabbitmq.RabbitBus;
 
+/**
+ * 用基于消息队列的rpc服务端的好处是稳定，服务自动发现
+ */
 class RPCServer extends Consumer implements AutoCloseable {
 
 	private IRPCHandler _handler;

@@ -3,9 +3,9 @@ package apros.codeart.rabbitmq.event;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import apros.codeart.echo.event.EchoEvent;
 import apros.codeart.echo.event.ISubscriber;
 import apros.codeart.echo.event.ISubscriberFactory;
-import apros.codeart.echo.event.MQEvent;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess
@@ -17,7 +17,7 @@ public class EventSubscriberFactory implements ISubscriberFactory {
 			synchronized (_map) {
 				subscriber = _map.get(eventName);
 				if (subscriber == null) {
-					var group = MQEvent.getSubscriberGroup();
+					var group = EchoEvent.getSubscriberGroup();
 					subscriber = cluster ? new EventSubscriberCluster(eventName, group)
 							: new EventSubscriberClusterTemp(eventName, group);
 

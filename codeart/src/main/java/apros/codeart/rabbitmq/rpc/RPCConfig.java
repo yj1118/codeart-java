@@ -24,7 +24,7 @@ final class RPCConfig {
 	public static final Policy ClientPolicy;
 
 	static {
-		ConnConfig = RabbitMQConfig.find("rpc");
+		ConnConfig = RabbitMQConfig.find("rpc.rabbitmq.server");
 
 		// rpc不需要那么高的可靠性，所以不需要发布者确认，也不需要消息持久化
 		// 每一个server处理1条消息，处理完后再执行下一条消息

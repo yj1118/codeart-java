@@ -1,46 +1,21 @@
 package apros.codeart.ddd.saga;
 
-import apros.codeart.util.SafeAccessImpl;
-
 public final class EventLogFactory {
 	private EventLogFactory() {
 	}
 
-	private static class EventLogFactoryHolder {
-		static final IEventLogFactory factory;
-
-		private static IEventLogFactory createFactory() {
-			IEventLogFactory temp = null;
-			var impl = SAGAConfig.logFactoryImplementer();
-			if (impl != null) {
-				temp = impl.getInstance(IEventLogFactory.class);
-			} else if (_registerFactory != null)
-				temp = _registerFactory;
-			else
-				temp = FileEventLogFactory.Instance;
-
-			SafeAccessImpl.checkUp(temp);
-			return temp;
-		}
-
-		static {
-			factory = createFactory();
-		}
-
-	}
+	private static IEventLogFactory _factory;
 
 	public static IEventLog createLog() {
-		return EventLogFactoryHolder.factory.create();
+		return _factory.create();
 	}
 
 	public static IEventLogFactory getFactory() {
-		return EventLogFactoryHolder.factory;
+		return _factory;
 	}
 
-	private static IEventLogFactory _registerFactory;
-
 	public static void register(IEventLogFactory factory) {
-		_registerFactory = factory;
+		_factory = factory;
 	}
 
 }

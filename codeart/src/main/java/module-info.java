@@ -22,8 +22,7 @@ module apros.codeart {
 	exports apros.codeart.dto.serialization;
 	exports apros.codeart.echo;
 	exports apros.codeart.echo.event;
-	exports apros.codeart.echo.rpc.server;
-	exports apros.codeart.echo.rpc.client;
+	exports apros.codeart.echo.rpc;
 
 	opens apros.codeart;
 }

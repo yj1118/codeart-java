@@ -1,5 +1,7 @@
-package apros.codeart.ddd.saga;
+package apros.codeart.ddd.saga.internal;
 
+import apros.codeart.ddd.saga.IEventLog;
+import apros.codeart.ddd.saga.IEventLogFactory;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess

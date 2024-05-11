@@ -2,7 +2,9 @@ package apros.codeart.ddd.saga.internal;
 
 import java.util.concurrent.TimeUnit;
 
+import apros.codeart.ModuleInstaller;
 import apros.codeart.ddd.saga.DomainEvent;
+import apros.codeart.ddd.saga.SAGAConfig;
 import apros.codeart.ddd.saga.internal.protector.EventProtector;
 import apros.codeart.ddd.saga.internal.protector.ReverseEventHandler;
 import apros.codeart.ddd.saga.internal.trigger.RaiseEventHandler;
@@ -52,6 +54,8 @@ public final class EventHost {
 
 	public static void initialize() {
 
+		setupEventLog();
+
 		EventLoader.load();
 
 		// 领域事件初始化
@@ -65,6 +69,14 @@ public final class EventHost {
 		// 取消订阅
 		cancelEvents();
 		endScheduleClean();
+	}
+
+	/**
+	 * 安装事件日志的提供者
+	 */
+	private static void setupEventLog() {
+		var provider = SAGAConfig.section().getString("event.provider", null);
+		ModuleInstaller.setup(provider, FileEventLogProvider.class);
 	}
 
 //	#region 订阅/取消订阅事件

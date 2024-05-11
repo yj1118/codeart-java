@@ -1,30 +1,21 @@
 package apros.codeart.rabbitmq;
 
 import apros.codeart.AppConfig;
-import apros.codeart.util.ListUtil;
 
 public final class RabbitMQConfig {
 	private RabbitMQConfig() {
 
 	}
 
-	public static MQConnConfig find(String name) {
-		var mq = AppConfig.section("rabbitMQ");
-		if (mq == null)
+	public static MQConnConfig find(String path) {
+		var section = AppConfig.section(path);
+		if (section != null)
 			return null;
 
-		var ps = mq.getObjects("servers", false);
-		if (ps == null)
-			return null;
-
-		var t = ListUtil.find(ps, (p) -> p.getString("name").equalsIgnoreCase(name));
-		if (t == null)
-			return null;
-
-		var host = t.getString("host");
-		var vhost = t.getString("vhost");
-		var uid = t.getString("uid");
-		var pwd = t.getString("pwd");
+		var host = section.getString("host");
+		var vhost = section.getString("vhost");
+		var uid = section.getString("uid");
+		var pwd = section.getString("pwd");
 
 		return new MQConnConfig(host, vhost, uid, pwd);
 

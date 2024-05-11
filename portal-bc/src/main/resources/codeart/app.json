@@ -12,49 +12,27 @@
 	},
 	"event":{
 			"provider":"rabbitMQ",
+			"rabbitmq.server":{"host":"127.0.0.1","vhost":"sj","uid":"sa","pwd":"Q!1"},
 			"subscriber.group":"PortalService",
 			"subscriber.maxConcurrency":5,
 			"subscriber.maxConcurrency.UserUpdated":2
 		},
 	"rpc":{
-		"provider":"netty",
+		"provider":"rabbitMQ",
+		"rabbitmq.server":{"host":"127.0.0.1","vhost":"sj","uid":"sa","pwd":"Q!1"},
 		"server.maxConcurrency":5,
 		"server.maxConcurrency.registerUser":2,
 		"client.timeout":20
 	},
-	"rabbitMQ":{
-		"servers":[
-			{
-				"name":"rpc",
-				"host":"127.0.0.1",
-				"vhost":"sj",
-				"uid":"sa",
-				"pwd":"Q!1"
-			},
-			{
-				"name":"event",
-				"host":"127.0.0.1",
-				"vhost":"sj",
-				"uid":"sa",
-				"pwd":"Q!1"
-			}
-		]
-	},
 	"message":{
 		"log":{
-			"factory":{
-				"type":"",
-				"arguments":[]
-			},
+			"provider":"file-message.log",
 			"folder":""
 		}
 	},
 	"saga":{
 		"log":{
-			"factory":{
-				"type":"",
-				"arguments":[]
-			},
+			"provider":"file-saga.log",
 			"folder":"",
 			"retain":30
 		}

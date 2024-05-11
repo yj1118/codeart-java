@@ -1,6 +1,7 @@
-package apros.codeart.ddd.message;
+package apros.codeart.ddd.message.internal;
 
-import apros.codeart.ddd.message.internal.MessageEntry;
+import apros.codeart.ddd.message.IMessageLog;
+import apros.codeart.ddd.message.MessageConfig;
 import apros.codeart.dto.DTObject;
 import apros.codeart.io.IOUtil;
 
