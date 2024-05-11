@@ -14,11 +14,10 @@ public final class RPCServer {
 		RPCServerFactory.get().register(method, handler);
 	}
 
-	/// <summary>
-	/// 开启所有服务
-	/// </summary>
-	/// <param name="method"></param>
-	static void open() {
+	/**
+	 * 开启所有服务
+	 */
+	public static void open() {
 		var servers = RPCServerFactory.get().getAll();
 		for (var server : servers) {
 			server.open();

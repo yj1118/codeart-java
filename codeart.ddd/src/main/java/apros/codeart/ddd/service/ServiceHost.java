@@ -7,6 +7,7 @@ import apros.codeart.echo.rpc.RPCEvents;
 import apros.codeart.echo.rpc.RPCEvents.ServerClosedArgs;
 import apros.codeart.echo.rpc.RPCEvents.ServerErrorArgs;
 import apros.codeart.echo.rpc.RPCEvents.ServerOpenedArgs;
+import apros.codeart.echo.rpc.RPCServer;
 import apros.codeart.i18n.Language;
 import apros.codeart.util.IEventObserver;
 
@@ -41,6 +42,9 @@ public final class ServiceHost {
 			initialize.run();
 
 		App.initialized();
+
+		// 所有初始化工作完毕后，开通服务
+		RPCServer.open();
 
 		System.out.println(Language.strings("codeart.ddd", "CloseServiceHost"));
 

@@ -6,7 +6,7 @@ import apros.codeart.PreApplicationStart;
 import apros.codeart.echo.EchoConfig;
 import apros.codeart.rabbitmq.rpc.RabbitMQRPCProvider;
 
-@PreApplicationStart(ActionPriority.Low)
+@PreApplicationStart(ActionPriority.High)
 public class PreStart {
 	public static void initialize() {
 		var providerName = EchoConfig.eventSection().getString("provider", null);
