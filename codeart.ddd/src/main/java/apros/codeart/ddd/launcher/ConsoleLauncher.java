@@ -1,4 +1,4 @@
-package apros.codeart.ddd.service;
+package apros.codeart.ddd.launcher;
 
 import java.util.Scanner;
 
@@ -11,9 +11,12 @@ import apros.codeart.echo.rpc.RPCServer;
 import apros.codeart.i18n.Language;
 import apros.codeart.util.IEventObserver;
 
-public final class ServiceHost {
+/**
+ * 基于命令行的启动器
+ */
+public final class ConsoleLauncher {
 
-	private ServiceHost() {
+	private ConsoleLauncher() {
 	}
 
 	private static volatile boolean _isEnabled;
