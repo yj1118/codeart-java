@@ -11,6 +11,7 @@ module apros.codeart.ddd {
 	exports apros.codeart.ddd.repository.access;
 	exports apros.codeart.ddd.metadata;
 	exports apros.codeart.ddd.dynamic;
+	exports apros.codeart.ddd.message;
 	exports apros.codeart.ddd.launcher;
 	exports apros.codeart.ddd.service;
 
