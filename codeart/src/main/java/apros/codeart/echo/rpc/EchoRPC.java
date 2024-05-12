@@ -3,8 +3,8 @@ package apros.codeart.echo.rpc;
 import apros.codeart.dto.DTObject;
 import apros.codeart.echo.EchoConfig;
 
-public final class EChoRPC {
-	private EChoRPC() {
+public final class EchoRPC {
+	private EchoRPC() {
 	}
 
 	private static class EchoRPCHolder {

@@ -1,12 +1,10 @@
 package apros.codeart.ddd.saga;
 
-import apros.codeart.ddd.saga.internal.FileEventLogFactory;
-
 public final class EventLogFactory {
 	private EventLogFactory() {
 	}
 
-	private static IEventLogFactory _factory = FileEventLogFactory.Instance;
+	private static IEventLogFactory _factory;
 
 	public static IEventLog createLog() {
 		return _factory.create();

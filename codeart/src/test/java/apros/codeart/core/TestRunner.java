@@ -10,7 +10,7 @@ public class TestRunner implements BeforeAllCallback, AfterAllCallback {
 
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
-		App.initialize();
+		App.init();
 	}
 
 	@Override

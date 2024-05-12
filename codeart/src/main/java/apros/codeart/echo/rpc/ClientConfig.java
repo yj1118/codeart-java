@@ -18,5 +18,5 @@ public class ClientConfig {
 		_timeout = timeout;
 	}
 
-	public static final ClientConfig Instance = new ClientConfig(EChoRPC.clientTimeout());
+	public static final ClientConfig Instance = new ClientConfig(EchoRPC.clientTimeout());
 }

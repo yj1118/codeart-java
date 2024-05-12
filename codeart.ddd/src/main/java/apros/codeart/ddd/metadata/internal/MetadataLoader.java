@@ -4,7 +4,7 @@ import static apros.codeart.i18n.Language.strings;
 
 import java.util.ArrayList;
 
-import apros.codeart.AppConfig;
+import apros.codeart.App;
 import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.IDomainObject;
 import apros.codeart.ddd.metadata.ObjectMeta;
@@ -46,7 +46,7 @@ public final class MetadataLoader {
 	 * @return
 	 */
 	private static Iterable<Class<? extends IDomainObject>> findDomainTypes() {
-		var findedTypes = Activator.getSubTypesOf(DomainObject.class, AppConfig.mergeArchives("subsystem"));
+		var findedTypes = Activator.getSubTypesOf(DomainObject.class, App.archives());
 		ArrayList<Class<? extends IDomainObject>> domainTypes = new ArrayList<>(_registerItems);
 		for (var findedType : findedTypes) {
 

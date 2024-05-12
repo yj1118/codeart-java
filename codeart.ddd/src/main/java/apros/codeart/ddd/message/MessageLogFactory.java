@@ -1,12 +1,10 @@
 package apros.codeart.ddd.message;
 
-import apros.codeart.ddd.message.internal.FileMessageLogFactory;
-
 public final class MessageLogFactory {
 	private MessageLogFactory() {
 	}
 
-	private static IMessageLogFactory _factory = FileMessageLogFactory.Instance;
+	private static IMessageLogFactory _factory;
 
 	public static IMessageLog createLog() {
 		return _factory.create();

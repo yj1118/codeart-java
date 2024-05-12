@@ -1,6 +1,7 @@
 package apros.codeart;
 
 import java.lang.annotation.Annotation;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import apros.codeart.runtime.Activator;
 import apros.codeart.util.ArgumentAssert;
@@ -10,13 +11,20 @@ public final class App {
 	private App() {
 	}
 
-	private static boolean _process_pre_start_completed;
-	private static Object _syncObject = new Object();
-
 	private static String[] _archives;
 
-	public static boolean started() {
-		return _process_post_start_completed;
+	public static String[] archives() {
+		return _archives;
+	}
+
+	private static IAppInstaller _installer;
+
+	public static void setup(String moduleName) {
+		_installer.setup(moduleName, null);
+	}
+
+	public static void setup(String moduleName, Object[] args) {
+		_installer.setup(moduleName, args);
 	}
 
 	/**
@@ -26,74 +34,54 @@ public final class App {
 	 *                 subsystem.account和subsystem.user的档案名为subsystem
 	 */
 	public static void initialize(IAppInstaller installer) {
-		if (_process_pre_start_completed)
-			return;
 
-		var archives = installer.getArchives();
+		_archives = installer.getArchives();
 
-		ArgumentAssert.isNotNullOrEmpty(archives, "archives");
+		ArgumentAssert.isNotNullOrEmpty(_archives, "archives");
 
-		synchronized (_syncObject) {
-			if (_process_pre_start_completed)
-				return;
-			_process_pre_start_completed = true;
-			_archives = AppConfig.mergeArchives(archives);
-			process_pre_start();
-		}
+		installer.init();
+
+		_installer = installer;
+
+		process_pre_start();
 	}
 
 	private static void process_pre_start() {
 		runActions(PreApplicationStart.class);
 	}
 
-	private static boolean _process_post_start_completed = false;
+	private static AtomicBoolean _post_start_completed = new AtomicBoolean(false);
+
+	public static boolean started() {
+		return _post_start_completed.getAcquire();
+	}
 
 	/// <summary>
 	/// 应用程序初始化完后，请根据不同的上下文环境，在程序入口处调用此方法
 	/// </summary>
 	public static void initialized() {
-		if (_process_post_start_completed)
-			return;
-		synchronized (_syncObject) {
-			if (_process_post_start_completed)
-				return;
-			_process_post_start_completed = true;
-			process_post_start();
-		}
+
+		process_post_start();
+		// 清理安装器的资源
+		_installer.dispose();
+
+		_post_start_completed.setRelease(true);
 	}
 
 	private static void process_post_start() {
 		runActions(PostApplicationStart.class);
 	}
 
-	private static boolean _process_pre_end_completed = false;
-
 	public static void dispose() {
-		if (_process_pre_end_completed)
-			return;
-		synchronized (_syncObject) {
-			if (_process_pre_end_completed)
-				return;
-			_process_pre_end_completed = true;
-			process_pre_end();
-		}
+		process_pre_end();
 	}
 
 	private static void process_pre_end() {
 		runActions(PreApplicationEnd.class);
 	}
 
-	private static boolean _process_post_end_completed = false;
-
 	public static void disposed() {
-		if (_process_post_end_completed)
-			return;
-		synchronized (_syncObject) {
-			if (_process_post_end_completed)
-				return;
-			_process_post_end_completed = true;
-			process_post_end();
-		}
+		process_post_end();
 	}
 
 	private static void process_post_end() {

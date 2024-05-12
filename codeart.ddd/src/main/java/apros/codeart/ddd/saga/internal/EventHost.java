@@ -2,6 +2,7 @@ package apros.codeart.ddd.saga.internal;
 
 import java.util.concurrent.TimeUnit;
 
+import apros.codeart.App;
 import apros.codeart.ddd.saga.DomainEvent;
 import apros.codeart.ddd.saga.internal.protector.EventProtector;
 import apros.codeart.ddd.saga.internal.protector.ReverseEventHandler;
@@ -52,6 +53,8 @@ public final class EventHost {
 
 	public static void initialize() {
 
+		setupSAGA();
+
 		EventLoader.load();
 
 		// 领域事件初始化
@@ -59,6 +62,10 @@ public final class EventHost {
 
 		// 订阅事件
 		subscribeEvents();
+	}
+
+	private static void setupSAGA() {
+		App.setup("saga");
 	}
 
 	public static void cleanup() {

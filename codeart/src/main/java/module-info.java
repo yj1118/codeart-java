@@ -23,6 +23,9 @@ module apros.codeart {
 	exports apros.codeart.echo;
 	exports apros.codeart.echo.event;
 	exports apros.codeart.echo.rpc;
+	exports apros.codeart.rabbitmq;
+	exports apros.codeart.rabbitmq.rpc;
+	exports apros.codeart.rabbitmq.event;
 
 	opens apros.codeart;
 }

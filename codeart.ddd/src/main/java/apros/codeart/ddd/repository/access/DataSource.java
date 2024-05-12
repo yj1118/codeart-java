@@ -56,7 +56,7 @@ public final class DataSource {
 
 		static {
 
-			var db = AppConfig.section("db");
+			var db = AppConfig.section("repository.db");
 			if (db != null) {
 				TYPE = getType(db.getString("type"));
 

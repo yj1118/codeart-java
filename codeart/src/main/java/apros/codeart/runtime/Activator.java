@@ -29,6 +29,16 @@ public final class Activator {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> T createInstance(Class<T> exceptType, String className, Object... args) {
+		try {
+			Class<?> clazz = Class.forName(className);
+			return (T) createInstance(clazz, args);
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
 	/**
 	 * 创建实例，IL的实现，高效率
 	 * 
