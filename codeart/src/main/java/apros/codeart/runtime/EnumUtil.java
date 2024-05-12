@@ -39,7 +39,7 @@ public final class EnumUtil {
 	}
 
 	private static Function<Class<?>, Method> _resolveGetValue = LazyIndexer.init((enumType) -> {
-		return MethodUtil.resolveSlim(enumType, "getValue");
+		return MethodUtil.resolve(enumType, "getValue", null);
 	});
 
 	public static Object getValue(Object enumValue) {

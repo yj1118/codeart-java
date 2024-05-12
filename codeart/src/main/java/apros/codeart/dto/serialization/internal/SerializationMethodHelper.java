@@ -65,13 +65,13 @@ final class SerializationMethodHelper {
 		switch (methodType) {
 		case SerializationMethodType.Serialize: {
 			if (type.isEnum()) {
-				method = MethodUtil.resolveSlim(IDTOWriter.class, "writeEnum", String.class, Enum.class);
+				method = MethodUtil.resolve(IDTOWriter.class, "writeEnum", new Class<?>[] { String.class, Enum.class });
 			} else {
 				String methodName = String.format("write%s", StringUtil.firstToUpper(type.getSimpleName()));
-				method = MethodUtil.resolveSlim(IDTOWriter.class, methodName, String.class, type);
+				method = MethodUtil.resolve(IDTOWriter.class, methodName, new Class<?>[] { String.class, type });
 				if ((method == null) && (!type.isPrimitive())) {
 					// 如果不是int、long等基础类型，而有可能是自定义类型，那么用以下代码得到方法
-					method = MethodUtil.resolveSlim(IDTOWriter.class, "writeObject", _writeObjectArgs);
+					method = MethodUtil.resolve(IDTOWriter.class, "writeObject", _writeObjectArgs);
 				}
 			}
 
@@ -79,14 +79,15 @@ final class SerializationMethodHelper {
 		}
 		case SerializationMethodType.Deserialize: {
 			if (type.isEnum()) {
-				method = MethodUtil.resolveSlim(IDTOReader.class, "readEnum", String.class);
+				method = MethodUtil.resolve(IDTOReader.class, "readEnum", _stringArgs);
 			} else {
 				String methodName = String.format("read%s", StringUtil.firstToUpper(type.getSimpleName()));
-				method = MethodUtil.resolveSlim(IDTOReader.class, methodName, _readArgs);
+				method = MethodUtil.resolve(IDTOReader.class, methodName, _stringArgs);
 				if ((method == null) && (!type.isPrimitive())) {
 					// 如果不是int、long等基础类型，而有可能是自定义类型，那么用以下代码得到方法
 					// IDTOWriter.ReadObject<T>(string name);
-					method = MethodUtil.resolveSlim(IDTOReader.class, "readObject", _readArgs);
+					method = MethodUtil.resolve(IDTOReader.class, "readObject",
+							new Class<?>[] { Class.class, String.class });
 				}
 			}
 
@@ -105,11 +106,11 @@ final class SerializationMethodHelper {
 	}
 
 	private static final Class<?>[] _writeObjectArgs = new Class<?>[] { String.class, Object.class };
-	private static final Class<?>[] _readArgs = new Class<?>[] { String.class };
+	private static final Class<?>[] _stringArgs = new Class<?>[] { String.class };
 
 //	#endregion
 
-	private static final Method existMethod = MethodUtil.resolveSlim(IDTOReader.class, "exist", String.class);
+	private static final Method existMethod = MethodUtil.resolve(IDTOReader.class, "exist", _stringArgs);
 
 	/// <summary>
 	/// 根据类型得到序列化方法
@@ -208,7 +209,7 @@ final class SerializationMethodHelper {
 	}
 
 	public static void writeArray(MethodGenerator g, String dtoMemberName) {
-		var method = MethodUtil.resolveSlim(IDTOWriter.class, "writeArray", String.class);
+		var method = MethodUtil.resolve(IDTOWriter.class, "writeArray", new Class<?>[] { String.class });
 		var prmIndex = SerializationArgs.WriterIndex;
 
 		g.invoke(prmIndex, method, () -> {
@@ -232,9 +233,22 @@ final class SerializationMethodHelper {
 	public static void read(MethodGenerator g, String dtoMemberName, Class<?> valueType) {
 		var method = SerializationMethodHelper.getTypeMethod(valueType, SerializationMethodType.Deserialize);
 		var prmIndex = SerializationMethodHelper.getParameterIndex(method, SerializationMethodType.Deserialize);
+		boolean isReadObject = method.getName().equals("readObject");
+
 		g.invoke(prmIndex, method.getName(), () -> {
+
+			if (isReadObject) {
+				g.load(valueType);
+			}
+
 			g.load(dtoMemberName);
 		});
+
+		if (isReadObject) {
+			// 类型转换
+			g.cast(valueType);
+		}
+
 	}
 
 	public static void exist(MethodGenerator g, String dtoMemberName, Class<?> valueType) {

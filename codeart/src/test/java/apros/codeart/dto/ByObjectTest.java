@@ -32,6 +32,23 @@ class ByObjectTest {
 			_id = id;
 			_name = name;
 		}
+
+		public User _parent;
+
+		public User parent() {
+			return _parent;
+		}
+
+		private User _brother;
+
+		public User brother() {
+			return _brother;
+		}
+
+		public void setBrother(User value) {
+			_brother = value;
+		}
+
 	}
 
 	@Test
@@ -40,6 +57,8 @@ class ByObjectTest {
 		DTObject dto = DTObject.readonly(user);
 
 		assertEquals(1, dto.getInt("id"));
+
+		assertEquals(null, dto.getObject("parent", null));
 
 	}
 

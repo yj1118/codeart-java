@@ -4,6 +4,7 @@ import static apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import apros.codeart.Memoized;
@@ -87,9 +88,51 @@ public final class MethodUtil {
 	 * @return
 	 */
 	@Memoized
-	public static Method resolveSlim(Class<?> objCls, String methodName, Class<?>... parameterTypes) {
+	public static Method resolve(Class<?> objCls, String methodName, Class<?>[] parameterTypes) {
+
+		return resolve(objCls, methodName, parameterTypes, (argType, targetType) -> {
+			return argType.equals(targetType);
+		});
+
+	}
+
+	/**
+	 * 
+	 * 可以接收参数重载的方式查找方法
+	 * 
+	 * @param objCls
+	 * @param methodName
+	 * @param parameterTypes
+	 * @return
+	 */
+	@Memoized
+	public static Method resolveLike(Class<?> objCls, String methodName, Class<?>[] parameterTypes) {
+
+		var method = resolve(objCls, methodName, parameterTypes, (argType, targetType) -> {
+			return argType.equals(targetType);
+		});
+
+		if (method == null) {
+			method = resolve(objCls, methodName, parameterTypes, (argType, targetType) -> {
+				return argType.isAssignableFrom(targetType);
+			});
+		}
+
+		return method;
+
+	}
+
+	@Memoized
+	private static Method resolve(Class<?> objCls, String methodName, Class<?>[] parameterTypes,
+			BiFunction<Class<?>, Class<?>, Boolean> compare) {
 
 		var methods = _getMethods.apply(objCls).apply(methodName);
+
+		if (parameterTypes == null) {
+			return ListUtil.find(methods, (m) -> {
+				return m.getParameterCount() == 0;
+			});
+		}
 
 		for (var method : methods) {
 			if (method.getParameterCount() != parameterTypes.length) {
@@ -98,7 +141,7 @@ public final class MethodUtil {
 			var argTypes = method.getParameterTypes();
 			boolean finded = true;
 			for (var i = 0; i < argTypes.length; i++) {
-				if (!argTypes[i].equals(parameterTypes[i])) {
+				if (!compare.apply(argTypes[i], parameterTypes[i])) {
 					finded = false;
 					break;
 				}

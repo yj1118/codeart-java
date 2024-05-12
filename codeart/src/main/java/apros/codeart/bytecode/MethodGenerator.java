@@ -21,6 +21,7 @@ import com.google.common.collect.Iterables;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.DynamicUtil;
 import apros.codeart.runtime.FieldUtil;
+import apros.codeart.runtime.MethodUtil;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.TriConsumer;
 
@@ -175,7 +176,10 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	public void load(Class<?> value) {
-		_visitor.visitLdcInsn(value);
+		// 只能加载Type，所以要转换
+		var type = Type.getType(value);
+		_visitor.visitLdcInsn(type);
+
 		_evalStack.push(Class.class);
 	}
 
@@ -450,9 +454,9 @@ public class MethodGenerator implements AutoCloseable {
 			if (loadParameters != null)
 				loadParameters.run();
 
-			var argClasses = getArgClasses(1); // 栈顶第一个值是this，不作为参数，所以1
+			var argClasses = getArgClasses(1); // 栈顶第一个值是this，不作为参数，所以偏移量为1
 
-			Method method = cls.getMethod(methodName, argClasses);
+			Method method = MethodUtil.resolveLike(cls, methodName, argClasses);
 			var isInterface = cls.isInterface();
 			var opcode = isInterface ? Opcodes.INVOKEINTERFACE : Opcodes.INVOKEVIRTUAL;
 
@@ -830,6 +834,13 @@ public class MethodGenerator implements AutoCloseable {
 		_evalStack.pop();
 		_evalStack.push(String.class);
 
+	}
+
+	public void cast(Class<?> targetType) {
+		var typeName = DynamicUtil.getInternalName(targetType);
+		_visitor.visitTypeInsn(Opcodes.CHECKCAST, typeName);
+		_evalStack.pop();
+		_evalStack.push(targetType);
 	}
 
 	public void print(Runnable loadMessage) {
