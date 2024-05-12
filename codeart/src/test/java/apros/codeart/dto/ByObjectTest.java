@@ -54,12 +54,21 @@ class ByObjectTest {
 	@Test
 	public void Common1() {
 		var user = new User(1, "Louis");
+		user.setBrother(new User(2, "dahai"));
+
 		DTObject dto = DTObject.readonly(user);
 
 		assertEquals(1, dto.getInt("id"));
 
 		assertEquals(null, dto.getObject("parent", null));
 
+		var brother = dto.getObject("brother");
+
+		assertEquals(2, brother.getInt("id"));
+		assertEquals("dahai", brother.getString("name"));
+
+		var code = brother.getCode(false, false);
+		assertEquals("{\"id\":2,\"name\":\"dahai\"}", code);
 	}
 
 	@Test

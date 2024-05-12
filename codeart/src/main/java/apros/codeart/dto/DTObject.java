@@ -376,7 +376,7 @@ public class DTObject implements INullProxy {
 		if (Iterables.size(es) == 0) {
 			var query = QueryExpression.create(findExp);
 			_root.setMember(query, (name) -> {
-				return createPrimitiveEntity(name, valueCode);
+				return createPrimitiveEntity(name, valueCode, valueIsString);
 			});
 		} else {
 			for (var e : es) {
@@ -392,7 +392,7 @@ public class DTObject implements INullProxy {
 
 				var query = QueryExpression.create(e.getName());
 				parent.setMember(query, (name) -> {
-					return createPrimitiveEntity(name, valueCode);
+					return createPrimitiveEntity(name, valueCode, valueIsString);
 				});
 			}
 		}
@@ -552,8 +552,8 @@ public class DTObject implements INullProxy {
 		return dte;
 	}
 
-	private DTEntity createPrimitiveEntity(String name, String valueCode) {
-		return DTEValue.obtainByCode(name, valueCode, false);
+	private DTEntity createPrimitiveEntity(String name, String valueCode, boolean valueIsString) {
+		return DTEValue.obtainByCode(name, valueCode, valueIsString);
 	}
 
 	public boolean exist(String findExp) {
