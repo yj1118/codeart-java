@@ -7,6 +7,8 @@ import apros.codeart.ddd.message.MessageLogFactory;
 import apros.codeart.ddd.message.internal.FileMessageLogFactory;
 import apros.codeart.ddd.saga.EventLogFactory;
 import apros.codeart.ddd.saga.internal.FileEventLogFactory;
+import apros.codeart.ddd.service.ServicePublisherFactory;
+import apros.codeart.ddd.service.mq.ServicePublisher;
 import apros.codeart.echo.event.EventPortal;
 import apros.codeart.echo.rpc.RPCClientFactory;
 import apros.codeart.echo.rpc.RPCServerFactory;
@@ -45,6 +47,9 @@ public class AppInstaller implements IAppInstaller {
 		case "sage":
 			setupSAGAModule(args);
 			break;
+		case "service":
+			setupServiceModule(args);
+			break;
 		}
 
 	}
@@ -79,6 +84,12 @@ public class AppInstaller implements IAppInstaller {
 		// 安装saga模块
 		// 注入领域事件的日志工厂
 		EventLogFactory.register(FileEventLogFactory.Instance);
+	}
+
+	protected void setupServiceModule(Object[] args) {
+		if (setupByCustom("service.inst", args))
+			return;
+		ServicePublisherFactory.register(ServicePublisher.Instance);
 	}
 
 	private boolean setupByCustom(String instConfigPath, Object[] args) {

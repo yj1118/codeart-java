@@ -10,7 +10,6 @@
 		"username":"sa",
 		"password":"Rw$510th%v"
 	},
-	"service.provider":"mq-service.publisher",
 	"event":{
 		"rabbitmq.server":{"host":"127.0.0.1","vhost":"sj","uid":"sa","pwd":"Q!1"},
 		"subscriber.group":"PortalService",
