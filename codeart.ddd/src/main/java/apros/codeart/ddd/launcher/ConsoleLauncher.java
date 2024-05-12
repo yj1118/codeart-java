@@ -33,7 +33,7 @@ public final class ConsoleLauncher {
 		RPCEvents.serverClosed.add(new ServerClosedObserver());
 
 		// 要从框架/子系统/服务宿主 3大块里找定义
-		App.initialize(installer);
+		App.init(installer);
 
 		App.initialized();
 

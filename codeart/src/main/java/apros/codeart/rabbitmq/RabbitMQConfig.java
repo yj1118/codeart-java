@@ -9,7 +9,7 @@ public final class RabbitMQConfig {
 
 	public static MQConnConfig find(String path) {
 		var section = AppConfig.section(path);
-		if (section != null)
+		if (section == null)
 			return null;
 
 		var host = section.getString("host");

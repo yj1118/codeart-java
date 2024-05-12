@@ -27,13 +27,17 @@ public final class App {
 		_installer.setup(moduleName, args);
 	}
 
+	public static void init() {
+		init(DefautlAppInstaller.Instance);
+	}
+
 	/**
 	 * 应用程序初始化，请根据不同的上下文环境，在程序入口处调用此方法
 	 * 
 	 * @param archives 需要参与初始化的档案名称，档案是包的顶级名称，比如
 	 *                 subsystem.account和subsystem.user的档案名为subsystem
 	 */
-	public static void initialize(IAppInstaller installer) {
+	public static void init(IAppInstaller installer) {
 
 		_archives = installer.getArchives();
 
@@ -97,6 +101,36 @@ public final class App {
 		for (var item : items) {
 			item.run();
 		}
+	}
+
+	private static class DefautlAppInstaller extends AppInstallerBase {
+
+		private DefautlAppInstaller() {
+		}
+
+		@Override
+		public void init() {
+			// TODO Auto-generated method stub
+
+		}
+
+		@Override
+		public String[] getArchives() {
+			return AppConfig.mergeArchives("codeart");
+		}
+
+		@Override
+		public void setup(String moduleName, Object[] args) {
+
+		}
+
+		@Override
+		public void dispose() {
+
+		}
+
+		public static final DefautlAppInstaller Instance = new DefautlAppInstaller();
+
 	}
 
 }
