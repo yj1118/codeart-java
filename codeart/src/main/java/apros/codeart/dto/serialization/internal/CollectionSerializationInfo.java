@@ -4,7 +4,6 @@ import java.lang.reflect.Field;
 
 import apros.codeart.bytecode.LogicOperator;
 import apros.codeart.bytecode.MethodGenerator;
-import apros.codeart.runtime.TypeUtil;
 
 /**
  * java的泛型集合不可能是基元类型，所以只用考虑引用类型即可
@@ -68,12 +67,12 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 					g.newObject(this.getTargetClass());
 				});
 
-				var elementType = TypeUtil.resolveElementType(this.getTargetClass());
+//				var elementType = TypeUtil.resolveElementType(this.getTargetClass());
 
 				g.loop(list, (item, index, length) -> {
 
 					g.assign(item, () -> {
-						SerializationMethodHelper.readElement(g, this.getDTOMemberName(), elementType, index);
+						SerializationMethodHelper.readElement(g, this.getDTOMemberName(), index);
 					});
 
 					g.invoke(list, "add", () -> {
