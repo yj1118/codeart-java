@@ -108,4 +108,25 @@ class WriteObject {
 		assertEquals("dahai", user.father().name());
 	}
 
+	@Test
+	public void constructorList() {
+		DTObject dto = DTObject.editable();
+		dto.setInt("id", 1);
+		dto.setString("name", "Louis");
+
+		DTObject dtoFather = DTObject.editable();
+		dtoFather.setInt("id", 2);
+		dtoFather.setString("name", "dahai");
+
+		dto.setObject("father", dtoFather);
+
+		var user = dto.save(User.class);
+
+		assertEquals(1, user.getId());
+		assertEquals("Louis", user.name());
+
+		assertEquals(2, user.father().getId());
+		assertEquals("dahai", user.father().name());
+	}
+
 }
