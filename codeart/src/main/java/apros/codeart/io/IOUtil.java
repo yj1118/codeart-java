@@ -284,6 +284,7 @@ public final class IOUtil {
 	 * @param path
 	 * @return
 	 */
+	@SuppressWarnings("unused")
 	public static boolean hasSub(Path dir) {
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {

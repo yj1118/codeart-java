@@ -4,6 +4,7 @@ import static apros.codeart.runtime.Util.propagate;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -29,6 +30,15 @@ public final class Activator {
 		}
 	}
 
+	public static Object createInstance(Class<?> clazz, Object... args) {
+		var types = new Class<?>[1 + args.length];
+		types[0] = clazz;
+		for (var i = 0; i < args.length; i++) {
+			types[i + 1] = args[i].getClass();
+		}
+		return createInstance(types, args);
+	}
+
 	@SuppressWarnings("unchecked")
 	public static <T> T createInstance(Class<T> exceptType, String className, Object... args) {
 		try {
@@ -44,10 +54,26 @@ public final class Activator {
 	 * 
 	 * @return
 	 */
-	public static Object createInstance(Class<?> instanceType, Object... args) {
+	public static Object createInstance(Class<?> instanceType) {
 		try {
 			var method = getCreateInstanceMethod.apply(instanceType);
-			return method.invoke(null, instanceType, args);
+			return method.invoke(null);
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
+	/**
+	 * 创建实例，IL的实现，高效率
+	 * 
+	 * @return
+	 */
+	public static Object createInstance(Class<?>[] instanceandArgTypes, Object... args) {
+		try {
+			// 注意，数组是不能作为hashMap的key得，因为数组得hashCode是该数组得内存地址，而不是成员内容
+			ArrayList<Class<?>> key = ListUtil.asList(instanceandArgTypes);
+			var method = getCreateInstanceMethodByListTypes.apply(key);
+			return method.invoke(null, args);
 		} catch (Exception e) {
 			throw propagate(e);
 		}
@@ -57,6 +83,18 @@ public final class Activator {
 		return generateCreateInstanceMethod(objectType);
 	});
 
+	private static Function<ArrayList<Class<?>>, Method> getCreateInstanceMethodByListTypes = LazyIndexer
+			.init((types) -> {
+				return generateCreateInstanceMethod(types);
+			});
+
+	/**
+	 * 
+	 * 专门为无参构造单独写个方法，提高这类需求的执行效率
+	 * 
+	 * @param objectType
+	 * @return
+	 */
 	private static Method generateCreateInstanceMethod(Class<?> objectType) {
 
 		String methodName = String.format("createInstance_%s", objectType.getSimpleName());
@@ -75,7 +113,47 @@ public final class Activator {
 			// 返回生成的字节码
 			var cls = cg.toClass();
 
-			return cls.getDeclaredMethod(methodName, objectType);
+			return cls.getDeclaredMethod(methodName);
+
+		} catch (Exception e) {
+			throw propagate(e);
+		}
+	}
+
+	private static Method generateCreateInstanceMethod(ArrayList<Class<?>> types) {
+		var objectType = types.get(0);
+		Class<?>[] argTypes = new Class<?>[types.size() - 1];
+		for (var i = 0; i < argTypes.length; i++) {
+			argTypes[i] = types.get(i + 1);
+		}
+
+		String methodName = String.format("createInstance_%s", objectType.getSimpleName());
+
+		try (var cg = ClassGenerator.define()) {
+
+			try (var mg = cg.defineMethodPublicStatic(methodName, objectType, (args) -> {
+				for (var i = 0; i < argTypes.length; i++) {
+					args.add(String.format("arg%s", i), argTypes[i]);
+				}
+
+			})) {
+				var obj = mg.declare(objectType, "obj");
+				mg.assign(obj, () -> {
+
+					mg.newObject(objectType, () -> {
+						for (var i = 0; i < argTypes.length; i++) {
+							mg.loadVariable(String.format("arg%s", i));
+						}
+					});
+				});
+
+				obj.load();
+			}
+
+			// 返回生成的字节码
+			var cls = cg.toClass();
+
+			return cls.getDeclaredMethod(methodName, argTypes);
 
 		} catch (Exception e) {
 			throw propagate(e);

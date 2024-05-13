@@ -64,7 +64,7 @@ public final class TypeUtil {
 
 	public static boolean isPublic(Member member) {
 		int modifiers = member.getModifiers();
-		return !Modifier.isPrivate(modifiers);
+		return Modifier.isPublic(modifiers);
 	}
 
 	@SuppressWarnings("unchecked")

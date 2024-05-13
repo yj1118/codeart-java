@@ -1,7 +1,10 @@
 package apros.codeart.dto.serialization.internal;
 
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.function.Function;
 
 import com.google.common.base.Preconditions;
 
@@ -9,6 +12,9 @@ import apros.codeart.dto.DTObject;
 import apros.codeart.dto.serialization.IDTOSerializable;
 import apros.codeart.runtime.Activator;
 import apros.codeart.runtime.TypeUtil;
+import apros.codeart.util.LazyIndexer;
+import apros.codeart.util.ListUtil;
+import apros.codeart.util.PrimitiveUtil;
 import apros.codeart.util.StringUtil;
 
 public abstract class TypeSerializationInfo {
@@ -137,10 +143,64 @@ public abstract class TypeSerializationInfo {
 	public abstract void serialize(Object instance, DTObject dto);
 
 	public Object deserialize(DTObject dto) {
-		var instance = Activator.createInstance(this.getTargetClass());
-		deserialize(instance, dto);
-		return instance;
+		var targetClass = this.getTargetClass();
+		var ctorInfo = _getConstructorInfo.apply(_targetClass);
+		if (ctorInfo.hasNoArguments) {
+			var instance = Activator.createInstance(targetClass);
+			deserialize(instance, dto);
+			return instance;
+		} else {
+			var ctor = ctorInfo.find(dto);
+			if (ctor == null)
+				throw new NotFoundCtorException(targetClass);
+
+			var prms = ctor.getParameters();
+			var types = new Class<?>[1 + prms.length];
+			types[0] = targetClass;
+			var args = new Object[prms.length];
+
+			for (var i = 0; i < prms.length; i++) {
+				var prm = prms[i];
+				var type = prm.getType();
+				var value = dto.getValue(prm.getName());
+				args[i] = PrimitiveUtil.convert(value, type);
+				types[i + 1] = type;
+			}
+
+			var instance = Activator.createInstance(types, args);
+			deserialize(instance, dto);
+			return instance;
+		}
+
 	}
+
+	private static record ConstructorInfo(boolean hasNoArguments, Iterable<Constructor<?>> constructors) {
+
+		public Constructor<?> find(DTObject dto) {
+			for (var ctor : this.constructors()) {
+				boolean fined = true;
+				for (var p : ctor.getParameters()) {
+					if (!dto.exist(p.getName())) {
+						fined = false;
+						break;
+					}
+					if (fined)
+						return ctor;
+				}
+			}
+			return null;
+		}
+
+	}
+
+	private static final Function<Class<?>, ConstructorInfo> _getConstructorInfo = LazyIndexer.init((instanceType) -> {
+		var ctors = ListUtil.filter(instanceType.getConstructors(), (ctor) -> Modifier.isPublic(ctor.getModifiers()));
+		for (var ctor : ctors) {
+			if (ctor.getParameterCount() == 0)
+				return new ConstructorInfo(true, ctors);
+		}
+		return new ConstructorInfo(false, ctors);
+	});
 
 	/**
 	 * 用 dto 里的数据，填充 instance 的属性

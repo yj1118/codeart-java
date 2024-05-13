@@ -163,12 +163,15 @@ class MemberSerializationInfo {
 	/// <param name="g"></param>
 	public void generateDeserializeIL(MethodGenerator g) {
 
+		var memberName = this.getDTOMemberName();
+		var targetClass = this.getTargetClass();
+
 		g.when(() -> {
-			SerializationMethodHelper.exist(g, this.getDTOMemberName(), this.getTargetClass());
+			SerializationMethodHelper.exist(g, memberName, targetClass);
 			return LogicOperator.IsTrue;
 		}, () -> {
 			setMember(g, () -> {
-				SerializationMethodHelper.read(g, this.getDTOMemberName(), this.getTargetClass());
+				SerializationMethodHelper.read(g, memberName, targetClass);
 			});
 		});
 	}
@@ -177,10 +180,10 @@ class MemberSerializationInfo {
 		if (this.isClassInfo()) {
 			g.assign(SerializationArgs.InstanceName, loadValue);
 		} else {
-
+			var fieldName = this.getField().getName();
 			g.assignField(() -> {
 				loadOwner(g);
-			}, this.getField().getName(), loadValue);
+			}, fieldName, loadValue);
 		}
 	}
 

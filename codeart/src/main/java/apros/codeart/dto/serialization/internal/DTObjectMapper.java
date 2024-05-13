@@ -1,5 +1,7 @@
 package apros.codeart.dto.serialization.internal;
 
+import org.apache.logging.log4j.util.Strings;
+
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.Common;
 import apros.codeart.util.StringUtil;
@@ -28,7 +30,7 @@ public class DTObjectMapper {
 	}
 
 	public static Object save(Class<?> instanceClass, DTObject dto) {
-		return save(instanceClass, dto);
+		return save(instanceClass, Strings.EMPTY, dto);
 	}
 
 	/// <summary>

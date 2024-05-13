@@ -1,4 +1,4 @@
-package apros.codeart.ddd.message.internal;
+package apros.codeart.ddd.message;
 
 import apros.codeart.dto.DTObject;
 

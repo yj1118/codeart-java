@@ -2,6 +2,7 @@ package apros.codeart.util;
 
 import static apros.codeart.runtime.Util.propagate;
 
+import java.lang.reflect.Array;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -122,6 +123,19 @@ public final class ListUtil {
 			list.add(item);
 		}
 		return list;
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T[] asArray(Iterable<T> source, Class<T> type) {
+		T[] array = (T[]) Array.newInstance(type, Iterables.size(source));
+
+		var index = 0;
+		for (var s : source) {
+			array[index] = s;
+			index++;
+		}
+
+		return array;
 	}
 
 	public static <T> List<T> asReadonly(Iterable<T> source) {

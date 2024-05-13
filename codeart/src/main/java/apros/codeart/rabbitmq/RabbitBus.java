@@ -33,7 +33,7 @@ public class RabbitBus implements AutoCloseable {
 	private IPoolItem _channelItem;
 	private Channel _channel;
 
-	public Channel channel() {
+	Channel channel() {
 		return _channel;
 	}
 

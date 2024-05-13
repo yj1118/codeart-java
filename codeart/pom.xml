@@ -73,6 +73,13 @@
         <plugin>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.8.0</version>
+          <configuration>
+            <source>21</source> <!-- 设置Java源代码版本 -->
+            <target>21</target> <!-- 设置目标Java版本 -->
+            <compilerArgs>
+                <arg>-parameters</arg> <!-- 添加参数以保留方法参数名称 -->
+            </compilerArgs>
+        </configuration>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>

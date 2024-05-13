@@ -12,7 +12,7 @@ import com.google.common.collect.Iterables;
 
 import apros.codeart.util.ListUtil;
 
-class ByObjectTest {
+class ReadObject {
 
 	public static class User {
 		private int _id;
@@ -40,7 +40,7 @@ class ByObjectTest {
 			_name = name;
 		}
 
-		public User _parent;
+		private User _parent;
 
 		public User parent() {
 			return _parent;
@@ -52,7 +52,7 @@ class ByObjectTest {
 			return _brother;
 		}
 
-		public void setBrother(User value) {
+		void setBrother(User value) {
 			_brother = value;
 		}
 
@@ -198,6 +198,70 @@ class ByObjectTest {
 		setting.addChild(6, "关于我们");
 
 		var dtoMenu = DTObject.readonly(menu);
+		validteMeun(dtoMenu);
+	}
+
+	public static class MenuA {
+		private int _id;
+
+		public int id() {
+			return _id;
+		}
+
+		public void setId(int id) {
+			_id = id;
+		}
+
+		private String _name;
+
+		public String name() {
+			return _name;
+		}
+
+		public void setName(String name) {
+			_name = name;
+		}
+
+		public MenuA(int id, String name) {
+			_id = id;
+			_name = name;
+			_childs = new ArrayList<MenuA>();
+		}
+
+		private MenuA _parent;
+
+		public MenuA parent() {
+			return _parent;
+		}
+
+		private ArrayList<MenuA> _childs;
+
+		public MenuA[] childs() {
+			return ListUtil.asArray(_childs, MenuA.class);
+		}
+
+		public MenuA addChild(int id, String name) {
+			var child = new MenuA(id, name);
+			_childs.add(child);
+			return child;
+		}
+
+	}
+
+	@Test
+	public void readArray() {
+		var menu = new Menu(1, "根菜单");
+		menu.addChild(2, "首页");
+		var setting = menu.addChild(3, "系统设置");
+		setting.addChild(4, "权限管理");
+		setting.addChild(5, "皮肤设定");
+		setting.addChild(6, "关于我们");
+
+		var dtoMenu = DTObject.readonly(menu);
+		validteMeun(dtoMenu);
+	}
+
+	private void validteMeun(DTObject dtoMenu) {
 		assertEquals(1, dtoMenu.getInt("id"));
 		assertEquals("根菜单", dtoMenu.getString("name"));
 
@@ -227,7 +291,6 @@ class ByObjectTest {
 		var us = sysChilds.get(2);
 		assertEquals(6, us.getInt("id"));
 		assertEquals("关于我们", us.getString("name"));
-
 	}
 
 }

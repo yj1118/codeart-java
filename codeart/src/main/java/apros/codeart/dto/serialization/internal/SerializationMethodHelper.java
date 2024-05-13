@@ -222,14 +222,14 @@ final class SerializationMethodHelper {
 //		});
 	}
 
-//
-	/// <summary>
-	/// <para>得到读取某个类型的IL代码</para>
-	/// <para>reader.ReadXXX(); 或 deserialzer.Deserialze();</para>
-	/// </summary>
-	/// <param name="g"></param>
-	/// <param name="valueType"></param>
-	/// <param name="loadValue"></param>
+	/**
+	 * 
+	 * 得到读取某个类型的字节代码:reader.ReadXXX()
+	 * 
+	 * @param g
+	 * @param dtoMemberName
+	 * @param valueType
+	 */
 	public static void read(MethodGenerator g, String dtoMemberName, Class<?> valueType) {
 		var method = SerializationMethodHelper.getTypeMethod(valueType, SerializationMethodType.Deserialize);
 		var prmIndex = SerializationMethodHelper.getParameterIndex(method, SerializationMethodType.Deserialize);

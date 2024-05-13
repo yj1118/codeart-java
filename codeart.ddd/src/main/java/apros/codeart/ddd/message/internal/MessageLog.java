@@ -2,6 +2,7 @@ package apros.codeart.ddd.message.internal;
 
 import java.util.List;
 
+import apros.codeart.ddd.message.MessageEntry;
 import apros.codeart.ddd.message.MessageLogFactory;
 import apros.codeart.dto.DTObject;
 
