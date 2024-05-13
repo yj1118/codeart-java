@@ -198,7 +198,7 @@ class ReadObject {
 		setting.addChild(6, "关于我们");
 
 		var dtoMenu = DTObject.readonly(menu);
-		validteMeun(dtoMenu);
+		validateMenu(dtoMenu);
 	}
 
 	public static class MenuA {
@@ -258,10 +258,10 @@ class ReadObject {
 		setting.addChild(6, "关于我们");
 
 		var dtoMenu = DTObject.readonly(menu);
-		validteMeun(dtoMenu);
+		validateMenu(dtoMenu);
 	}
 
-	private void validteMeun(DTObject dtoMenu) {
+	private void validateMenu(DTObject dtoMenu) {
 		assertEquals(1, dtoMenu.getInt("id"));
 		assertEquals("根菜单", dtoMenu.getString("name"));
 
