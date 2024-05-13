@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
+/**
+ * 类尽量为无参数的，这样用dto加载最快
+ */
 class WriteObject {
 
 	public static class NoArgumentUser {
@@ -65,9 +68,21 @@ class WriteObject {
 			_name = name;
 		}
 
+		public User(int id, String name, User father) {
+			_id = id;
+			_name = name;
+			_father = father;
+		}
+
 		public User(int id, String name) {
 			_id = id;
 			_name = name;
+		}
+
+		private User _father;
+
+		public User father() {
+			return _father;
 		}
 
 	}
@@ -78,10 +93,19 @@ class WriteObject {
 		dto.setInt("id", 1);
 		dto.setString("name", "Louis");
 
+		DTObject dtoFather = DTObject.editable();
+		dtoFather.setInt("id", 2);
+		dtoFather.setString("name", "dahai");
+
+		dto.setObject("father", dtoFather);
+
 		var user = dto.save(User.class);
 
 		assertEquals(1, user.getId());
 		assertEquals("Louis", user.name());
+
+		assertEquals(2, user.father().getId());
+		assertEquals("dahai", user.father().name());
 	}
 
 }

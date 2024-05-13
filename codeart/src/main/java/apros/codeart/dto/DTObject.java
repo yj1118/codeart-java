@@ -38,6 +38,8 @@ import apros.codeart.util.StringUtil;
  * 在这种模式下，避免了装箱和拆箱，性能良好。
  * 
  * 但是要频繁的操作dto的同样的值，比如getInt("value")或者setInt("value")调用好几遍，那么建议用getIntRef这种引用系方法。
+ * 
+ * 
  */
 public class DTObject implements INullProxy {
 

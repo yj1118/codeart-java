@@ -162,8 +162,15 @@ public abstract class TypeSerializationInfo {
 			for (var i = 0; i < prms.length; i++) {
 				var prm = prms[i];
 				var type = prm.getType();
-				var value = dto.getValue(prm.getName());
-				args[i] = PrimitiveUtil.convert(value, type);
+
+				if (PrimitiveUtil.is(type)) {
+					var value = dto.getValue(prm.getName());
+					args[i] = value;
+				} else {
+					var obj = dto.getObject(prm.getName());
+					var value = obj.save(type);
+					args[i] = value;
+				}
 				types[i + 1] = type;
 			}
 
@@ -184,9 +191,9 @@ public abstract class TypeSerializationInfo {
 						fined = false;
 						break;
 					}
-					if (fined)
-						return ctor;
 				}
+				if (fined)
+					return ctor;
 			}
 			return null;
 		}

@@ -115,7 +115,8 @@ public final class PrimitiveUtil {
 	 */
 	public static boolean is(Class<?> valueType) {
 
-		if (valueType.isPrimitive() || valueType.equals(LocalDateTime.class) || valueType.equals(UUID.class))
+		if (valueType.isPrimitive() || valueType.equals(String.class) || valueType.equals(LocalDateTime.class)
+				|| valueType.equals(UUID.class))
 			return true;
 		return false;
 	}
