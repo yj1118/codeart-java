@@ -29,7 +29,7 @@ public interface IDTOWriter {
 
 	void writeObject(String name, Object value);
 
-	void writeElement(String name, Object telement);
+	void writeElement(String name, Object element);
 
 	/// <summary>
 	/// 写入一个空数组

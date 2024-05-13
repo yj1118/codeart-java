@@ -55,20 +55,20 @@ public class DTObject implements INullProxy {
 		_root.setParent(e);
 	}
 
-	private boolean _isReadOnly;
+	private boolean _isReadonly;
 
 	public boolean isReadOnly() {
-		return _isReadOnly;
+		return _isReadonly;
 	}
 
 	private void validateReadOnly() {
-		if (_isReadOnly)
-			throw new IllegalStateException(strings("codeart", "DTOReadOnly"));
+		if (_isReadonly)
+			throw new DTOReadonlyException();
 	}
 
 	DTObject(DTEObject root, boolean isReadOnly) {
 		_root = root;
-		_isReadOnly = isReadOnly;
+		_isReadonly = isReadOnly;
 	}
 
 //	#region 值
@@ -132,7 +132,7 @@ public class DTObject implements INullProxy {
 		case DTEntityType.OBJECT: {
 			var eo = as(entity, DTEObject.class);
 			if (eo != null)
-				return DTObject.obtain(eo, _isReadOnly);
+				return DTObject.obtain(eo, _isReadonly);
 		}
 			break;
 		case DTEntityType.LIST: {
@@ -173,7 +173,7 @@ public class DTObject implements INullProxy {
 
 	private DTObject getObject(String findExp, DTObject defaultValue, boolean throwError) {
 		var entity = this.find(DTEObject.class, findExp, throwError);
-		return entity == null ? defaultValue : DTObject.obtain(entity, true);
+		return entity == null ? defaultValue : DTObject.obtain(entity, this.isReadOnly());
 	}
 
 	// region 不必装箱和拆箱的操作
@@ -608,6 +608,10 @@ public class DTObject implements INullProxy {
 		return entity.getObjects();
 	}
 
+	public Iterable<DTObject> getObjects(String findExp) {
+		return getObjects(findExp, true);
+	}
+
 //	private Iterable<Long> getLongs(String findExp, Long itemDefaultValue, boolean throwError) {
 //		DTEList entity = find(DTEList.class, findExp, throwError);
 //		if (entity == null)
@@ -876,7 +880,11 @@ public class DTObject implements INullProxy {
 	}
 
 	public DTObject clone() {
-		return obtain((DTEObject) _root.clone(), _isReadOnly);
+		return obtain((DTEObject) _root.clone(), _isReadonly);
+	}
+
+	public DTObject clone(boolean readonly) {
+		return obtain((DTEObject) _root.clone(), readonly);
 	}
 
 	public boolean hasData() {
@@ -943,14 +951,20 @@ public class DTObject implements INullProxy {
 
 //	#endregion
 
-	public DTObject asReadOnly() {
-		var code = this.getCode();
-		return DTObject.readonly(code);
+	public DTObject asReadonly() {
+		if (_isReadonly)
+			return this;
+		_isReadonly = true;
+		_root.setReadonly(true);
+		return this;
 	}
 
 	public DTObject asEditable() {
-		var code = this.getCode();
-		return DTObject.editable(code);
+		if (!_isReadonly)
+			return this;
+		_isReadonly = false;
+		_root.setReadonly(false);
+		return this;
 	}
 
 	private static DTObject createImpl(String code, boolean readonly) {
@@ -1018,7 +1032,7 @@ public class DTObject implements INullProxy {
 	}
 
 	public static DTObject editable(Object target) {
-		return createImpl(StringUtil.empty(), target, true);
+		return createImpl(StringUtil.empty(), target, false);
 	}
 
 	/**
@@ -1038,8 +1052,13 @@ public class DTObject implements INullProxy {
 			DTObject result = isReadonly ? DTObject.readonly() : DTObject.editable();
 			result.load(schemaCode, dto);
 			return result;
+		} else {
+			DTObject result = DTObjectMapper.load(schemaCode, target);
+			if (isReadonly)
+				result.asReadonly();
+			return result;
 		}
-		return DTObjectMapper.load(schemaCode, target);
+
 	}
 
 	/**

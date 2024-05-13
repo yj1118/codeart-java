@@ -193,7 +193,7 @@ final class SerializationMethodHelper {
 		});
 	}
 
-	public static void writeElement(MethodGenerator g, String dtoMemberName, Class<?> elementType, Runnable loadValue) {
+	public static void writeElement(MethodGenerator g, String dtoMemberName, Runnable loadValue) {
 
 //      var method =  typeof(IDTOWriter).ResolveMethod("writeElement",
 //                                                      new Type[] { elementType },
@@ -202,7 +202,7 @@ final class SerializationMethodHelper {
 //                                                      MethodParameter.CreateGeneric(elementType));
 		var prmIndex = SerializationArgs.WriterIndex;
 
-		g.invoke(prmIndex, dtoMemberName, () -> {
+		g.invoke(prmIndex, "writeElement", () -> {
 			g.load(dtoMemberName);
 			loadValue.run();
 		});
@@ -282,7 +282,7 @@ final class SerializationMethodHelper {
 		});
 	}
 
-	public static void readElement(MethodGenerator g, String dtoMemberName, Class<?> elementType, IVariable index) {
+	public static void readElement(MethodGenerator g, String dtoMemberName, IVariable index) {
 		var prmIndex = SerializationArgs.ReaderIndex;
 		g.invoke(prmIndex, "readElement", () -> {
 			g.load(dtoMemberName);

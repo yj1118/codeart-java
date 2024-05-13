@@ -27,7 +27,7 @@ public class ValueObject extends DomainObject implements IValueObject {
 	}
 
 	@Override
-	protected void readOnlyCheckUp() {
+	protected void readonlyCheckUp() {
 		if (this.isConstructing())
 			return; // 构造阶段不处理
 

@@ -64,8 +64,9 @@ abstract class DTOWriter implements IDTOWriter {
 
 	public abstract void writeObject(String name, Object value);
 
-	public void writeElement(String name, Object telement) {
-
+	public void writeElement(String name, Object element) {
+		var e = _dto.isReadOnly() ? DTObject.readonly(element) : DTObject.editable(element);
+		_dto.push(name, e);
 	}
 
 	public void writeArray(String name) {

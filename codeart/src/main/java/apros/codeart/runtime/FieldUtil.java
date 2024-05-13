@@ -102,9 +102,9 @@ public final class FieldUtil {
 			// getXXX
 			{
 				String methodName = String.format("get%s", StringUtil.firstToUpper(name));
-				var method = MethodUtil.resolve(objClass, methodName, new Class<?>[] {}, field.getType());
+				var method = MethodUtil.resolve(objClass, methodName, null);
 
-				if (method != null && TypeUtil.isPublic(method))
+				if (method != null && !method.getReturnType().equals(Void.class) && TypeUtil.isPublic(method))
 					return new Accesser(method);
 
 			}
@@ -112,9 +112,9 @@ public final class FieldUtil {
 			// xxx()
 			{
 				String methodName = name;
-				var method = MethodUtil.resolve(objClass, methodName, new Class<?>[] {}, field.getType());
+				var method = MethodUtil.resolve(objClass, methodName, null);
 
-				if (method != null && TypeUtil.isPublic(method))
+				if (method != null && !method.getReturnType().equals(Void.class) && TypeUtil.isPublic(method))
 					return new Accesser(method);
 
 			}
@@ -126,7 +126,6 @@ public final class FieldUtil {
 
 	@Memoized
 	public static Accesser getFieldGetter(Field field) {
-
 		return _getFieldGetter.apply(field);
 	}
 

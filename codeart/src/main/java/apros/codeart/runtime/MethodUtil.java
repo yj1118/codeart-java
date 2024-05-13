@@ -58,6 +58,12 @@ public final class MethodUtil {
 
 		var methods = _getMethods.apply(objCls).apply(methodName);
 
+		if (parameterTypes == null) {
+			return ListUtil.find(methods, (m) -> {
+				return m.getParameterCount() == 0 && m.getReturnType().equals(returnType);
+			});
+		}
+
 		for (var method : methods) {
 			if (method.getParameterCount() != parameterTypes.length) {
 				continue;

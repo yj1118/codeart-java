@@ -36,12 +36,14 @@ class ArraySerializationInfo extends MemberSerializationInfo {
 				});
 			} else {
 
-				var elementType = TypeUtil.resolveElementType(this.getTargetClass());
+//				var elementType = TypeUtil.resolveElementType(this.getTargetClass());
+
+				var elementType = Object.class;
 
 				g.each(() -> {
 					loadMemberValue(g);
 				}, elementType, (item) -> {
-					SerializationMethodHelper.writeElement(g, this.getDTOMemberName(), elementType, () -> {
+					SerializationMethodHelper.writeElement(g, this.getDTOMemberName(), () -> {
 						g.load(item);
 					});
 				});
@@ -93,7 +95,7 @@ class ArraySerializationInfo extends MemberSerializationInfo {
 						var item = g.declare(elementType);
 
 						g.assign(item, () -> {
-							SerializationMethodHelper.readElement(g, this.getDTOMemberName(), elementType, index);
+							SerializationMethodHelper.readElement(g, this.getDTOMemberName(), index);
 						});
 
 						g.saveElement(array, index, item);

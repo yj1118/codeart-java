@@ -3,11 +3,6 @@ package apros.codeart.dto;
 import java.util.ArrayList;
 import java.util.function.Function;
 
-/**
- * 为了防止循环引用带来的内存泄漏，所有entity都会被注册到上下文会话中
- * 
- * 会话结束后对象被关闭，切断引用的关联
- */
 public abstract class DTEntity {
 
 	private String _name;
@@ -116,5 +111,7 @@ public abstract class DTEntity {
 	 * @param entity
 	 */
 	public abstract void load(DTEntity entity);
+
+	public abstract void setReadonly(boolean value);
 
 }

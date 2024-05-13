@@ -21,7 +21,7 @@ import apros.codeart.util.StringUtil;
 
 public final class DTEList extends DTEntity implements Iterable<DTObject> {
 
-	private boolean _isReadOnly;
+	private boolean _isReadonly;
 
 	@Override
 	public DTEntityType getType() {
@@ -55,7 +55,7 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	private void setItems(AbstractList<DTObject> items) {
-		_items = Util.createList(_isReadOnly, items.size());
+		_items = Util.createList(_isReadonly, items.size());
 
 		if (items.size() == 0) {
 			this._template = DTObject.obtain();
@@ -77,7 +77,7 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
 	}
 
 	private DTEList(boolean isReadOnly, String name, AbstractList<DTObject> items) {
-		_isReadOnly = isReadOnly;
+		_isReadonly = isReadOnly;
 		this.setName(name);
 		this.setItems(items);
 	}
@@ -87,7 +87,7 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
 
 		var length = _items.size();
 
-		var obj = obtain(_isReadOnly, this.getName(), Util.createList(_isReadOnly, length));
+		var obj = obtain(_isReadonly, this.getName(), Util.createList(_isReadonly, length));
 		obj._template = _template.clone();
 
 		for (var item : _items) {
@@ -221,7 +221,7 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
 	 * @throws Exception
 	 */
 	public void retainAts(Iterable<Integer> indexs) throws Exception {
-		var temps = Util.<DTObject>createList(_isReadOnly, Iterables.size(indexs));
+		var temps = Util.<DTObject>createList(_isReadonly, Iterables.size(indexs));
 		for (var i : indexs) {
 			temps.add(_items.get(i));
 		}
@@ -231,7 +231,7 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
 
 	public void removeAts(Iterable<Integer> indexs) {
 		int length = _items.size() - Iterables.size(indexs);
-		var temps = Util.<DTObject>createList(_isReadOnly, length);
+		var temps = Util.<DTObject>createList(_isReadonly, length);
 		for (var i = 0; i < _items.size(); i++) {
 			if (!ListUtil.contains(indexs, i)) { // 在移除的索引之外的项，保留
 				temps.add(_items.get(i));
@@ -341,6 +341,19 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
 		code.append("[");
 		code.append(this._template.getSchemaCode(sequential));
 		code.append("]");
+	}
+
+	public void setReadonly(boolean value) {
+		if (_isReadonly == value)
+			return;
+
+		_isReadonly = value;
+		for (var item : _items) {
+			if (value)
+				item.asReadonly();
+			else
+				item.asEditable();
+		}
 	}
 
 	/**

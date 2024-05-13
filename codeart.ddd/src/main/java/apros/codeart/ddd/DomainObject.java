@@ -615,7 +615,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 	 * @param oldValue
 	 */
 	private void handlePropertyChanged(DomainProperty property, Object newValue, Object oldValue) {
-		readOnlyCheckUp();
+		readonlyCheckUp();
 		raisePropertyChanged(property, newValue, oldValue);
 		raiseChangedEvent();
 	}
@@ -730,7 +730,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 		});
 	}
 
-	protected void readOnlyCheckUp() {
+	protected void readonlyCheckUp() {
 		if (this.isConstructing())
 			return; // 构造阶段不处理
 

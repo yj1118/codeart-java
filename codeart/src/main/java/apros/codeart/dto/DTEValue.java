@@ -254,4 +254,11 @@ public class DTEValue extends DTEntity {
 		this._value = dv._value;
 	}
 
+	/**
+	 * 实际上value的只读不用实现，因为在object层已经做了判断
+	 */
+	public void setReadonly(boolean value) {
+
+	}
+
 }

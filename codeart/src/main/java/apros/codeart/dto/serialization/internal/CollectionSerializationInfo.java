@@ -26,8 +26,8 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 		}, () -> {
 			SerializationMethodHelper.writeArray(g, this.getDTOMemberName());
 		}, () -> {
-			var elementType = TypeUtil.resolveElementType(this.getTargetClass());
-//			var elementType = Object.class; // java的泛型集合不可能是基元类型，所以只用考虑引用类型即可
+//			var elementType = TypeUtil.resolveElementType(this.getTargetClass());
+			var elementType = Object.class; // java的泛型集合不可能是基元类型，所以只用考虑引用类型即可
 			//// 写入数组
 			SerializationMethodHelper.writeArray(g, this.getDTOMemberName());
 
@@ -35,7 +35,7 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 			g.each(() -> {
 				loadMemberValue(g);
 			}, elementType, item -> {
-				SerializationMethodHelper.writeElement(g, this.getDTOMemberName(), elementType, () -> {
+				SerializationMethodHelper.writeElement(g, this.getDTOMemberName(), () -> {
 					item.load();
 				});
 			});

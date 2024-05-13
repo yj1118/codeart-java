@@ -50,7 +50,7 @@ public class DTObjectMapper {
 	}
 
 	/**
-	 * 据架构代码将对象的信息创建dto
+	 * 据架构代码将对象的信息创建dto，默认返回的是可以编辑的对象
 	 * 
 	 * @param schemaCode
 	 * @param instance

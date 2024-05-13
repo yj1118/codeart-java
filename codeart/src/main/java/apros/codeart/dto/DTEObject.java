@@ -19,7 +19,7 @@ import apros.codeart.util.StringUtil;
 
 public final class DTEObject extends DTEntity {
 
-	private boolean _readonly;
+	private boolean _isReadonly;
 
 	private AbstractList<DTEntity> _members;
 
@@ -31,7 +31,7 @@ public final class DTEObject extends DTEntity {
 	}
 
 	private DTEObject(boolean readonly, String name, AbstractList<DTEntity> members) {
-		_readonly = readonly;
+		_isReadonly = readonly;
 		setName(name);
 		setMembers(members);
 	}
@@ -51,12 +51,12 @@ public final class DTEObject extends DTEntity {
 
 	@Override
 	public DTEntity cloneImpl() {
-		var items = Util.<DTEntity>createList(_readonly, _members.size());
+		var items = Util.<DTEntity>createList(_isReadonly, _members.size());
 		for (var e : _members) {
 			items.add((DTEntity) e.clone());
 		}
 
-		return obtain(_readonly, this.getName(), items);
+		return obtain(_isReadonly, this.getName(), items);
 	}
 
 	@Override
@@ -308,6 +308,16 @@ public final class DTEObject extends DTEntity {
 		for (var item : items) {
 			fillMemberCode.accept(code, item);
 			code.append(",");
+		}
+	}
+
+	public void setReadonly(boolean value) {
+		if (_isReadonly == value)
+			return;
+
+		_isReadonly = value;
+		for (var m : _members) {
+			m.setReadonly(value);
 		}
 	}
 
