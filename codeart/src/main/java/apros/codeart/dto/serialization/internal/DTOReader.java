@@ -2,8 +2,6 @@ package apros.codeart.dto.serialization.internal;
 
 import java.time.Instant;
 
-import com.google.common.collect.Iterables;
-
 import apros.codeart.dto.DTObject;
 import apros.codeart.dto.IDTOReader;
 
@@ -66,7 +64,7 @@ abstract class DTOReader implements IDTOReader {
 		var dtoList = _dto.getList(name, false);
 		if (dtoList == null)
 			return 0;
-		return Iterables.size(dtoList);
+		return dtoList.size();
 	}
 
 //	public abstract T ReadElement<T>(

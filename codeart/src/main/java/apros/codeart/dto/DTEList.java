@@ -298,6 +298,10 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
 		return Collections.unmodifiableList(_items);
 	}
 
+	public DTObject getElement(int index) {
+		return _items.get(index);
+	}
+
 	@SuppressWarnings("unchecked")
 	public <T> Iterable<T> getValues(Class<T> cls, T defaultValue, boolean throwError) {
 		return ListUtil.map(_items, (t) -> {

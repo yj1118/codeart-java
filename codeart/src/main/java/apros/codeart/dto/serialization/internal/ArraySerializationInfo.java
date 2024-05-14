@@ -4,12 +4,27 @@ import java.lang.reflect.Field;
 
 import apros.codeart.bytecode.LogicOperator;
 import apros.codeart.bytecode.MethodGenerator;
-import apros.codeart.runtime.TypeUtil;
+import apros.codeart.runtime.FieldUtil;
 
 class ArraySerializationInfo extends MemberSerializationInfo {
 
+	private Class<?> _elementType;
+
+	public Class<?> elementType() {
+		return _elementType;
+	}
+
+	private Class<?> getElementType(Field field) {
+		var atas = FieldUtil.getActualTypeArguments(field);
+		if (atas.length == 0)
+			return Object.class;
+
+		return atas[0]; // 将第0个泛型参数作为集合的成员类型
+	}
+
 	public ArraySerializationInfo(Field field, DTOMemberImpl memberAnn) {
 		super(field, memberAnn);
+		_elementType = getElementType(field);
 	}
 
 	public ArraySerializationInfo(Class<?> classType) {
@@ -69,33 +84,30 @@ class ArraySerializationInfo extends MemberSerializationInfo {
 				g.when(() -> {
 					g.load(length);
 					g.load(0);
-					return LogicOperator.LessThan;
+					return LogicOperator.AreEqual;
 				}, () -> {
 //数量小于1
 //array = new array[];
 
-					var elementType = TypeUtil.resolveElementType(this.getTargetClass());
 					g.assign(array, () -> {
-						g.newArray(elementType, () -> {
+						g.newArray(_elementType, () -> {
 							g.load(length);
 						});
 					});
 				}, () -> {
 
-					var elementType = TypeUtil.resolveElementType(this.getTargetClass());
-
 //int[] = new int[c];
 					g.assign(array, () -> {
-						g.newArray(elementType, () -> {
+						g.newArray(_elementType, () -> {
 							g.load(length);
 						});
 					});
 
-					g.loop(length, (index) -> {
-						var item = g.declare(elementType);
+					g.loopLength(length, (index) -> {
+						var item = g.declare(_elementType);
 
 						g.assign(item, () -> {
-							SerializationMethodHelper.readElement(g, this.getDTOMemberName(), index);
+							SerializationMethodHelper.readElement(g, this.getDTOMemberName(), index, _elementType);
 						});
 
 						g.saveElement(array, index, item);

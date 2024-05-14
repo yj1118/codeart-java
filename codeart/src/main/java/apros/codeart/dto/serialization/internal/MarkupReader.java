@@ -19,6 +19,17 @@ class MarkupReader extends DTOReader {
 //	}
 
 	@Override
+	public Object readElement(String name, int index, Class<?> elementType) {
+		var e = _dto.getElement(name, index, false);
+		if (e == null)
+			return null;
+
+		if (e.isSingleValue())
+			return e.getValue();
+		return DTObject.save(elementType, e);
+	}
+
+	@Override
 	public Object readObject(Class<?> objectType, String name) {
 		var dto = _dto.getObject(name, null);
 		if (dto == null)

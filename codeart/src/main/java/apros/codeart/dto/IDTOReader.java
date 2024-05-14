@@ -43,10 +43,8 @@ public interface IDTOReader {
 	 * @return
 	 */
 	int readLength(String name);
-//
-//	T ReadElement<T>(
-//	string name,
-//	int index);
+
+	Object readElement(String name, int index, Class<?> elementType);
 
 	Object readObject(Class<?> objectType, String name);
 }

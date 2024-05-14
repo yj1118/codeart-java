@@ -1,11 +1,13 @@
 package apros.codeart.runtime;
 
+import static apros.codeart.i18n.Language.strings;
 import static apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -284,5 +286,40 @@ public final class FieldUtil {
 			throw propagate(e);
 		}
 	}
+
+	/**
+	 * 
+	 * 获得字段的泛型参数
+	 * 
+	 * @param field
+	 */
+	public static Class<?>[] getActualTypeArguments(Field field) {
+		// 获取childs字段的泛型类型
+		var genericType = field.getGenericType();
+
+		if (genericType instanceof ParameterizedType) {
+			ParameterizedType parameterizedType = (ParameterizedType) genericType;
+			var actualTypeArguments = parameterizedType.getActualTypeArguments();
+
+			var result = new Class<?>[actualTypeArguments.length];
+			var i = 0;
+			for (var ata : actualTypeArguments) {
+				if (ata instanceof Class<?>) {
+					Class<?> actualClass = (Class<?>) ata;
+					result[i] = actualClass;
+				} else {
+					throw new IllegalStateException(strings("codeart", "UnableObtainGenericParameter"));
+				}
+				i++;
+			}
+
+			return result;
+		}
+
+		return _emptyTypes;
+
+	}
+
+	private static final Class<?>[] _emptyTypes = new Class<?>[] {};
 
 }

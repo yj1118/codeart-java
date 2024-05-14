@@ -29,6 +29,20 @@ class SchemaCodeReader extends DTOReader {
 //	 }
 
 	@Override
+	public Object readElement(String name, int index, Class<?> elementType) {
+		var e = _dto.getElement(name, index, false);
+		if (e == null)
+			return null;
+
+		if (e.isSingleValue())
+			return e.getValue();
+
+		String schemaCode = _schemaCodes.getSchemaCode(name, () -> elementType);
+
+		return e.save(elementType, schemaCode);
+	}
+
+	@Override
 	public Object readObject(Class<?> objectType, String name) {
 		var dtoValue = _dto.getObject(name, null);
 		if (dtoValue == null)

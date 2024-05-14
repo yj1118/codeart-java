@@ -148,6 +148,19 @@ public class EvaluationStack {
 			return true;
 		}
 
+		public boolean assertLeastRefs(int expectedCount) {
+
+			assertLeastCount(expectedCount);
+
+			for (var i = 0; i < expectedCount; i++) {
+				var item = _items.get(i);
+				if (item.isPrimitive())
+					throw new IllegalArgumentException(strings("codeart", "TypeMismatch"));
+			}
+
+			return true;
+		}
+
 		/**
 		 * 检查栈顶值有多少个
 		 * 
@@ -155,19 +168,30 @@ public class EvaluationStack {
 		 */
 		public void assertCount(int expectedCount) {
 			if (this.size() != expectedCount)
-				throw new IllegalArgumentException(strings("codeart", "TypeMismatch"));
+				throw new IllegalArgumentException(
+						strings("codeart", "StackItemCountError", this.size(), expectedCount));
+		}
+
+		public void assertLeastCount(int expectedCount) {
+			if (this.size() < expectedCount)
+				throw new IllegalArgumentException(
+						strings("codeart", "StackItemLeastError", this.size(), expectedCount));
 		}
 
 		/**
 		 * 查找栈顶上得元素，得到他们得类型，如果他们之间得类型不相同，报错
 		 * 
-		 * @param expectCount 期望栈顶有几个值
+		 * @param expectCount 期望栈顶至少有几个值
 		 * @return
 		 */
 		Class<?> matchType(int expectedCount) {
-			assertCount(expectedCount);
+
+			assertLeastCount(expectedCount);
+
 			Class<?> targetType = _items.get(0).getValueType();
-			for (StackItem item : _items) {
+
+			for (var i = 1; i < expectedCount; i++) {
+				var item = _items.get(i);
 				if (targetType != item.getValueType())
 					throw new IllegalStateException(strings("codeart", "TypeMismatch"));
 			}

@@ -27,6 +27,15 @@ final class StackAssert {
 		}
 	}
 
+	public static void assertLeastRefs(MethodGenerator g, int expectedCount) {
+		try {
+			g.evalStack().currentFrame().assertLeastRefs(expectedCount);
+		} catch (Exception ex) {
+			g.broken();
+			throw ex;
+		}
+	}
+
 	public static void assertRefs(MethodGenerator g, int expectedCount) {
 		try {
 			g.evalStack().currentFrame().assertRefs(expectedCount);
@@ -37,7 +46,7 @@ final class StackAssert {
 	}
 
 	/**
-	 * 检查栈顶至少值有多少个
+	 * 检查栈顶变量有多少个
 	 * 
 	 * @param count
 	 */
@@ -46,12 +55,30 @@ final class StackAssert {
 	}
 
 	/**
-	 * 检查栈顶至少值有多少个
+	 * 检查栈顶变量有多少个
 	 * 
 	 * @param count
 	 */
 	public static void assertCount(EvaluationStack evalStack, int expectedCount) {
 		evalStack.currentFrame().assertCount(expectedCount);
+	}
+
+	/**
+	 * 检查栈顶变量有多少个
+	 * 
+	 * @param count
+	 */
+	public static void assertLeastCount(MethodGenerator g, int expectedCount) {
+		assertLeastCount(g.evalStack(), expectedCount);
+	}
+
+	/**
+	 * 检查栈顶变量有多少个
+	 * 
+	 * @param count
+	 */
+	public static void assertLeastCount(EvaluationStack evalStack, int expectedCount) {
+		evalStack.currentFrame().assertLeastCount(expectedCount);
 	}
 
 }

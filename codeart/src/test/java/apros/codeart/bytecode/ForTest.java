@@ -6,11 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-import apros.codeart.core.TestRunner;
-
-@ExtendWith(TestRunner.class)
+//@ExtendWith(TestRunner.class)
 class ForTest {
 
 	public static class LoopTestItem { // 方法内部的局部类
@@ -48,7 +45,7 @@ class ForTest {
 					mg.assignField(t, "value", () -> {
 						mg.load(2);
 					});
-				});
+				}, LoopTestItem.class);
 			}
 
 			// 返回生成的字节码
@@ -84,7 +81,7 @@ class ForTest {
 					mg.assignField(item, "value", () -> {
 						mg.load(2);
 					});
-				});
+				}, LoopTestItem.class);
 			}
 
 			// 返回生成的字节码
@@ -110,7 +107,7 @@ class ForTest {
 				var i = mg.declare(int.class);
 				mg.load(0);
 				i.save();
-				mg.loop(() -> {
+				mg.loopLength(() -> {
 					mg.load(5);
 				}, (c) -> {
 					mg.increment(i);

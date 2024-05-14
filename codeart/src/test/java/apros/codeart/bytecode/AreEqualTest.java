@@ -6,11 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.util.function.BiConsumer;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-import apros.codeart.core.TestRunner;
-
-@ExtendWith(TestRunner.class)
+//@ExtendWith(TestRunner.class)
 class AreEqualTest {
 
 	public static class AreEqualTestObject { // 方法内部的局部类

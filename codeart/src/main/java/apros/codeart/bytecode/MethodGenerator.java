@@ -22,7 +22,6 @@ import apros.codeart.i18n.Language;
 import apros.codeart.runtime.DynamicUtil;
 import apros.codeart.runtime.FieldUtil;
 import apros.codeart.runtime.MethodUtil;
-import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.TriConsumer;
 
 public class MethodGenerator implements AutoCloseable {
@@ -222,6 +221,15 @@ public class MethodGenerator implements AutoCloseable {
 	}
 
 	/**
+	 * 调用指令，弹出栈顶的值
+	 */
+	public void pop() {
+		// 弹出栈顶的值
+		_visitor.visitInsn(Opcodes.POP);
+		_evalStack.pop();
+	}
+
+	/**
 	 * 加载变量上的字段的值
 	 * 
 	 * @param varName
@@ -411,38 +419,77 @@ public class MethodGenerator implements AutoCloseable {
 	 * @param express
 	 * @return
 	 */
+	public MethodGenerator invoke(String express, Runnable loadParameters, boolean ignoreReturnValue) {
+		String[] temp = express.split("\\.");
+		return invoke(temp[0], temp[1], loadParameters, ignoreReturnValue);
+	}
+
 	public MethodGenerator invoke(String express, Runnable loadParameters) {
 		String[] temp = express.split("\\.");
-		return invoke(temp[0], temp[1], loadParameters);
+		return invoke(temp[0], temp[1], loadParameters, false);
+	}
+
+	public MethodGenerator invoke(String express, boolean ignoreReturnValue) {
+		return invoke(express, null, ignoreReturnValue);
 	}
 
 	public MethodGenerator invoke(String express) {
-		return invoke(express, null);
+		return invoke(express, null, false);
+	}
+
+	public MethodGenerator invoke(int prmIndex, String methodName, Runnable loadParameters, boolean ignoreReturnValue) {
+		var prm = Iterables.get(_prms, prmIndex);
+		return invoke(prm.getName(), methodName, loadParameters, ignoreReturnValue);
 	}
 
 	public MethodGenerator invoke(int prmIndex, String methodName, Runnable loadParameters) {
 		var prm = Iterables.get(_prms, prmIndex);
-		return invoke(prm.getName(), methodName, loadParameters);
+		return invoke(prm.getName(), methodName, loadParameters, false);
 	}
 
 	public MethodGenerator invoke(int prmIndex, Method method, Runnable loadParameters) {
 		var prm = Iterables.get(_prms, prmIndex);
-		return invoke(prm.getName(), method.getName(), loadParameters);
+		return invoke(prm.getName(), method.getName(), loadParameters, false);
+	}
+
+	public MethodGenerator invoke(int prmIndex, Method method, Runnable loadParameters, boolean ignoreReturnValue) {
+		var prm = Iterables.get(_prms, prmIndex);
+		return invoke(prm.getName(), method.getName(), loadParameters, ignoreReturnValue);
 	}
 
 	public MethodGenerator invoke(IVariable local, String methodName, Runnable loadParameters) {
 		return invoke(() -> {
 			local.load();
-		}, methodName, loadParameters);
+		}, methodName, loadParameters, false);
 	}
 
-	public MethodGenerator invoke(String varName, String methodName, Runnable loadParameters) {
+	public MethodGenerator invoke(IVariable local, String methodName, Runnable loadParameters,
+			boolean ignoreReturnValue) {
+		return invoke(() -> {
+			local.load();
+		}, methodName, loadParameters, ignoreReturnValue);
+	}
+
+	public MethodGenerator invoke(String varName, String methodName, Runnable loadParameters,
+			boolean ignoreReturnValue) {
 		return invoke(() -> {
 			this.loadVariable(varName);
-		}, methodName, loadParameters);
+		}, methodName, loadParameters, ignoreReturnValue);
 	}
 
 	public MethodGenerator invoke(Runnable loadTarget, String methodName, Runnable loadParameters) {
+		return invoke(loadTarget, methodName, loadParameters, false);
+	}
+
+	/**
+	 * @param loadTarget
+	 * @param methodName
+	 * @param loadParameters
+	 * @param ignoreReturnValue 不论是否有返回值，都不会用
+	 * @return
+	 */
+	public MethodGenerator invoke(Runnable loadTarget, String methodName, Runnable loadParameters,
+			boolean ignoreReturnValue) {
 
 		try {
 
@@ -470,6 +517,11 @@ public class MethodGenerator implements AutoCloseable {
 			var returnType = method.getReturnType();
 			if (returnType != void.class) {
 				_evalStack.push(returnType); // 返回值会给与父级栈
+
+				if (ignoreReturnValue) {
+					this.pop();
+				}
+
 			}
 
 		} catch (Exception ex) {
@@ -617,16 +669,16 @@ public class MethodGenerator implements AutoCloseable {
 		}, elementType, action);
 	}
 
-	public void loop(IVariable local, TriConsumer<Variable, Variable, Variable> action) {
+	public void loop(IVariable local, TriConsumer<Variable, Variable, Variable> action, Class<?> elementType) {
 		loop(() -> {
 			local.load();
-		}, action);
+		}, action, elementType);
 	}
 
 	/**
 	 * 
 	 */
-	public void loop(Runnable loadList, TriConsumer<Variable, Variable, Variable> action) {
+	public void loop(Runnable loadList, TriConsumer<Variable, Variable, Variable> action, Class<?> elementType) {
 		_scopeStack.enter();
 
 		var endLabel = _scopeStack.getEndLabel();
@@ -661,7 +713,6 @@ public class MethodGenerator implements AutoCloseable {
 		_evalStack.pop(2);
 
 		loadList.run(); // 加载集合
-		Class<?> elementType = TypeUtil.resolveElementType(listType);
 		i.load();
 		if (listType.isArray()) {
 			// 获取数组元素[i]
@@ -711,8 +762,8 @@ public class MethodGenerator implements AutoCloseable {
 		_scopeStack.exit();
 	}
 
-	public void loop(IVariable length, Consumer<Variable> action) {
-		loop(() -> {
+	public void loopLength(IVariable length, Consumer<Variable> action) {
+		loopLength(() -> {
 			length.load();
 		}, action);
 	}
@@ -723,7 +774,7 @@ public class MethodGenerator implements AutoCloseable {
 	 * @param loadLength
 	 * @param action
 	 */
-	public void loop(Runnable loadLength, Consumer<Variable> action) {
+	public void loopLength(Runnable loadLength, Consumer<Variable> action) {
 		_scopeStack.enter();
 
 		var endLabel = _scopeStack.getEndLabel();
@@ -874,7 +925,8 @@ public class MethodGenerator implements AutoCloseable {
 	 * @return
 	 */
 	public MethodGenerator newObject(String objectTypeName, Runnable loadCtorPrms) {
-		StackAssert.assertCount(_evalStack, 0);
+
+		_evalStack.enterFrame(); // 新建立栈帧
 
 		// 加载要创建对象的类的类型到操作数栈上
 		_visitor.visitTypeInsn(Opcodes.NEW, objectTypeName);
@@ -897,6 +949,15 @@ public class MethodGenerator implements AutoCloseable {
 		_evalStack.pop(1); // 参数已经弹出，这里弹出对象的引用（引用有两个，这里弹出其中一个）
 
 		StackAssert.assertCount(_evalStack, 1); // 对象的引用在栈顶
+
+		// 将栈顶的引用返回到上级栈：
+		// 移除对象在子栈的引用
+		_evalStack.pop(1);
+
+		_evalStack.exitFrame(); // 调用完毕，返回上级栈帧
+
+		_evalStack.push(Object.class); // 返回值会给与父级栈
+
 		return this;
 	}
 
@@ -908,7 +969,7 @@ public class MethodGenerator implements AutoCloseable {
 		if (objectType.isArray())
 			throw new IllegalArgumentException(Language.strings("codeart", "UseNewArrayMethod"));
 
-		StackAssert.assertCount(_evalStack, 0);
+		_evalStack.enterFrame(); // 新建立栈帧
 
 		var objectTypeName = DynamicUtil.getInternalName(objectType);
 		// 加载要创建对象的类的类型到操作数栈上
@@ -932,6 +993,15 @@ public class MethodGenerator implements AutoCloseable {
 		_evalStack.pop(1); // 参数已经弹出，这里弹出对象的引用（引用有两个，这里弹出其中一个）
 
 		StackAssert.assertCount(_evalStack, 1); // 对象的引用在栈顶
+
+		// 将栈顶的引用返回到上级栈：
+		// 移除对象在子栈的引用
+		_evalStack.pop(1);
+
+		_evalStack.exitFrame(); // 调用完毕，返回上级栈帧
+
+		_evalStack.push(objectType); // 返回值会给与父级栈
+
 		return this;
 	}
 

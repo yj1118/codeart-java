@@ -671,6 +671,13 @@ public class DTObject implements INullProxy {
 		return entity.getObjects();
 	}
 
+	public DTObject getElement(String findExp, int index, boolean throwError) {
+		DTEList entity = find(DTEList.class, findExp, throwError);
+		if (entity == null)
+			return null;
+		return entity.getElement(index);
+	}
+
 	/**
 	 * 
 	 * 向集合追加一个成员

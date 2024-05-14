@@ -282,11 +282,12 @@ final class SerializationMethodHelper {
 		});
 	}
 
-	public static void readElement(MethodGenerator g, String dtoMemberName, IVariable index) {
+	public static void readElement(MethodGenerator g, String dtoMemberName, IVariable index, Class<?> elementType) {
 		var prmIndex = SerializationArgs.ReaderIndex;
 		g.invoke(prmIndex, "readElement", () -> {
 			g.load(dtoMemberName);
 			g.load(index);
+			g.load(elementType);
 		});
 	}
 

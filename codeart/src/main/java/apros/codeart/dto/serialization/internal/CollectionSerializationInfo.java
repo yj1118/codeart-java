@@ -4,13 +4,30 @@ import java.lang.reflect.Field;
 
 import apros.codeart.bytecode.LogicOperator;
 import apros.codeart.bytecode.MethodGenerator;
+import apros.codeart.runtime.FieldUtil;
 
 /**
  * java的泛型集合不可能是基元类型，所以只用考虑引用类型即可
  */
 class CollectionSerializationInfo extends MemberSerializationInfo {
+
+	private Class<?> _elementType;
+
+	public Class<?> elementType() {
+		return _elementType;
+	}
+
+	private Class<?> getElementType(Field field) {
+		var atas = FieldUtil.getActualTypeArguments(field);
+		if (atas.length == 0)
+			return Object.class;
+
+		return atas[0]; // 将第0个泛型参数作为集合的成员类型
+	}
+
 	public CollectionSerializationInfo(Field field, DTOMemberImpl memberAnn) {
 		super(field, memberAnn);
+		_elementType = getElementType(field);
 	}
 
 	public CollectionSerializationInfo(Class<?> classType) {
@@ -25,15 +42,14 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 		}, () -> {
 			SerializationMethodHelper.writeArray(g, this.getDTOMemberName());
 		}, () -> {
-//			var elementType = TypeUtil.resolveElementType(this.getTargetClass());
-			var elementType = Object.class; // java的泛型集合不可能是基元类型，所以只用考虑引用类型即可
+
 			//// 写入数组
 			SerializationMethodHelper.writeArray(g, this.getDTOMemberName());
 
 			// 写入每个项
 			g.each(() -> {
 				loadMemberValue(g);
-			}, elementType, item -> {
+			}, _elementType, item -> {
 				SerializationMethodHelper.writeElement(g, this.getDTOMemberName(), () -> {
 					item.load();
 				});
@@ -48,37 +64,49 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
 			SerializationMethodHelper.readLength(g, this.getDTOMemberName());// 读取数量
 			count.save();
 
-			var list = g.declare(this.getTargetClass());
+			var targetClass = this.getTargetClass();
+
+			var list = g.declare(targetClass);
 
 			g.when(() -> {
 				g.load(count);
 				g.load(0);
-				return LogicOperator.LessThan;
+				return LogicOperator.AreEqual;
 			}, () -> {
 //数量小于1
 //list = new List<T>();
 //				var elementType = this.TargetType.ResolveElementType();
 				g.assign(list, () -> {
-					g.newObject(this.getTargetClass());
+					g.newObject(targetClass);
 				});
 			}, () -> {
 //list = new List<T>();
 				g.assign(list, () -> {
-					g.newObject(this.getTargetClass());
+					g.newObject(targetClass);
 				});
 
-//				var elementType = TypeUtil.resolveElementType(this.getTargetClass());
-
-				g.loop(list, (item, index, length) -> {
+				g.loopLength(count, (index) -> {
+					var item = g.declare(_elementType);
 
 					g.assign(item, () -> {
-						SerializationMethodHelper.readElement(g, this.getDTOMemberName(), index);
+						SerializationMethodHelper.readElement(g, this.getDTOMemberName(), index, _elementType);
 					});
 
 					g.invoke(list, "add", () -> {
 						g.load(item);
-					});
+					}, true);
 				});
+
+//				g.loop(list, (item, index, length) -> {
+//
+//					g.assign(item, () -> {
+//						SerializationMethodHelper.readElement(g, this.getDTOMemberName(), index, _elementType);
+//					});
+//
+//					g.invoke(list, "add", () -> {
+//						g.load(item);
+//					}, true);
+//				}, _elementType);
 			});
 
 			g.load(list);

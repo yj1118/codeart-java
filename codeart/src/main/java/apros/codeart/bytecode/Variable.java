@@ -104,7 +104,9 @@ public class Variable implements IVariable {
 //			ASTORE: 将引用类型值存储到局部变量表中。
 
 			int codes = Opcodes.ISTORE;
-			if (_type == long.class)
+			if (_type == int.class)
+				codes = Opcodes.ISTORE;
+			else if (_type == long.class)
 				codes = Opcodes.LSTORE;
 			else if (_type == float.class)
 				codes = Opcodes.FSTORE;

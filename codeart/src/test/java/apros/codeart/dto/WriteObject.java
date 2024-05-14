@@ -6,6 +6,8 @@ import java.util.ArrayList;
 
 import org.junit.jupiter.api.Test;
 
+import com.google.common.collect.Iterables;
+
 /**
  * 类尽量为无参数的，这样用dto加载最快
  */
@@ -152,6 +154,10 @@ class WriteObject {
 			_name = name;
 		}
 
+		public Menu() {
+			_childs = new ArrayList<Menu>();
+		}
+
 		public Menu(int id, String name) {
 			_id = id;
 			_name = name;
@@ -170,7 +176,7 @@ class WriteObject {
 			return _childs;
 		}
 
-		public void seChilds(Iterable<Menu> value) {
+		public void setChilds(ArrayList<Menu> value) {
 			_childs = value;
 		}
 
@@ -187,6 +193,32 @@ class WriteObject {
 
 		var dtoMenu = createMenu();
 
+		var root = dtoMenu.save(Menu.class);
+		assertEquals(1, root.id());
+		assertEquals("根菜单", root.name());
+
+		assertEquals(2, Iterables.size(root.childs()));
+
+		var home = Iterables.get(root.childs(), 0);
+		assertEquals(2, home.id());
+		assertEquals("首页", home.name());
+
+		var sys = Iterables.get(root.childs(), 1);
+		assertEquals(3, sys.id());
+		assertEquals("系统设置", sys.name());
+
+		var p = Iterables.get(sys.childs(), 0);
+		assertEquals(4, p.id());
+		assertEquals("权限管理", p.name());
+
+		var s = Iterables.get(sys.childs(), 1);
+		assertEquals(5, s.id());
+		assertEquals("皮肤设定", s.name());
+
+		var us = Iterables.get(sys.childs(), 2);
+		assertEquals(6, us.id());
+		assertEquals("关于我们", us.name());
+
 	}
 
 	private static DTObject createMenu() {
@@ -196,28 +228,28 @@ class WriteObject {
 
 		var home = DTObject.editable();
 		home.setInt("id", 2);
-		home.setString("name", "根首页");
-		root.push("childs,", home);
+		home.setString("name", "首页");
+		root.push("childs", home);
 
 		var sys = DTObject.editable();
 		sys.setInt("id", 3);
 		sys.setString("name", "系统设置");
-		root.push("childs,", sys);
+		root.push("childs", sys);
 
 		var p = DTObject.editable();
 		p.setInt("id", 4);
 		p.setString("name", "权限管理");
-		sys.push("childs,", p);
+		sys.push("childs", p);
 
 		var s = DTObject.editable();
 		s.setInt("id", 5);
 		s.setString("name", "皮肤设定");
-		sys.push("childs,", s);
+		sys.push("childs", s);
 
 		var us = DTObject.editable();
 		us.setInt("id", 6);
 		us.setString("name", "关于我们");
-		sys.push("childs,", us);
+		sys.push("childs", us);
 
 		return root;
 	}

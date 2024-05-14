@@ -261,7 +261,7 @@ class ReadObject {
 		validateMenu(dtoMenu);
 	}
 
-	private void validateMenu(DTObject dtoMenu) {
+	private static void validateMenu(DTObject dtoMenu) {
 		assertEquals(1, dtoMenu.getInt("id"));
 		assertEquals("根菜单", dtoMenu.getString("name"));
 
