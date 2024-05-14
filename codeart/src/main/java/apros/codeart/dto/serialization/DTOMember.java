@@ -8,7 +8,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface DTOMember {
-	String name() default "";
-
-	boolean blob() default false;
+	String value() default "";
 }

@@ -164,12 +164,6 @@ class WriteObject {
 			_childs = new ArrayList<Menu>();
 		}
 
-		private Menu _parent;
-
-		public Menu parent() {
-			return _parent;
-		}
-
 		private ArrayList<Menu> _childs;
 
 		public Iterable<Menu> childs() {
@@ -252,6 +246,77 @@ class WriteObject {
 		sys.push("childs", us);
 
 		return root;
+	}
+
+	public static class MenuA {
+		private int _id;
+
+		public int id() {
+			return _id;
+		}
+
+		public void setId(int id) {
+			_id = id;
+		}
+
+		private String _name;
+
+		public String name() {
+			return _name;
+		}
+
+		public void setName(String name) {
+			_name = name;
+		}
+
+		public MenuA(int id, String name) {
+			_id = id;
+			_name = name;
+		}
+
+		private MenuA[] _childs;
+
+		public MenuA[] childs() {
+			return _childs;
+		}
+
+		public void setChilds(MenuA[] value) {
+			_childs = value;
+		}
+
+	}
+
+	@Test
+	public void writeArray() {
+
+		var dtoMenu = createMenu();
+
+		var root = dtoMenu.save(MenuA.class);
+		assertEquals(1, root.id());
+		assertEquals("根菜单", root.name());
+
+		assertEquals(2, root.childs().length);
+
+		var home = root.childs()[0];
+		assertEquals(2, home.id());
+		assertEquals("首页", home.name());
+
+		var sys = root.childs()[1];
+		assertEquals(3, sys.id());
+		assertEquals("系统设置", sys.name());
+
+		var p = sys.childs()[0];
+		assertEquals(4, p.id());
+		assertEquals("权限管理", p.name());
+
+		var s = sys.childs()[1];
+		assertEquals(5, s.id());
+		assertEquals("皮肤设定", s.name());
+
+		var us = sys.childs()[2];
+		assertEquals(6, us.id());
+		assertEquals("关于我们", us.name());
+
 	}
 
 }

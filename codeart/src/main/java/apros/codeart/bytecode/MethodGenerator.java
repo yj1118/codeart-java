@@ -606,6 +606,11 @@ public class MethodGenerator implements AutoCloseable {
 		// 1.加载需要遍历的目标
 		loadTarget.run();
 
+		var listType = _evalStack.peek().getValueType();
+		if (listType.isArray()) {
+			throw new IllegalStateException(strings("codeart", "ArrayUseLoop"));
+		}
+
 		// 2.执行遍历方法iterator()
 		_visitor.visitMethodInsn(Opcodes.INVOKEINTERFACE, "java/util/List", "iterator", "()Ljava/util/Iterator;", true);
 
@@ -723,14 +728,8 @@ public class MethodGenerator implements AutoCloseable {
 				// 用于加载数组中的引用类型元素。
 				_visitor.visitInsn(Opcodes.AALOAD);
 			} else {
-				if (elementType == int.class)
-					_visitor.visitInsn(Opcodes.ILOAD);
-				else if (elementType == long.class)
-					_visitor.visitInsn(Opcodes.LLOAD);
-				else if (elementType == float.class)
-					_visitor.visitInsn(Opcodes.FLOAD);
-				else if (elementType == double.class)
-					_visitor.visitInsn(Opcodes.DLOAD);
+				var code = Util.getLoadCode(elementType);
+				_visitor.visitInsn(code);
 
 				throw new IllegalArgumentException(strings("codeart", "UnknownException"));
 			}
@@ -1096,7 +1095,33 @@ public class MethodGenerator implements AutoCloseable {
 		loadArray.run();
 		loadElementIndex.run();
 		loadValue.run();
-		_visitor.visitInsn(Opcodes.IASTORE);
+
+		var valueType = _evalStack.peek().getValueType();
+
+		if (valueType == int.class) {
+			_visitor.visitInsn(Opcodes.IASTORE);
+		} else if (valueType == boolean.class) {
+			_visitor.visitInsn(Opcodes.BASTORE);
+		} else if (valueType == byte.class) {
+			_visitor.visitInsn(Opcodes.BASTORE);
+		} else if (valueType == float.class) {
+			_visitor.visitInsn(Opcodes.FASTORE);
+		} else if (valueType == long.class) {
+			_visitor.visitInsn(Opcodes.LASTORE);
+		} else if (valueType == double.class) {
+			_visitor.visitInsn(Opcodes.DASTORE);
+		} else if (valueType == short.class) {
+			_visitor.visitInsn(Opcodes.SASTORE);
+		} else if (valueType == char.class) {
+			_visitor.visitInsn(Opcodes.CASTORE);
+		} else { // Assume reference type
+			_visitor.visitInsn(Opcodes.AASTORE);
+		}
+
+		// IASTORE指令会将用于操作的元素（数组引用、索引、值）全部从操作栈中弹出。
+		// 因此，执行完IASTORE指令之后，操作栈前3个值会被弹出。
+		_evalStack.pop(3);
+
 		return this;
 	}
 
