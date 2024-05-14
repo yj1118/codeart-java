@@ -1098,25 +1098,8 @@ public class MethodGenerator implements AutoCloseable {
 
 		var valueType = _evalStack.peek().getValueType();
 
-		if (valueType == int.class) {
-			_visitor.visitInsn(Opcodes.IASTORE);
-		} else if (valueType == boolean.class) {
-			_visitor.visitInsn(Opcodes.BASTORE);
-		} else if (valueType == byte.class) {
-			_visitor.visitInsn(Opcodes.BASTORE);
-		} else if (valueType == float.class) {
-			_visitor.visitInsn(Opcodes.FASTORE);
-		} else if (valueType == long.class) {
-			_visitor.visitInsn(Opcodes.LASTORE);
-		} else if (valueType == double.class) {
-			_visitor.visitInsn(Opcodes.DASTORE);
-		} else if (valueType == short.class) {
-			_visitor.visitInsn(Opcodes.SASTORE);
-		} else if (valueType == char.class) {
-			_visitor.visitInsn(Opcodes.CASTORE);
-		} else { // Assume reference type
-			_visitor.visitInsn(Opcodes.AASTORE);
-		}
+		var storeCode = Util.getStoreArrayCode(valueType);
+		_visitor.visitInsn(storeCode);
 
 		// IASTORE指令会将用于操作的元素（数组引用、索引、值）全部从操作栈中弹出。
 		// 因此，执行完IASTORE指令之后，操作栈前3个值会被弹出。

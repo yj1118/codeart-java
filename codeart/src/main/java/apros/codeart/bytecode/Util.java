@@ -40,11 +40,44 @@ final class Util {
 			return Opcodes.ASTORE;
 		else {
 			if (type == int.class) {
-				return Opcodes.IASTORE;
+				return Opcodes.ISTORE;
 			} else if (type == boolean.class) {
 				return Opcodes.ISTORE;
 			} else if (type == byte.class) {
 				return Opcodes.ISTORE;
+			} else if (type == float.class) {
+				return Opcodes.FSTORE;
+			} else if (type == long.class) {
+				return Opcodes.LSTORE;
+			} else if (type == double.class) {
+				return Opcodes.DSTORE;
+			} else if (type == short.class) {
+				return Opcodes.ISTORE;
+			} else if (type == char.class) {
+				return Opcodes.ISTORE;
+			}
+
+			throw new IllegalArgumentException(strings("codeart", "UnknownException"));
+		}
+	}
+
+	/**
+	 * 
+	 * 将变量存入数组时要用到的代码
+	 * 
+	 * @param type
+	 * @return
+	 */
+	static int getStoreArrayCode(Class<?> type) {
+		if (!type.isPrimitive())
+			return Opcodes.AASTORE;
+		else {
+			if (type == int.class) {
+				return Opcodes.IASTORE;
+			} else if (type == boolean.class) {
+				return Opcodes.BASTORE;
+			} else if (type == byte.class) {
+				return Opcodes.BASTORE;
 			} else if (type == float.class) {
 				return Opcodes.FASTORE;
 			} else if (type == long.class) {
@@ -52,9 +85,9 @@ final class Util {
 			} else if (type == double.class) {
 				return Opcodes.DASTORE;
 			} else if (type == short.class) {
-				return Opcodes.ISTORE;
+				return Opcodes.SASTORE;
 			} else if (type == char.class) {
-				return Opcodes.ISTORE;
+				return Opcodes.CASTORE;
 			}
 
 			throw new IllegalArgumentException(strings("codeart", "UnknownException"));

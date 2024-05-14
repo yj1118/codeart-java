@@ -102,16 +102,7 @@ public class Variable implements IVariable {
 //			FSTORE: 将单精度浮点数值存储到局部变量表中。
 //			DSTORE: 将双精度浮点数值存储到局部变量表中。
 //			ASTORE: 将引用类型值存储到局部变量表中。
-
-			int codes = Opcodes.ISTORE;
-			if (_type == int.class)
-				codes = Opcodes.ISTORE;
-			else if (_type == long.class)
-				codes = Opcodes.LSTORE;
-			else if (_type == float.class)
-				codes = Opcodes.FSTORE;
-			else if (_type == double.class)
-				codes = Opcodes.DSTORE;
+			int codes = Util.getStoreCode(_type);
 
 			_owner.visitor().visitVarInsn(codes, _index);
 		}
