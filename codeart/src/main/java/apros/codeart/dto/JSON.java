@@ -8,7 +8,6 @@ import static apros.codeart.util.StringUtil.removeLast;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
@@ -308,15 +307,8 @@ class JSON {
 		return code;
 	}
 
-//	private final static Pattern _date = Pattern.compile("new Date\\(\"(.+?)\"\\)", Pattern.CASE_INSENSITIVE);
-
-	// Pattern是线程安全的
-	// ISO 8601字符串格式
-	private final static Pattern _iso8601 = Pattern
-			.compile("(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})\\.(\\d{3})Z", Pattern.CASE_INSENSITIVE);
-
 	public static Instant parseInstant(String code) {
-		if (_iso8601.matcher(code).matches()) {
+		if (ISO8601.is(code)) {
 			return Instant.parse(code);
 		}
 		return null;

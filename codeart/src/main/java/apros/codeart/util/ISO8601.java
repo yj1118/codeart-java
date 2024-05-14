@@ -7,6 +7,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.regex.Pattern;
 
 public final class ISO8601 {
 
@@ -14,16 +15,36 @@ public final class ISO8601 {
 	}
 
 	/**
-	 * @param iso8601String 基于iso8601的时间字符串，例如："2024-03-06T15:45:30.123Z";
+	 * Pattern是线程安全的
+	 */
+	private final static Pattern ISO8601 = Pattern.compile(
+			"^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+-]\\d{2}:\\d{2})?$", Pattern.CASE_INSENSITIVE);
+
+	public static boolean is(String code) {
+		return ISO8601.matcher(code).matches();
+	}
+
+	// 预编译正则表达式
+	private static final Pattern TIMEZONE_PATTERN = Pattern.compile(".*(?:Z|[+-]\\d{2}:\\d{2})$");
+
+	public static boolean hasTimeZone(String iso8601String) {
+		return TIMEZONE_PATTERN.matcher(iso8601String).matches();
+	}
+
+	/**
+	 * @param iso8601String 基于iso8601的时间字符串，例如："2024-03-06T15:45:30.123Z"和"1984-11-18T02:30:50";
 	 * @return
 	 */
 	public static LocalDateTime getLocalDateTime(String iso8601String) {
 
-		// 将字符串解析为OffsetDateTime
-		OffsetDateTime odt = OffsetDateTime.parse(iso8601String);
+		if (hasTimeZone(iso8601String)) {
+			// 将字符串解析为OffsetDateTime
+			OffsetDateTime odt = OffsetDateTime.parse(iso8601String);
+			// 从OffsetDateTime获取LocalDateTime
+			return odt.toLocalDateTime();
+		}
 
-		// 从OffsetDateTime获取LocalDateTime
-		return odt.toLocalDateTime();
+		return LocalDateTime.parse(iso8601String);
 	}
 
 	public static String toString(LocalDateTime value) {
