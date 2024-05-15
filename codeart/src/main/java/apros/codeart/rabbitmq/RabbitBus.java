@@ -295,7 +295,7 @@ public class RabbitBus implements AutoCloseable {
 	}
 
 	private static Function<Policy, Pool<RabbitBus>> _getPool = LazyIndexer.init((policy) -> {
-		return new Pool<RabbitBus>(RabbitBus.class, new PoolConfig(10, 200), (isTempItem) -> {
+		return new Pool<RabbitBus>(RabbitBus.class, new PoolConfig(10, 200, 60), (isTempItem) -> {
 			return new RabbitBus(policy);
 		}, (bus) -> {
 			// 归还bus，需要取消消费

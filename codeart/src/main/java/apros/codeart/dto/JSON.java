@@ -7,6 +7,7 @@ import static apros.codeart.util.StringUtil.removeLast;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 import com.google.common.primitives.Doubles;
@@ -14,6 +15,7 @@ import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 
+import apros.codeart.pooling.util.StringPool;
 import apros.codeart.runtime.FieldUtil;
 import apros.codeart.util.Common;
 import apros.codeart.util.ISO8601;
@@ -24,9 +26,9 @@ class JSON {
 	}
 
 	public static String getCode(Object value) {
-		var sb = new StringBuilder();
-		writeValue(sb, value);
-		return sb.toString();
+		return StringPool.using((sb) -> {
+			writeValue(sb, value);
+		});
 	}
 
 	public static void writeValue(StringBuilder sb, Object value) {
@@ -70,6 +72,11 @@ class JSON {
 			return;
 		}
 
+		if (valueClass == ZonedDateTime.class) {
+			writeZonedDateTime(sb, (ZonedDateTime) value);
+			return;
+		}
+
 		if (is(valueClass, Map.class)) {
 			writeMap(sb, (Map<?, ?>) value);
 			return;
@@ -83,6 +90,12 @@ class JSON {
 		else {
 			writeObject(sb, value);
 		}
+	}
+
+	private static void writeZonedDateTime(StringBuilder sb, ZonedDateTime value) {
+		sb.append("\"");
+		sb.append(ISO8601.toString(value));
+		sb.append("\"");
 	}
 
 	private static void writeLocalDateTime(StringBuilder sb, LocalDateTime value) {

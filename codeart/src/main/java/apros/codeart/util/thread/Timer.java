@@ -47,6 +47,16 @@ public final class Timer {
 		start(initialDelay, action);
 	}
 
+	/**
+	 * 
+	 * 延迟一个周期后开始反复执行
+	 * 
+	 * @param action
+	 */
+	public void delay(Runnable action) {
+		start(_period, action);
+	}
+
 	private void start(long initialDelay, Runnable action) {
 		if (_scheduler != null)
 			throw new IllegalArgumentException(strings("codeart", "TimerWorking"));

@@ -4,6 +4,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
+import apros.codeart.TestSupport;
 import apros.codeart.util.Algorithm;
 
 final class DualVector implements AutoCloseable {
@@ -14,6 +15,16 @@ final class DualVector implements AutoCloseable {
 
 	public AtomicResidentItemArray container() {
 		return _dualContainers.getAcquire(_dualIndex.getAcquire());
+	}
+
+	@TestSupport
+	AtomicResidentItemArray getA() {
+		return _dualContainers.get(0);
+	}
+
+	@TestSupport
+	AtomicResidentItemArray getB() {
+		return _dualContainers.get(1);
 	}
 
 	private Pool<?> _pool;
@@ -39,7 +50,23 @@ final class DualVector implements AutoCloseable {
 
 	private AtomicInteger _pointer = new AtomicInteger(-1);
 
+	@TestSupport
+	public int pointer() {
+		return _pointer.getAcquire();
+	}
+
 	private AtomicInteger _dualIndex = new AtomicInteger(0);
+
+	/**
+	 * 
+	 * 用的哪个池的下标
+	 * 
+	 * @return
+	 */
+	@TestSupport
+	public int dualIndex() {
+		return _dualIndex.getAcquire();
+	}
 
 	public DualVector(Pool<?> pool, int initialCapacity, int maxCapacity) {
 		_pool = pool;
@@ -61,6 +88,17 @@ final class DualVector implements AutoCloseable {
 
 	private int getIndex() {
 		return _pointer.updateAndGet(current -> (current + 1) % _capacity.getAcquire());
+	}
+
+	@TestSupport
+	public int borrowedCount() {
+		AtomicResidentItemArray container = this.container();
+		int count = 0;
+		for (var i = 0; i < container.length(); i++) {
+			if (container.getAcquire(i).isBorrowed())
+				count++;
+		}
+		return count;
 	}
 
 	/**
@@ -156,7 +194,7 @@ final class DualVector implements AutoCloseable {
 	 * 
 	 * @return
 	 */
-	boolean tryReduce() {
+	boolean tryDecrease() {
 
 		if (_initialCapacity == _maxCapacity)
 			return false;

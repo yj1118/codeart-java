@@ -3,7 +3,9 @@ package apros.codeart.dto;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 import org.junit.jupiter.api.Assertions;
@@ -40,6 +42,22 @@ class TimeTest {
 		public LocalDateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
 				throws JsonParseException {
 			return LocalDateTime.parse(json.getAsString(), formatter);
+		}
+	}
+
+	private static class ZonedDateTimeAdapter
+			implements JsonSerializer<ZonedDateTime>, JsonDeserializer<ZonedDateTime> {
+		private static final DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
+		@Override
+		public JsonElement serialize(ZonedDateTime src, Type typeOfSrc, JsonSerializationContext context) {
+			return new JsonPrimitive(src.format(DateTimeFormatter.ISO_ZONED_DATE_TIME));
+		}
+
+		@Override
+		public ZonedDateTime deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+				throws JsonParseException {
+			return ZonedDateTime.parse(json.getAsString(), formatter);
 		}
 	}
 
@@ -88,22 +106,28 @@ class TimeTest {
 		public void setBirthDate(LocalDateTime birthDate) {
 			this.birthDate = birthDate;
 		}
-	}
 
-	private static String getPersonCode() {
-		// 创建一个Person对象
-		Person person = new Person("John Doe", 30, "john.doe@example.com", Birthday);
+		public static String getCode() {
+			// 创建一个Person对象
+			Person person = new Person("John Doe", 30, "john.doe@example.com", Birthday);
 
-		// 创建Gson实例，设置日期格式
-		Gson gson = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter()).create();
+			return getCode(person);
+		}
 
-		// 序列化
-		String json = gson.toJson(person);
+		public static String getCode(Object obj) {
+			// 创建Gson实例，设置日期格式
+			Gson gson = new GsonBuilder().registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter())
+					.registerTypeAdapter(ZonedDateTime.class, new ZonedDateTimeAdapter()).create();
 
-		return json;
+			// 序列化
+			return gson.toJson(obj);
+		}
+
 	}
 
 	private static LocalDateTime Birthday = LocalDateTime.of(1984, 11, 18, 2, 30, 50);
+
+	private static ZonedDateTime BirthdayZ = ZonedDateTime.of(Birthday, ZoneId.of("UTC"));
 
 	@Test
 	public void writeLocalDateTime() {
@@ -120,7 +144,7 @@ class TimeTest {
 	@Test
 	public void readLocalDateTime() {
 
-		var code = getPersonCode();
+		var code = Person.getCode();
 		var dto = DTObject.readonly(code);
 		var birthday = dto.getLocalDateTime("birthDate");
 
@@ -128,15 +152,53 @@ class TimeTest {
 
 	}
 
+	public static class PersonZ extends Person {
+
+		private ZonedDateTime birthdayZ;
+
+		// Getter和Setter
+		public ZonedDateTime getBirthdayZ() {
+			return birthdayZ;
+		}
+
+		public void setBirthdayZ(ZonedDateTime value) {
+			this.birthdayZ = value;
+		}
+
+		public PersonZ(ZonedDateTime birthdayZ) {
+			super("John Doe", 30, "john.doe@example.com", Birthday);
+			this.birthdayZ = birthdayZ;
+		}
+
+		public static String getCode() {
+			// 创建一个Person对象
+			PersonZ person = new PersonZ(BirthdayZ);
+
+			return Person.getCode(person);
+		}
+
+	}
+
 	@Test
 	public void writeZonedDateTime() {
-//		// 用gson测试浏览器是否可以识别
-//		DTObject dto = DTObject.editable();
-//		dto.setLocalDateTime("birthday", Birthday);
-//
-//		var code = dto.getCode(false, false);
-//
-//		JsonElement element = JsonParser.parseString(code);
-//		Assertions.assertTrue(element.isJsonObject());
+		// 用gson测试浏览器是否可以识别
+		DTObject dto = DTObject.editable();
+		dto.setZonedDateTime("birthdayZ", BirthdayZ);
+
+		var code = dto.getCode(false, false);
+
+		JsonElement element = JsonParser.parseString(code);
+		Assertions.assertTrue(element.isJsonObject());
+	}
+
+	@Test
+	public void readZonedDateTime() {
+
+		var code = PersonZ.getCode();
+		var dto = DTObject.readonly(code);
+		var birthdayZ = dto.getZonedDateTime("birthdayZ");
+
+		Assertions.assertTrue(birthdayZ.equals(BirthdayZ));
+
 	}
 }

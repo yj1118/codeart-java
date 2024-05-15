@@ -23,7 +23,7 @@ public final class IOBuffer {
 
 	private static Function<SizeConfig, Pool<ByteBuffer>> getPool = LazyIndexer.init((config) -> {
 		return new Pool<ByteBuffer>(ByteBuffer.class,
-				new PoolConfig(config.minSegmentCapacity(), config.maxSegmentCapacity()), (isTempItem) -> {
+				new PoolConfig(config.minVectorCapacity(), config.maxVectorCapacity(), 60), (isTempItem) -> {
 					/*
 					 * ByteBuffer.allocateDirect() 直接缓冲区：ByteBuffer.allocateDirect()
 					 * 方法创建的是一个直接缓冲区。这种类型的缓冲区在Java堆外分配内存，直接在操作系统的本地内存中进行数据存储。
@@ -65,7 +65,7 @@ public final class IOBuffer {
 				});
 	});
 
-	public static record SizeConfig(int value, int minSegmentCapacity, int maxSegmentCapacity) {
+	public static record SizeConfig(int value, int minVectorCapacity, int maxVectorCapacity) {
 
 	}
 

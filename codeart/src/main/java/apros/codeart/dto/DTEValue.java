@@ -4,6 +4,7 @@ import static apros.codeart.i18n.Language.strings;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Function;
@@ -93,6 +94,12 @@ public class DTEValue extends DTEntity {
 		if (_value != null)
 			return (LocalDateTime) _value;
 		return ISO8601.getLocalDateTime(_valueCode);
+	}
+
+	public ZonedDateTime getZonedDateTime() {
+		if (_value != null)
+			return (ZonedDateTime) _value;
+		return ISO8601.getZonedDateTime(_valueCode);
 	}
 
 	public String getString() {

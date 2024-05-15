@@ -1,13 +1,16 @@
 package apros.codeart.pooling;
 
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import apros.codeart.TestSupport;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
+import apros.codeart.util.thread.Timer;
 
 /**
  * 组成结构：
@@ -39,10 +42,13 @@ public class Pool<T> implements AutoCloseable {
 	private final Consumer<T> _itemRecycler;
 	private final Consumer<T> _itemDestroyer; // 当项被消除时，会使用该对象进行额外的销毁操作
 
+	/**
+	 * 当前使用的向量池在矩阵里的序号
+	 */
 	private AtomicInteger _pointer = new AtomicInteger(-1);
 
 	private int next() {
-		return _pointer.updateAndGet(current -> (current + 1) % _dual.vectorCount());
+		return _pointer.updateAndGet(current -> (current + 1) % _matrix.vectorCount());
 	}
 
 	private boolean _itemDisposable;
@@ -65,11 +71,13 @@ public class Pool<T> implements AutoCloseable {
 		_borrowedCount.decrement();
 	}
 
-	private DualMatrix _dual;
+	private DualMatrix _matrix;
 
 	public int vectorCapacity() {
-		return _dual.vectorCapacity();
+		return _matrix.vectorCapacity();
 	}
+
+	private Timer _timer;
 
 	/**
 	 * @param segmentSize  每个分段的大小
@@ -81,8 +89,11 @@ public class Pool<T> implements AutoCloseable {
 		_itemRecycler = itemRecycler;
 		_itemDestroyer = itemDestroyer;
 		_itemDisposable = _itemDestroyer != null && itemType.isAssignableFrom(AutoCloseable.class);
-		_dual = new DualMatrix(this, config.initialSegmentCapacity(), config.maxSegmentCapacity(),
-				config.initialSegmentCount(), config.maxSegmentCount());
+		_matrix = new DualMatrix(this, config.initialVectorCapacity(), config.maxVectorCapacity(),
+				config.initialMatrixCapacity(), config.maxMatrixCapacity());
+
+		_timer = new Timer(config.detectPeriod(), TimeUnit.SECONDS);
+		_timer.delay(() -> _matrix.tryDecrease());
 	}
 
 	public Pool(Class<T> itemType, PoolConfig config, Function<Boolean, T> itemFactory) {
@@ -99,24 +110,24 @@ public class Pool<T> implements AutoCloseable {
 	 * 
 	 * @return
 	 */
-	private DualVector claimSegment() {
-		var index = next(); // 取出下一个可用的分段坐标
-		return _dual.segments().getAcquire(index);
+	private DualVector claimVector() {
+		var index = next(); // 取出下一个可用的矢量池坐标
+		return _matrix.getVector(index);
 	}
 
 	public IPoolItem borrow() {
-		var rb = this.claimSegment();
+		var rb = this.claimVector();
 
 		IPoolItem item = rb.tryClaim();
 
 		if (item != null) {
-			_dual.tryShrink();
 			return item;
 		}
 
 		// 由于获得项失败了，表示池里对应的段已经满了，所以创建临时项给外界用
 		item = TempItem.tryClaim(this);
-		_dual.tryGrow();
+		// 尝试扩容
+		_matrix.tryIncrease();
 		return item;
 	}
 
@@ -183,13 +194,112 @@ public class Pool<T> implements AutoCloseable {
 	public void dispose() {
 		if (this.isDisposed())
 			return;
+		_timer.stop();
 		_isDisposed.setRelease(true);
-		_dual.dispose();
+		_matrix.dispose();
 	}
 
 	@Override
 	public void close() {
 		this.dispose();
+	}
+
+	@TestSupport
+	public static record Layout(/**
+								 * 缓存对象的总个数
+								 */
+	int capacity, /**
+					 * 矢量池的数量
+					 */
+	int vectorCount, /**
+						 * 当前有效的矢量池的下标
+						 */
+	int pointer, /**
+					 * 使用的是哪个矢量矩阵，0是A，1是B
+					 */
+	int dualIndex, VectorLayout[] vectorsA, VectorLayout[] vectorsB) {
+
+	}
+
+	@TestSupport
+	public static record VectorLayout(/**
+										 * 池里存放的对象数量
+										 */
+	int capacity, /**
+					 * 已借出的项的数量
+					 */
+	int borrowedCount, /**
+						 * 当前指向的对象（该对象已借出，下次借出的是pointer+1）所在的下标
+						 */
+	int pointer, /**
+					 * 有效的池下标
+					 */
+	int dualIndex, StoreLayout storeA, StoreLayout storeB) {
+
+	}
+
+	@TestSupport
+	public static record StoreLayout(/**
+										 * 最终的存储数组存放的对象数量
+										 */
+	int capacity, /**
+					 * 已借出的项的数量
+					 */
+	int borrowedCount) {
+
+	}
+
+	@TestSupport
+	public Layout getLayout() {
+
+		int capacity = _matrix.capacity();
+		int vectorCount = _matrix.vectorCount();
+		int pointer = _pointer.getAcquire();
+		int dualIndex = _matrix.dualIndex();
+
+		VectorLayout[] vectorsA = getVectorLayout(_matrix.getA());
+		VectorLayout[] vectorsB = getVectorLayout(_matrix.getB());
+
+		return new Layout(capacity, vectorCount, pointer, dualIndex, vectorsA, vectorsB);
+	}
+
+	@TestSupport
+	private VectorLayout[] getVectorLayout(AtomicDualVectorArray arr) {
+		if (arr == null)
+			return null;
+
+		VectorLayout[] layouts = new VectorLayout[arr.length()];
+
+		for (var i = 0; i < arr.length(); i++) {
+			DualVector dv = arr.getAcquire(i);
+
+			var capacity = dv.capacity();
+			var borrowed = dv.borrowedCount();
+			var pointer = dv.pointer();
+			var dualIndex = dv.dualIndex();
+
+			var storeA = getStoreLayout(dv.getA());
+			var storeB = getStoreLayout(dv.getB());
+
+			var layout = new VectorLayout(capacity, borrowed, pointer, dualIndex, storeA, storeB);
+			layouts[i] = layout;
+		}
+
+		return layouts;
+
+	}
+
+	@TestSupport
+	private StoreLayout getStoreLayout(AtomicResidentItemArray store) {
+		if (store == null)
+			return null;
+
+		var capacity = store.length();
+
+		var borrowedCount = 0;
+
+		return new StoreLayout(capacity, borrowedCount);
+
 	}
 
 }

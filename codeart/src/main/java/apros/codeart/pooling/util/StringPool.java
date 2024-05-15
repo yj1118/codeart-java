@@ -9,7 +9,7 @@ public final class StringPool {
 	private StringPool() {
 	}
 
-	private static Pool<StringBuilder> _pool = new Pool<StringBuilder>(StringBuilder.class, new PoolConfig(10, 200),
+	private static Pool<StringBuilder> _pool = new Pool<StringBuilder>(StringBuilder.class, new PoolConfig(10, 200, 60),
 			(isTempItem) -> {
 				return new StringBuilder(100);
 			});

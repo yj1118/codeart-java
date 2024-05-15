@@ -4,7 +4,7 @@ import apros.codeart.util.ArgumentAssert;
 
 public class PoolConfig {
 
-	private int _initialSegmentCapacity;
+	private int _initialVectorCapacity;
 
 	/**
 	 * 
@@ -12,11 +12,11 @@ public class PoolConfig {
 	 * 
 	 * @return
 	 */
-	public int initialSegmentCapacity() {
-		return _initialSegmentCapacity;
+	public int initialVectorCapacity() {
+		return _initialVectorCapacity;
 	}
 
-	private int _maxSegmentCapacity;
+	private int _maxVectorCapacity;
 
 	/**
 	 * 
@@ -24,11 +24,11 @@ public class PoolConfig {
 	 * 
 	 * @return
 	 */
-	public int maxSegmentCapacity() {
-		return _maxSegmentCapacity;
+	public int maxVectorCapacity() {
+		return _maxVectorCapacity;
 	}
 
-	private int _initialSegmentCount;
+	private int _initialMatrixCapacity;
 
 	/**
 	 * 
@@ -36,11 +36,11 @@ public class PoolConfig {
 	 * 
 	 * @return
 	 */
-	public int initialSegmentCount() {
-		return _initialSegmentCount;
+	public int initialMatrixCapacity() {
+		return _initialMatrixCapacity;
 	}
 
-	private int _maxSegmentCount;
+	private int _maxMatrixCapacity;
 
 	/**
 	 * 
@@ -48,36 +48,49 @@ public class PoolConfig {
 	 * 
 	 * @return
 	 */
-	public int maxSegmentCount() {
-		return _maxSegmentCount;
+	public int maxMatrixCapacity() {
+		return _maxMatrixCapacity;
 	}
 
-	private PoolConfig(int initialSegmentCapacity, int maxSegmentCapacity, int initialSegmentCount,
-			int maxSegmentCount) {
+	private int _detectPeriod;
 
-		ArgumentAssert.lessThanOrEqualZero(_initialSegmentCapacity, "initialSegmentCapacity");
-		ArgumentAssert.lessThanOrEqualZero(_maxSegmentCapacity, "maxSegmentCapacity");
-		ArgumentAssert.lessThanOrEqualZero(_initialSegmentCount, "initialSegmentCount");
-
-		_initialSegmentCapacity = initialSegmentCapacity;
-		_maxSegmentCapacity = maxSegmentCapacity;
-		_initialSegmentCount = initialSegmentCount;
-		_maxSegmentCount = maxSegmentCount;
+	/**
+	 * 
+	 * 探测周期，比如每10秒检查一次池是否需要兼容以节约内存
+	 * 
+	 * @return
+	 */
+	public int detectPeriod() {
+		return _detectPeriod;
 	}
 
-	public PoolConfig(int initialSegmentCapacity, int maxSegmentCapacity, int maxSegmentCount) {
-		this(initialSegmentCapacity, maxSegmentCapacity, 2, maxSegmentCount);
+	private PoolConfig(int initialVectorCapacity, int maxVectorCapacity, int initialMatrixCapacity,
+			int maxMatrixCapacity, int detectPeriod) {
+
+		ArgumentAssert.lessThanOrEqualZero(initialVectorCapacity, "initialVectorCapacity");
+		ArgumentAssert.lessThanOrEqualZero(maxVectorCapacity, "maxVectorCapacity");
+		ArgumentAssert.lessThanOrEqualZero(initialMatrixCapacity, "initialMatrixCapacity");
+
+		_initialVectorCapacity = initialVectorCapacity;
+		_maxVectorCapacity = maxVectorCapacity;
+		_initialMatrixCapacity = initialMatrixCapacity;
+		_maxMatrixCapacity = maxMatrixCapacity;
+		_detectPeriod = detectPeriod;
+	}
+
+	public PoolConfig(int initialVectorCapacity, int maxVectorCapacity, int maxMatrixCapacity, int detectPeriod) {
+		this(initialVectorCapacity, maxVectorCapacity, 2, maxMatrixCapacity, detectPeriod);
 	}
 
 	/**
 	 * 
 	 * 分段数量起始为2，不限制分段数量的池
 	 * 
-	 * @param initialSegmentCapacity
-	 * @param maxSegmentCapacity
+	 * @param initialVectorCapacity 每个分段的初始容量
+	 * @param maxVectorCapacity     分段的最大容量
 	 */
-	public PoolConfig(int initialSegmentCapacity, int maxSegmentCapacity) {
-		this(initialSegmentCapacity, maxSegmentCapacity, 2, 0);
+	public PoolConfig(int initialVectorCapacity, int maxVectorCapacity, int detectPeriod) {
+		this(initialVectorCapacity, maxVectorCapacity, 2, 0, detectPeriod);
 	}
 
 }

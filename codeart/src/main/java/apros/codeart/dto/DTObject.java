@@ -6,6 +6,7 @@ import static apros.codeart.runtime.TypeUtil.is;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
@@ -23,6 +24,7 @@ import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.INullProxy;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
+import apros.codeart.util.TimeUtil;
 
 /**
  * 本次升级，重写了底层算法，特点：
@@ -318,6 +320,19 @@ public class DTObject implements INullProxy {
 		return entity == null ? defaultValue : entity.getLocalDateTime();
 	}
 
+	public ZonedDateTime getZonedDateTime(String findExp, ZonedDateTime defaultValue) {
+		return getZonedDateTime(findExp, defaultValue, false);
+	}
+
+	public ZonedDateTime getZonedDateTime(String findExp) {
+		return getZonedDateTime(findExp, TimeUtil.MinZonedDateTime, true);
+	}
+
+	public ZonedDateTime getZonedDateTime(String findExp, ZonedDateTime defaultValue, boolean throwError) {
+		DTEValue entity = find(DTEValue.class, findExp, throwError);
+		return entity == null ? defaultValue : entity.getZonedDateTime();
+	}
+
 	public Instant getInstant(String findExp, Instant defaultValue) {
 		return getInstant(findExp, defaultValue, false);
 	}
@@ -403,6 +418,10 @@ public class DTObject implements INullProxy {
 	// endregion
 
 	public void setLocalDateTime(String findExp, LocalDateTime value) {
+		setValueRef(findExp, value, true); // 时间转换成json，会带""号，所以valueCodeIsString是true
+	}
+
+	public void setZonedDateTime(String findExp, ZonedDateTime value) {
 		setValueRef(findExp, value, true); // 时间转换成json，会带""号，所以valueCodeIsString是true
 	}
 

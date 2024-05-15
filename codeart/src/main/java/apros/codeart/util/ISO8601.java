@@ -48,9 +48,7 @@ public final class ISO8601 {
 	}
 
 	public static String toString(LocalDateTime value) {
-		// 转换为ZonedDateTime，这里以系统默认时区为例
-		ZonedDateTime zonedDateTime = value.atZone(ZoneId.systemDefault());
-		return zonedDateTime.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+		return value.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 	}
 
 	/**
@@ -81,6 +79,10 @@ public final class ISO8601 {
 	 */
 	public static ZonedDateTime getZonedDateTime(String iso8601String) {
 		return ZonedDateTime.parse(iso8601String);
+	}
+
+	public static String toString(ZonedDateTime value) {
+		return value.format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 	}
 
 	/**

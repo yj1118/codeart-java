@@ -24,7 +24,7 @@ final class ConnectionManager implements AutoCloseable {
 	private ConnectionManager(Policy policy) {
 		_policy = policy;
 		_conn = createConnection();
-		_channelPool = new Pool<Channel>(Channel.class, new PoolConfig(10, 200), (isTempItem) -> {
+		_channelPool = new Pool<Channel>(Channel.class, new PoolConfig(10, 200, 60), (isTempItem) -> {
 			return createChannel();
 		}, (channel) -> {
 			// 归还到池后什么也不用做

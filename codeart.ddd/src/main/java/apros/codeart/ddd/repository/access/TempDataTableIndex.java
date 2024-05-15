@@ -21,9 +21,4 @@ public class TempDataTableIndex {
 		_tableKeys.add(table.id());
 		return true;
 	}
-
-	private void clear() {
-		_tableKeys.clear();
-	}
-
 }

@@ -55,7 +55,7 @@ public abstract class ConsumerCluster<T extends IConsumer> implements IConsumerC
 		_consumers.add(server);
 	}
 
-	private void reduce() {
+	private void decrease() {
 		// 减少一个服务
 		var item = _consumers.poll();
 		if (item != null) {
@@ -151,7 +151,7 @@ public abstract class ConsumerCluster<T extends IConsumer> implements IConsumerC
 
 		if (processedCount == 0) {
 			// 没有消息可以处理，直接减少服务
-			this.reduce();
+			this.decrease();
 			return;
 		}
 
@@ -164,7 +164,7 @@ public abstract class ConsumerCluster<T extends IConsumer> implements IConsumerC
 
 		// 如果减少一个服务，依然可以在间隔时间内处理当前数量的消息，那么就可以减少
 		if ((serverCount - 1) * oneServerThroughput >= processedCount)
-			this.reduce();
+			this.decrease();
 
 	}
 

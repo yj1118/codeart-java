@@ -29,7 +29,6 @@ final class DataTableCommon {
 
 		var index = new TempDataTableIndex();
 		fillQuoteMiddlesByMaster(target, root, tables, index);
-
 		return tables;
 	});
 

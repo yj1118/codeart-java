@@ -22,7 +22,7 @@ public class RPCClient {
 
 //	 #region 获取客户端实例
 
-	private static Pool<IClient> _pool = new Pool<IClient>(IClient.class, new PoolConfig(10, 500), (isTempItem) -> {
+	private static Pool<IClient> _pool = new Pool<IClient>(IClient.class, new PoolConfig(10, 500, 60), (isTempItem) -> {
 		return RPCClientFactory.get().create(ClientConfig.Instance);
 	}, (client) -> {
 		client.clear();

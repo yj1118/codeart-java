@@ -15,11 +15,15 @@ final class ConstructContext {
 		return getCurrent().get(objectType, id, id);
 	}
 
-	/// <summary>
-	/// 从构造上下文中获取对象
-	/// </summary>
-	/// <param name="id"></param>
-	/// <returns></returns>
+	/**
+	 * 
+	 * 从构造上下文中获取对象
+	 * 
+	 * @param objectType
+	 * @param rootId
+	 * @param id
+	 * @return
+	 */
 	public static Object get(Class<?> objectType, Object rootId, Object id) {
 		return getCurrent().get(objectType, rootId, id);
 	}

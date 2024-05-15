@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import com.google.common.collect.Iterables;
 
-import apros.codeart.util.ISO8601;
 import apros.codeart.util.StringUtil;
 
 class CommonTest {
@@ -178,8 +177,7 @@ class CommonTest {
 			assertEquals(30, time.getSecond());
 
 			// 本地时间在传输时，会追加时区信息
-			var offset = ISO8601.getSystemZoneOffset();
-			assertEquals(String.format("{\"id\":1,\"time\":\"2024-03-06T15:45:30%s\"}", offset), dto.getCode());
+			assertEquals("{\"id\":1,\"time\":\"2024-03-06T15:45:30\"}", dto.getCode());
 		}
 
 	}

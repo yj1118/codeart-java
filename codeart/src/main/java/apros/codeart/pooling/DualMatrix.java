@@ -5,6 +5,8 @@ import static apros.codeart.i18n.Language.strings;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
+import apros.codeart.TestSupport;
+
 /**
  * 双矩阵
  */
@@ -14,7 +16,22 @@ class DualMatrix {
 	private final AtomicReferenceArray<AtomicDualVectorArray> _dualVectors = new AtomicReferenceArray<>(
 			new AtomicDualVectorArray[2]);
 
+	@TestSupport
+	AtomicDualVectorArray getA() {
+		return _dualVectors.get(0);
+	}
+
+	@TestSupport
+	AtomicDualVectorArray getB() {
+		return _dualVectors.get(1);
+	}
+
 	private AtomicInteger _dualIndex = new AtomicInteger(0);
+
+	@TestSupport
+	int dualIndex() {
+		return _dualIndex.getAcquire();
+	}
 
 	private final int _initialVectorCapacity;
 
@@ -41,23 +58,25 @@ class DualMatrix {
 	 */
 	private int _maxSize;
 
-	public DualMatrix(Pool<?> pool, int initialSegmentCapacity, int maxSegmentCapacity, int initialSegmentCount,
-			int maxSegmentCount) {
+	public DualMatrix(Pool<?> pool, int initialVectorCapacity, int maxVectorCapacity, int initialVectorCount,
+			int maxVectorCount) {
 		_pool = pool;
-		_initialVectorCapacity = initialSegmentCapacity;
-		_maxVectorCapacity = maxSegmentCapacity;
-		_initialVectorCount = initialSegmentCount;
-		_maxVectorCount = maxSegmentCount;
+		_initialVectorCapacity = initialVectorCapacity;
+		_vectorCapacity = new AtomicInteger(initialVectorCapacity);
+
+		_maxVectorCapacity = maxVectorCapacity;
+		_initialVectorCount = initialVectorCount;
+		_maxVectorCount = maxVectorCount;
 		_maxSize = _maxVectorCount > 0 ? _maxVectorCapacity * _maxVectorCount : 0;
 		_vectorCount = new AtomicInteger(_initialVectorCount);
 
-		initSegments();
+		initVectors();
 	}
 
 	/**
 	 * 构造时就创建分段，避免按需加载导致的并发控制，会增加额外的性能损耗
 	 */
-	private void initSegments() {
+	private void initVectors() {
 		var segments = new AtomicDualVectorArray(_initialVectorCount);
 		for (var i = 0; i < segments.length(); i++) {
 			segments.setRelease(i, new DualVector(_pool, _initialVectorCapacity, _maxVectorCapacity));
@@ -76,8 +95,12 @@ class DualMatrix {
 		return this.vectorCapacity() * this.vectorCount();
 	}
 
-	AtomicDualVectorArray segments() {
+	private AtomicDualVectorArray segments() {
 		return _dualVectors.getAcquire(_dualIndex.getAcquire());
+	}
+
+	public DualVector getVector(int index) {
+		return this.segments().getAcquire(index);
 	}
 
 	/**
@@ -102,7 +125,7 @@ class DualMatrix {
 
 	private final Object _syncObject = new Object();
 
-	boolean tryGrow() {
+	boolean tryIncrease() {
 		// 如果借出项总数大于当前所有缓冲项的数量，那么扩容
 		if (_maxSize > 0 && this.capacity() >= _maxSize) // 已达到最大限制，不扩容
 			return false;
@@ -115,7 +138,7 @@ class DualMatrix {
 					return false;
 
 				if (_pool.borrowedCount() > this.capacity()) {
-					this.grow();
+					this.increase();
 					return true;
 				}
 			}
@@ -123,7 +146,7 @@ class DualMatrix {
 		return false;
 	}
 
-	boolean tryVectorGrow() {
+	boolean tryVectorIncrease() {
 		if (_vectorCapacity.getAcquire() >= _maxVectorCapacity)
 			return false;
 
@@ -146,10 +169,10 @@ class DualMatrix {
 	/**
 	 * 扩容
 	 */
-	void grow() {
+	void increase() {
 
 		// 尝试矢量池扩容
-		if (this.tryVectorGrow())
+		if (this.tryVectorIncrease())
 			return;
 
 		// 如果矢量池的容量已达到上限，那么纵向扩容
@@ -186,7 +209,7 @@ class DualMatrix {
 		_dualVectors.setRelease(oldDualIndex, null);
 	}
 
-	boolean tryShrink() {
+	boolean tryDecrease() {
 
 		// 当前矢量池的容量就是初始容量，不用减容
 		if (this.vectorCapacity() == _initialVectorCapacity)
@@ -201,7 +224,7 @@ class DualMatrix {
 					return false;
 
 				if (_pool.borrowedCount() < (this.capacity() / 1.5)) {
-					this.shrink();
+					this.decrease();
 					return true;
 				}
 			}
@@ -212,18 +235,18 @@ class DualMatrix {
 	/**
 	 * 减容
 	 */
-	void shrink() {
+	void decrease() {
 
 		// 优先尝试缩减矩阵池
-		if (this.tryShrinkMatrix())
+		if (this.tryDecreaseMatrix())
 			return;
 
 		// 尝试减容向量池
-		tryShrinkVector();
+		tryDecreaseVector();
 
 	}
 
-	private boolean tryShrinkMatrix() {
+	private boolean tryDecreaseMatrix() {
 
 		// 如果矩阵容量已经达到最小值，那么不能减容
 		if (this.vectorCount() == _initialVectorCount)
@@ -260,7 +283,7 @@ class DualMatrix {
 		return true;
 	}
 
-	boolean tryShrinkVector() {
+	boolean tryDecreaseVector() {
 
 		if (_vectorCapacity.getAcquire() == _initialVectorCapacity)
 			return false;
@@ -269,7 +292,7 @@ class DualMatrix {
 
 		for (var i = 0; i < segments.length(); i++) {
 			var seg = segments.getAcquire(i);
-			if (!seg.tryReduce()) {
+			if (!seg.tryDecrease()) {
 				// 所有的分段是统一调整大小的，所以不会有这种情况
 				throw new IllegalStateException(strings("codeart", "UnknownException"));
 			}

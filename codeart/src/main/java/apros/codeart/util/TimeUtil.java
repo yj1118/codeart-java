@@ -53,4 +53,6 @@ public final class TimeUtil {
 		DateTimeFormatter formatter = _getDateTimeFormatter.apply(pattern);
 		return formatter.format(value);
 	}
+
+	public static final ZonedDateTime MinZonedDateTime = ZonedDateTime.of(LocalDateTime.MIN, ZoneId.of("UTC"));
 }
