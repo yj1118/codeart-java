@@ -214,16 +214,16 @@ public class Pool<T> implements AutoCloseable {
 	int vectorCount, /**
 						 * 当前有效的矢量池的下标
 						 */
-	int pointer, /**
-					 * 使用的是哪个矢量矩阵，0是A，1是B
-					 */
-	int dualIndex, VectorLayout[] vectorsA, VectorLayout[] vectorsB) {
+	int vectorPointer, /**
+						 * 使用的是哪个矩阵池(也称为矢量池集合)，0是A，1是B
+						 */
+	int matrixDualIndex, VectorLayout[] matrixA, VectorLayout[] matrixB) {
 
 	}
 
 	@TestSupport
 	public static record VectorLayout(/**
-										 * 池里存放的对象数量
+										 * 矢量池里存放的对象数量
 										 */
 	int capacity, /**
 					 * 已借出的项的数量
@@ -232,7 +232,7 @@ public class Pool<T> implements AutoCloseable {
 						 * 当前指向的对象（该对象已借出，下次借出的是pointer+1）所在的下标
 						 */
 	int pointer, /**
-					 * 有效的池下标
+					 * 有效的存储下标,每个矢量池有两个存储数组，0为A，1为B
 					 */
 	int dualIndex, StoreLayout storeA, StoreLayout storeB) {
 
@@ -240,7 +240,7 @@ public class Pool<T> implements AutoCloseable {
 
 	@TestSupport
 	public static record StoreLayout(/**
-										 * 最终的存储数组存放的对象数量
+										 * 存储数组存放的对象数量
 										 */
 	int capacity, /**
 					 * 已借出的项的数量
@@ -254,17 +254,17 @@ public class Pool<T> implements AutoCloseable {
 
 		int capacity = _matrix.capacity();
 		int vectorCount = _matrix.vectorCount();
-		int pointer = _pointer.getAcquire();
+		int vectorPointer = _pointer.getAcquire();
 		int dualIndex = _matrix.dualIndex();
 
-		VectorLayout[] vectorsA = getVectorLayout(_matrix.getA());
-		VectorLayout[] vectorsB = getVectorLayout(_matrix.getB());
+		VectorLayout[] matrixA = getMatrixLayout(_matrix.getA());
+		VectorLayout[] matrixB = getMatrixLayout(_matrix.getB());
 
-		return new Layout(capacity, vectorCount, pointer, dualIndex, vectorsA, vectorsB);
+		return new Layout(capacity, vectorCount, vectorPointer, dualIndex, matrixA, matrixB);
 	}
 
 	@TestSupport
-	private VectorLayout[] getVectorLayout(AtomicDualVectorArray arr) {
+	private VectorLayout[] getMatrixLayout(AtomicDualVectorArray arr) {
 		if (arr == null)
 			return null;
 
@@ -297,6 +297,11 @@ public class Pool<T> implements AutoCloseable {
 		var capacity = store.length();
 
 		var borrowedCount = 0;
+
+		for (var i = 0; i < store.length(); i++) {
+			if (store.getAcquire(i).isBorrowed())
+				borrowedCount++;
+		}
 
 		return new StoreLayout(capacity, borrowedCount);
 
