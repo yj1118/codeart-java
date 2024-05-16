@@ -205,6 +205,9 @@ class DualMatrix {
 		// b.新的段落数量
 		_vectorCount.setRelease(newCount);
 
+		// c.新的指向，从老数据长度为起点继续提供缓存对象
+		_pool.setPointer(oldCount - 1); // -1后，下次计算就可以从+1后的位置开始借出
+
 		// 释放老片段组
 		_dualVectors.setRelease(oldDualIndex, null);
 	}

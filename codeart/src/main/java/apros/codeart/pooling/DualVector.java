@@ -167,7 +167,7 @@ final class DualVector implements AutoCloseable {
 		var dest = new AtomicResidentItemArray(newCount); // 双片段组，一共也就2个
 		_dualContainers.setRelease(((oldDualIndex + 1) % 2), dest);
 
-		AtomicResidentItemArray.copy(src, dest, dest.length());
+		AtomicResidentItemArray.copy(src, dest, src.length());
 
 		for (var i = src.length(); i < newCount; i++) {
 			// 补充增容的数据
@@ -182,6 +182,10 @@ final class DualVector implements AutoCloseable {
 
 		// b.新的容量
 		_capacity.setRelease(newCount);
+
+		// c.新的指向，从老数据长度为起点继续提供缓存对象
+		// 由于后续调用了_pointer.updateAndGet，所以得用set方法确保可见性
+		_pointer.set(oldCount - 1); // -1后，下次计算就可以从+1后的位置开始借出
 
 		// 释放老的对象容器
 		_dualContainers.setRelease(oldDualIndex, null);

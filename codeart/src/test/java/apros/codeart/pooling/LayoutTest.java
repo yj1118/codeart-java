@@ -12,7 +12,7 @@ class LayoutTest {
 		if (_pool != null)
 			_pool.dispose();
 
-		_pool = new Pool<Object>(Object.class, new PoolConfig(4, 200, 60), (isTempItem) -> {
+		_pool = new Pool<Object>(Object.class, new PoolConfig(4, 8, 60), (isTempItem) -> {
 			return new Object();
 		});
 
@@ -193,10 +193,6 @@ class LayoutTest {
 				return _capacity;
 			}
 
-			public void setCapacity(int value) {
-				_capacity = value;
-			}
-
 			private int _dualIndex;
 
 			/**
@@ -209,8 +205,10 @@ class LayoutTest {
 				return _dualIndex;
 			}
 
-			public void setDualIndex(int value) {
-				_dualIndex = value;
+			public void inc(int capacity) {
+				_dualIndex = (_dualIndex + 1) % 2;
+				_storePointer = _capacity - 1; // 指向老容量的最大值-1，即：扩容后，下次取数据会+1,然后就会从增加的容量的第0号位开始借出对象
+				_capacity = capacity;
 			}
 
 			private int _borrowedCount;
@@ -312,7 +310,6 @@ class LayoutTest {
 		// 已借出的项
 		Assertions.assertEquals(info.borrowedCount(), layout.borrowedCount());
 
-		//
 		Assertions.assertEquals(info.storePointer(), layout.pointer());
 
 		if (info.a_enable()) {
@@ -343,6 +340,27 @@ class LayoutTest {
 
 		public LayoutWriter(ExpectedLayout data) {
 			_data = data;
+		}
+
+		/**
+		 * 
+		 * 横向扩容（向量扩容）
+		 * 
+		 * @param vectorCapacity 扩容后每个向量池的容量
+		 */
+		public void vectorInc(int vectorCapacity) {
+			int totalCapacity = 0;
+			for (var vector : _data.matrixLayout().vectors()) {
+				vector.inc(vectorCapacity);
+				totalCapacity += vectorCapacity;
+			}
+			_data.setTotalCapacity(totalCapacity);
+
+			// 每次扩容，必然是偏移段指针后，发现取不出数据，再扩容，
+			// 所以这里也要同步模拟这个效果
+			var vectorPointer = _data.vectorPointer();
+			vectorPointer = (vectorPointer + 1) % _data.vectorCount();
+			_data.setVectorPointer(vectorPointer);
 		}
 
 		public LayoutWriter matrixA() {
@@ -400,20 +418,23 @@ class LayoutTest {
 			 * @param matrixDualIndex 借出项后，数值的变化
 			 * @param vectorDualIndex 借出项后，数值的变化
 			 */
-			public void borrowAfter(int vectorPointer, int storePointer, int matrixDualIndex, int vectorDualIndex) {
+			public void borrowAfter(int vectorPointer, int storePointer) {
 				_data.setBorrowedCount(_data.borrowedCount() + 1);
 				_matrixData.setVectorPointer(vectorPointer);
 				_data.setStorePointer(storePointer);
-				_matrixData.setMatrixDualIndex(matrixDualIndex);
-				_data.setDualIndex(vectorDualIndex);
 			}
 
-			public void backAfter(int vectorPointer, int storePointer, int matrixDualIndex, int vectorDualIndex) {
+			/**
+			 * 借出了一个临时项
+			 */
+			public void borrowTempAfter(IPoolItem item) {
+				Assertions.assertTrue(Pool.isTemp(item));
+			}
+
+			public void backAfter(int vectorPointer, int storePointer) {
 				_data.setBorrowedCount(_data.borrowedCount() - 1);
 				_matrixData.setVectorPointer(vectorPointer);
 				_data.setStorePointer(storePointer);
-				_matrixData.setMatrixDualIndex(matrixDualIndex);
-				_data.setDualIndex(vectorDualIndex);
 			}
 
 		}
@@ -438,14 +459,14 @@ class LayoutTest {
 		// 借出一个
 		var item = _pool.borrow();
 
-		writer.matrixA().vector(0).storeA().borrowAfter(0, 0, 0, 0);
+		writer.matrixA().vector(0).storeA().borrowAfter(0, 0);
 
 		assertLayout(expected, _pool.getLayout());
 
 		item.back();
 
 		// 归还后，不会影响布局
-		writer.matrixA().vector(0).storeA().backAfter(0, 0, 0, 0);
+		writer.matrixA().vector(0).storeA().backAfter(0, 0);
 
 		assertLayout(expected, _pool.getLayout());
 	}
@@ -462,12 +483,12 @@ class LayoutTest {
 		var item0 = _pool.borrow();
 
 		// 先从第0个向量池取第0个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(0, 0, 0, 0);
+		writer.matrixA().vector(0).storeA().borrowAfter(0, 0);
 
 		var item1 = _pool.borrow();
 
 		// 再从第1个向量池取第0个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(1, 0, 0, 0);
+		writer.matrixA().vector(1).storeA().borrowAfter(1, 0);
 
 		var layout = _pool.getLayout();
 		assertLayout(expected, layout);
@@ -482,17 +503,17 @@ class LayoutTest {
 		var item0 = _pool.borrow();
 
 		// 先从第0个向量池取第0个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(0, 0, 0, 0);
+		writer.matrixA().vector(0).storeA().borrowAfter(0, 0);
 
 		var item1 = _pool.borrow();
 
 		// 再从第1个向量池取第0个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(1, 0, 0, 0);
+		writer.matrixA().vector(1).storeA().borrowAfter(1, 0);
 
 		var item2 = _pool.borrow();
 
 		// 再从第0个向量池取第1个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(0, 1, 0, 0);
+		writer.matrixA().vector(0).storeA().borrowAfter(0, 1);
 
 		var layout = _pool.getLayout();
 		assertLayout(expected, layout);
@@ -505,49 +526,111 @@ class LayoutTest {
 	void borrowedJustFull() {
 		var expected = resetPool();
 		var writer = new LayoutWriter(expected);
+		borrowed8(writer);
 
+		Assertions.assertEquals(expected.borrowedCount(), 8);
+
+		var layout = _pool.getLayout();
+		assertLayout(expected, layout);
+	}
+
+	private void borrowed8(LayoutWriter writer) {
 		// 借8个
 		var item0 = _pool.borrow();
 
 		// 先从第0个向量池取第0个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(0, 0, 0, 0);
+		writer.matrixA().vector(0).storeA().borrowAfter(0, 0);
 
 		var item1 = _pool.borrow();
 
 		// 再从第1个向量池取第0个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(1, 0, 0, 0);
+		writer.matrixA().vector(1).storeA().borrowAfter(1, 0);
 
 		var item2 = _pool.borrow();
 
 		// 再从第0个向量池取第1个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(0, 1, 0, 0);
+		writer.matrixA().vector(0).storeA().borrowAfter(0, 1);
 
 		var item3 = _pool.borrow();
 
 		// 再从第1个向量池取第1个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(1, 1, 0, 0);
+		writer.matrixA().vector(1).storeA().borrowAfter(1, 1);
 
 		var item4 = _pool.borrow();
 
 		// 再从第0个向量池取第2个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(0, 2, 0, 0);
+		writer.matrixA().vector(0).storeA().borrowAfter(0, 2);
 
 		var item5 = _pool.borrow();
 
 		// 再从第1个向量池取第2个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(1, 2, 0, 0);
+		writer.matrixA().vector(1).storeA().borrowAfter(1, 2);
 
 		var item6 = _pool.borrow();
 
 		// 再从第0个向量池取第3个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(0, 3, 0, 0);
+		writer.matrixA().vector(0).storeA().borrowAfter(0, 3);
 
 		var item7 = _pool.borrow();
 
 		// 再从第1个向量池取第3个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(1, 3, 0, 0);
+		writer.matrixA().vector(1).storeA().borrowAfter(1, 3);
 
-		Assertions.assertEquals(expected.borrowedCount(), 8);
+	}
+
+	/**
+	 * 借超出1个
+	 */
+	@Test
+	void borrowedMoreThan1() {
+		var expected = resetPool();
+		var writer = new LayoutWriter(expected);
+		borrowed8(writer);
+
+		var item0 = _pool.borrow();
+
+		writer.vectorInc(6);
+
+		// 多借出1个后，就扩容了，导致切换到storeB了
+		writer.matrixA().vector(0).storeB().borrowTempAfter(item0);
+
+		// 临时项不算在借出的项的数量里，严格上讲，它不属于池的成员
+		Assertions.assertEquals(8, expected.borrowedCount());
+		// 由于在借的时候，指针会++，所以又回到0了，然后再扩容
+		Assertions.assertEquals(0, expected.vectorPointer());
+
+		// 再借出超出1个的时候，实际上这个1个是临时项，池这时候被扩容了，
+		// 下次再借的时候，取的就是新池的第0个数据
+
+		var layout = _pool.getLayout();
+		assertLayout(expected, layout);
+	}
+
+	/**
+	 * 借超出2个
+	 */
+	@Test
+	void borrowedMoreThan2() {
+		var expected = resetPool();
+		var writer = new LayoutWriter(expected);
+		borrowed8(writer);
+
+		var item0 = _pool.borrow();
+
+		writer.vectorInc(6);
+
+		var item1 = _pool.borrow();
+
+		// 4是新扩容的池里，第0个数据的下标
+		writer.matrixA().vector(1).storeB().borrowAfter(1, 4);
+
+		Assertions.assertEquals(9, expected.borrowedCount());
+		// 由于在借的时候，指针会++，所以又回到0了，然后再扩容
+		// 再借后，就为1了
+		Assertions.assertEquals(1, expected.vectorPointer());
+
+		// 再借出超出1个的时候，实际上这个1个是临时项，池这时候被扩容了，
+		// 下次再借的时候，取的就是新池的第0个数据
 
 		var layout = _pool.getLayout();
 		assertLayout(expected, layout);

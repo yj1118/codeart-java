@@ -51,6 +51,11 @@ public class Pool<T> implements AutoCloseable {
 		return _pointer.updateAndGet(current -> (current + 1) % _matrix.vectorCount());
 	}
 
+	void setPointer(int value) {
+		// 由于后续调用了_pointer.updateAndGet，所以得用set方法确保可见性
+		_pointer.set(value);
+	}
+
 	private boolean _itemDisposable;
 
 	public boolean itemDisposable() {
@@ -202,6 +207,11 @@ public class Pool<T> implements AutoCloseable {
 	@Override
 	public void close() {
 		this.dispose();
+	}
+
+	@TestSupport
+	public static boolean isTemp(IPoolItem item) {
+		return TypeUtil.is(item, TempItem.class);
 	}
 
 	@TestSupport
