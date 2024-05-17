@@ -115,7 +115,7 @@ public class Pool<T> implements AutoCloseable {
 	 * 
 	 * @return
 	 */
-	private DualVector claimVector() {
+	private Vector claimVector() {
 		var index = next(); // 取出下一个可用的矢量池坐标
 		return _matrix.getVector(index);
 	}
@@ -238,13 +238,7 @@ public class Pool<T> implements AutoCloseable {
 	int capacity, /**
 					 * 已借出的项的数量
 					 */
-	int borrowedCount, /**
-						 * 当前指向的对象（该对象已借出，下次借出的是pointer+1）所在的下标
-						 */
-	int pointer, /**
-					 * 有效的存储下标,每个矢量池有两个存储数组，0为A，1为B
-					 */
-	int dualIndex, StoreLayout storeA, StoreLayout storeB) {
+	int borrowedCount) {
 
 	}
 
@@ -281,17 +275,12 @@ public class Pool<T> implements AutoCloseable {
 		VectorLayout[] layouts = new VectorLayout[arr.length()];
 
 		for (var i = 0; i < arr.length(); i++) {
-			DualVector dv = arr.getAcquire(i);
+			Vector dv = arr.getAcquire(i);
 
 			var capacity = dv.capacity();
 			var borrowed = dv.borrowedCount();
-			var pointer = dv.pointer();
-			var dualIndex = dv.dualIndex();
 
-			var storeA = getStoreLayout(dv.getA());
-			var storeB = getStoreLayout(dv.getB());
-
-			var layout = new VectorLayout(capacity, borrowed, pointer, dualIndex, storeA, storeB);
+			var layout = new VectorLayout(capacity, borrowed);
 			layouts[i] = layout;
 		}
 

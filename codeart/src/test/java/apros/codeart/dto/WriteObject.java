@@ -11,6 +11,7 @@ import com.google.common.collect.Iterables;
 /**
  * 类尽量为无参数的，这样用dto加载最快
  */
+@SuppressWarnings({ "exports" })
 class WriteObject {
 
 	public static class NoArgumentUser {

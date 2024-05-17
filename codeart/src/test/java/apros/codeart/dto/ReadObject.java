@@ -12,6 +12,7 @@ import com.google.common.collect.Iterables;
 
 import apros.codeart.util.ListUtil;
 
+@SuppressWarnings({ "exports" })
 class ReadObject {
 
 	public static class User {

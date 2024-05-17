@@ -131,10 +131,15 @@ public class RabbitBus implements AutoCloseable {
 
 //	#region 发布消息
 
-	/// <summary>
-	/// 将dto消息发布到指定的交换机
-	/// </summary>
-	/// <param name="message"></param>
+	/**
+	 * 
+	 * 将dto消息发布到指定的交换机
+	 * 
+	 * @param exchange
+	 * @param routingKey
+	 * @param data
+	 * @param setProperties
+	 */
 	public void publish(String exchange, String routingKey, TransferData data,
 			Consumer<BasicProperties.Builder> setProperties) {
 

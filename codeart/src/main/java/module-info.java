@@ -4,7 +4,7 @@ module apros.codeart {
 	requires org.reflections;
 	requires org.apache.logging.log4j;
 	requires org.apache.logging.log4j.core;
-	requires com.rabbitmq.client;
+	requires transitive com.rabbitmq.client;
 
 	exports apros.codeart;
 	exports apros.codeart.log;

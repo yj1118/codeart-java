@@ -27,21 +27,21 @@ class AtomicDualVectorArray {
 	 * 
 	 */
 
-	private AtomicReferenceArray<DualVector> _items;
+	private AtomicReferenceArray<Vector> _items;
 
 	public AtomicDualVectorArray(int count) {
-		_items = new AtomicReferenceArray<DualVector>(new DualVector[count]);
+		_items = new AtomicReferenceArray<Vector>(new Vector[count]);
 	}
 
 	public int length() {
 		return _items.length();
 	}
 
-	public void setRelease(int i, DualVector newValue) {
+	public void setRelease(int i, Vector newValue) {
 		_items.setRelease(i, newValue);
 	}
 
-	public DualVector getAcquire(int i) {
+	public Vector getAcquire(int i) {
 		return _items.getAcquire(i);
 	}
 

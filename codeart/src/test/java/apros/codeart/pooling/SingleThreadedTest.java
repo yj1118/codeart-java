@@ -1,0 +1,380 @@
+package apros.codeart.pooling;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+//@ExtendWith(TestRunner.class)
+@SuppressWarnings({ "unused" })
+class SingleThreadedTest {
+
+	private static Pool<Object> _pool;
+
+	public static ExpectedLayout resetPool() {
+		if (_pool != null)
+			_pool.dispose();
+
+		_pool = new Pool<Object>(Object.class, new PoolConfig(4, 8, 60), (isTempItem) -> {
+			return new Object();
+		});
+
+		return initialLayout.copy();
+	}
+
+	// 因为默认会有2个向量池，由于设置的每个矢量池的初始值是4，所以一共有8个
+	// 初始矩阵池的索引为0
+	// 初始指向矢量池的下标为-1，表示还没有使用任何池
+	// 初始矢量池的数量应该是2，这是框架内部设置好的
+	// 有2个矩阵池（矢量池集合），一个是a，另外一个是b
+	// 初始状态用的是第0个矩阵池，也就是a，a有效，b无效，所以为空
+	private static final ExpectedLayout initialLayout = new ExpectedLayout(8, 0, -1, 2,
+			new ExpectedLayout.MatrixLayout(0, new ExpectedLayout.VectorLayout[] {
+					new ExpectedLayout.VectorLayout(4, 0, 0, -1), new ExpectedLayout.VectorLayout(4, 0, 0, -1) }));
+
+	/**
+	 * 验证初始布局
+	 */
+	@Test
+	void initalLayout() {
+		resetPool();
+		var expected = resetPool();
+		ExpectedLayout.assertLayout(expected, _pool.getLayout());
+	}
+
+	@Test
+	void borrowed1() {
+		var expected = resetPool();
+		var writer = new LayoutWriter(expected);
+
+		// 借出一个
+		var item = _pool.borrow();
+
+		writer.matrixA().vector(0).storeA().borrowAfter(0);
+
+		ExpectedLayout.assertLayout(expected, _pool.getLayout());
+
+		item.back();
+
+		// 归还后，不会影响布局
+		writer.matrixA().vector(0).storeA().backAfter(0);
+
+		ExpectedLayout.assertLayout(expected, _pool.getLayout());
+	}
+
+	/**
+	 * 
+	 */
+	@Test
+	void borrowed2() {
+		var expected = resetPool();
+		var writer = new LayoutWriter(expected);
+
+		// 借2个
+		var item0 = _pool.borrow();
+
+		// 先从第0个向量池取第0个数据
+		writer.matrixA().vector(0).storeA().borrowAfter(0);
+
+		var item1 = _pool.borrow();
+
+		// 再从第1个向量池取第0个数据
+		writer.matrixA().vector(1).storeA().borrowAfter(0);
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(expected, layout);
+	}
+
+	@Test
+	void borrowed3() {
+		var expected = resetPool();
+		var writer = new LayoutWriter(expected);
+
+		// 借3个
+		var item0 = _pool.borrow();
+
+		// 先从第0个向量池取第0个数据
+		writer.matrixA().vector(0).storeA().borrowAfter(0);
+
+		var item1 = _pool.borrow();
+
+		// 再从第1个向量池取第0个数据
+		writer.matrixA().vector(1).storeA().borrowAfter(0);
+
+		var item2 = _pool.borrow();
+
+		// 再从第0个向量池取第1个数据
+		writer.matrixA().vector(0).storeA().borrowAfter(1);
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(expected, layout);
+	}
+
+	/**
+	 * 借出刚满池的数量
+	 */
+	@Test
+	void borrowedJustFull() {
+		var expected = resetPool();
+		var writer = new LayoutWriter(expected);
+		borrowed8(writer);
+
+		Assertions.assertEquals(expected.borrowedCount(), 8);
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(expected, layout);
+	}
+
+	private void borrowed8(LayoutWriter writer) {
+		// 借8个
+		var item0 = _pool.borrow();
+
+		// 先从第0个向量池取第0个数据
+		writer.matrixA().vector(0).storeA().borrowAfter(0);
+
+		var item1 = _pool.borrow();
+
+		// 再从第1个向量池取第0个数据
+		writer.matrixA().vector(1).storeA().borrowAfter(0);
+
+		var item2 = _pool.borrow();
+
+		// 再从第0个向量池取第1个数据
+		writer.matrixA().vector(0).storeA().borrowAfter(1);
+
+		var item3 = _pool.borrow();
+
+		// 再从第1个向量池取第1个数据
+		writer.matrixA().vector(1).storeA().borrowAfter(1);
+
+		var item4 = _pool.borrow();
+
+		// 再从第0个向量池取第2个数据
+		writer.matrixA().vector(0).storeA().borrowAfter(2);
+
+		var item5 = _pool.borrow();
+
+		// 再从第1个向量池取第2个数据
+		writer.matrixA().vector(1).storeA().borrowAfter(2);
+
+		var item6 = _pool.borrow();
+
+		// 再从第0个向量池取第3个数据
+		writer.matrixA().vector(0).storeA().borrowAfter(3);
+
+		var item7 = _pool.borrow();
+
+		// 再从第1个向量池取第3个数据
+		writer.matrixA().vector(1).storeA().borrowAfter(3);
+
+	}
+
+	/**
+	 * 借超出1个
+	 */
+	@Test
+	void borrowedMoreThan1() {
+		var expected = resetPool();
+		var writer = new LayoutWriter(expected);
+		borrowed8(writer);
+
+		var item0 = _pool.borrow();
+
+		writer.vectorInc(6);
+
+		// 多借出1个后，就扩容了，导致切换到storeB了
+		writer.matrixA().vector(0).storeB().borrowTempAfter(item0);
+
+		// 临时项不算在借出的项的数量里，严格上讲，它不属于池的成员
+		Assertions.assertEquals(8, expected.borrowedCount());
+		// 由于在借的时候，指针会++，所以又回到0了，然后再扩容
+		Assertions.assertEquals(0, expected.vectorPointer());
+
+		// 再借出超出1个的时候，实际上这个1个是临时项，池这时候被扩容了，
+		// 下次再借的时候，取的就是新池的第0个数据
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(expected, layout);
+	}
+
+	/**
+	 * 借超出2个
+	 */
+
+	@Test
+	void borrowedMoreThan2() {
+		var expected = resetPool();
+		var writer = new LayoutWriter(expected);
+		// 先借8个，这时候就池就满了
+		borrowed8(writer);
+
+		// 再借1个就会扩容
+		var item0 = _pool.borrow();
+
+		// 由于向量池还没有达到设置的最大上限，所以这次扩容是向量池的扩容，而不是矩阵池扩容
+		// 向量池的存储量由4个扩容到6个
+		writer.vectorInc(6);
+
+		// 注意：由于本次借项是超出了，所以实际上借出的是临时项
+		var item1 = _pool.borrow();
+
+		// 4是新扩容的池里，第0个数据的下标
+		// 扩容时会由存储A切换到存储B
+		writer.matrixA().vector(1).storeB().borrowAfter(4);
+
+		Assertions.assertEquals(9, expected.borrowedCount());
+		// 由于在借的时候，指针会++，所以又回到0了，然后再扩容
+		// 再借后，就为1了
+		Assertions.assertEquals(1, expected.vectorPointer());
+
+		// 再借出超出1个的时候，实际上这个1个是临时项，池这时候被扩容了，
+		// 下次再借的时候，取的就是新池的第0个数据
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(expected, layout);
+	}
+
+	/**
+	 * 
+	 * 借9个刚好就是扩容了一次,第9个借出的是临时项，不影响池布局
+	 * 
+	 * @param writer
+	 */
+	private void borrowed9(LayoutWriter writer) {
+		borrowed8(writer);
+		_pool.borrow();
+		writer.vectorInc(6);
+	}
+
+	private void borrowed13(LayoutWriter writer) {
+		borrowed9(writer);
+		_pool.borrow();
+
+		writer.matrixA().vector(1).storeB().borrowAfter(4);
+
+		_pool.borrow();
+
+		writer.matrixA().vector(0).storeB().borrowAfter(4);
+
+		_pool.borrow();
+
+		writer.matrixA().vector(1).storeB().borrowAfter(5);
+
+		_pool.borrow();
+
+		writer.matrixA().vector(0).storeB().borrowAfter(5);
+
+	}
+
+	/**
+	 * 借出刚好满第二次扩容（但是尚未扩容）
+	 */
+	@Test
+	void borrowedJustFullAgain() {
+		var expected = resetPool();
+		var writer = new LayoutWriter(expected);
+
+		borrowed13(writer);
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(expected, layout);
+	}
+
+	/**
+	 * 第二次扩容（向量扩容）
+	 */
+	@Test
+	void borrowedSecondInc() {
+		var expected = resetPool();
+		var writer = new LayoutWriter(expected);
+
+		borrowed13(writer);
+
+		// 第14个是临时项
+		var item0 = _pool.borrow();
+
+		// 本来是6扩容为9的，但是设置了上限8，所以就为8了
+		writer.vectorInc(8);
+
+		// 多借出1个后，就扩容了，导致切换到storeA了
+		// 注意，由于运行一次，向量池下标就被推进了，所以跟上次比起来，由0变为1
+		writer.matrixA().vector(1).storeA().borrowTempAfter(item0);
+
+		// 第15个是扩容后的池的第一个
+		_pool.borrow();
+		writer.matrixA().vector(0).storeA().borrowAfter(6);
+
+		// 第16个
+		_pool.borrow();
+		writer.matrixA().vector(1).storeA().borrowAfter(6);
+
+		// 第17个
+		_pool.borrow();
+		writer.matrixA().vector(0).storeA().borrowAfter(7);
+
+		// 第18个
+		_pool.borrow();
+		writer.matrixA().vector(1).storeA().borrowAfter(7);
+
+		Assertions.assertEquals(16, expected.borrowedCount());
+		Assertions.assertEquals(16, expected.totalCapacity());
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(expected, layout);
+	}
+
+	private void borrowed18(LayoutWriter writer) {
+		borrowed13(writer);
+
+		// 第14个是临时项
+		var item0 = _pool.borrow();
+
+		// 本来是6扩容为9的，但是设置了上限8，所以就为8了
+		writer.vectorInc(8);
+
+		// 多借出1个后，就扩容了，导致切换到storeA了
+		// 注意，由于运行一次，向量池下标就被推进了，所以跟上次比起来，由0变为1
+		writer.matrixA().vector(1).storeA().borrowTempAfter(item0);
+
+		// 第15个是扩容后的池的第一个
+		_pool.borrow();
+		writer.matrixA().vector(0).storeA().borrowAfter(6);
+
+		// 第16个
+		_pool.borrow();
+		writer.matrixA().vector(1).storeA().borrowAfter(6);
+
+		// 第17个
+		_pool.borrow();
+		writer.matrixA().vector(0).storeA().borrowAfter(7);
+
+		// 第18个
+		_pool.borrow();
+		writer.matrixA().vector(1).storeA().borrowAfter(7);
+
+	}
+
+	/**
+	 * 第3次扩容
+	 */
+	@Test
+	void borrowedThreeInc() {
+		var expected = resetPool();
+		var writer = new LayoutWriter(expected);
+
+		borrowed18(writer);
+
+		// 再借一个，就又要扩容了，因为实际借出16个+2个临时项，这时候，向量池的长度达到配置的最大长度
+		// 所以，此时是扩容矩阵池了
+
+		// 第19项，是临时项
+		_pool.borrow();
+
+		// 由于扩容了一次，所以由A->B
+		writer.matrixB().vector(2).storeA().borrowAfter(0);
+
+		Assertions.assertEquals(3, expected.vectorCount());
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(expected, layout);
+	}
+
+}

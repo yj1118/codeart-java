@@ -79,7 +79,7 @@ class DualMatrix {
 	private void initVectors() {
 		var segments = new AtomicDualVectorArray(_initialVectorCount);
 		for (var i = 0; i < segments.length(); i++) {
-			segments.setRelease(i, new DualVector(_pool, _initialVectorCapacity, _maxVectorCapacity));
+			segments.setRelease(i, new Vector(_pool, _initialVectorCapacity, _maxVectorCapacity));
 		}
 
 		_dualVectors.setRelease(0, segments);
@@ -99,7 +99,7 @@ class DualMatrix {
 		return _dualVectors.getAcquire(_dualIndex.getAcquire());
 	}
 
-	public DualVector getVector(int index) {
+	public Vector getVector(int index) {
 		return this.segments().getAcquire(index);
 	}
 
@@ -193,7 +193,7 @@ class DualMatrix {
 
 		for (var i = src.length(); i < newCount; i++) {
 			// 补充增容的数据，注意此处DualVector的初始容量是当前的容量，因为有可能被扩容过
-			dest.setRelease(i, new DualVector(_pool, _vectorCapacity.getAcquire(), _maxVectorCapacity));
+			dest.setRelease(i, new Vector(_pool, _vectorCapacity.getAcquire(), _maxVectorCapacity));
 		}
 
 		// 注意，要先执行a,因为数据已经拷贝到新的分段组了，切换到新的分段组,如果这时候有外界来访问数据，哪怕b没有执行，那么取的数据范围也不会有危险

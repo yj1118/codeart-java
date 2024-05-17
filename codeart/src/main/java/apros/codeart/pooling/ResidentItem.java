@@ -9,30 +9,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 final class ResidentItem implements IPoolItem {
 	private Pool<?> _pool;
-	private DualVector _vector;
+	private Vector _vector;
 	private Object _item;
 	private AtomicBoolean _isBorrowed;
 	private AtomicBoolean _isDisposed;
 
-	private final int _index;
-
-	/**
-	 * 
-	 * 项在池中的矢量位置
-	 * 
-	 * @return
-	 */
-	public int index() {
-		return _index;
-	}
-
-	public ResidentItem(Pool<?> pool, DualVector vector, int index) {
+	public ResidentItem(Pool<?> pool, Vector vector) {
 		_pool = pool;
 		_vector = vector;
 		_item = pool.createItem(false);
 		_isBorrowed = new AtomicBoolean(false);
 		_isDisposed = new AtomicBoolean(false);
-		_index = index;
 	}
 
 	public boolean isBorrowed() {
@@ -75,9 +62,7 @@ final class ResidentItem implements IPoolItem {
 	@Override
 	public void back() {
 
-		// 如果项具备销毁的能力，并且版本号不同，那么就销毁，不再使用
-		boolean itemDisposable = _pool.itemDisposable();
-		if (itemDisposable && (_pool.isDisposed())) {
+		if (_pool.isDisposed()) {
 			this.dispose(); // 直接销毁
 		} else {
 			if (!_isBorrowed.getAcquire())
@@ -86,11 +71,14 @@ final class ResidentItem implements IPoolItem {
 			_isBorrowed.setRelease(false); // 再标记已归还了
 			_pool.borrowedDecrement(); // 借出数-1
 
-			if (itemDisposable && (_vector.isDisposed() || this.index() >= _pool.vectorCapacity())) {
-				// 项所在的位置比矢量池的容量还大，那证明池已经被缩减容量了，需要销毁该项
+			// 矢量池被销毁
+			if (_vector.isDisposed()) {
+				// 销毁
 				this.dispose();
+			} else {
+				// 否则归还到池中
+				_vector.push(this);
 			}
-
 		}
 
 	}
