@@ -54,21 +54,22 @@ class LayoutWriter {
 
 		// 建立新数据
 		var vectorCapacity = oldVectors[0].capacity();
-		var vectorDualIndex = oldVectors[0].dualIndex();
 		for (var i = oldVectors.length; i < vectorCount; i++) {
-			newVectors[i] = new VectorLayout(vectorCapacity, vectorDualIndex, 0, -1);
+			newVectors[i] = new VectorLayout(vectorCapacity, 0, 0, vectorCapacity);
 		}
 
 		_data.matrixLayout().setVectors(newVectors);
 
 		int totalCapacity = vectorCapacity * vectorCount;
 		_data.setTotalCapacity(totalCapacity);
+		_data.setVectorCount(vectorCount);
 
-		// 每次矩阵池扩容，必然是偏移存储指针后，发现取不出数据，再扩容，
-		// 所以这里也要同步模拟这个效果
-		var vectorPointer = _data.vectorPointer();
-		vectorPointer = (vectorPointer + 1) % _data.vectorCount();
+		// 每次矩阵池扩容，会将指针偏移到扩容前的最后一项，这样就可以在下次借项时，用扩容后的第一个新项
+		var vectorPointer = oldVectors.length - 1;
 		_data.setVectorPointer(vectorPointer);
+
+		_data.setMatrixDualIndex((_data.matrixDualIndex() + 1) % 2);
+
 	}
 
 	public LayoutWriter matrixA() {
@@ -105,20 +106,6 @@ class LayoutWriter {
 			_vectorIndex = vectorIndex;
 		}
 
-		public VectorWriter storeA() {
-			if (_data.a_enable())
-				return this;
-
-			throw new IllegalStateException("storeA未启用");
-		}
-
-		public VectorWriter storeB() {
-			if (_data.b_enable())
-				return this;
-
-			throw new IllegalStateException("storeB未启用");
-		}
-
 		/**
 		 * 
 		 * 
@@ -129,10 +116,10 @@ class LayoutWriter {
 		 * @param matrixDualIndex 借出项后，数值的变化
 		 * @param vectorDualIndex 借出项后，数值的变化
 		 */
-		public void borrowAfter(int storePointer) {
+		public void borrowAfter() {
 			_data.setBorrowedCount(_data.borrowedCount() + 1);
+			_data.setWaitBorrowCount(_data.waitBorrowCount() - 1);
 			_matrixData.setVectorPointer(_vectorIndex);
-			_data.setStorePointer(storePointer);
 		}
 
 		/**
@@ -142,10 +129,10 @@ class LayoutWriter {
 			Assertions.assertTrue(Pool.isTemp(item));
 		}
 
-		public void backAfter(int storePointer) {
+		public void backAfter() {
 			_data.setBorrowedCount(_data.borrowedCount() - 1);
+			_data.setWaitBorrowCount(_data.waitBorrowCount() + 1);
 			_matrixData.setVectorPointer(_vectorIndex);
-			_data.setStorePointer(storePointer);
 		}
 
 	}

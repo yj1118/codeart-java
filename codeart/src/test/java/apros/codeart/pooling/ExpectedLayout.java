@@ -151,14 +151,6 @@ class ExpectedLayout {
 	 */
 	public static class VectorLayout {
 
-		public boolean a_enable() {
-			return _dualIndex == 0;
-		}
-
-		public boolean b_enable() {
-			return _dualIndex == 1;
-		}
-
 		private int _capacity;
 
 		/**
@@ -169,24 +161,6 @@ class ExpectedLayout {
 		 */
 		public int capacity() {
 			return _capacity;
-		}
-
-		private int _dualIndex;
-
-		/**
-		 * 
-		 * 向量池内使用的双存储数组，当前用的是哪个索引的存储数组
-		 * 
-		 * @return
-		 */
-		public int dualIndex() {
-			return _dualIndex;
-		}
-
-		public void inc(int capacity) {
-			_dualIndex = (_dualIndex + 1) % 2;
-			_storePointer = _capacity - 1; // 指向老容量的最大值-1，即：扩容后，下次取数据会+1,然后就会从增加的容量的第0号位开始借出对象
-			_capacity = capacity;
 		}
 
 		private int _borrowedCount;
@@ -211,7 +185,7 @@ class ExpectedLayout {
 			_borrowedCount = value;
 		}
 
-		private int _storePointer;
+		private int _waitDisposeCount;
 
 		/**
 		 * 
@@ -219,23 +193,39 @@ class ExpectedLayout {
 		 * 
 		 * @return
 		 */
-		public int storePointer() {
-			return _storePointer;
+		public int waitDisposeCount() {
+			return _waitDisposeCount;
 		}
 
-		public void setStorePointer(int value) {
-			_storePointer = value;
+		public void setWaitDisposeCount(int waitDisposeCount) {
+			_waitDisposeCount = waitDisposeCount;
 		}
 
-		public VectorLayout(int capacity, int dualIndex, int borrowedCount, int storePointer) {
+		private int _waitBorrowCount;
+
+		public int waitBorrowCount() {
+			return _waitBorrowCount;
+		}
+
+		public void setWaitBorrowCount(int waitBorrowCount) {
+			_waitBorrowCount = waitBorrowCount;
+		}
+
+		public void inc(int capacity) {
+			var oldCapacity = _capacity;
 			_capacity = capacity;
-			_dualIndex = dualIndex;
+			_waitBorrowCount += (_capacity - oldCapacity);
+		}
+
+		public VectorLayout(int capacity, int borrowedCount, int waitDisposeCount, int waitBorrowCount) {
+			_capacity = capacity;
 			_borrowedCount = borrowedCount;
-			_storePointer = storePointer;
+			_waitDisposeCount = waitDisposeCount;
+			_waitBorrowCount = waitBorrowCount;
 		}
 
 		public VectorLayout copy() {
-			return new VectorLayout(_capacity, _dualIndex, _borrowedCount, _storePointer);
+			return new VectorLayout(_capacity, _borrowedCount, _waitDisposeCount, _waitBorrowCount);
 		}
 
 	}
@@ -280,34 +270,12 @@ class ExpectedLayout {
 		// 矢量池的容量
 		Assertions.assertEquals(info.capacity(), layout.capacity());
 
-		// 有效存储数组的索引
-		Assertions.assertEquals(info.dualIndex(), layout.dualIndex());
-
 		// 已借出的项
 		Assertions.assertEquals(info.borrowedCount(), layout.borrowedCount());
 
-		Assertions.assertEquals(info.storePointer(), layout.pointer());
+		Assertions.assertEquals(info.waitDisposeCount(), layout.waitDisposeCount());
 
-		if (info.a_enable()) {
-			Assertions.assertNotNull(layout.storeA());
-		} else {
-			Assertions.assertNull(layout.storeA());
-		}
-
-		if (info.b_enable()) {
-			Assertions.assertNotNull(layout.storeB());
-		} else {
-			Assertions.assertNull(layout.storeB());
-		}
-
-		var store = layout.storeA() != null ? layout.storeA() : layout.storeB();
-
-		// 向量池的容量就是存储数组的容量
-		Assertions.assertEquals(info.capacity(), store.capacity());
-
-		// 向量池的借出去的项数量就是存储数组的借出数量
-		Assertions.assertEquals(info.borrowedCount(), store.borrowedCount());
-
+		Assertions.assertEquals(info.waitBorrowCount(), layout.waitBorrowCount());
 	}
 
 }

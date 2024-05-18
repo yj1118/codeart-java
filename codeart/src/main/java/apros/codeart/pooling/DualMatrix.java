@@ -13,17 +13,17 @@ import apros.codeart.TestSupport;
 class DualMatrix {
 
 	// 双片段组模式，在扩容的时候可以反复切换
-	private final AtomicReferenceArray<AtomicDualVectorArray> _dualVectors = new AtomicReferenceArray<>(
-			new AtomicDualVectorArray[2]);
+	private final AtomicReferenceArray<AtomicVectorArray> _vectors = new AtomicReferenceArray<>(
+			new AtomicVectorArray[2]);
 
 	@TestSupport
-	AtomicDualVectorArray getA() {
-		return _dualVectors.get(0);
+	AtomicVectorArray getA() {
+		return _vectors.get(0);
 	}
 
 	@TestSupport
-	AtomicDualVectorArray getB() {
-		return _dualVectors.get(1);
+	AtomicVectorArray getB() {
+		return _vectors.get(1);
 	}
 
 	private AtomicInteger _dualIndex = new AtomicInteger(0);
@@ -77,12 +77,12 @@ class DualMatrix {
 	 * 构造时就创建分段，避免按需加载导致的并发控制，会增加额外的性能损耗
 	 */
 	private void initVectors() {
-		var segments = new AtomicDualVectorArray(_initialVectorCount);
+		var segments = new AtomicVectorArray(_initialVectorCount);
 		for (var i = 0; i < segments.length(); i++) {
 			segments.setRelease(i, new Vector(_pool, _initialVectorCapacity, _maxVectorCapacity));
 		}
 
-		_dualVectors.setRelease(0, segments);
+		_vectors.setRelease(0, segments);
 	}
 
 	/**
@@ -95,8 +95,8 @@ class DualMatrix {
 		return this.vectorCapacity() * this.vectorCount();
 	}
 
-	private AtomicDualVectorArray segments() {
-		return _dualVectors.getAcquire(_dualIndex.getAcquire());
+	private AtomicVectorArray segments() {
+		return _vectors.getAcquire(_dualIndex.getAcquire());
 	}
 
 	public Vector getVector(int index) {
@@ -126,10 +126,11 @@ class DualMatrix {
 	private final Object _syncObject = new Object();
 
 	boolean tryIncrease() {
-		// 如果借出项总数大于当前所有缓冲项的数量，那么扩容
+
 		if (_maxSize > 0 && this.capacity() >= _maxSize) // 已达到最大限制，不扩容
 			return false;
 
+		// 如果借出项总数大于当前所有缓冲项的数量，那么扩容
 		if (_pool.borrowedCount() > this.capacity()) {
 
 			synchronized (_syncObject) {
@@ -185,11 +186,11 @@ class DualMatrix {
 		int oldDualIndex = _dualIndex.getAcquire();
 
 		// 向闲置的矩阵池里写入扩容的数据
-		var dest = new AtomicDualVectorArray(newCount);
+		var dest = new AtomicVectorArray(newCount);
 		// _dualVectors 里有2个数据
-		_dualVectors.setRelease(((oldDualIndex + 1) % 2), dest);
+		_vectors.setRelease(((oldDualIndex + 1) % 2), dest);
 
-		AtomicDualVectorArray.copy(src, dest, src.length());
+		AtomicVectorArray.copy(src, dest, src.length());
 
 		for (var i = src.length(); i < newCount; i++) {
 			// 补充增容的数据，注意此处DualVector的初始容量是当前的容量，因为有可能被扩容过
@@ -205,11 +206,11 @@ class DualMatrix {
 		// b.新的段落数量
 		_vectorCount.setRelease(newCount);
 
-		// c.新的指向，从老数据长度为起点继续提供缓存对象
+		// c.新的指向，以老数据长度为起点继续提供缓存对象
 		_pool.setPointer(oldCount - 1); // -1后，下次计算就可以从+1后的位置开始借出
 
 		// 释放老片段组
-		_dualVectors.setRelease(oldDualIndex, null);
+		_vectors.setRelease(oldDualIndex, null);
 	}
 
 	boolean tryDecrease() {
@@ -260,10 +261,10 @@ class DualMatrix {
 		int newCount = Math.max(_initialVectorCount, (int) ((float) oldCount / 1.5F));
 		int oldDualIndex = _dualIndex.getAcquire();
 
-		var dest = new AtomicDualVectorArray(newCount); // 双片段组，一共也就2个
-		_dualVectors.setRelease(((oldDualIndex + 1) % 2), dest);
+		var dest = new AtomicVectorArray(newCount); // 双片段组，一共也就2个
+		_vectors.setRelease(((oldDualIndex + 1) % 2), dest);
 
-		AtomicDualVectorArray.copy(src, dest, dest.length());
+		AtomicVectorArray.copy(src, dest, dest.length());
 
 		// 注意，要先执行a,因为数据已经拷贝到新的矩阵池了，
 		// 新的矩阵池的count小于老矩阵池，所以得先把数量设置
@@ -281,7 +282,7 @@ class DualMatrix {
 		}
 
 		// 释放老矩阵池
-		_dualVectors.setRelease(oldDualIndex, null);
+		_vectors.setRelease(oldDualIndex, null);
 
 		return true;
 	}
@@ -314,8 +315,8 @@ class DualMatrix {
 			segment.dispose();
 		}
 
-		_dualVectors.setRelease(0, null);
-		_dualVectors.setRelease(1, null);
+		_vectors.setRelease(0, null);
+		_vectors.setRelease(1, null);
 	}
 
 }

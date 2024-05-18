@@ -12,11 +12,6 @@ final class Vector implements AutoCloseable {
 	private final ConcurrentLinkedDeque<ResidentItem> _container = new ConcurrentLinkedDeque<>();
 
 	/**
-	 * 
-	 */
-	private final AtomicInteger _borrowCount = new AtomicInteger(0);
-
-	/**
 	 * 需要抛弃的项
 	 */
 	private final AtomicInteger _waitDisposeCount = new AtomicInteger(0);
@@ -32,7 +27,7 @@ final class Vector implements AutoCloseable {
 			int current = _waitDisposeCount.get();
 			if (current == 0) {
 				_container.addFirst(value);
-				_borrowCount.decrementAndGet();
+//				_borrowCount.decrementAndGet();
 				return;
 			}
 
@@ -48,17 +43,18 @@ final class Vector implements AutoCloseable {
 
 	// 弹栈
 	private ResidentItem pop() {
-		var item = _container.pollFirst();
-		if (item != null) {
-			_borrowCount.incrementAndGet();
-		}
-		return item;
+		return _container.pollFirst();
+//		var item = _container.pollFirst();
+//		if (item != null) {
+//			_borrowCount.incrementAndGet();
+//		}
+//		return item;
 	}
 
 	private Pool<?> _pool;
 
 	/**
-	 * 池的当前容量
+	 * 池的当前容量（注意，是扩容或者减容后设置的容量，由于相会被借出，所以此时实际有多少个数的项是waitBorrowCount）
 	 */
 	private AtomicInteger _capacity;
 
@@ -93,7 +89,12 @@ final class Vector implements AutoCloseable {
 
 	@TestSupport
 	public int borrowedCount() {
-		return _borrowCount.get();
+		return _capacity.get() - this.waitBorrowCount();
+	}
+
+	@TestSupport
+	public int waitBorrowCount() {
+		return _container.size();
 	}
 
 	/**
@@ -103,7 +104,12 @@ final class Vector implements AutoCloseable {
 	 * @return
 	 */
 	public IPoolItem tryClaim() {
-		return this.pop();
+		var item = this.pop();
+
+		if (item != null && item.tryClaim())
+			return item;
+
+		return null;
 	}
 
 	private AtomicBoolean _isDisposed = new AtomicBoolean(false);

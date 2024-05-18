@@ -232,13 +232,22 @@ public class Pool<T> implements AutoCloseable {
 	}
 
 	@TestSupport
-	public static record VectorLayout(/**
-										 * 矢量池里存放的对象数量
-										 */
-	int capacity, /**
-					 * 已借出的项的数量
-					 */
-	int borrowedCount) {
+	public static record VectorLayout(
+			/**
+			 * 矢量池里存放的对象数量
+			 */
+			int capacity,
+			/**
+			 * 已借出的项的数量
+			 */
+			int borrowedCount,
+			/**
+			 * 等待销毁的项的数量
+			 */
+			int waitDisposeCount, /**
+									 * 等待借出的项
+									 */
+			int waitBorrowCount) {
 
 	}
 
@@ -268,7 +277,7 @@ public class Pool<T> implements AutoCloseable {
 	}
 
 	@TestSupport
-	private VectorLayout[] getMatrixLayout(AtomicDualVectorArray arr) {
+	private VectorLayout[] getMatrixLayout(AtomicVectorArray arr) {
 		if (arr == null)
 			return null;
 
@@ -280,7 +289,10 @@ public class Pool<T> implements AutoCloseable {
 			var capacity = dv.capacity();
 			var borrowed = dv.borrowedCount();
 
-			var layout = new VectorLayout(capacity, borrowed);
+			var waitDisposeCount = dv.waitDisposeCount();
+			var waitBorrowCount = dv.waitBorrowCount();
+
+			var layout = new VectorLayout(capacity, borrowed, waitDisposeCount, waitBorrowCount);
 			layouts[i] = layout;
 		}
 

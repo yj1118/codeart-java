@@ -28,7 +28,7 @@ class SingleThreadedTest {
 	// 初始状态用的是第0个矩阵池，也就是a，a有效，b无效，所以为空
 	private static final ExpectedLayout initialLayout = new ExpectedLayout(8, 0, -1, 2,
 			new ExpectedLayout.MatrixLayout(0, new ExpectedLayout.VectorLayout[] {
-					new ExpectedLayout.VectorLayout(4, 0, 0, -1), new ExpectedLayout.VectorLayout(4, 0, 0, -1) }));
+					new ExpectedLayout.VectorLayout(4, 0, 0, 4), new ExpectedLayout.VectorLayout(4, 0, 0, 4) }));
 
 	/**
 	 * 验证初始布局
@@ -48,14 +48,14 @@ class SingleThreadedTest {
 		// 借出一个
 		var item = _pool.borrow();
 
-		writer.matrixA().vector(0).storeA().borrowAfter(0);
+		writer.matrixA().vector(0).borrowAfter();
 
 		ExpectedLayout.assertLayout(expected, _pool.getLayout());
 
 		item.back();
 
-		// 归还后，不会影响布局
-		writer.matrixA().vector(0).storeA().backAfter(0);
+		// 归还后，会影响布局
+		writer.matrixA().vector(0).backAfter();
 
 		ExpectedLayout.assertLayout(expected, _pool.getLayout());
 	}
@@ -72,12 +72,12 @@ class SingleThreadedTest {
 		var item0 = _pool.borrow();
 
 		// 先从第0个向量池取第0个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(0);
+		writer.matrixA().vector(0).borrowAfter();
 
 		var item1 = _pool.borrow();
 
 		// 再从第1个向量池取第0个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(0);
+		writer.matrixA().vector(1).borrowAfter();
 
 		var layout = _pool.getLayout();
 		ExpectedLayout.assertLayout(expected, layout);
@@ -92,17 +92,17 @@ class SingleThreadedTest {
 		var item0 = _pool.borrow();
 
 		// 先从第0个向量池取第0个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(0);
+		writer.matrixA().vector(0).borrowAfter();
 
 		var item1 = _pool.borrow();
 
 		// 再从第1个向量池取第0个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(0);
+		writer.matrixA().vector(1).borrowAfter();
 
 		var item2 = _pool.borrow();
 
 		// 再从第0个向量池取第1个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(1);
+		writer.matrixA().vector(0).borrowAfter();
 
 		var layout = _pool.getLayout();
 		ExpectedLayout.assertLayout(expected, layout);
@@ -128,42 +128,42 @@ class SingleThreadedTest {
 		var item0 = _pool.borrow();
 
 		// 先从第0个向量池取第0个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(0);
+		writer.matrixA().vector(0).borrowAfter();
 
 		var item1 = _pool.borrow();
 
 		// 再从第1个向量池取第0个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(0);
+		writer.matrixA().vector(1).borrowAfter();
 
 		var item2 = _pool.borrow();
 
 		// 再从第0个向量池取第1个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(1);
+		writer.matrixA().vector(0).borrowAfter();
 
 		var item3 = _pool.borrow();
 
 		// 再从第1个向量池取第1个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(1);
+		writer.matrixA().vector(1).borrowAfter();
 
 		var item4 = _pool.borrow();
 
 		// 再从第0个向量池取第2个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(2);
+		writer.matrixA().vector(0).borrowAfter();
 
 		var item5 = _pool.borrow();
 
 		// 再从第1个向量池取第2个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(2);
+		writer.matrixA().vector(1).borrowAfter();
 
 		var item6 = _pool.borrow();
 
 		// 再从第0个向量池取第3个数据
-		writer.matrixA().vector(0).storeA().borrowAfter(3);
+		writer.matrixA().vector(0).borrowAfter();
 
 		var item7 = _pool.borrow();
 
 		// 再从第1个向量池取第3个数据
-		writer.matrixA().vector(1).storeA().borrowAfter(3);
+		writer.matrixA().vector(1).borrowAfter();
 
 	}
 
@@ -180,8 +180,8 @@ class SingleThreadedTest {
 
 		writer.vectorInc(6);
 
-		// 多借出1个后，就扩容了，导致切换到storeB了
-		writer.matrixA().vector(0).storeB().borrowTempAfter(item0);
+		// 多借出1个后，就扩容了
+		writer.matrixA().vector(0).borrowTempAfter(item0);
 
 		// 临时项不算在借出的项的数量里，严格上讲，它不属于池的成员
 		Assertions.assertEquals(8, expected.borrowedCount());
@@ -218,7 +218,7 @@ class SingleThreadedTest {
 
 		// 4是新扩容的池里，第0个数据的下标
 		// 扩容时会由存储A切换到存储B
-		writer.matrixA().vector(1).storeB().borrowAfter(4);
+		writer.matrixA().vector(1).borrowAfter();
 
 		Assertions.assertEquals(9, expected.borrowedCount());
 		// 由于在借的时候，指针会++，所以又回到0了，然后再扩容
@@ -248,19 +248,19 @@ class SingleThreadedTest {
 		borrowed9(writer);
 		_pool.borrow();
 
-		writer.matrixA().vector(1).storeB().borrowAfter(4);
+		writer.matrixA().vector(1).borrowAfter();
 
 		_pool.borrow();
 
-		writer.matrixA().vector(0).storeB().borrowAfter(4);
+		writer.matrixA().vector(0).borrowAfter();
 
 		_pool.borrow();
 
-		writer.matrixA().vector(1).storeB().borrowAfter(5);
+		writer.matrixA().vector(1).borrowAfter();
 
 		_pool.borrow();
 
-		writer.matrixA().vector(0).storeB().borrowAfter(5);
+		writer.matrixA().vector(0).borrowAfter();
 
 	}
 
@@ -283,8 +283,8 @@ class SingleThreadedTest {
 	 */
 	@Test
 	void borrowedSecondInc() {
-		var expected = resetPool();
-		var writer = new LayoutWriter(expected);
+		var info = resetPool();
+		var writer = new LayoutWriter(info);
 
 		borrowed13(writer);
 
@@ -296,29 +296,29 @@ class SingleThreadedTest {
 
 		// 多借出1个后，就扩容了，导致切换到storeA了
 		// 注意，由于运行一次，向量池下标就被推进了，所以跟上次比起来，由0变为1
-		writer.matrixA().vector(1).storeA().borrowTempAfter(item0);
+		writer.matrixA().vector(1).borrowTempAfter(item0);
 
 		// 第15个是扩容后的池的第一个
 		_pool.borrow();
-		writer.matrixA().vector(0).storeA().borrowAfter(6);
+		writer.matrixA().vector(0).borrowAfter();
 
 		// 第16个
 		_pool.borrow();
-		writer.matrixA().vector(1).storeA().borrowAfter(6);
+		writer.matrixA().vector(1).borrowAfter();
 
 		// 第17个
 		_pool.borrow();
-		writer.matrixA().vector(0).storeA().borrowAfter(7);
+		writer.matrixA().vector(0).borrowAfter();
 
 		// 第18个
 		_pool.borrow();
-		writer.matrixA().vector(1).storeA().borrowAfter(7);
+		writer.matrixA().vector(1).borrowAfter();
 
-		Assertions.assertEquals(16, expected.borrowedCount());
-		Assertions.assertEquals(16, expected.totalCapacity());
+		Assertions.assertEquals(16, info.borrowedCount());
+		Assertions.assertEquals(16, info.totalCapacity());
 
 		var layout = _pool.getLayout();
-		ExpectedLayout.assertLayout(expected, layout);
+		ExpectedLayout.assertLayout(info, layout);
 	}
 
 	private void borrowed18(LayoutWriter writer) {
@@ -332,23 +332,23 @@ class SingleThreadedTest {
 
 		// 多借出1个后，就扩容了，导致切换到storeA了
 		// 注意，由于运行一次，向量池下标就被推进了，所以跟上次比起来，由0变为1
-		writer.matrixA().vector(1).storeA().borrowTempAfter(item0);
+		writer.matrixA().vector(1).borrowTempAfter(item0);
 
 		// 第15个是扩容后的池的第一个
 		_pool.borrow();
-		writer.matrixA().vector(0).storeA().borrowAfter(6);
+		writer.matrixA().vector(0).borrowAfter();
 
 		// 第16个
 		_pool.borrow();
-		writer.matrixA().vector(1).storeA().borrowAfter(6);
+		writer.matrixA().vector(1).borrowAfter();
 
 		// 第17个
 		_pool.borrow();
-		writer.matrixA().vector(0).storeA().borrowAfter(7);
+		writer.matrixA().vector(0).borrowAfter();
 
 		// 第18个
 		_pool.borrow();
-		writer.matrixA().vector(1).storeA().borrowAfter(7);
+		writer.matrixA().vector(1).borrowAfter();
 
 	}
 
@@ -357,8 +357,8 @@ class SingleThreadedTest {
 	 */
 	@Test
 	void borrowedThreeInc() {
-		var expected = resetPool();
-		var writer = new LayoutWriter(expected);
+		var info = resetPool();
+		var writer = new LayoutWriter(info);
 
 		borrowed18(writer);
 
@@ -366,15 +366,17 @@ class SingleThreadedTest {
 		// 所以，此时是扩容矩阵池了
 
 		// 第19项，是临时项
-		_pool.borrow();
+		var item = _pool.borrow();
 
 		// 由于扩容了一次，所以由A->B
-		writer.matrixB().vector(2).storeA().borrowAfter(0);
+		writer.matrixInc(3);
 
-		Assertions.assertEquals(3, expected.vectorCount());
+		// matrix的扩容，会将池指针重置到扩容前的最后一项，这样下次再借的时候，就从扩容里的第1项取向量池了
+		writer.matrixB().vector(1).borrowTempAfter(item);
+
+		Assertions.assertEquals(3, info.vectorCount());
 
 		var layout = _pool.getLayout();
-		ExpectedLayout.assertLayout(expected, layout);
+		ExpectedLayout.assertLayout(info, layout);
 	}
-
 }

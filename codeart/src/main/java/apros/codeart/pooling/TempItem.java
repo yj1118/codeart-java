@@ -1,11 +1,11 @@
 package apros.codeart.pooling;
 
 final class TempItem implements IPoolItem {
-	private Pool<?> _owner;
+	private Pool<?> _pool;
 	private Object _item;
 
 	private TempItem(Pool<?> owner) {
-		_owner = owner;
+		_pool = owner;
 		_item = owner.createItem(true);
 	}
 
@@ -25,8 +25,8 @@ final class TempItem implements IPoolItem {
 	@Override
 	public void back() {
 		// 临时项直接销毁
-		_owner.disposeItem(this);
-		_owner.borrowedDecrement(); // 借出数-1
+		_pool.disposeItem(this);
+		_pool.borrowedDecrement(); // 借出数-1
 	}
 
 	@Override

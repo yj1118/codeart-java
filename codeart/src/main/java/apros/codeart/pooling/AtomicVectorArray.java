@@ -2,7 +2,7 @@ package apros.codeart.pooling;
 
 import java.util.concurrent.atomic.AtomicReferenceArray;
 
-class AtomicDualVectorArray {
+class AtomicVectorArray {
 
 	/*
 	 * 
@@ -29,7 +29,7 @@ class AtomicDualVectorArray {
 
 	private AtomicReferenceArray<Vector> _items;
 
-	public AtomicDualVectorArray(int count) {
+	public AtomicVectorArray(int count) {
 		_items = new AtomicReferenceArray<Vector>(new Vector[count]);
 	}
 
@@ -53,7 +53,7 @@ class AtomicDualVectorArray {
 	 * @param dest
 	 * @param length
 	 */
-	public static void copy(AtomicDualVectorArray src, AtomicDualVectorArray dest, int length) {
+	public static void copy(AtomicVectorArray src, AtomicVectorArray dest, int length) {
 		for (var i = 0; i < length; i++) {
 			dest.setRelease(i, src.getAcquire(i));
 		}
