@@ -1,7 +1,10 @@
-package apros.codeart.ddd;
+package apros.codeart.ddd.internal;
 
 import java.util.ArrayList;
 
+import apros.codeart.ddd.DomainDrivenException;
+import apros.codeart.ddd.IAggregateRoot;
+import apros.codeart.ddd.StatusEventType;
 import apros.codeart.ddd.repository.RepositoryEventArgs;
 import apros.codeart.ddd.repository.RepositoryRollbackEventArgs;
 import apros.codeart.i18n.Language;
@@ -241,12 +244,12 @@ public final class AggregateRootEventManager {
 
 	private ArrayList<Runnable> _onceRepositoryCallbackActions = null;
 
-/// <summary>
-/// 在下次执行完该对象的仓储操作后执行<paramref name="action" />动作
-/// 该动作仅被执行一次
-/// </summary>
-/// <param name="action"></param>
-	protected void onceRepositoryCallback(Runnable action) {
+	/**
+	 * 在下次执行完该对象的仓储操作后执行 {@code action} 动作该动作仅被执行一次
+	 * 
+	 * @param action
+	 */
+	public void onceRepositoryCallback(Runnable action) {
 		if (_onceRepositoryCallbackActions == null)
 			_onceRepositoryCallbackActions = new ArrayList<Runnable>();
 		_onceRepositoryCallbackActions.add(action);

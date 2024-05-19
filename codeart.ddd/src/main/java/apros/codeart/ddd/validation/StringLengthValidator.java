@@ -6,7 +6,9 @@ import apros.codeart.ddd.PropertyValidatorImpl;
 import apros.codeart.ddd.ValidationResult;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
+import apros.codeart.util.SafeAccess;
 
+@SafeAccess
 public class StringLengthValidator extends PropertyValidatorImpl {
 
 	private StringLengthValidator(StringLength tip) {

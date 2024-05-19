@@ -6,8 +6,10 @@ import apros.codeart.ddd.PropertyValidatorImpl;
 import apros.codeart.ddd.ValidationResult;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
+import apros.codeart.util.SafeAccess;
 import apros.codeart.util.StringUtil;
 
+@SafeAccess
 public class ASCIIStringValidator extends PropertyValidatorImpl {
 	private ASCIIStringValidator(ASCIIString tip) {
 		super(tip);

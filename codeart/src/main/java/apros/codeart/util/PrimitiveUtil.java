@@ -67,6 +67,14 @@ public final class PrimitiveUtil {
 		return _getDefaultValue.apply(valueType);
 	}
 
+	public static boolean isDefaultValue(Object value) {
+		var type = value.getClass();
+		var defaultValue = _getDefaultValue.apply(type);
+		if (defaultValue == null)
+			return value == null;
+		return defaultValue.equals(value); // 不能直接用==，因为值类型包装后的object对象的地址不同
+	}
+
 	/**
 	 * 
 	 * 获得基类型的类型

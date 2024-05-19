@@ -1,8 +1,8 @@
 package apros.codeart.ddd.dynamic;
 
-import apros.codeart.ddd.AggregateRootEventManager;
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.UniqueKeyCalculator;
+import apros.codeart.ddd.internal.AggregateRootEventManager;
 import apros.codeart.ddd.repository.ConstructorRepository;
 import apros.codeart.ddd.repository.RepositoryEventArgs;
 import apros.codeart.ddd.repository.RepositoryRollbackEventArgs;

@@ -1,5 +1,6 @@
 package apros.codeart.ddd;
 
+import apros.codeart.ddd.internal.AggregateRootEventManager;
 import apros.codeart.ddd.repository.RepositoryEventArgs;
 import apros.codeart.ddd.repository.RepositoryRollbackEventArgs;
 import apros.codeart.util.EventHandler;

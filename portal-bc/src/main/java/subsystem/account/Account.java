@@ -1,18 +1,32 @@
 package subsystem.account;
 
-import apros.codeart.ddd.DomainObject;
+import apros.codeart.ddd.AggregateRootLong;
+import apros.codeart.ddd.DomainProperty;
+import apros.codeart.ddd.repository.PropertyRepository;
 
-public class Account extends DomainObject {
+public class Account extends AggregateRootLong {
 
-	@Override
-	public void saveState() {
-		// TODO Auto-generated method stub
+	@PropertyRepository()
+	@NotEmpty()
+	@StringLength(1,15)
+	static final DomainProperty NameProperty = DomainProperty.register("name", String.class, Account.class);
 
+	/**
+	 * 
+	 * 账户名
+	 * 
+	 * @return
+	 */
+	public String name() {
+		return this.getValue(NameProperty, String.class);
 	}
 
-	@Override
-	public void loadState() {
-		// TODO Auto-generated method stub
-
+	public void setName(String value) {
+		this.setValue(NameProperty, value);
 	}
+
+	public Account(long id) {
+		super(id);
+	}
+
 }
