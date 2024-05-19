@@ -611,6 +611,99 @@ class SingleThreadedTest {
 
 		borrowed27(writer);
 
+		// 再借一个，就又要扩容了，此时是扩容矩阵池
+
+		// 第28项，是临时项
+		var item = _pool.borrow();
+
+		// 由于扩容了一次，所以由B->A
+		writer.matrixInc(4);
+
+		// matrix的扩容，会将池指针重置到扩容前的最后一项，这样下次再借的时候，就从扩容里的第1项取向量池了
+		writer.matrixA().vector(2).borrowTempAfter(item);
+
+		Assertions.assertEquals(2, info.vectorPointer());
+		Assertions.assertEquals(8, info.matrixLayout().vectors()[3].waitBorrowCount());
+
+		// 第29项，真借
+		_pool.borrow();
+
+		// 指针指向第3个向量池
+		writer.matrixA().vector(3).borrowAfter();
+
+		// 第30项
+		_pool.borrow();
+
+		// 指针指向第3个向量池
+		// 由于其他池都满了，所以全局指针会偏移1个单位，但是真实的是用本地指针轮询到新建立的池里取数据
+		writer.nextVectorPointer();
+		writer.matrixA().vector(3).localBorrowAfter();
+
+		// 全局指针目前在第0位
+		Assertions.assertEquals(0, info.vectorPointer());
+
+		// 第31项
+		_pool.borrow();
+
+		// 由于其他池都满了，所以全局指针会偏移1个单位，但是真实的是用本地指针轮询到新建立的池里取数据
+		writer.nextVectorPointer();
+		writer.matrixA().vector(3).localBorrowAfter();
+
+		// 全局指针目前在第1位
+		Assertions.assertEquals(1, info.vectorPointer());
+
+		// 第32项
+		_pool.borrow();
+
+		// 由于其他池都满了，所以全局指针会偏移1个单位，但是真实的是用本地指针轮询到新建立的池里取数据
+		writer.nextVectorPointer();
+		writer.matrixA().vector(3).localBorrowAfter();
+
+		// 全局指针目前在第2位
+		Assertions.assertEquals(2, info.vectorPointer());
+
+		// 第33项
+		_pool.borrow();
+
+		// 此时轮询指向第3个，也就是有可借项的池，直接借
+		writer.matrixA().vector(3).borrowAfter();
+
+		// 全局指针目前在第3位
+		Assertions.assertEquals(3, info.vectorPointer());
+
+		// 第34项
+		_pool.borrow();
+
+		// 由于其他池都满了，所以全局指针会偏移1个单位，但是真实的是用本地指针轮询到新建立的池里取数据
+		writer.nextVectorPointer();
+		writer.matrixA().vector(3).localBorrowAfter();
+
+		// 全局指针目前在第0位
+		Assertions.assertEquals(0, info.vectorPointer());
+
+		// 第35项
+		_pool.borrow();
+
+		// 由于其他池都满了，所以全局指针会偏移1个单位，但是真实的是用本地指针轮询到新建立的池里取数据
+		writer.nextVectorPointer();
+		writer.matrixA().vector(3).localBorrowAfter();
+
+		// 全局指针目前在第1位
+		Assertions.assertEquals(1, info.vectorPointer());
+
+		// 第36项
+		_pool.borrow();
+
+		// 由于其他池都满了，所以全局指针会偏移1个单位，但是真实的是用本地指针轮询到新建立的池里取数据
+		writer.nextVectorPointer();
+		writer.matrixA().vector(3).localBorrowAfter();
+
+		// 全局指针目前在第2位
+		Assertions.assertEquals(2, info.vectorPointer());
+
+		// 全部借出
+		Assertions.assertEquals(0, info.matrixLayout().vectors()[3].waitBorrowCount());
+
 		var layout = _pool.getLayout();
 		ExpectedLayout.assertLayout(info, layout);
 	}
