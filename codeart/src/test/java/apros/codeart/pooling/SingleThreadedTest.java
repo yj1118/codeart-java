@@ -456,6 +456,161 @@ class SingleThreadedTest {
 
 		Assertions.assertEquals(2, info.vectorPointer());
 
+		// 至此，新增的向量里已经取出了4项，还有4项目可用
+		Assertions.assertEquals(4, info.matrixLayout().vectors()[2].waitBorrowCount());
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(info, layout);
+	}
+
+	/**
+	 * 
+	 * 第23项，是刚好把新赠的向量池借了一半，切指针指向新增向量池下标（3）的时候
+	 * 
+	 * @param writer
+	 */
+	private void borrowed23(LayoutWriter writer) {
+		borrowed19(writer);
+
+		// 在总第3次扩容，第1次矩阵扩容后，继续借1个
+
+		// 第20项
+		_pool.borrow();
+
+		// 从下标为2，也就是第3个向量池里取出一条数据
+		writer.matrixB().vector(2).borrowAfter();
+
+		// 第21项
+		_pool.borrow();
+
+		// 注意，第21项数据，实际上也是从第3个向量池里取出来的，只不过是由线程本地指针得到的指向
+		// 正常推进一次指针到下标0
+		writer.nextVectorPointer();
+		writer.matrixB().vector(2).localBorrowAfter();
+
+		// 第22项
+		_pool.borrow();
+
+		// 注意，第22项数据，实际上也是从第3个向量池里取出来的，只不过是由线程本地指针得到的指向
+		// 正常推进一次指针到下标1
+		writer.nextVectorPointer();
+		writer.matrixB().vector(2).localBorrowAfter();
+
+		// 第23项
+		_pool.borrow();
+
+		// 注意，第23项数据，那就是正常指向下标2了
+		writer.matrixB().vector(2).borrowAfter();
+	}
+
+	/**
+	 * 第三次扩容已满
+	 */
+	@Test
+	void threeIncBorrowedFull() {
+		var info = resetPool();
+		var writer = new LayoutWriter(info);
+
+		borrowed23(writer);
+
+		// 继续借1个
+
+		// 第24项
+		_pool.borrow();
+
+		// 注意，第24项数据，实际上也是从第3个向量池里取出来的，只不过是由线程本地指针得到的指向
+		// 正常推进一次指针到下标0
+		writer.nextVectorPointer();
+		writer.matrixB().vector(2).localBorrowAfter();
+
+		Assertions.assertEquals(0, info.vectorPointer());
+
+		// 第25项
+		_pool.borrow();
+
+		// 注意，第25项数据，实际上也是从第3个向量池里取出来的，只不过是由线程本地指针得到的指向
+		// 正常推进一次指针到下标1
+		writer.nextVectorPointer();
+		writer.matrixB().vector(2).localBorrowAfter();
+
+		Assertions.assertEquals(1, info.vectorPointer());
+
+		// 第26项
+		_pool.borrow();
+
+		// 注意，第26项数据，那就是正常指向下标2了
+		writer.matrixB().vector(2).borrowAfter();
+
+		Assertions.assertEquals(2, info.vectorPointer());
+
+		// 至此，新增的向量里已经取出了7项，还有1项目可用
+		Assertions.assertEquals(1, info.matrixLayout().vectors()[2].waitBorrowCount());
+
+		// 第27项
+		_pool.borrow();
+
+		// 注意，第27项数据，实际上也是从第3个向量池里取出来的，只不过是由线程本地指针得到的指向
+		// 正常推进一次指针到下标0
+		writer.nextVectorPointer();
+		writer.matrixB().vector(2).localBorrowAfter();
+
+		Assertions.assertEquals(0, info.vectorPointer());
+
+		// 至此，新增的向量里已经取出了8项，还有0项目可用
+		Assertions.assertEquals(0, info.matrixLayout().vectors()[2].waitBorrowCount());
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(info, layout);
+	}
+
+	private void borrowed27(LayoutWriter writer) {
+
+		borrowed23(writer);
+
+		// 继续借1个
+
+		// 第24项
+		_pool.borrow();
+
+		// 注意，第24项数据，实际上也是从第3个向量池里取出来的，只不过是由线程本地指针得到的指向
+		// 正常推进一次指针到下标0
+		writer.nextVectorPointer();
+		writer.matrixB().vector(2).localBorrowAfter();
+
+		// 第25项
+		_pool.borrow();
+
+		// 注意，第25项数据，实际上也是从第3个向量池里取出来的，只不过是由线程本地指针得到的指向
+		// 正常推进一次指针到下标1
+		writer.nextVectorPointer();
+		writer.matrixB().vector(2).localBorrowAfter();
+
+		// 第26项
+		_pool.borrow();
+
+		// 注意，第26项数据，那就是正常指向下标2了
+		writer.matrixB().vector(2).borrowAfter();
+
+		// 第27项
+		_pool.borrow();
+
+		// 注意，第27项数据，实际上也是从第3个向量池里取出来的，只不过是由线程本地指针得到的指向
+		// 正常推进一次指针到下标0
+		writer.nextVectorPointer();
+		writer.matrixB().vector(2).localBorrowAfter();
+
+	}
+
+	/**
+	 * 第4次扩容
+	 */
+	@Test
+	void fourthInc() {
+		var info = resetPool();
+		var writer = new LayoutWriter(info);
+
+		borrowed27(writer);
+
 		var layout = _pool.getLayout();
 		ExpectedLayout.assertLayout(info, layout);
 	}
