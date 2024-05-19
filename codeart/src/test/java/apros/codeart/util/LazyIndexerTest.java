@@ -3,11 +3,8 @@ package apros.codeart.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 
-import apros.codeart.core.TestRunner;
-
-@ExtendWith(TestRunner.class)
+//@ExtendWith(TestRunner.class)
 class LazyIndexerTest {
 
 	static class Data {
