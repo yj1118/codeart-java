@@ -353,7 +353,7 @@ class SingleThreadedTest {
 	}
 
 	/**
-	 * 第3次扩容
+	 * 第3次扩容，矩阵池扩容
 	 */
 	@Test
 	void borrowedThreeInc() {
@@ -374,9 +374,90 @@ class SingleThreadedTest {
 		// matrix的扩容，会将池指针重置到扩容前的最后一项，这样下次再借的时候，就从扩容里的第1项取向量池了
 		writer.matrixB().vector(1).borrowTempAfter(item);
 
+		// 由2扩容到3
 		Assertions.assertEquals(3, info.vectorCount());
 
 		var layout = _pool.getLayout();
 		ExpectedLayout.assertLayout(info, layout);
 	}
+
+	private void borrowed19(LayoutWriter writer) {
+		borrowed18(writer);
+
+		// 第19项，是临时项
+		var item = _pool.borrow();
+
+		// 由于扩容了一次，所以由A->B
+		writer.matrixInc(3);
+
+		// matrix的扩容，会将池指针重置到扩容前的最后一项，这样下次再借的时候，就从扩容里的第1项取向量池了
+		writer.matrixB().vector(1).borrowTempAfter(item);
+	}
+
+	@Test
+	void threeIncAfterBorrow1() {
+		var info = resetPool();
+		var writer = new LayoutWriter(info);
+
+		borrowed19(writer);
+
+		// 在总第3次扩容，第1次矩阵扩容后，继续借1个
+
+		// 第20项
+		_pool.borrow();
+
+		// 从下标为2，也就是第3个向量池里取出一条数据
+		writer.matrixB().vector(2).borrowAfter();
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(info, layout);
+	}
+
+	@Test
+	void threeIncAfterBorrow2() {
+		var info = resetPool();
+		var writer = new LayoutWriter(info);
+
+		borrowed19(writer);
+
+		// 在总第3次扩容，第1次矩阵扩容后，继续借1个
+
+		// 第20项
+		_pool.borrow();
+
+		// 从下标为2，也就是第3个向量池里取出一条数据
+		writer.matrixB().vector(2).borrowAfter();
+
+		// 第21项
+		_pool.borrow();
+
+		// 注意，第21项数据，实际上也是从第3个向量池里取出来的，只不过是由线程本地指针得到的指向
+		// 正常推进一次指针到下标0
+		writer.nextVectorPointer();
+		writer.matrixB().vector(2).localBorrowAfter();
+
+		Assertions.assertEquals(0, info.vectorPointer());
+
+		// 第22项
+		_pool.borrow();
+
+		// 注意，第22项数据，实际上也是从第3个向量池里取出来的，只不过是由线程本地指针得到的指向
+		// 正常推进一次指针到下标1
+		writer.nextVectorPointer();
+		writer.matrixB().vector(2).localBorrowAfter();
+
+		Assertions.assertEquals(1, info.vectorPointer());
+
+		// 第23项
+		_pool.borrow();
+
+		// 注意，第23项数据，那就是正常指向下标2了
+		writer.matrixB().vector(2).borrowAfter();
+
+		Assertions.assertEquals(2, info.vectorPointer());
+
+		var layout = _pool.getLayout();
+		ExpectedLayout.assertLayout(info, layout);
+	}
+
 }

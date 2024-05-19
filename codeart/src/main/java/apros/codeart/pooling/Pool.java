@@ -111,28 +111,51 @@ public class Pool<T> implements AutoCloseable {
 
 	/**
 	 * 
-	 * 使用轮询的方式领取一个可用的分段
+	 * 使用轮询的方式领取一个分段里的项
 	 * 
 	 * @return
 	 */
-	private Vector claimVector() {
-		var index = next(); // 取出下一个可用的矢量池坐标
-		return _matrix.getVector(index);
+	private IPoolItem claimItem() {
+
+		/*
+		 * 为了避免池运行一段时间后，由于归还项的时间长短不同，导致整个矩阵池里的每个矩阵池里的项分布不均匀
+		 * 
+		 * 这样轮询借的时候，可能指针pointer指向的向量池没有项，但是其他向量池有项
+		 * 
+		 * 所以，这里用批轮询的方式解决这个问题,pointer是全局指针，表示本次轮询的起点
+		 * 
+		 * 用index作为当前线程实际轮询的指针，来遍历一个循环（循环最多count次）
+		 * 
+		 * 以这种方式遍历整个矩阵池得到数据，同时不会破坏原有的pointer轮询算法
+		 * 
+		 */
+
+		var start = next(); // 取出下一个可用的矢量池坐标，将此坐标作为此次轮询的起点
+		var count = _matrix.vectorCount();
+
+		for (var i = 0; i < count; i++) {
+			var index = (start + i) % count;
+			var rb = _matrix.getVector(index);
+			var item = rb.tryClaim();
+			if (item != null) {
+				return item;
+			}
+		}
+
+		return null;
 	}
 
 	public IPoolItem borrow() {
-		var rb = this.claimVector();
 
-		IPoolItem item = rb.tryClaim();
+		var item = claimItem();
 
-		if (item != null) {
-			return item;
+		if (item == null) {
+			// 由于获得项失败了，表示池里对应的段已经满了，所以创建临时项给外界用
+			item = TempItem.tryClaim(this);
+			// 尝试扩容
+			_matrix.tryIncrease();
 		}
 
-		// 由于获得项失败了，表示池里对应的段已经满了，所以创建临时项给外界用
-		item = TempItem.tryClaim(this);
-		// 尝试扩容
-		_matrix.tryIncrease();
 		return item;
 	}
 

@@ -86,6 +86,22 @@ class LayoutWriter {
 		throw new IllegalStateException("matrixB未启用");
 	}
 
+	/**
+	 * 
+	 * 推进一次向量池指针
+	 * 
+	 * @return
+	 */
+	public LayoutWriter nextVectorPointer() {
+		var vp = _data.vectorPointer();
+		var vc = _data.vectorCount();
+
+		var index = (vp + 1) % vc;
+
+		_data.setVectorPointer(index);
+		return this;
+	}
+
 	public VectorWriter vector(int index) {
 		var v = _data.matrixLayout().vectors()[index];
 		var writer = new VectorWriter(_data, v, index);
@@ -120,6 +136,14 @@ class LayoutWriter {
 			_data.setBorrowedCount(_data.borrowedCount() + 1);
 			_data.setWaitBorrowCount(_data.waitBorrowCount() - 1);
 			_matrixData.setVectorPointer(_vectorIndex);
+		}
+
+		/**
+		 * 本地线程从向量池中借出项，但是不影响全局向量池指针
+		 */
+		public void localBorrowAfter() {
+			_data.setBorrowedCount(_data.borrowedCount() + 1);
+			_data.setWaitBorrowCount(_data.waitBorrowCount() - 1);
 		}
 
 		/**
