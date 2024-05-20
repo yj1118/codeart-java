@@ -59,6 +59,6 @@ public final class AppConfig {
 	}
 
 	static {
-		_config = ResourceUtil.loadJSON("codeart/app.json");
+		_config = ResourceUtil.loadJSON("codeart.json");
 	}
 }
