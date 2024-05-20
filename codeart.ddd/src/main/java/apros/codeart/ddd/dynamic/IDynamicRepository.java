@@ -1,9 +1,9 @@
 package apros.codeart.ddd.dynamic;
 
-import apros.codeart.ddd.IRepository;
+import apros.codeart.ddd.IRepositoryBase;
 import apros.codeart.ddd.QueryLevel;
 
-public interface IDynamicRepository extends IRepository {
+public interface IDynamicRepository extends IRepositoryBase {
 
 	/**
 	 * 

@@ -2,7 +2,7 @@ package apros.codeart.ddd.repository.access;
 
 import java.util.function.Function;
 
-import apros.codeart.ddd.IRepository;
+import apros.codeart.ddd.IRepositoryBase;
 import apros.codeart.ddd.metadata.ObjectMeta;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.Repository;
@@ -46,7 +46,7 @@ public final class DataMapperFactory {
 		return SafeAccessImpl.createSingleton(dataMapperType);
 	}
 
-	private static Class<? extends IDataMapper> getDataMapperType(IRepository repository) {
+	private static Class<? extends IDataMapper> getDataMapperType(IRepositoryBase repository) {
 		var ann = repository.getClass().getAnnotation(DataMapper.class);
 		if (ann == null)
 			return null;

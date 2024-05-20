@@ -3,7 +3,7 @@ package apros.codeart.ddd.repository;
 import java.lang.reflect.Method;
 
 import apros.codeart.ddd.DomainDrivenException;
-import apros.codeart.ddd.IRepository;
+import apros.codeart.ddd.IRepositoryBase;
 import apros.codeart.ddd.dynamic.IDynamicRepository;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.i18n.Language;
@@ -22,7 +22,7 @@ public final class Repository {
 	 * @param repositoryInterfaceType
 	 * @param repository
 	 */
-	public static <T extends IRepository> void register(Class<?> repositoryInterfaceType, T repository) {
+	public static <T extends IRepositoryBase> void register(Class<?> repositoryInterfaceType, T repository) {
 		RepositoryFactory.register(repositoryInterfaceType, repository);
 	}
 
@@ -34,15 +34,15 @@ public final class Repository {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public static <T extends IRepository> T create(Class<T> repositoryInterfaceType) {
+	public static <T extends IRepositoryBase> T create(Class<T> repositoryInterfaceType) {
 		return (T) RepositoryFactory.create(repositoryInterfaceType);
 	}
 
-	public static IRepository createByObjectType(Class<?> objectType) {
+	public static IRepositoryBase createByObjectType(Class<?> objectType) {
 		var objectTip = ObjectRepositoryImpl.getTip(objectType, false);
 		if (objectTip == null)
 			return null;
-		return (IRepository) RepositoryFactory.create(objectTip.repositoryInterfaceType());
+		return (IRepositoryBase) RepositoryFactory.create(objectTip.repositoryInterfaceType());
 	}
 
 	/**
@@ -72,7 +72,7 @@ public final class Repository {
 	 * @param rootTypeName
 	 * @return
 	 */
-	public static IRepository create(String rootTypeName) {
+	public static IRepositoryBase create(String rootTypeName) {
 		var objectType = ObjectMetaLoader.get(rootTypeName).objectType();
 		return RepositoryFactory.getRepositoryByObject(objectType);
 	}

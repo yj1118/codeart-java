@@ -7,7 +7,7 @@ import apros.codeart.ddd.StatusEvent;
 import apros.codeart.ddd.StatusEventType;
 
 public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends PersistRepository
-		implements IRepository {
+		implements IRepository<TRoot> {
 
 	protected abstract Class<? extends TRoot> getRootType();
 

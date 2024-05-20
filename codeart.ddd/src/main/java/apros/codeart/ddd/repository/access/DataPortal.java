@@ -13,7 +13,7 @@ import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.util.EmptyEventArgs;
 import apros.codeart.util.EventHandler;
 
-final class DataPortal {
+public final class DataPortal {
 
 	private DataPortal() {
 	}

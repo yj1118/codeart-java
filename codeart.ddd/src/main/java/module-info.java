@@ -6,6 +6,7 @@ module apros.codeart.ddd {
 	requires jsqlparser;
 
 	exports apros.codeart.ddd;
+	exports apros.codeart.ddd.validation;
 	exports apros.codeart.ddd.command;
 	exports apros.codeart.ddd.repository;
 	exports apros.codeart.ddd.repository.access;

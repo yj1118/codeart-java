@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import apros.codeart.ddd.DomainDrivenException;
-import apros.codeart.ddd.IRepository;
+import apros.codeart.ddd.IRepositoryBase;
 import apros.codeart.ddd.dynamic.IDynamicObject;
 import apros.codeart.ddd.repository.access.SqlDynamicRepository;
 import apros.codeart.i18n.Language;
@@ -67,7 +67,7 @@ class RepositoryFactory {
 	 * @param repositoryInterfaceType
 	 * @param repository
 	 */
-	public static <T extends IRepository> void register(Class<?> repositoryInterfaceType, T repository) {
+	public static <T extends IRepositoryBase> void register(Class<?> repositoryInterfaceType, T repository) {
 		SafeAccessImpl.checkUp(repository);
 		_registers.put(repositoryInterfaceType, repository);
 	}
@@ -88,11 +88,11 @@ class RepositoryFactory {
 
 	// 通过实体类型得到仓储
 
-	public static IRepository getRepositoryByObject(Class<?> objectType) {
+	public static IRepositoryBase getRepositoryByObject(Class<?> objectType) {
 		return _getRepositoryByObject.apply(objectType);
 	}
 
-	private static final Function<Class<?>, IRepository> _getRepositoryByObject = LazyIndexer.init((objectType) -> {
+	private static final Function<Class<?>, IRepositoryBase> _getRepositoryByObject = LazyIndexer.init((objectType) -> {
 
 		for (var p : _registers.entrySet()) {
 			var repository = (AbstractRepository<?>) p.getValue();
@@ -105,7 +105,7 @@ class RepositoryFactory {
 		var repositoryName = String.format("%sRepository", objectType.getSimpleName());
 		if (TypeUtil.exists(repositoryName)) {
 			var repositoryType = TypeUtil.getClass(repositoryName);
-			return (IRepository) SafeAccessImpl.createSingleton(repositoryType);
+			return (IRepositoryBase) SafeAccessImpl.createSingleton(repositoryType);
 		}
 
 		// 都找不到，那么就判断是否为动态类型，如果是，则返回动态类型的通用仓储
