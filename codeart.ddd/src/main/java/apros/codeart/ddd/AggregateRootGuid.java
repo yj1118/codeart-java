@@ -4,6 +4,8 @@ import java.util.UUID;
 
 import apros.codeart.ddd.repository.PropertyRepository;
 
+@MergeDomain
+@FrameworkDomain
 public abstract class AggregateRootGuid extends AggregateRoot {
 
 	@PropertyRepository

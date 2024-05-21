@@ -165,6 +165,14 @@ public final class MethodUtil {
 		return ListUtil.first(methods);
 	}
 
+	/**
+	 * 
+	 * 临时使用一次方法，不做缓存处理
+	 * 
+	 * @param objCls
+	 * @param methodName
+	 * @return
+	 */
 	public static Method resolveByNameOnce(Class<?> objCls, String methodName) {
 		var methods = findMethods(objCls, methodName);
 		return ListUtil.first(methods);

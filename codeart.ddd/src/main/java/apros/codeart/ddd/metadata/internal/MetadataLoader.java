@@ -50,7 +50,7 @@ public final class MetadataLoader {
 		ArrayList<Class<? extends IDomainObject>> domainTypes = new ArrayList<>(_registerItems);
 		for (var findedType : findedTypes) {
 
-			if (!ObjectMeta.isMergeDomainType(findedType)) {
+			if (!ObjectMeta.isMergeDomainType(findedType) && !isEmptyType(findedType)) {
 
 				// 如果找到的是注册的类型，直接忽略，因为已经包含了注册类型
 				if (ListUtil.contains(_registerItems, (t) -> t == findedType))
@@ -68,6 +68,11 @@ public final class MetadataLoader {
 			}
 		}
 		return domainTypes;
+	}
+
+	private static boolean isEmptyType(Class<?> objectType) {
+		var name = objectType.getName();
+		return name.indexOf("$") > -1 && name.endsWith("Empty");
 	}
 
 	private static ArrayList<Class<? extends IDomainObject>> _registerItems = new ArrayList<Class<? extends IDomainObject>>();

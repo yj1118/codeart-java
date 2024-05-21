@@ -2,6 +2,8 @@ package apros.codeart.ddd;
 
 import apros.codeart.ddd.repository.PropertyRepository;
 
+@MergeDomain
+@FrameworkDomain
 public abstract class AggregateRootLong extends AggregateRoot {
 
 	@PropertyRepository

@@ -1,6 +1,8 @@
 package apros.codeart.ddd.dynamic;
 
+import apros.codeart.ddd.FrameworkDomain;
 import apros.codeart.ddd.IAggregateRoot;
+import apros.codeart.ddd.MergeDomain;
 import apros.codeart.ddd.UniqueKeyCalculator;
 import apros.codeart.ddd.internal.AggregateRootEventManager;
 import apros.codeart.ddd.repository.ConstructorRepository;
@@ -8,6 +10,8 @@ import apros.codeart.ddd.repository.RepositoryEventArgs;
 import apros.codeart.ddd.repository.RepositoryRollbackEventArgs;
 import apros.codeart.util.EventHandler;
 
+@MergeDomain
+@FrameworkDomain
 public class DynamicRoot extends DynamicEntity implements IAggregateRoot {
 
 	private AggregateRootEventManager _eventManager;

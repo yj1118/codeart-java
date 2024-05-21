@@ -34,7 +34,7 @@ public final class AppConfig {
 	 */
 	public static Iterable<String> archives() {
 		if (_archives == null) {
-			_archives = ImmutableList.copyOf(_config.getStrings("archives"));
+			_archives = ImmutableList.copyOf(_config.getStrings("archives", () -> ListUtil.empty()));
 		}
 		return _archives;
 	}

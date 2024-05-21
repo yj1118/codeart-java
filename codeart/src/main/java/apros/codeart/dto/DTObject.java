@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.apache.logging.log4j.util.Strings;
 
@@ -114,7 +115,12 @@ public class DTObject implements INullProxy {
 	}
 
 	public Iterable<String> getStrings(String findExp) {
-		return this.getValues(String.class, findExp, null, false);
+		return this.getValues(String.class, findExp, null, true);
+	}
+
+	public Iterable<String> getStrings(String findExp, Supplier<Iterable<String>> getDefaultValue) {
+		var list = this.getValues(String.class, findExp, null, false);
+		return list == null ? getDefaultValue.get() : list;
 	}
 
 	public Iterable<String> getStrings(String findExp, boolean throwError) {
