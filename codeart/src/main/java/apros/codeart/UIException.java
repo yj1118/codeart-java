@@ -19,7 +19,7 @@ public class UIException extends RuntimeException {
 	}
 
 	public static boolean is(Exception ex) {
-		return ex.getClass().isAssignableFrom(UIException.class);
+		return UIException.class.isAssignableFrom(ex.getClass());
 	}
 
 }

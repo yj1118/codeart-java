@@ -115,7 +115,7 @@ public final class MethodUtil {
 	public static Method resolveLike(Class<?> objCls, String methodName, Class<?>[] parameterTypes) {
 
 		var method = resolve(objCls, methodName, parameterTypes, (argType, targetType) -> {
-			return argType.equals(targetType);
+			return argType == targetType;
 		});
 
 		if (method == null) {

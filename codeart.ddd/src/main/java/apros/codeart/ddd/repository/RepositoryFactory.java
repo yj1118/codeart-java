@@ -109,7 +109,7 @@ class RepositoryFactory {
 		}
 
 		// 都找不到，那么就判断是否为动态类型，如果是，则返回动态类型的通用仓储
-		if (objectType.isAssignableFrom(IDynamicObject.class))
+		if (IDynamicObject.class.isAssignableFrom(objectType))
 			return new SqlDynamicRepository(objectType.getSimpleName());
 
 		throw new DomainDrivenException(Language.strings("codeart.ddd", "NotFoundRepository", objectType.getName()));

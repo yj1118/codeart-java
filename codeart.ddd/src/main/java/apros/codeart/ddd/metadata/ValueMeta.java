@@ -11,6 +11,7 @@ import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.Emptyable;
 import apros.codeart.ddd.IEmptyable;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
+import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.Guid;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.StringUtil;
@@ -31,6 +32,13 @@ public class ValueMeta {
 	 * @return
 	 */
 	public Class<?> monotype() {
+		return _monotype;
+	}
+
+	public Class<?> getType() {
+		if (_isCollection) {
+			return TypeUtil.getClass(DomainCollection.class, _monotype);
+		}
 		return _monotype;
 	}
 
@@ -89,10 +97,10 @@ public class ValueMeta {
 				|| valueType.equals(Double.class) || valueType.equals(short.class) || valueType.equals(Short.class))
 			return 0;
 
-		if (valueType.isAssignableFrom(IEmptyable.class))
+		if (IEmptyable.class.isAssignableFrom(valueType))
 			return Emptyable.createEmpty(valueType);
 
-		if (valueType.equals(char.class))
+		if (char.class.equals(valueType))
 			return StringUtil.empty();
 
 		return null;

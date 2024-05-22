@@ -177,7 +177,7 @@ public class PropertyMeta {
 
 		_fullName = String.format("%s.%s", this.declaringType().getName(), this.name());
 
-		_isEmptyable = this.monotype().isAssignableFrom(IEmptyable.class);
+		_isEmptyable = IEmptyable.class.isAssignableFrom(this.monotype());
 	}
 
 	@Override

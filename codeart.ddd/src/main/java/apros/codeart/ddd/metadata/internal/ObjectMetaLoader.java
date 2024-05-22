@@ -117,12 +117,14 @@ public final class ObjectMetaLoader {
 			var types = TypeUtil.getInheriteds(objectType);
 
 			for (var type : types) {
-				if (!type.isAssignableFrom(IDomainObject.class))
+				if (!IDomainObject.class.isAssignableFrom(type))
 					continue;
 
 				var field = FieldUtil.firstStaticField(type);
-				if (field != null)
+				if (field != null) {
 					field.get(null);// 获取一次静态值，触发静态构造
+				}
+
 			}
 
 			// 再触发自身

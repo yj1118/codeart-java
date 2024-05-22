@@ -160,7 +160,7 @@ public final class DTOMapper {
 
 		try {
 
-			if (objectType.isAssignableFrom(IDynamicObject.class))
+			if (IDynamicObject.class.isAssignableFrom(objectType))
 				return (DomainObject) Activator.createInstance(objectType);
 
 			var constructorTip = ConstructorRepositoryImpl.getTip(objectType, false);

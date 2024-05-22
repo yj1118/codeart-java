@@ -35,7 +35,7 @@ public final class ServiceProviderFactory {
 		var servicTypes = Activator.getAnnotatedTypesOf(Service.class, "service");
 		for (var serviceType : servicTypes) {
 
-			if (!serviceType.isAssignableFrom(IServiceProvider.class)) {
+			if (!IServiceProvider.class.isAssignableFrom(serviceType)) {
 				throw new IllegalStateException(strings("codeart.ddd", "TypeNotImple", serviceType.getSimpleName(),
 						IServiceProvider.class.getSimpleName()));
 			}

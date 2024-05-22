@@ -116,23 +116,23 @@ public class ObjectMeta {
 	final static Class<?> DynamicObjectType = IDynamicObject.class;
 
 	public static boolean isDomainObject(Class<?> type) {
-		return type.isAssignableFrom(DomainObjectType);
+		return DomainObjectType.isAssignableFrom(type);
 	}
 
 	public static boolean isValueObject(Class<?> type) {
-		return type.isAssignableFrom(ValueObjectType);
+		return ValueObjectType.isAssignableFrom(type);
 	}
 
 	public static boolean isAggregateRoot(Class<?> type) {
-		return type.isAssignableFrom(AggregateRootType);
+		return AggregateRootType.isAssignableFrom(type);
 	}
 
 	public static boolean isEntityObject(Class<?> type) {
-		return type.isAssignableFrom(EntityObjectType);
+		return EntityObjectType.isAssignableFrom(type);
 	}
 
 	public static boolean isDynamicObject(Class<?> type) {
-		return type.isAssignableFrom(DynamicObjectType);
+		return DynamicObjectType.isAssignableFrom(type);
 	}
 
 	public static boolean isFrameworkDomainType(Class<?> objectType) {

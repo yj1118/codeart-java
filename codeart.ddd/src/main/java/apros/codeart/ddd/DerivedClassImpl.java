@@ -57,7 +57,7 @@ public final class DerivedClassImpl {
 		ArrayList<Class<?>> types = new ArrayList<Class<?>>();
 		for (var impl : _impls) {
 			var type = impl.derivedType();
-			if (type.isAssignableFrom(objectType))
+			if (objectType.isAssignableFrom(type))
 				types.add(type);
 		}
 		return types;

@@ -99,32 +99,43 @@ public final class FieldUtil {
 			// 如果没有访问权限，那么尝试用访问方法
 			var fieldName = field.getName();
 			var objClass = field.getDeclaringClass();
-			var name = getAgreeName(fieldName);
-
-			// getXXX
-			{
-				String methodName = String.format("get%s", StringUtil.firstToUpper(name));
-				var method = MethodUtil.resolve(objClass, methodName, null);
-
-				if (method != null && !method.getReturnType().equals(Void.class) && TypeUtil.isPublic(method))
-					return new Accesser(method);
-
-			}
-
-			// xxx()
-			{
-				String methodName = name;
-				var method = MethodUtil.resolve(objClass, methodName, null);
-
-				if (method != null && !method.getReturnType().equals(Void.class) && TypeUtil.isPublic(method))
-					return new Accesser(method);
-
-			}
-
-			return null;
-
+			return getFieldMethodGetter(fieldName, objClass);
 		}
 	});
+
+	/**
+	 * 
+	 * 用于获得名称为 getXXX() 或者 xx()的方法的访问信息
+	 * 
+	 * @param fieldName
+	 * @param objClass
+	 * @return
+	 */
+	public static Accesser getFieldMethodGetter(String fieldName, Class<?> objClass) {
+		var name = getAgreeName(fieldName);
+
+		// getXXX
+		{
+			String methodName = String.format("get%s", StringUtil.firstToUpper(name));
+			var method = MethodUtil.resolve(objClass, methodName, null);
+
+			if (method != null && !method.getReturnType().equals(Void.class) && TypeUtil.isPublic(method))
+				return new Accesser(method);
+
+		}
+
+		// xxx()
+		{
+			String methodName = StringUtil.firstToLower(name);
+			var method = MethodUtil.resolve(objClass, methodName, null);
+
+			if (method != null && !method.getReturnType().equals(Void.class) && TypeUtil.isPublic(method))
+				return new Accesser(method);
+
+		}
+
+		return null;
+	}
 
 	@Memoized
 	public static Accesser getFieldGetter(Field field) {
@@ -197,28 +208,41 @@ public final class FieldUtil {
 			// 如果没有访问权限，那么尝试用访问方法
 			var fieldName = field.getName();
 			var objClass = field.getDeclaringClass();
-			var name = getAgreeName(fieldName);
-			// 先尝试获得getXXX的方法
-			{
-				String methodName = String.format("set%s", StringUtil.firstToUpper(name));
-				var method = MethodUtil.resolve(objClass, methodName, new Class<?>[] { field.getType() }, void.class);
-				if (method != null && TypeUtil.isPublic(method)) {
-					return new Accesser(method);
-				}
-			}
-
-			// 再尝试获得xxx()的方法
-			{
-				String methodName = name;
-				var method = MethodUtil.resolve(objClass, methodName, new Class<?>[] { field.getType() }, void.class);
-				if (method != null && TypeUtil.isPublic(method)) {
-					return new Accesser(method);
-				}
-			}
-
-			return null;
+			return getFieldMethodSetter(fieldName, field.getType(), objClass);
 		}
 	});
+
+	/**
+	 * 
+	 * 用于获得名称为 setId(...) 或者 id(..)的方法的访问信息
+	 * 
+	 * @param fieldName
+	 * @param fieldValueClass
+	 * @param objClass
+	 * @return
+	 */
+	public static Accesser getFieldMethodSetter(String fieldName, Class<?> fieldValueClass, Class<?> objClass) {
+		var name = getAgreeName(fieldName);
+		// 先尝试获得getXXX的方法
+		{
+			String methodName = String.format("set%s", StringUtil.firstToUpper(name));
+			var method = MethodUtil.resolve(objClass, methodName, new Class<?>[] { fieldValueClass }, void.class);
+			if (method != null && TypeUtil.isPublic(method)) {
+				return new Accesser(method);
+			}
+		}
+
+		// 再尝试获得xxx()的方法
+		{
+			String methodName = StringUtil.firstToLower(name);
+			var method = MethodUtil.resolve(objClass, methodName, new Class<?>[] { fieldValueClass }, void.class);
+			if (method != null && TypeUtil.isPublic(method)) {
+				return new Accesser(method);
+			}
+		}
+
+		return null;
+	}
 
 	@Memoized
 	public static Accesser getFieldSetter(Class<?> objClass, String fieldName) {

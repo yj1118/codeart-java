@@ -168,11 +168,15 @@ public class DomainProperty {
 		}
 	}
 
-	private static AccessInfo getAccess(String propertyName, Class<?> declaringType) {
-		var field = FieldUtil.getField(declaringType, propertyName);
+	private static AccessInfo getAccess(String propertyName, ValueMeta valueMeta, Class<?> declaringType) {
 
-		var accessGet = FieldUtil.canRead(field) ? PropertyAccessLevel.Public : PropertyAccessLevel.Private;
-		var accessSet = FieldUtil.canWrite(field) ? PropertyAccessLevel.Public : PropertyAccessLevel.Private;
+		var getter = FieldUtil.getFieldMethodGetter(propertyName, declaringType);
+		var accessGet = getter == null ? PropertyAccessLevel.Private : PropertyAccessLevel.Public;
+
+		var fieldType = valueMeta.getType();
+
+		var setter = FieldUtil.getFieldMethodSetter(propertyName, fieldType, declaringType);
+		var accessSet = setter == null ? PropertyAccessLevel.Private : PropertyAccessLevel.Public;
 
 		return new AccessInfo(accessGet, accessSet);
 	}
@@ -180,15 +184,14 @@ public class DomainProperty {
 	private static DomainProperty register(String name, boolean isCollection, Class<?> monotype, Class<?> declaringType,
 			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
 
-		// 先获得属性上所有的特性标签
+		var valueMeta = ValueMeta.createBy(isCollection, monotype, getDefaultValue);
+		// 获得属性上所有的特性标签
 		var anns = getAnnotations(declaringType, name);
 
-		var access = getAccess(name, declaringType);
+		var access = getAccess(name, valueMeta, declaringType);
 		var call = getCall(anns);
 
 		var declaring = ObjectMetaLoader.get(declaringType);
-
-		var valueMeta = ValueMeta.createBy(isCollection, monotype, getDefaultValue);
 
 		var validators = PropertyValidatorImpl.getValidators(anns);
 

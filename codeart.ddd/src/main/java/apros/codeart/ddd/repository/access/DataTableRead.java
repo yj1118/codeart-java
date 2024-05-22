@@ -157,7 +157,7 @@ final class DataTableRead {
 	}
 
 	private static Function<Class<?>, Boolean> _isDomainCollection = LazyIndexer.init((type) -> {
-		return type.isAssignableFrom(DomainCollection.class);
+		return DomainCollection.class.isAssignableFrom(type);
 	});
 
 	private static Function<Class<?>, Constructor<?>> _getDomainCollectionConstructor = LazyIndexer.init((type) -> {

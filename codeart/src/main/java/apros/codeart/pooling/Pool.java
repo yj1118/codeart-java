@@ -93,7 +93,7 @@ public class Pool<T> implements AutoCloseable {
 		_itemFactory = itemFactory;
 		_itemRecycler = itemRecycler;
 		_itemDestroyer = itemDestroyer;
-		_itemDisposable = _itemDestroyer != null && itemType.isAssignableFrom(AutoCloseable.class);
+		_itemDisposable = _itemDestroyer != null && AutoCloseable.class.isAssignableFrom(itemType);
 		_matrix = new DualMatrix(this, config.initialVectorCapacity(), config.maxVectorCapacity(),
 				config.initialMatrixCapacity(), config.maxMatrixCapacity());
 
