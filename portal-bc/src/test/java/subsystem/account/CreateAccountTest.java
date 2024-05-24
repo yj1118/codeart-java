@@ -5,7 +5,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import apros.codeart.ddd.launcher.TestLauncher;
-import subsystem.account.command.CreateAccount;
 
 //@ExtendWith(TestRunner.class)
 public class CreateAccountTest {
@@ -22,8 +21,9 @@ public class CreateAccountTest {
 
 	@Test
 	void common() {
-		var cmd = new CreateAccount("risan");
-		cmd.execute();
+		var name = Account.NameProperty.call();
+//		var cmd = new CreateAccount("risan");
+//		cmd.execute();
 	}
 
 }

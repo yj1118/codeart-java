@@ -14,7 +14,7 @@ public class DomainPropertyChangedEventArgs {
 		return _oldValue;
 	}
 
-	private DomainProperty _property;
+	private String _propertyName;
 
 	/**
 	 * 
@@ -22,12 +22,12 @@ public class DomainPropertyChangedEventArgs {
 	 * 
 	 * @return
 	 */
-	public DomainProperty property() {
-		return _property;
+	public String propertyName() {
+		return _propertyName;
 	}
 
-	public DomainPropertyChangedEventArgs(DomainProperty property, Object newValue, Object oldValue) {
-		this._property = property;
+	public DomainPropertyChangedEventArgs(String propertyName, Object newValue, Object oldValue) {
+		this._propertyName = propertyName;
 		this._newValue = newValue;
 		this._oldValue = oldValue;
 	}

@@ -65,7 +65,7 @@ public class DomainProperty {
 	public String call() {
 		if (StringUtil.isNullOrEmpty(_meta.call()))
 			return this.name();
-		return PropertyLabelAnn.getValue(_meta.call());
+		return PropertyLabelImpl.getValue(_meta.call());
 	}
 
 	/**
@@ -326,7 +326,7 @@ public class DomainProperty {
 
 	private static String getCall(Iterable<Annotation> anns) {
 		var ann = getAnnotation(anns, PropertyLabel.class);
-		return ann != null ? ann.name() : null;
+		return ann != null ? ann.value() : null;
 	}
 
 	/**

@@ -530,7 +530,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 
 			this.dataProxy().save(property.name(), value, oldValue);
 
-			handlePropertyChanged(property, value, oldValue);
+			handlePropertyChanged(property.name(), value, oldValue);
 		}
 	}
 
@@ -598,12 +598,16 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 	 * @param property
 	 */
 	public void markPropertyChanged(DomainProperty property) {
-		if (!this.isPropertyLoaded(property))
+		markPropertyChanged(property.name());
+	}
+
+	public void markPropertyChanged(String propertyName) {
+		if (!this.isPropertyLoaded(propertyName))
 			return;
 
-		this.setPropertyChanged(property);
-		var value = this.getValue(property);
-		handlePropertyChanged(property, value, value);
+		this.setPropertyChanged(propertyName);
+		var value = this.getValue(propertyName);
+		handlePropertyChanged(propertyName, value, value);
 	}
 
 	/**
@@ -614,18 +618,18 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 	 * @param newValue
 	 * @param oldValue
 	 */
-	private void handlePropertyChanged(DomainProperty property, Object newValue, Object oldValue) {
+	private void handlePropertyChanged(String propertyName, Object newValue, Object oldValue) {
 		readonlyCheckUp();
-		raisePropertyChanged(property, newValue, oldValue);
+		raisePropertyChanged(propertyName, newValue, oldValue);
 		raiseChangedEvent();
 	}
 
-	private void raisePropertyChanged(DomainProperty property, Object newValue, Object oldValue) {
+	private void raisePropertyChanged(String propertyName, Object newValue, Object oldValue) {
 		if (this.isConstructing())
 			return;// 构造时，不触发任何事件
 
 		this.propertyChanged.raise(this, () -> {
-			return new DomainPropertyChangedEventArgs(property, newValue, oldValue);
+			return new DomainPropertyChangedEventArgs(propertyName, newValue, oldValue);
 		});
 	}
 

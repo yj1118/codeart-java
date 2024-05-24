@@ -9,7 +9,6 @@ import com.google.common.collect.Iterables;
 import apros.codeart.ddd.DomainCollection;
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.DomainObject;
-import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.dynamic.IDynamicObject;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.PropertyMeta;
@@ -109,7 +108,7 @@ public final class DTOMapper {
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private static Object getListValue(DomainObject parent, PropertyMeta property, Iterable<DTObject> values) {
 		var elementType = property.monotype();
-		DomainProperty propertyInParent = property.getProperty();
+		String propertyInParent = property.name();
 
 		// 按照道理说，运行时是可以将DomainCollection转换为 DomainCollection<E>的，因为类型擦除了，但是还是测试下比较好
 		var list = new DomainCollection(elementType, propertyInParent);

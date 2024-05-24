@@ -31,15 +31,15 @@ public class DomainCollection<E> extends ArrayList<E>
 		_parent = parent;
 	}
 
-	private DomainProperty _propertyInParent;
+	private String _propertyNameInParent;
 
 	/**
-	 * 集合在父对象中所担当的属性定义
+	 * 集合在父对象中所担当的属性的名称
 	 * 
 	 * @return
 	 */
-	public DomainProperty propertyInParent() {
-		return _propertyInParent;
+	public String propertyNameInParent() {
+		return _propertyNameInParent;
 	}
 
 	public DomainCollection(Class<E> elementType, DomainProperty propertyInParent) {
@@ -47,17 +47,25 @@ public class DomainCollection<E> extends ArrayList<E>
 	}
 
 	public DomainCollection(Class<E> elementType, DomainProperty propertyInParent, Iterable<E> items) {
+		this(elementType, propertyInParent.name(), items);
+	}
+
+	public DomainCollection(Class<E> elementType, String propertyNameInParent) {
+		this(elementType, propertyNameInParent, null);
+	}
+
+	public DomainCollection(Class<E> elementType, String propertyNameInParent, Iterable<E> items) {
 		if (items != null) {
 			for (var item : items)
 				this.add(item);
 		}
-		_propertyInParent = propertyInParent;
+		_propertyNameInParent = propertyNameInParent;
 		_elementType = elementType;
 	}
 
 	@Override
 	public Object clone() {
-		return new DomainCollection<E>(_elementType, _propertyInParent, this);
+		return new DomainCollection<E>(_elementType, _propertyNameInParent, this);
 	}
 
 	@Override
@@ -194,7 +202,7 @@ public class DomainCollection<E> extends ArrayList<E>
 			return;
 		if (this.getParent().isConstructing())
 			return; // 构造时不用标记
-		this.getParent().markPropertyChanged(_propertyInParent);
+		this.getParent().markPropertyChanged(_propertyNameInParent);
 	}
 
 	@Override

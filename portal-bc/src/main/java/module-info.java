@@ -4,4 +4,6 @@ module portal_bc {
 
 	exports subsystem.account;
 	exports subsystem.account.command;
+
+	opens subsystem.account;
 }

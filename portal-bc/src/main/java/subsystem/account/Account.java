@@ -2,6 +2,7 @@ package subsystem.account;
 
 import apros.codeart.ddd.AggregateRootLong;
 import apros.codeart.ddd.DomainProperty;
+import apros.codeart.ddd.PropertyLabel;
 import apros.codeart.ddd.repository.ConstructorRepository;
 import apros.codeart.ddd.repository.PropertyRepository;
 import apros.codeart.ddd.validation.Email;
@@ -10,11 +11,11 @@ import apros.codeart.ddd.validation.StringLength;
 import apros.codeart.util.StringUtil;
 
 public class Account extends AggregateRootLong {
-
 	@PropertyRepository()
 	@NotEmpty()
 	@StringLength(min = 1, max = 15)
-	static final DomainProperty NameProperty = DomainProperty.register("name", String.class, Account.class);
+	@PropertyLabel("accountName")
+	static final DomainProperty NameProperty = DomainProperty.register("Name", String.class, Account.class);
 
 	/**
 	 * 

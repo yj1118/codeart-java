@@ -67,6 +67,9 @@ public final class MetadataLoader {
 				domainTypes.add(findedType);
 			}
 		}
+
+		domainTypes.trimToSize();
+
 		return domainTypes;
 	}
 

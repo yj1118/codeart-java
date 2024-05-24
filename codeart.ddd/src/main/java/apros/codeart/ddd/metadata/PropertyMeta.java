@@ -29,15 +29,6 @@ public class PropertyMeta {
 		return _name;
 	}
 
-	private DomainProperty _property;
-
-	public DomainProperty getProperty() {
-		if (_property == null) {
-			_property = DomainProperty.getProperty(this.declaringType(), this.name());
-		}
-		return _property;
-	}
-
 	/**
 	 * 属性的值的类型，比如字符串/整型等
 	 */

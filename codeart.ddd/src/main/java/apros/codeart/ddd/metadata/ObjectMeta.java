@@ -11,6 +11,7 @@ import apros.codeart.ddd.IObjectValidator;
 import apros.codeart.ddd.IValueObject;
 import apros.codeart.ddd.MergeDomain;
 import apros.codeart.ddd.dynamic.IDynamicObject;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
@@ -48,6 +49,10 @@ public class ObjectMeta {
 		return _properties;
 	}
 
+	private boolean existProperty(String propertyName) {
+		return ListUtil.find(_properties, (p) -> p.name().equalsIgnoreCase(propertyName)) != null;
+	}
+
 	public PropertyMeta findProperty(String propertyName) {
 		var dp = ListUtil.find(_properties, (p) -> p.name().equalsIgnoreCase(propertyName));
 		if (dp == null)
@@ -57,7 +62,7 @@ public class ObjectMeta {
 	}
 
 	void addProperty(PropertyMeta property) {
-		if (findProperty(property.name()) != null)
+		if (existProperty(property.name()))
 			throw new DomainDrivenException(
 					Language.strings("codeart.ddd", "RepeatedDomainProperty", _name, property.name()));
 		_properties.add(property);
@@ -105,6 +110,34 @@ public class ObjectMeta {
 	@Override
 	public int hashCode() {
 		return _objectType.hashCode();
+	}
+
+	/**
+	 * 
+	 */
+	public void merge() {
+		// 将基类的属性合并到子类
+		var types = TypeUtil.getInheriteds(this.objectType());
+
+		for (var type : types) {
+			if (!ObjectMetaLoader.isMetadatable(type))
+				continue;
+
+			var inheritedMeta = ObjectMetaLoader.get(type);
+
+			var ps = inheritedMeta.properties();
+
+			for (var p : ps) {
+				if (existProperty(p.name()))
+					continue;
+
+				var np = new PropertyMeta(p.name(), p.value(), this, p.accessGet(), p.accessSet(), p.call(),
+						p.validators(), p.lazy(), p.dataLoader());
+
+				_properties.add(np);
+			}
+
+		}
 	}
 
 	// #region 辅助

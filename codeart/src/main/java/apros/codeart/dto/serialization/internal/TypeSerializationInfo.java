@@ -11,6 +11,7 @@ import com.google.common.base.Preconditions;
 import apros.codeart.dto.DTObject;
 import apros.codeart.dto.serialization.IDTOSerializable;
 import apros.codeart.runtime.Activator;
+import apros.codeart.runtime.FieldUtil;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;
@@ -74,8 +75,12 @@ public abstract class TypeSerializationInfo {
 		if (this.isCollection()) // 类型是集合，因此类型本身也要加入序列化
 			memberInfos.add(MemberSerializationInfo.create(this._targetClass));
 
-		var fields = this.getTargetClass().getDeclaredFields();
+		var fields = FieldUtil.getFields(this.getTargetClass());
 		for (var field : fields) {
+
+			if (FieldUtil.isStatic(field))
+				continue;
+
 			var ann = getMemberAnnotation(field);
 			if (ann == null)
 				continue;

@@ -28,9 +28,24 @@ public final class FieldUtil {
 	 * 
 	 * 但如果只是使用Field对象来获取字段的信息（例如字段的名称、类型等），那么通常不会存在线程安全问题。
 	 */
-	private static Function<Class<?>, Field[]> _getFields = LazyIndexer.init((cls) -> {
-		return cls.getDeclaredFields();
+	private static Function<Class<?>, ArrayList<Field>> _getFields = LazyIndexer.init((cls) -> {
+
+		ArrayList<Field> fields = new ArrayList<Field>();
+
+		for (Class<?> current = cls; current != null; current = current.getSuperclass()) {
+			Field[] temps = current.getDeclaredFields();
+			ListUtil.addRange(fields, temps);
+		}
+
+		fields.trimToSize();
+
+		return fields;
+
 	});
+
+	public static Iterable<Field> getFields(Class<?> type) {
+		return _getFields.apply(type);
+	}
 
 	/**
 	 * 由于只是读信息，所以该方法线程安全
@@ -48,7 +63,7 @@ public final class FieldUtil {
 		Class<?> cls = obj.getClass();
 
 		// 获取类声明的所有字段
-		Field[] fields = _getFields.apply(cls);
+		var fields = _getFields.apply(cls);
 
 		try {
 			// 遍历字段数组
@@ -271,35 +286,6 @@ public final class FieldUtil {
 		int modifiers = field.getModifiers();
 
 		return Modifier.isStatic(modifiers);
-	}
-
-	public static Iterable<Field> getStaticFields(Class<?> type) {
-		Field[] fields = _getFields.apply(type);
-		ArrayList<Field> staticFields = new ArrayList<Field>(fields.length);
-
-		for (Field field : fields) {
-			if (isStatic(field))
-				staticFields.add(field);
-		}
-
-		return staticFields;
-	}
-
-	/**
-	 * 
-	 * 获得类型的第一个静态字段
-	 * 
-	 * @param type
-	 * @return
-	 */
-	public static Field firstStaticField(Class<?> type) {
-		Field[] fields = _getFields.apply(type);
-
-		for (Field field : fields) {
-			if (isStatic(field))
-				return field;
-		}
-		return null;
 	}
 
 	public static Field getField(Class<?> type, String name) {

@@ -3,6 +3,7 @@ package apros.codeart.ddd.metadata.internal;
 import static apros.codeart.i18n.Language.strings;
 import static apros.codeart.runtime.Util.propagate;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -17,6 +18,7 @@ import apros.codeart.ddd.repository.ObjectRepositoryImpl;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.FieldUtil;
 import apros.codeart.runtime.TypeUtil;
+import apros.codeart.util.ListUtil;
 
 public final class ObjectMetaLoader {
 
@@ -27,10 +29,29 @@ public final class ObjectMetaLoader {
 	private static Map<String, ObjectMeta> _metas = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
 	private static ObjectMeta create(Class<?> domainType) {
-		var typeName = domainType.getSimpleName();
-		var meta = createByClass(domainType);
-		_metas.put(typeName, meta);
-		return meta;
+
+		var types = TypeUtil.getInheriteds(domainType);
+
+		// 先要初始化基类的
+		for (var type : types) {
+			if (!isMetadatable(type))
+				continue;
+
+			var typeName = type.getSimpleName();
+			if (_metas.containsKey(typeName))
+				continue;
+
+			var meta = createByClass(type);
+			_metas.put(typeName, meta);
+		}
+
+		{
+			// 再创建自身
+			var typeName = domainType.getSimpleName();
+			var meta = createByClass(domainType);
+			_metas.put(typeName, meta);
+			return meta;
+		}
 	}
 
 	private static ObjectMeta createByClass(Class<?> objectType) {
@@ -95,12 +116,36 @@ public final class ObjectMetaLoader {
 			DerivedClassImpl.init(domainType);
 		}
 
-//		// 全部执行完毕后，再触发ObjectMeta完成加载的方法
-//		for (var domainType : domainTypes) {
-//			var meta = get(domainType);
-//			meta.loadComplete();
-//		}
+		// 全部执行完毕后，再触发ObjectMeta的合并方法，使继承链的信息合并到子类
+		for (var domainType : domainTypes) {
+			var meta = get(domainType);
+			meta.merge();
+		}
 
+		// 最后移除多余的元数据（是由基类建立的过度元数据）
+		var typeNames = _metas.keySet().toArray();
+		for (var typeName : typeNames) {
+			if (!ListUtil.contains(domainTypes, (t) -> t.getSimpleName().equalsIgnoreCase((String) typeName))) {
+				_metas.remove(typeName);
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * 获得类型的第一个静态字段
+	 * 
+	 * @param type
+	 * @return
+	 */
+	private static Field firstStaticField(Class<?> type) {
+		Field[] fields = type.getDeclaredFields(); // 注意，这个方法只会获得类自身的字段定义，不会包含父级
+
+		for (Field field : fields) {
+			if (FieldUtil.isStatic(field))
+				return field;
+		}
+		return null;
 	}
 
 	/**
@@ -112,16 +157,16 @@ public final class ObjectMetaLoader {
 	 */
 	private static void staticConstructor(Class<?> objectType) {
 		try {
-			// 当new一个实例时，静态构造会从基类依次执行,但是如果仅仅只是获得子类的静态成员，那么是不会触发基类的静态构造函数的
-			// 因此，我们需要从基类开始，依次调用
+			// 我们需要从基类开始，依次调用
 			var types = TypeUtil.getInheriteds(objectType);
 
 			for (var type : types) {
-				if (!IDomainObject.class.isAssignableFrom(type))
+				if (!isMetadatable(type))
 					continue;
 
-				var field = FieldUtil.firstStaticField(type);
+				var field = firstStaticField(type);
 				if (field != null) {
+					field.setAccessible(true);
 					field.get(null);// 获取一次静态值，触发静态构造
 				}
 
@@ -129,14 +174,25 @@ public final class ObjectMetaLoader {
 
 			// 再触发自身
 			{
-				var field = FieldUtil.firstStaticField(objectType);
-				if (field != null)
+				var field = firstStaticField(objectType);
+				if (field != null) {
+					field.setAccessible(true);
 					field.get(null);
+				}
 			}
 
 		} catch (Exception e) {
 			throw propagate(e);
 		}
+
+	}
+
+	public static boolean isMetadatable(Class<?> objectType) {
+		if (ObjectMeta.isAggregateRoot(objectType) || ObjectMeta.isEntityObject(objectType)
+				|| ObjectMeta.isValueObject(objectType))
+			return true;
+
+		return false;
 
 	}
 
