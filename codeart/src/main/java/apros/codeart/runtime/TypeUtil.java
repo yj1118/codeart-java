@@ -163,7 +163,6 @@ public final class TypeUtil {
 	}
 
 	public static Class<?> getClass(String className) {
-
 		return getClass(className, getDefaultClassLoader());
 	}
 
@@ -235,6 +234,19 @@ public final class TypeUtil {
 		};
 		// 返回 DomainCollection<T> 的 Class 对象
 		return (Class<?>) type;
+	}
+
+	public static Class<?>[] getActualType(Class<?> type) {
+		Type genericSuperclass = type.getGenericSuperclass();
+		if (genericSuperclass instanceof ParameterizedType) {
+			Type[] actualTypeArguments = ((ParameterizedType) genericSuperclass).getActualTypeArguments();
+			Class<?>[] ats = new Class<?>[actualTypeArguments.length];
+			for (var i = 0; i < ats.length; i++) {
+				ats[i] = (Class<?>) actualTypeArguments[i];
+			}
+			return ats;
+		}
+		return null;
 	}
 
 }

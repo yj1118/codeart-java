@@ -25,11 +25,5 @@
 	"saga":{
 		"log.folder":"",
 		"log.retain":30
-	},
-	"cqrs":{
-		"master":{
-			"user":["id","name","account"],
-			"account":["createTime"]
-		}
 	}
 }

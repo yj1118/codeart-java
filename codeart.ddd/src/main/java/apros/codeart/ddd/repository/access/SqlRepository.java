@@ -35,6 +35,6 @@ public abstract class SqlRepository<TRoot extends IAggregateRoot> extends Abstra
 
 	@Override
 	public IAggregateRoot findRoot(Object id, QueryLevel level) {
-		return DataPortal.querySingle(this.getRootType(), id, level);
+		return DataPortal.querySingle(this.rootType(), id, level);
 	}
 }

@@ -34,7 +34,12 @@ public final class Activator {
 		var types = new Class<?>[1 + args.length];
 		types[0] = clazz;
 		for (var i = 0; i < args.length; i++) {
-			types[i + 1] = args[i].getClass();
+			var arg = args[i];
+			if (arg instanceof Annotation) {
+				types[i + 1] = ((Annotation) arg).annotationType();
+			} else {
+				types[i + 1] = arg.getClass();
+			}
 		}
 		return createInstance(types, args);
 	}
@@ -194,6 +199,28 @@ public final class Activator {
 
 		return reflections.getTypesAnnotatedWith(annotation);
 	}
+
+//	public static Class<?> getClass(String pattern) {
+//
+//		var archives = App.archives();
+//
+//		var urls = ListUtil.mapMany(archives, (archive) -> {
+//			return ClasspathHelper.forPackage(archive);
+//		});
+//
+//		// 创建一个Reflections实例，指定要扫描的包
+//		Reflections reflections = new Reflections(
+//				new ConfigurationBuilder().setUrls(urls).setScanners(Scanners.TypesAnnotated, Scanners.SubTypes));
+//
+//		// 查找符合条件的类
+//		Set<Class<?>> classes = reflections.getSubTypesOf(Object.class);
+//
+//		// 过滤类名以匹配模糊查找
+//		var target = classes.stream().filter(clazz -> clazz.getSimpleName().contains(pattern)).findFirst();
+//		if (target.isEmpty())
+//			return null;
+//		return target.get();
+//	}
 
 //	/// <summary>
 //	/// 创建实例，IL的实现，高效率

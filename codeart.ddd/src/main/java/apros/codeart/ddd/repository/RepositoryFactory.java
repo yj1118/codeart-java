@@ -94,18 +94,24 @@ class RepositoryFactory {
 
 	private static final Function<Class<?>, IRepositoryBase> _getRepositoryByObject = LazyIndexer.init((objectType) -> {
 
-		for (var p : _registers.entrySet()) {
-			var repository = (AbstractRepository<?>) p.getValue();
-			if (repository.getRootType() == objectType)
-				return repository;
-		}
+		// 根据对象标记找
+		var objectTip = ObjectRepositoryImpl.getTip(objectType, false);
+		if (objectTip != null && objectTip.repositoryInterfaceType() != null)
+			return (IRepositoryBase) RepositoryFactory.create(objectTip.repositoryInterfaceType());
 
 		// 通过约定找
-		// 例如：UserSubsytem.IUserRepository的仓储就是UserSubsytem.UserRepository
-		var repositoryName = String.format("%sRepository", objectType.getSimpleName());
+		// 例如：UserSubsytem.User的仓储就是UserSubsytem.UserRepository
+		var repositoryName = String.format("%sRepository", objectType.getName());
 		if (TypeUtil.exists(repositoryName)) {
 			var repositoryType = TypeUtil.getClass(repositoryName);
 			return (IRepositoryBase) SafeAccessImpl.createSingleton(repositoryType);
+		}
+
+		// 根据已注册的仓储找
+		for (var p : _registers.entrySet()) {
+			var repository = (AbstractRepository<?>) p.getValue();
+			if (repository.rootType() == objectType)
+				return repository;
 		}
 
 		// 都找不到，那么就判断是否为动态类型，如果是，则返回动态类型的通用仓储

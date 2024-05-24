@@ -11,7 +11,7 @@ import apros.codeart.util.StringUtil;
 
 @SafeAccess
 public class ASCIIStringValidator extends PropertyValidatorImpl {
-	private ASCIIStringValidator(ASCIIString tip) {
+	public ASCIIStringValidator(ASCIIString tip) {
 		super(tip);
 	}
 

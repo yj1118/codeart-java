@@ -1,5 +1,6 @@
 package apros.codeart.ddd;
 
+import static apros.codeart.i18n.Language.strings;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
@@ -14,5 +15,6 @@ public class AppTest {
 	@Test
 	public void shouldAnswerWithTrue() {
 		assertTrue(true);
+		var str = strings("apros.codeart.ddd", "DataTypeNotSupported", "xxx");
 	}
 }

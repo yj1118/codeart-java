@@ -59,7 +59,8 @@ public final class CQRSConfig {
 			init(_section);
 		} else {
 			_section = DTObject.Empty;
-			_masters = new ArrayList<Master>();
+			_masters = null;
+			_slaves = null;
 		}
 
 	}

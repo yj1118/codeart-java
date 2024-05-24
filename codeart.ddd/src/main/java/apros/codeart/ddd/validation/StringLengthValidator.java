@@ -11,7 +11,7 @@ import apros.codeart.util.SafeAccess;
 @SafeAccess
 public class StringLengthValidator extends PropertyValidatorImpl {
 
-	private StringLengthValidator(StringLength tip) {
+	public StringLengthValidator(StringLength tip) {
 		super(tip);
 	}
 

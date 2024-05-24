@@ -39,29 +39,7 @@ public final class Repository {
 	}
 
 	public static IRepositoryBase createByObjectType(Class<?> objectType) {
-		var objectTip = ObjectRepositoryImpl.getTip(objectType, false);
-		if (objectTip == null)
-			return null;
-		return (IRepositoryBase) RepositoryFactory.create(objectTip.repositoryInterfaceType());
-	}
-
-	/**
-	 * 得到对象类型对应的仓储上定义的方法
-	 * 
-	 * @param objectType
-	 * @param methodName
-	 * @return
-	 */
-	public static Method getMethodFromRepository(Class<?> objectType, String methodName) {
-		if (StringUtil.isNullOrEmpty(methodName))
-			return null;
-		var repositoryType = RepositoryFactory.getRepositoryByObject(objectType).getClass();
-
-		var method = MethodUtil.resolveByName(repositoryType, methodName);
-		if (method == null)
-			throw new DomainDrivenException(Language.strings("codeart.ddd", "NoDefineMethodFromRepository",
-					repositoryType.getName(), methodName));
-		return method;
+		return RepositoryFactory.getRepositoryByObject(objectType);
 	}
 
 	/**
@@ -87,4 +65,24 @@ public final class Repository {
 	public static IDynamicRepository createDynamic(String dynamicTypeName) {
 		return (IDynamicRepository) create(dynamicTypeName);
 	}
+
+	/**
+	 * 得到对象类型对应的仓储上定义的方法
+	 * 
+	 * @param objectType
+	 * @param methodName
+	 * @return
+	 */
+	public static Method getMethodFromRepository(Class<?> objectType, String methodName) {
+		if (StringUtil.isNullOrEmpty(methodName))
+			return null;
+		var repositoryType = RepositoryFactory.getRepositoryByObject(objectType).getClass();
+
+		var method = MethodUtil.resolveByName(repositoryType, methodName);
+		if (method == null)
+			throw new DomainDrivenException(Language.strings("codeart.ddd", "NoDefineMethodFromRepository",
+					repositoryType.getName(), methodName));
+		return method;
+	}
+
 }

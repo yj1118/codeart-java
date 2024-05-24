@@ -32,10 +32,10 @@ final class DomainHost {
 
 		// 以下代码执行顺序不能变
 
-		var domainTypes = MetadataLoader.load();
-
 		// 首先要初始化分支，分支会下载远程对象的定义
 		Brancher.initialize();
+
+		var domainTypes = MetadataLoader.load();
 
 		DataModelLoader.load(domainTypes);
 

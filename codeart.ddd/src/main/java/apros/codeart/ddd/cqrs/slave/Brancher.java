@@ -13,12 +13,13 @@ public final class Brancher {
 
 	public static void initialize() {
 		loadRemoteObjectMeta();
-
 		subscribeEvents();
 	}
 
 	private static void loadRemoteObjectMeta() {
 		var slaves = CQRSConfig.slaves();
+		if (slaves == null)
+			return;
 		for (var slave : slaves) {
 			var scheme = getRemoteObjectMeta(slave.name());
 			var dynamicType = SchemeCode.parse(scheme);
@@ -36,6 +37,8 @@ public final class Brancher {
 
 	private static void subscribeEvents() {
 		var slaves = CQRSConfig.slaves();
+		if (slaves == null)
+			return;
 		for (var slave : slaves) {
 			RemoteObjectAdded.subscribe(slave.name());
 			RemoteObjectUpdated.subscribe(slave.name());

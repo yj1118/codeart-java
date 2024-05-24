@@ -13,7 +13,7 @@ import apros.codeart.util.StringUtil;
 
 @SafeAccess
 public class EmailValidator extends PropertyValidatorImpl {
-	private EmailValidator(Email tip) {
+	public EmailValidator(Email tip) {
 		super(tip);
 	}
 

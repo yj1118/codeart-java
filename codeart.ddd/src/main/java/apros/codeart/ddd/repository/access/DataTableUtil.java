@@ -112,7 +112,7 @@ final class DataTableUtil {
 		}
 
 		DbType dbType = _typeMap.get(dataType);
-		if (dbType == null)
+		if (dbType != null)
 			return dbType;
 
 		throw new IllegalStateException(strings("codeart.ddd", "DataTypeNotSupported", dataType.getName()));

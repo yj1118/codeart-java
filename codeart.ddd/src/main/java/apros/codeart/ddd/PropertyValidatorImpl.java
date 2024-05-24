@@ -61,7 +61,7 @@ public abstract class PropertyValidatorImpl implements IPropertyValidator {
 		// 例如： Email 注解并且同时存在EmailValidator，那么我们就认为该属性需要通过EmailValidator验证
 
 		for (var ann : anns) {
-			var annName = ann.annotationType().getSimpleName();
+			var annName = ann.annotationType().getName();
 
 			var validatorType = TypeUtil.getClass(String.format("%sValidator", annName),
 					ann.annotationType().getClassLoader());

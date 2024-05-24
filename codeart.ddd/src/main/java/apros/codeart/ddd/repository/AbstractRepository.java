@@ -5,11 +5,27 @@ import apros.codeart.ddd.IRepository;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.StatusEvent;
 import apros.codeart.ddd.StatusEventType;
+import apros.codeart.runtime.TypeUtil;
 
 public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends PersistRepository
 		implements IRepository<TRoot> {
 
-	protected abstract Class<? extends TRoot> getRootType();
+	private Class<? extends TRoot> _rootType;
+
+	public Class<? extends TRoot> rootType() {
+		if (_rootType == null) {
+			_rootType = getRootTypeImpl();
+		}
+		return _rootType;
+	}
+
+	public AbstractRepository() {
+	}
+
+	@SuppressWarnings("unchecked")
+	protected Class<? extends TRoot> getRootTypeImpl() {
+		return (Class<? extends TRoot>) TypeUtil.getActualType(this.getClass())[0];
+	}
 
 	// #region 增加数据
 

@@ -17,7 +17,7 @@ import apros.codeart.util.StringUtil;
 @SafeAccess
 public class NotEmptyValidator extends PropertyValidatorImpl {
 
-	private NotEmptyValidator(NotEmpty tip) {
+	public NotEmptyValidator(NotEmpty tip) {
 		super(tip);
 	}
 

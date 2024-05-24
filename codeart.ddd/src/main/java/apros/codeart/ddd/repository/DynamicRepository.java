@@ -11,16 +11,16 @@ import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
  */
 public abstract class DynamicRepository extends AbstractRepository<DynamicRoot> {
 
-	private Class<? extends DynamicRoot> _rootType;
+	private String _typeName;
 
-	@SuppressWarnings("unchecked")
 	public DynamicRepository(String typeName) {
-		_rootType = (Class<? extends DynamicRoot>) ObjectMetaLoader.get(typeName).objectType();
+		_typeName = typeName;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	protected Class<? extends DynamicRoot> getRootType() {
-		return _rootType;
+	protected Class<? extends DynamicRoot> getRootTypeImpl() {
+		return (Class<? extends DynamicRoot>) ObjectMetaLoader.get(_typeName).objectType();
 	}
 
 }
