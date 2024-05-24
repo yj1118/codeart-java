@@ -28,7 +28,7 @@ public final class Forker {
 	public static Master findMaster(String objTypeName, boolean throwError) {
 		var master = _findMaster.apply(objTypeName);
 		if (master == null && throwError) {
-			throw new IllegalStateException(Language.strings("codeart.ddd", "NoMaster", objTypeName));
+			throw new IllegalStateException(Language.strings("apros.codeart.ddd", "NoMaster", objTypeName));
 		}
 
 		return master;

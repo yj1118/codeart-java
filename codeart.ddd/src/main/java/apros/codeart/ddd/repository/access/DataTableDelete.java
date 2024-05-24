@@ -26,7 +26,7 @@ final class DataTableDelete {
 		}
 
 		throw new IllegalStateException(
-				Language.strings("codeart.ddd", "PersistentObjectError", obj.getClass().getName()));
+				Language.strings("apros.codeart.ddd", "PersistentObjectError", obj.getClass().getName()));
 	}
 
 	/**
@@ -96,7 +96,7 @@ final class DataTableDelete {
 
 		var ar = TypeUtil.as(obj, IAggregateRoot.class);
 		if (ar == null)
-			throw new IllegalStateException(Language.strings("codeart.ddd", "CanNotDeleteNonAggregateRoot"));
+			throw new IllegalStateException(Language.strings("apros.codeart.ddd", "CanNotDeleteNonAggregateRoot"));
 
 		_self.checkDataVersion(obj);
 

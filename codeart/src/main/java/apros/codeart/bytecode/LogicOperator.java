@@ -59,7 +59,7 @@ public final class LogicOperator {
 		Class<?> cls = g.evalStack().matchType(2);
 		MethodVisitor visitor = g.visitor();
 		if (!cls.isPrimitive()) {
-			throw new IllegalArgumentException(strings("codeart", "OperationMismatch", "LessThan", cls.getName()));
+			throw new IllegalArgumentException(strings("apros.codeart", "OperationMismatch", "LessThan", cls.getName()));
 		} else if (cls == long.class) {
 			visitor.visitInsn(Opcodes.LCMP); // 返回-1就是小于
 			visitor.visitInsn(Opcodes.ICONST_M1);

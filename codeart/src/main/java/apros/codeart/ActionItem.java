@@ -12,11 +12,11 @@ public record ActionItem(Class<?> type, String methodName) {
 		var method = MethodUtil.resolveByNameOnce(type, methodName);
 
 		if (method == null) {
-			throw new IllegalStateException(strings("codeart", "NotFoundMethod", type.getName(), methodName));
+			throw new IllegalStateException(strings("apros.codeart", "NotFoundMethod", type.getName(), methodName));
 		}
 
 		if (!MethodUtil.isStatic(method) || method.getParameterCount() > 0 || !MethodUtil.isPublic(method))
-			throw new IllegalStateException(strings("codeart", "LifeMethodError", type.getName(), methodName));
+			throw new IllegalStateException(strings("apros.codeart", "LifeMethodError", type.getName(), methodName));
 
 		try {
 			method.invoke(null);

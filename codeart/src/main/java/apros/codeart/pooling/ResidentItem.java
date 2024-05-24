@@ -66,7 +66,7 @@ final class ResidentItem implements IPoolItem {
 			this.dispose(); // 直接销毁
 		} else {
 			if (!_isBorrowed.getAcquire())
-				throw new PoolingException(strings("codeart", "CannotReturnPoolItem", _pool.getClass().getName()));
+				throw new PoolingException(strings("apros.codeart", "CannotReturnPoolItem", _pool.getClass().getName()));
 			_pool.clearItem(this); // 让池来处理清理工作
 			_isBorrowed.setRelease(false); // 再标记已归还了
 			_pool.borrowedDecrement(); // 借出数-1

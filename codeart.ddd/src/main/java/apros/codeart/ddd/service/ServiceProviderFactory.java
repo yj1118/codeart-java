@@ -36,7 +36,7 @@ public final class ServiceProviderFactory {
 		for (var serviceType : servicTypes) {
 
 			if (!IServiceProvider.class.isAssignableFrom(serviceType)) {
-				throw new IllegalStateException(strings("codeart.ddd", "TypeNotImple", serviceType.getSimpleName(),
+				throw new IllegalStateException(strings("apros.codeart.ddd", "TypeNotImple", serviceType.getSimpleName(),
 						IServiceProvider.class.getSimpleName()));
 			}
 

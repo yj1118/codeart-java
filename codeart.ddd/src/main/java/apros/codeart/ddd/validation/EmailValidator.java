@@ -33,7 +33,7 @@ public class EmailValidator extends PropertyValidatorImpl {
 
 		if (!isMatch(value))
 			result.append(property.name(), "email",
-					Language.strings("codeart.ddd", "IncorrectEmailFormat", property.call()));
+					Language.strings("apros.codeart.ddd", "IncorrectEmailFormat", property.call()));
 
 	}
 

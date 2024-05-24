@@ -10,11 +10,11 @@ public class NoTypeDefinedException extends RuntimeException {
 	private static final long serialVersionUID = 3155673696123721561L;
 
 	public NoTypeDefinedException(Class<?> type) {
-		super(Language.strings("codeart", "NoTypeDefined", type.getName()));
+		super(Language.strings("apros.codeart", "NoTypeDefined", type.getName()));
 	}
 
 	public NoTypeDefinedException(String typeName) {
-		super(Language.strings("codeart", "NoTypeDefined", typeName));
+		super(Language.strings("apros.codeart", "NoTypeDefined", typeName));
 	}
 
 }

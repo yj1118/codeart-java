@@ -10,7 +10,7 @@ public class TypeUnsafeAccessException extends RuntimeException {
 	private static final long serialVersionUID = 4166347031194214026L;
 
 	public TypeUnsafeAccessException(Class<?> type) {
-		super(Language.strings("codeart", "TypeUnsafeConcurrentAccess", type.getName()));
+		super(Language.strings("apros.codeart", "TypeUnsafeConcurrentAccess", type.getName()));
 	}
 
 }

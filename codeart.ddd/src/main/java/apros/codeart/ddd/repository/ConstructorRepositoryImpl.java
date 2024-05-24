@@ -67,7 +67,7 @@ public class ConstructorRepositoryImpl {
 		var tip = _getTip.apply(objectType);
 		if (tip == null && throwError) {
 			throw new DomainDrivenException(
-					Language.strings("codeart.ddd", "NoRepositoryConstructor", objectType.getName()));
+					Language.strings("apros.codeart.ddd", "NoRepositoryConstructor", objectType.getName()));
 		}
 		return tip;
 	}

@@ -26,7 +26,7 @@ class RemoveExpression extends TransformExpression {
 		for (var target : targets) {
 			var parent = target.getParent();
 			if (parent == null)
-				throw new IllegalArgumentException(strings("codeart", "UnknownException"));
+				throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
 			parent.removeMember(target);
 		}
 	}

@@ -35,7 +35,7 @@ public final class DataSource {
 			case "sqlserver":
 				return DatabaseType.SqlServer;
 			}
-			throw new DomainDrivenException(Language.strings("codeart.ddd", "UnsupportedDatabase"));
+			throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "UnsupportedDatabase"));
 		}
 
 		private static IDatabaseAgent getAgent(DatabaseType dbType) {
@@ -51,7 +51,7 @@ public final class DataSource {
 			default:
 				break;
 			}
-			throw new DomainDrivenException(Language.strings("codeart.ddd", "UnsupportedDatabase"));
+			throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "UnsupportedDatabase"));
 		}
 
 		static {

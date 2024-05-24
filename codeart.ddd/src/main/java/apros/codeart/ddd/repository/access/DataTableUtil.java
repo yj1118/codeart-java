@@ -115,7 +115,7 @@ final class DataTableUtil {
 		if (dbType != null)
 			return dbType;
 
-		throw new IllegalStateException(strings("codeart.ddd", "DataTypeNotSupported", dataType.getName()));
+		throw new IllegalStateException(strings("apros.codeart.ddd", "DataTypeNotSupported", dataType.getName()));
 	}
 
 	public static Object getObjectId(Object obj) {
@@ -131,12 +131,12 @@ final class DataTableUtil {
 		if (dto != null)
 			return dto.getValue("Id");
 
-		throw new IllegalStateException(strings("codeart.ddd", "UnableGetId", obj.getClass().getSimpleName()));
+		throw new IllegalStateException(strings("apros.codeart.ddd", "UnableGetId", obj.getClass().getSimpleName()));
 	}
 
 	public static ValueField getForeignKey(DataTable table, GeneratedFieldType keyType, DbFieldType... dbFieldTypes) {
 		if (table.idField() == null)
-			throw new IllegalStateException(Language.strings("codeart.ddd", "TableNotId", table.name()));
+			throw new IllegalStateException(Language.strings("apros.codeart.ddd", "TableNotId", table.name()));
 		String name = table.tableIdName();
 		switch (keyType) {
 		case GeneratedFieldType.RootKey: {

@@ -35,10 +35,10 @@ public class StringLengthValidator extends PropertyValidatorImpl {
 			int length = value.length();
 			if (length < tip.min())
 				result.append(property.name(), ErrorCode,
-						Language.strings("codeart.ddd", "StringLengthLessThan", property.call(), tip.min()));
+						Language.strings("apros.codeart.ddd", "StringLengthLessThan", property.call(), tip.min()));
 			else if (length > tip.max())
 				result.append(property.name(), ErrorCode,
-						Language.strings("codeart.ddd", "StringLengthMoreThan", property.call(), tip.max()));
+						Language.strings("apros.codeart.ddd", "StringLengthMoreThan", property.call(), tip.max()));
 		}
 
 	}

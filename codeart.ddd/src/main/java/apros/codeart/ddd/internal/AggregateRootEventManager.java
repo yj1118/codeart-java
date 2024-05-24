@@ -45,7 +45,7 @@ public final class AggregateRootEventManager {
 
 	public void onPreAdd() {
 		if (_root.invalid())
-			throw new DomainDrivenException(Language.strings("codeart.ddd", "ObjectInvalid", "add"));
+			throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "ObjectInvalid", "add"));
 
 		if (_preAdd != null) {
 			_preAdd.raise(this, () -> {
@@ -115,7 +115,7 @@ public final class AggregateRootEventManager {
 
 	public void onPreUpdate() {
 		if (_root.invalid())
-			throw new DomainDrivenException(Language.strings("codeart.ddd", "ObjectInvalid", "update"));
+			throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "ObjectInvalid", "update"));
 
 		if (_preUpdate != null) {
 			_preUpdate.raise(this, () -> {

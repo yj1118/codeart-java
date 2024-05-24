@@ -59,7 +59,7 @@ public final class Timer {
 
 	private void start(long initialDelay, Runnable action) {
 		if (_scheduler != null)
-			throw new IllegalArgumentException(strings("codeart", "TimerWorking"));
+			throw new IllegalArgumentException(strings("apros.codeart", "TimerWorking"));
 		// 创建基于虚拟线程的的ScheduledExecutorService
 		var threadFactory = Thread.ofVirtual().factory();
 		_scheduler = Executors.newScheduledThreadPool(1, threadFactory);

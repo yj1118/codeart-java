@@ -548,7 +548,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 	public <T> T getValue(DomainProperty property, Class<T> valueType) {
 		var value = getValue(property);
 		if (value == null)
-			Preconditions.checkNotNull(value, strings("codeart.ddd", "DomainCanNotNull", property.name()));
+			Preconditions.checkNotNull(value, strings("apros.codeart.ddd", "DomainCanNotNull", property.name()));
 		return (T) value;
 	}
 
@@ -686,7 +686,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 		_constructedDepth++;
 
 		if (_constructedDepth > _typeDepth) {
-			throw new DomainDrivenException(Language.strings("codeart.ddd", "ConstructedError"));
+			throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "ConstructedError"));
 		}
 
 		if (!this.isConstructing()) // 已构造完毕
@@ -740,7 +740,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 
 		if (this.isEmpty())
 			throw new DomainDrivenException(
-					Language.strings("codeart.ddd", "EmptyReadOnly", this.getClass().getName()));
+					Language.strings("apros.codeart.ddd", "EmptyReadOnly", this.getClass().getName()));
 	}
 
 //	region 辅助方法
@@ -759,12 +759,12 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 
 		var empty = FieldUtil.getField(objectType, "Empty");
 		if (empty == null)
-			throw new DomainDrivenException(Language.strings("codeart.ddd", "NotFoundEmpty", objectType.getName()));
+			throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "NotFoundEmpty", objectType.getName()));
 
 		var objEmpty = TypeUtil.as(empty, DomainObject.class);
 		if (objEmpty == null)
 			throw new DomainDrivenException(
-					Language.strings("codeart.ddd", "TypeMismatchFor", empty.getClass(), DomainObject.class));
+					Language.strings("apros.codeart.ddd", "TypeMismatchFor", empty.getClass(), DomainObject.class));
 		return objEmpty;
 	});
 

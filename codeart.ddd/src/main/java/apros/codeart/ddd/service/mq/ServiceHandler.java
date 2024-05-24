@@ -17,7 +17,7 @@ public class ServiceHandler implements IRPCHandler {
 	public DTObject process(String method, DTObject args) {
 
 		if (!App.started())
-			throw new UIException(Language.strings("codeart.ddd", "StartingService"));
+			throw new UIException(Language.strings("apros.codeart.ddd", "StartingService"));
 
 		DTObject result = null;
 		String error = null;

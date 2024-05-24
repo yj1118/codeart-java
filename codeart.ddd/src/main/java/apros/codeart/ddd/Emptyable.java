@@ -80,7 +80,7 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, INul
 		if (emptyableType.equals(EmptyableLong.class))
 			return EmptyableLong.Empty;
 
-		throw new IllegalStateException(strings("codeart.ddd", "DidNotFindEmptyType", emptyableType.getName()));
+		throw new IllegalStateException(strings("apros.codeart.ddd", "DidNotFindEmptyType", emptyableType.getName()));
 
 	}
 
@@ -95,7 +95,7 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, INul
 		if (emptyableType.equals(EmptyableLong.class))
 			return new EmptyableLong((Long) value);
 
-		throw new IllegalStateException(strings("codeart.ddd", "DidNotFindEmptyType", emptyableType.getName()));
+		throw new IllegalStateException(strings("apros.codeart.ddd", "DidNotFindEmptyType", emptyableType.getName()));
 
 	}
 
@@ -109,7 +109,7 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, INul
 		if (emptyableType.equals(EmptyableLong.class))
 			return EmptyableLong.ValueType;
 
-		throw new IllegalStateException(strings("codeart.ddd", "DidNotFindValueType", emptyableType.getName()));
+		throw new IllegalStateException(strings("apros.codeart.ddd", "DidNotFindValueType", emptyableType.getName()));
 	}
 
 }

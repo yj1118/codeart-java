@@ -264,7 +264,7 @@ public class DataContext implements IDataContext {
 	private void validateAction(ScheduledAction action) {
 		if (action.target().isEmpty())
 			throw new ActionTargetIsEmptyException(
-					Language.strings("codeart.ddd", "EmptyObjectNotRepository", action.target().getClass().getName()));
+					Language.strings("apros.codeart.ddd", "EmptyObjectNotRepository", action.target().getClass().getName()));
 
 		if (action.type() == ScheduledActionType.Delete)
 			return; // 删除操作，不需要验证固定规则

@@ -50,7 +50,7 @@ public class Variable implements IVariable {
 
 	protected void validateScope() {
 		if (this.outOfScope())
-			throw new IllegalStateException(strings("codeart", "OutOfScope"));
+			throw new IllegalStateException(strings("apros.codeart", "OutOfScope"));
 	}
 
 	public Class<?> getType() {

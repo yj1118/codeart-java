@@ -143,7 +143,7 @@ public class DataMapperImpl implements IDataMapper {
 			// 引用了内部实体对象
 			return new EntityObjectListField(meta);
 		} else if (TypeUtil.isCollection(elementType)) {
-			throw new IllegalStateException(strings("codeart.ddd", "NestedCollection"));
+			throw new IllegalStateException(strings("apros.codeart.ddd", "NestedCollection"));
 		} else {
 			// 值集合
 			return new ValueListField(meta);

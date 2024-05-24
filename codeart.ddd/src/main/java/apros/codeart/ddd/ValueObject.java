@@ -32,7 +32,7 @@ public class ValueObject extends DomainObject implements IValueObject {
 			return; // 构造阶段不处理
 
 		throw new DomainDrivenException(
-				Language.strings("codeart.ddd", "ValueObjectReadOnly", this.getClass().getName()));
+				Language.strings("apros.codeart.ddd", "ValueObjectReadOnly", this.getClass().getName()));
 	}
 
 	/// <summary>

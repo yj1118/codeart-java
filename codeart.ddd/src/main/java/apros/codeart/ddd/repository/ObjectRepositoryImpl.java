@@ -36,7 +36,7 @@ public class ObjectRepositoryImpl {
 		var attr = _getTip.apply(objectType);
 		if (attr == null && checkUp)
 			throw new DomainDrivenException(
-					Language.strings("codeart.ddd", "NotDefinedObjectRepository", objectType.getName()));
+					Language.strings("apros.codeart.ddd", "NotDefinedObjectRepository", objectType.getName()));
 		return attr;
 	}
 

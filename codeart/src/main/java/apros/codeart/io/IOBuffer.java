@@ -82,14 +82,14 @@ public final class IOBuffer {
 
 		// 超出缓冲区最大支持的大小，这往往是上层程序设计的问题而不是缓冲区的问题，比如，大文件没有分段传输
 		if (dataLength > SIZES[SIZES.length - 1].value())
-			throw new IllegalStateException(strings("codeart", "MaxSupportedBuffer"));
+			throw new IllegalStateException(strings("apros.codeart", "MaxSupportedBuffer"));
 
 		for (var size : SIZES) {
 			if (size.value() > dataLength)
 				return size;
 		}
 
-		throw new IllegalStateException(strings("codeart", "MaxSupportedBuffer"));
+		throw new IllegalStateException(strings("apros.codeart", "MaxSupportedBuffer"));
 	}
 
 	private static final int _Byte128 = 128;

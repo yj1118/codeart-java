@@ -26,7 +26,7 @@ final class LockSql {
 
 			var math = _reg.matcher(sql);
 			if (!math.find())
-				throw new IllegalStateException(Language.strings("codeart.ddd", "FailedParseLock"));
+				throw new IllegalStateException(Language.strings("apros.codeart.ddd", "FailedParseLock"));
 			var tableName = math.group(1);
 			var index = math.start(1);
 

@@ -31,7 +31,7 @@ final class Util {
 			else if (type == char.class)
 				return Opcodes.ILOAD;
 
-			throw new IllegalArgumentException(strings("codeart", "UnknownException"));
+			throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
 		}
 	}
 
@@ -57,7 +57,7 @@ final class Util {
 				return Opcodes.ISTORE;
 			}
 
-			throw new IllegalArgumentException(strings("codeart", "UnknownException"));
+			throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
 		}
 	}
 
@@ -90,7 +90,7 @@ final class Util {
 				return Opcodes.CASTORE;
 			}
 
-			throw new IllegalArgumentException(strings("codeart", "UnknownException"));
+			throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
 		}
 	}
 }

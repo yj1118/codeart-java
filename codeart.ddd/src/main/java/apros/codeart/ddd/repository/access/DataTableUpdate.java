@@ -30,7 +30,7 @@ final class DataTableUpdate {
 			root = obj;
 		if (root == null || root.isEmpty())
 			throw new IllegalStateException(
-					Language.strings("codeart.ddd", "PersistentObjectError", obj.getClass().getName()));
+					Language.strings("apros.codeart.ddd", "PersistentObjectError", obj.getClass().getName()));
 
 		if (obj.isDirty()) {
 			_self.checkDataVersion(root);

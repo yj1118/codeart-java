@@ -46,7 +46,7 @@ public final class DerivedClassImpl {
 		var p = ListUtil.find(_impls, (impl) -> impl.typeKey().equals(typeKey));
 		if (p != null)
 			return p.derivedType();
-		throw new DomainDrivenException(Language.strings("codeart.ddd", "NotFoundDerivedType", typeKey));
+		throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "NotFoundDerivedType", typeKey));
 	}
 
 	public static Iterable<Class<?>> getDerivedTypes(Class<?> objectType) {
@@ -78,7 +78,7 @@ public final class DerivedClassImpl {
 			var attr = getAttribute(domainObjectType);
 			if (attr == null || StringUtil.isNullOrEmpty(attr.value()))
 				throw new DomainDrivenException(
-						Language.strings("codeart.ddd", "NeedTypeKey", domainObjectType.getName()));
+						Language.strings("apros.codeart.ddd", "NeedTypeKey", domainObjectType.getName()));
 		}
 	}
 

@@ -22,6 +22,6 @@ public enum DomainObjectCategory {
 				return item;
 			}
 		}
-		throw new IllegalArgumentException(Language.strings("codeart.ddd", "NoEnum", value));
+		throw new IllegalArgumentException(Language.strings("apros.codeart.ddd", "NoEnum", value));
 	}
 }

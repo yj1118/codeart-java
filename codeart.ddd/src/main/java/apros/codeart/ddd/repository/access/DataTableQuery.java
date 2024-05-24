@@ -352,7 +352,7 @@ final class DataTableQuery {
 						}
 					} else if (selectCount > 1) {
 						throw new IllegalStateException(
-								Language.strings("codeart.ddd", "NotSupportMultipleProperties", expression));
+								Language.strings("apros.codeart.ddd", "NotSupportMultipleProperties", expression));
 					}
 
 					return expression;

@@ -411,7 +411,7 @@ final class QueryFilter {
 				dto.setLocalDateTime(name, value);
 			}
 			default: {
-				throw new IllegalStateException(strings("codeart.ddd", "TypeMismatch"));
+				throw new IllegalStateException(strings("apros.codeart.ddd", "TypeMismatch"));
 			}
 			}
 

@@ -13,6 +13,6 @@ class ScopeAssert {
 	 */
 	public static void assertDepth(ScopeStack scopeStack, int expectedDepth) {
 		if (scopeStack.getDepth() != expectedDepth)
-			throw new IllegalArgumentException(Language.strings("codeart", "ScopeDepthError"));
+			throw new IllegalArgumentException(Language.strings("apros.codeart", "ScopeDepthError"));
 	}
 }

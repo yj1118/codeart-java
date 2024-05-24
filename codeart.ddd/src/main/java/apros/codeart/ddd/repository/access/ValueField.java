@@ -25,7 +25,7 @@ public class ValueField extends DataField {
 	private void validateType(PropertyMeta tip) {
 
 		if (!PrimitiveUtil.is(tip.monotype()) && !tip.isEmptyable())
-			throw new IllegalStateException(strings("codeart.ddd", "DomainObjectTypeWrong"));
+			throw new IllegalStateException(strings("apros.codeart.ddd", "DomainObjectTypeWrong"));
 
 	}
 

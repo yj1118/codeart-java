@@ -78,7 +78,7 @@ class RetainExpression extends TransformExpression {
 		for (var t : removes) {
 			var parent = t.getParent();
 			if (parent == null)
-				throw new IllegalArgumentException(strings("codeart", "UnknownException"));
+				throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
 			parent.removeMember(t);
 		}
 

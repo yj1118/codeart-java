@@ -221,7 +221,7 @@ class EntityDeserializer {
 			if (code.startsWith("[")) {
 				if (!code.endsWith("]"))
 					throw new CodeFormatErrorException(
-							strings("codeart", "JSONCodeBracketsError", code.toString(), "[", "]"));
+							strings("apros.codeart", "JSONCodeBracketsError", code.toString(), "[", "]"));
 				return true;
 			}
 			return false;
@@ -231,7 +231,7 @@ class EntityDeserializer {
 			if (code.startsWith("{")) {
 				if (!code.endsWith("}"))
 					throw new CodeFormatErrorException(
-							strings("codeart", "JSONCodeBracketsError", code.toString(), "{", "}"));
+							strings("apros.codeart", "JSONCodeBracketsError", code.toString(), "{", "}"));
 				return true;
 			}
 			return false;

@@ -186,7 +186,7 @@ public final class FieldUtil {
 			}
 
 			if (target == null)
-				throw new IllegalStateException(Language.strings("codeart", "FieldNotFound", fieldAgreeName));
+				throw new IllegalStateException(Language.strings("apros.codeart", "FieldNotFound", fieldAgreeName));
 
 			return target;
 		});
@@ -318,7 +318,7 @@ public final class FieldUtil {
 					Class<?> actualClass = (Class<?>) ata;
 					result[i] = actualClass;
 				} else {
-					throw new IllegalStateException(strings("codeart", "UnableObtainGenericParameter"));
+					throw new IllegalStateException(strings("apros.codeart", "UnableObtainGenericParameter"));
 				}
 				i++;
 			}

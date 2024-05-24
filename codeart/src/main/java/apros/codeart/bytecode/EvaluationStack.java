@@ -143,7 +143,7 @@ public class EvaluationStack {
 
 			for (StackItem item : _items) {
 				if (item.isPrimitive())
-					throw new IllegalArgumentException(strings("codeart", "TypeMismatch"));
+					throw new IllegalArgumentException(strings("apros.codeart", "TypeMismatch"));
 			}
 			return true;
 		}
@@ -155,7 +155,7 @@ public class EvaluationStack {
 			for (var i = 0; i < expectedCount; i++) {
 				var item = _items.get(i);
 				if (item.isPrimitive())
-					throw new IllegalArgumentException(strings("codeart", "TypeMismatch"));
+					throw new IllegalArgumentException(strings("apros.codeart", "TypeMismatch"));
 			}
 
 			return true;
@@ -169,13 +169,13 @@ public class EvaluationStack {
 		public void assertCount(int expectedCount) {
 			if (this.size() != expectedCount)
 				throw new IllegalArgumentException(
-						strings("codeart", "StackItemCountError", this.size(), expectedCount));
+						strings("apros.codeart", "StackItemCountError", this.size(), expectedCount));
 		}
 
 		public void assertLeastCount(int expectedCount) {
 			if (this.size() < expectedCount)
 				throw new IllegalArgumentException(
-						strings("codeart", "StackItemLeastError", this.size(), expectedCount));
+						strings("apros.codeart", "StackItemLeastError", this.size(), expectedCount));
 		}
 
 		/**
@@ -193,7 +193,7 @@ public class EvaluationStack {
 			for (var i = 1; i < expectedCount; i++) {
 				var item = _items.get(i);
 				if (targetType != item.getValueType())
-					throw new IllegalStateException(strings("codeart", "TypeMismatch"));
+					throw new IllegalStateException(strings("apros.codeart", "TypeMismatch"));
 			}
 			return targetType;
 		}

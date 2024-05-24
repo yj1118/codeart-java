@@ -133,7 +133,7 @@ public final class SchemeCodeParser {
 		case DomainObjectCategory.ValueObject:
 			return DynamicObject.class;
 		}
-		throw new IllegalArgumentException(Language.strings("codeart.ddd", "NoDomainClass", category.value()));
+		throw new IllegalArgumentException(Language.strings("apros.codeart.ddd", "NoDomainClass", category.value()));
 	}
 
 	private static void generateEmpty(String className, ClassGenerator cg, MethodGenerator scm) {

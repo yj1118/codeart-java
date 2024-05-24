@@ -29,7 +29,7 @@ public final class StatusEventArgs {
 		}
 
 		if (throwError)
-			throw new DomainDrivenException(Language.strings("codeart.ddd", "NotFoundForStateEvent", name));
+			throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "NotFoundForStateEvent", name));
 		return null;
 	}
 

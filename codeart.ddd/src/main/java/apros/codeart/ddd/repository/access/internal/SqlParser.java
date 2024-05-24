@@ -49,9 +49,9 @@ final class SqlParser {
 				var order = getOrder(plain, sql);
 				return new SqlColumns(select, where, order);
 			}
-			throw new IllegalStateException(strings("codeart.ddd", "SQLFormatError", sql));
+			throw new IllegalStateException(strings("apros.codeart.ddd", "SQLFormatError", sql));
 		} catch (Exception ex) {
-			throw new IllegalStateException(strings("codeart.ddd", "SQLFormatError", sql));
+			throw new IllegalStateException(strings("apros.codeart.ddd", "SQLFormatError", sql));
 		}
 
 	});
@@ -84,7 +84,7 @@ final class SqlParser {
 				return SqlStatement.unQualifier(fieldName);
 			}
 
-			throw new IllegalStateException(strings("codeart.ddd", "SQLFormatError", sql));
+			throw new IllegalStateException(strings("apros.codeart.ddd", "SQLFormatError", sql));
 
 		});
 

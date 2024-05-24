@@ -167,7 +167,7 @@ public class RabbitBus implements AutoCloseable {
 				channel.basicPublish(exchange, routingKey, properties, body);
 			}
 		} catch (Exception e) {
-			throw new RabbitMQException(Language.strings("codeart", "PublishMessageFailed", routingKey));
+			throw new RabbitMQException(Language.strings("apros.codeart", "PublishMessageFailed", routingKey));
 		}
 	}
 
@@ -176,7 +176,7 @@ public class RabbitBus implements AutoCloseable {
 			this.channel().basicPublish(exchange, routingKey, properties, body);
 			this.channel().waitForConfirmsOrDie(20_000); // 等待20秒以确认消息被送达
 		} catch (Exception e) {
-			throw new RabbitMQException(Language.strings("codeart", "PublishMessageFailed", routingKey));
+			throw new RabbitMQException(Language.strings("apros.codeart", "PublishMessageFailed", routingKey));
 		}
 	}
 
@@ -191,7 +191,7 @@ public class RabbitBus implements AutoCloseable {
 
 	public void consume(String queue, IMessageHandler handler) {
 		if (_consumerTag != null)
-			throw new RabbitMQException(Language.strings("codeart", "MoreConsume", queue));
+			throw new RabbitMQException(Language.strings("apros.codeart", "MoreConsume", queue));
 
 		_messageHandler = handler;
 		// 不论什么应用，都需要手工应答，主要是为了避免不做限制，导致服务器资源耗尽

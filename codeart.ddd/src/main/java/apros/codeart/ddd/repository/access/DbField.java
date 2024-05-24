@@ -50,6 +50,6 @@ public abstract class DbField {
 		default:
 			break;
 		}
-		throw new IllegalStateException(Language.strings("codeart.ddd", "UnsupportedFieldType", type.getSimpleName()));
+		throw new IllegalStateException(Language.strings("apros.codeart.ddd", "UnsupportedFieldType", type.getSimpleName()));
 	}
 }

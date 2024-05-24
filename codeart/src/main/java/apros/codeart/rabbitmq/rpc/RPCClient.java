@@ -59,7 +59,7 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
 
 		if (!_success) {
 			_correlationId = Strings.EMPTY;
-			throw new RabbitMQException(Language.strings("codeart", "RequestTimeout", method));
+			throw new RabbitMQException(Language.strings("apros.codeart", "RequestTimeout", method));
 		}
 
 		var body = result.body();

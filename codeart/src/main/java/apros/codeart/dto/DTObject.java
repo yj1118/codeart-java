@@ -411,7 +411,7 @@ public class DTObject implements INullProxy {
 
 				var parent = as(e.getParent(), DTEObject.class);
 				if (parent == null)
-					throw new IllegalStateException(strings("codeart", "DTOExpressionError", findExp));
+					throw new IllegalStateException(strings("apros.codeart", "DTOExpressionError", findExp));
 
 				var query = QueryExpression.create(e.getName());
 				parent.setMember(query, (name) -> {
@@ -469,7 +469,7 @@ public class DTObject implements INullProxy {
 
 				var parent = as(e.getParent(), DTEObject.class);
 				if (parent == null)
-					throw new IllegalStateException(strings("codeart", "DTOExpressionError", findExp));
+					throw new IllegalStateException(strings("apros.codeart", "DTOExpressionError", findExp));
 
 				var query = QueryExpression.create(e.getName());
 				parent.setMember(query, (name) -> {
@@ -597,7 +597,7 @@ public class DTObject implements INullProxy {
 
 		if (entity == null) {
 			if (throwError)
-				throw new IllegalStateException(strings("codeart", "DTOEntityNotFound", findExp));
+				throw new IllegalStateException(strings("apros.codeart", "DTOEntityNotFound", findExp));
 			return null;
 		}
 		return entity;
@@ -609,7 +609,7 @@ public class DTObject implements INullProxy {
 			return null;
 		T entity = as(e, cls);
 		if (entity == null && throwError)
-			throw new IllegalStateException(strings("codeart", "DTOMemberNotMatch", findExp, cls.getName()));
+			throw new IllegalStateException(strings("apros.codeart", "DTOMemberNotMatch", findExp, cls.getName()));
 		return entity;
 	}
 
@@ -619,7 +619,7 @@ public class DTObject implements INullProxy {
 		var es = _root.finds(query);
 
 		if (Iterables.size(es) == 0 && throwError) {
-			throw new IllegalStateException(strings("codeart", "DTOEntityNotFound", findExp));
+			throw new IllegalStateException(strings("apros.codeart", "DTOEntityNotFound", findExp));
 		}
 		return es;
 	}
@@ -817,7 +817,7 @@ public class DTObject implements INullProxy {
 	public void each(String findExp, BiConsumer<String, Object> action) {
 		var eo = TypeUtil.as(_root.find(findExp), DTEObject.class);
 		if (eo == null)
-			throw new IllegalStateException(strings("codeart", "TypeMismatch"));
+			throw new IllegalStateException(strings("apros.codeart", "TypeMismatch"));
 
 		for (var member : eo.getMembers()) {
 			var name = member.getName();
@@ -1228,7 +1228,7 @@ public class DTObject implements INullProxy {
 	public void transform(String express, Function<Object, Object> transformValue) {
 		AssignExpression exp = TypeUtil.as(AssignExpression.create(express), AssignExpression.class);
 		if (exp == null)
-			throw new IllegalArgumentException(Language.strings("codeart", "ExpressionError", express));
+			throw new IllegalArgumentException(Language.strings("apros.codeart", "ExpressionError", express));
 		exp.execute(this, transformValue);
 	}
 

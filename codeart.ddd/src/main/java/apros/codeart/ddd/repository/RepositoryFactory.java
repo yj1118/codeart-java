@@ -42,7 +42,7 @@ class RepositoryFactory {
 					return SafeAccessImpl.createSingleton(instanceType);
 				}
 				throw new DomainDrivenException(
-						Language.strings("codeart.ddd", "NotFoundRepository", repositoryInterfaceType.getName()));
+						Language.strings("apros.codeart.ddd", "NotFoundRepository", repositoryInterfaceType.getName()));
 			});
 
 	/**
@@ -83,7 +83,7 @@ class RepositoryFactory {
 					return instanceType;
 				}
 				throw new DomainDrivenException(
-						Language.strings("codeart.ddd", "NotFoundRepository", repositoryInterfaceType.getName()));
+						Language.strings("apros.codeart.ddd", "NotFoundRepository", repositoryInterfaceType.getName()));
 			});
 
 	// 通过实体类型得到仓储
@@ -118,7 +118,7 @@ class RepositoryFactory {
 		if (IDynamicObject.class.isAssignableFrom(objectType))
 			return new SqlDynamicRepository(objectType.getSimpleName());
 
-		throw new DomainDrivenException(Language.strings("codeart.ddd", "NotFoundRepository", objectType.getName()));
+		throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "NotFoundRepository", objectType.getName()));
 	});
 
 }

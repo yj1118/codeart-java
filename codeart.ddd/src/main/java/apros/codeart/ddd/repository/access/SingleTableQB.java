@@ -19,7 +19,7 @@ public abstract class SingleTableQB implements IQueryBuilder {
 	public String build(QueryDescription description) {
 		var table = description.table();
 		if (table == null)
-			throw new IllegalArgumentException(strings("codeart.ddd", "SingleTableQBError"));
+			throw new IllegalArgumentException(strings("apros.codeart.ddd", "SingleTableQBError"));
 		if (this.enableCache())
 			return _getSql.apply(table);
 		return buildImpl(table);

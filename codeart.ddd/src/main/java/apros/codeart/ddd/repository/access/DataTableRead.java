@@ -254,7 +254,7 @@ final class DataTableRead {
 			if ((propertyTip.isPublicSet() && !propertyTip.lazy()) || containsObjectData(propertyTip, data)) {
 				var value = readPropertyValue(obj, propertyTip, null, data, level); // 已不是构造，所以不需要prmTip参数
 				if (value == null) {
-					throw new IllegalArgumentException(Language.strings("codeart.ddd", "LoadPropertyError",
+					throw new IllegalArgumentException(Language.strings("apros.codeart.ddd", "LoadPropertyError",
 							String.format("%s.%s", propertyTip.declaringType().getName(), propertyTip.name())));
 				}
 

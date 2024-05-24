@@ -29,7 +29,7 @@ public final class DomainBuffer {
 		if (DataContext.existCurrent())
 			return DataContext.getCurrent().obtainBuffer(objectType, id, load, isMirror);
 
-		throw new IllegalStateException(strings("codeart.ddd", "UnknownException"));
+		throw new IllegalStateException(strings("apros.codeart.ddd", "UnknownException"));
 	}
 
 }

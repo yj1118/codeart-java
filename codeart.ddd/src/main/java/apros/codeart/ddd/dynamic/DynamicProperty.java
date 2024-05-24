@@ -77,7 +77,7 @@
 //		var type = getPrimitiveType(entry.getTypeName());
 //		if (type == null) {
 //			throw new IllegalArgumentException(
-//					Language.strings("codeart.ddd", "UnrecognizedType", entry.getTypeName()));
+//					Language.strings("apros.codeart.ddd", "UnrecognizedType", entry.getTypeName()));
 //		}
 //		return type;
 //	}

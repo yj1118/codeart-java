@@ -26,7 +26,7 @@ public final class ConsoleLauncher {
 
 	public static void start(IAppInstaller installer) {
 
-		System.out.println(Language.strings("codeart.ddd", "StartServiceHost"));
+		System.out.println(Language.strings("apros.codeart.ddd", "StartServiceHost"));
 
 		RPCEvents.serverOpened.add(new ServerOpenedObserver());
 		RPCEvents.serverError.add(new ServerErrorObserver());
@@ -40,17 +40,17 @@ public final class ConsoleLauncher {
 		// 所有初始化工作完毕后，开通服务
 		RPCServer.open();
 
-		System.out.println(Language.strings("codeart.ddd", "CloseServiceHost"));
+		System.out.println(Language.strings("apros.codeart.ddd", "CloseServiceHost"));
 
 		readLine();
 
-		System.out.println(Language.strings("codeart.ddd", "CloseingServiceHost"));
+		System.out.println(Language.strings("apros.codeart.ddd", "CloseingServiceHost"));
 
 		App.dispose();
 
 		App.disposed();
 
-		System.out.println(Language.strings("codeart.ddd", "ClosedServiceHost"));
+		System.out.println(Language.strings("apros.codeart.ddd", "ClosedServiceHost"));
 	}
 
 	private static void readLine() {
@@ -67,7 +67,7 @@ public final class ConsoleLauncher {
 
 		@Override
 		public void handle(Object sender, ServerOpenedArgs args) {
-			System.out.println(Language.strings("codeart.ddd", "ServiceIsOpen", args.methodName()));
+			System.out.println(Language.strings("apros.codeart.ddd", "ServiceIsOpen", args.methodName()));
 		}
 	}
 
@@ -83,7 +83,7 @@ public final class ConsoleLauncher {
 
 		@Override
 		public void handle(Object sender, ServerClosedArgs args) {
-			System.out.println(Language.strings("codeart.ddd", "ServiceIsClose", args.methodName()));
+			System.out.println(Language.strings("apros.codeart.ddd", "ServiceIsClose", args.methodName()));
 		}
 	}
 

@@ -27,7 +27,7 @@ public final class EventLoader {
 		});
 
 		if (event == null && throwError) {
-			throw new IllegalStateException(strings("codeart.ddd", "NoFoundDomainEvent"));
+			throw new IllegalStateException(strings("apros.codeart.ddd", "NoFoundDomainEvent"));
 		}
 		return event;
 	}

@@ -35,7 +35,7 @@ public final class Util {
 		default:
 			break;
 		}
-		throw new IllegalStateException(Language.strings("codeart.ddd", "UnsupportedFieldType", dbType.toString()));
+		throw new IllegalStateException(Language.strings("apros.codeart.ddd", "UnsupportedFieldType", dbType.toString()));
 	}
 
 //	public static SqlDbType etSqlDbType(DbType dbType) {

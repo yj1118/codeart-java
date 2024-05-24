@@ -21,7 +21,7 @@ public final class MetadataLoader {
 
 	public static Iterable<Class<? extends IDomainObject>> getDomainTypes() {
 		if (!loaded)
-			throw new IllegalArgumentException(strings("codeart.ddd", "MetadataNotInitialized"));
+			throw new IllegalArgumentException(strings("apros.codeart.ddd", "MetadataNotInitialized"));
 		return _domainTypes;
 	}
 
@@ -62,7 +62,7 @@ public final class MetadataLoader {
 				});
 				if (exist != null) {
 					throw new IllegalArgumentException(
-							strings("codeart.ddd", "DomainSameName", findedType.getName(), exist.getName()));
+							strings("apros.codeart.ddd", "DomainSameName", findedType.getName(), exist.getName()));
 				}
 				domainTypes.add(findedType);
 			}
@@ -93,7 +93,7 @@ public final class MetadataLoader {
 		});
 		if (exist != null) {
 			throw new IllegalArgumentException(
-					strings("codeart.ddd", "DomainSameName", domainType.getName(), exist.getName()));
+					strings("apros.codeart.ddd", "DomainSameName", domainType.getName(), exist.getName()));
 		}
 		_registerItems.add(domainType);
 	}

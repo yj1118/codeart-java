@@ -433,7 +433,7 @@ public class SqlDefinition {
 			} else {
 				// 格式：[aaa
 				throw new IllegalStateException(
-						Language.strings("codeart.ddd", "QueryExpressionMalformed", expression));
+						Language.strings("apros.codeart.ddd", "QueryExpressionMalformed", expression));
 			}
 		}
 	}

@@ -36,7 +36,7 @@ final class DataTableInsert {
 			root = obj;
 		if (root == null || root.isEmpty())
 			throw new IllegalStateException(
-					Language.strings("codeart.ddd", "PersistentObjectError", obj.getClass().getName()));
+					Language.strings("apros.codeart.ddd", "PersistentObjectError", obj.getClass().getName()));
 
 		onPreDataInsert(obj);
 		var data = insertData(root, null, obj);

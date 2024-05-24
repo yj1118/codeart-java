@@ -56,7 +56,7 @@ public final class PrimitiveUtil {
 		}
 
 		throw new IllegalArgumentException(
-				Language.strings("codeart", "CannotConvert", value.toString(), targetType.getSimpleName()));
+				Language.strings("apros.codeart", "CannotConvert", value.toString(), targetType.getSimpleName()));
 	}
 
 	private static Function<Class<?>, Object> _getDefaultValue = LazyIndexer.init((valueType) -> {

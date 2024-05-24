@@ -59,7 +59,7 @@ class AssignExpression extends TransformExpression {
 		for (var target : targets) {
 			var parent = TypeUtil.as(target.getParent(), DTEObject.class);
 			if (parent == null)
-				throw new IllegalArgumentException(strings("codeart", "UnknownException"));
+				throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
 
 			var parentDTO = valueExpression.getStartRoot() ? dto : new DTObject(parent, dto.isReadOnly());
 
@@ -93,7 +93,7 @@ class AssignExpression extends TransformExpression {
 				for (var e : entities) {
 					var newValue = getValue(e, transformValue, dto.isReadOnly());
 					if (newValue == null)
-						throw new IllegalArgumentException(strings("codeart", "UnknownException"));
+						throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
 					values.add(newValue);
 				}
 
@@ -130,7 +130,7 @@ class AssignExpression extends TransformExpression {
 
 		var parent = TypeUtil.as(target.getParent(), DTEObject.class);
 		if (parent == null)
-			throw new IllegalArgumentException(strings("codeart", "ExpressionError", findExp));
+			throw new IllegalArgumentException(strings("apros.codeart", "ExpressionError", findExp));
 
 		var query = QueryExpression.create(target.getName());
 		parent.setMember(query, (name) -> {
@@ -145,7 +145,7 @@ class AssignExpression extends TransformExpression {
 				t.setValue(value);
 				var newEntity = t.getRoot().first();
 				if (newEntity == null)
-					throw new IllegalArgumentException(strings("codeart", "UnknownException"));
+					throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
 				newEntity.setName(name);
 				return newEntity;
 			}

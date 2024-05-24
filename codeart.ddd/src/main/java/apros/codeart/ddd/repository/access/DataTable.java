@@ -452,7 +452,7 @@ public class DataTable {
 					if (memberField == null) {
 
 						throw new IllegalStateException(
-								Language.strings("codeart.ddd", "NotFoundTableField", master.name(), propertyName));
+								Language.strings("apros.codeart.ddd", "NotFoundTableField", master.name(), propertyName));
 					}
 
 					Class<?> objectType = TypeUtil.isCollection(propertyType) ? memberField.tip().monotype()
@@ -518,7 +518,7 @@ public class DataTable {
 		}
 
 		if (table == null)
-			throw new IllegalStateException(Language.strings("codeart.ddd", "createChildTable", master.name(),
+			throw new IllegalStateException(Language.strings("apros.codeart.ddd", "createChildTable", master.name(),
 					memberField.fieldType(), objectType.getName()));
 
 		return table;
@@ -807,7 +807,7 @@ public class DataTable {
 		default:
 			break;
 		}
-		throw new IllegalStateException(Language.strings("codeart.ddd", "UnknownException"));
+		throw new IllegalStateException(Language.strings("apros.codeart.ddd", "UnknownException"));
 	}
 
 }

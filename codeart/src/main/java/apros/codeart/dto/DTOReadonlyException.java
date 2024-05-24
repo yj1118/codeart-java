@@ -10,7 +10,7 @@ public class DTOReadonlyException extends RuntimeException {
 	private static final long serialVersionUID = 1779637237807968875L;
 
 	public DTOReadonlyException() {
-		super(strings("codeart", "DTOReadOnly"));
+		super(strings("apros.codeart", "DTOReadOnly"));
 	}
 
 }

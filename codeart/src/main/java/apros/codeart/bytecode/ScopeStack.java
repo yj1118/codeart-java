@@ -56,7 +56,7 @@ public final class ScopeStack {
 	private CodeScope _enter() {
 		// 进入新的代码范围之前，是有可能栈顶还有变量的
 //		StackAssert.assertClean(_owner, () -> {
-//			return strings("codeart", "EnterScopeStackNotEmpty");
+//			return strings("apros.codeart", "EnterScopeStackNotEmpty");
 //		});
 
 		var scope = new CodeScope(_owner);
@@ -71,7 +71,7 @@ public final class ScopeStack {
 
 	public void exit() {
 //		StackAssert.assertClean(_owner, () -> {
-//			return strings("codeart", "ExitScopeStackNotEmpty");
+//			return strings("apros.codeart", "ExitScopeStackNotEmpty");
 //		});
 
 		_owner.visitor().visitLabel(_current.getEndLabel());
@@ -142,7 +142,7 @@ public final class ScopeStack {
 			if (local != null)
 				return local;
 		}
-		throw new IllegalArgumentException(strings("codeart", "VariableNotFound", name));
+		throw new IllegalArgumentException(strings("apros.codeart", "VariableNotFound", name));
 	}
 
 	static class CodeScope implements AutoCloseable {

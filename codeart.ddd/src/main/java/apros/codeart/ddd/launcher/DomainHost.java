@@ -71,7 +71,7 @@ final class DomainHost {
 	 */
 	static void checkInitialized() {
 		if (!_initialized) {
-			throw new DomainDrivenException(Language.strings("codeart.ddd", "UninitializedDomainObject"));
+			throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "UninitializedDomainObject"));
 		}
 	}
 

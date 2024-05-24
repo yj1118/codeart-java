@@ -205,7 +205,7 @@ public class Pool<T> implements AutoCloseable {
 			if (disposableObject != null)
 				disposableObject.close();
 		} catch (Exception e) {
-			throw new PoolingException(Language.strings("codeart", "DisposePoolItemFailed", this.getClass().getName()),
+			throw new PoolingException(Language.strings("apros.codeart", "DisposePoolItemFailed", this.getClass().getName()),
 					e);
 		}
 	}

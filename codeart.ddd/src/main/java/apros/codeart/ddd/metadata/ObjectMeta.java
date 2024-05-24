@@ -57,14 +57,14 @@ public class ObjectMeta {
 		var dp = ListUtil.find(_properties, (p) -> p.name().equalsIgnoreCase(propertyName));
 		if (dp == null)
 			throw new DomainDrivenException(
-					Language.strings("codeart.ddd", "NotFoundDomainProperty", _name, propertyName));
+					Language.strings("apros.codeart.ddd", "NotFoundDomainProperty", _name, propertyName));
 		return dp;
 	}
 
 	void addProperty(PropertyMeta property) {
 		if (existProperty(property.name()))
 			throw new DomainDrivenException(
-					Language.strings("codeart.ddd", "RepeatedDomainProperty", _name, property.name()));
+					Language.strings("apros.codeart.ddd", "RepeatedDomainProperty", _name, property.name()));
 		_properties.add(property);
 
 	}
