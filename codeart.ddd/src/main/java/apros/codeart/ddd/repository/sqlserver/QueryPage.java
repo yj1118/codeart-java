@@ -4,7 +4,9 @@ import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.access.DataTable;
 import apros.codeart.ddd.repository.access.QueryPageQB;
 import apros.codeart.ddd.repository.access.internal.SqlDefinition;
+import apros.codeart.util.SafeAccess;
 
+@SafeAccess
 class QueryPage extends QueryPageQB {
 
 	@Override

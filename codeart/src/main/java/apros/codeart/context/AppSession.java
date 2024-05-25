@@ -48,9 +48,6 @@ public final class AppSession {
 	}
 
 	private static void initialize() throws Exception {
-		if (exists())
-			return; // 当前回话已存在，不用初始化
-		getCurrent().initialize();
 		process_start();
 	}
 
@@ -101,23 +98,12 @@ public final class AppSession {
 		return ThreadSession.Instance;
 	}
 
-	/**
-	 * 是否存在回话
-	 * 
-	 * @return
-	 */
-	public static boolean exists() {
-		return getCurrent() != null && getCurrent().valid();
-	}
-
 	public static boolean containsItem(String name) {
-		return exists() && getCurrent().containsItem(name);
+		return getCurrent().containsItem(name);
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> T obtainItem(String name, Supplier<T> factory) {
-		if (!exists())
-			return factory.get();
 		var session = getCurrent();
 		Object item = session.getItem(name);
 		if (item == null) {
@@ -153,13 +139,10 @@ public final class AppSession {
 	 * 
 	 * @param <T>
 	 * @param pool
-	 * @param factory
 	 * @return
 	 * @throws Exception
 	 */
-	public static <T> T obtainItem(Pool<T> pool, Supplier<T> factory) {
-		if (!exists()) // 如果不存在回话，那么直接构造
-			return factory.get();
+	public static <T> T obtainItem(Pool<T> pool) {
 		return Symbiosis.obtain(pool);
 	}
 

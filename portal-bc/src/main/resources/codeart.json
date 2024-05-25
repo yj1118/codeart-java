@@ -2,9 +2,7 @@
 	"repository":{
 		"db":{
 			"type":"sqlserver",
-			"url":"sqlserver://localhost:1433;databaseName=mydatabase",
-			"username":"sa",
-			"password":"Rw$510th%v"
+			"url":"jdbc:sqlserver://YJ1118;databaseName=demo-portal;user=sa;password=Rw$510th%v;trustServerCertificate=true;"
 		}
 	},
 	"event":{

@@ -65,8 +65,6 @@ public final class DataSource {
 				// 创建HikariConfig配置对象
 				HikariConfig config = new HikariConfig();
 				config.setJdbcUrl(db.getString("url"));
-				config.setUsername(db.getString("username"));
-				config.setPassword(db.getString("password"));
 				// 可以添加更多配置
 
 				// 使用配置创建HikariDataSource实例

@@ -2,16 +2,9 @@ package apros.codeart.context;
 
 @AppSessionAccess
 public final class ThreadSession implements IAppSession {
-	private static ThreadLocal<ContentEntries> local = new ThreadLocal<>();
+	private static ThreadLocal<ContentEntries> local = ThreadLocal.withInitial(ContentEntries::new);
 
 	private ThreadSession() {
-	}
-
-	public void initialize() {
-		if (this.valid())
-			return;
-		var item = new ContentEntries();
-		local.set(item);
 	}
 
 	public void clear() {
@@ -32,10 +25,6 @@ public final class ThreadSession implements IAppSession {
 
 	public boolean containsItem(String name) {
 		return local.get().contains(name);
-	}
-
-	public boolean valid() {
-		return local.get() != null;
 	}
 
 	public static final ThreadSession Instance = new ThreadSession();

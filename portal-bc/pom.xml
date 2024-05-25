@@ -38,6 +38,12 @@
 		<artifactId>codeart.ddd</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</dependency>
+	<dependency>
+	    <groupId>com.microsoft.sqlserver</groupId>
+	    <artifactId>mssql-jdbc</artifactId>
+	    <version>12.7.0.jre11-preview</version>
+	</dependency>
+
   </dependencies>
 
   <build>

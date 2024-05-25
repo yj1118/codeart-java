@@ -168,8 +168,11 @@ public class DataContext implements IDataContext {
 	}
 
 	private void disposeSchedule() {
-		if (_actions != null)
+		if (_actions != null) {
 			_actions.clear();
+			_actions = null;
+		}
+
 	}
 
 	private void processAction(ScheduledAction action) {
@@ -263,8 +266,8 @@ public class DataContext implements IDataContext {
 	 */
 	private void validateAction(ScheduledAction action) {
 		if (action.target().isEmpty())
-			throw new ActionTargetIsEmptyException(
-					Language.strings("apros.codeart.ddd", "EmptyObjectNotRepository", action.target().getClass().getName()));
+			throw new ActionTargetIsEmptyException(Language.strings("apros.codeart.ddd", "EmptyObjectNotRepository",
+					action.target().getClass().getName()));
 
 		if (action.type() == ScheduledActionType.Delete)
 			return; // 删除操作，不需要验证固定规则
@@ -373,7 +376,8 @@ public class DataContext implements IDataContext {
 			_transactionCount++;
 		} else {
 			_transactionStatus = TransactionStatus.Delay;
-			_actions.clear();
+			if (_actions != null)
+				_actions.clear();
 			_transactionCount++;
 			_conn.initialize();
 		}
@@ -449,7 +453,7 @@ public class DataContext implements IDataContext {
 	}
 
 	public boolean isDirty() {
-		return _actions.size() > 0;
+		return _actions != null && _actions.size() > 0;
 	}
 
 	/**
