@@ -26,7 +26,7 @@ public class AppInstaller extends AppInstallerBase {
 
 	@Override
 	public String[] getArchives() {
-		return AppConfig.mergeArchives("codeart", "subsystem", "service");
+		return AppConfig.mergeArchives("apros.codeart", "subsystem", "service");
 	}
 
 	@Override

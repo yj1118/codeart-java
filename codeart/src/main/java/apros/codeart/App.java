@@ -116,7 +116,7 @@ public final class App {
 
 		@Override
 		public String[] getArchives() {
-			return AppConfig.mergeArchives("codeart");
+			return AppConfig.mergeArchives("apros.codeart");
 		}
 
 		@Override

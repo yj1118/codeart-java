@@ -248,6 +248,8 @@ public class DataTable {
 			var temp = new ArrayList<IDataField>();
 			temp.add(rootKey);
 			ListUtil.addRange(temp, fields);
+
+			temp.trimToSize();
 			return temp;
 		}
 
@@ -451,8 +453,8 @@ public class DataTable {
 
 					if (memberField == null) {
 
-						throw new IllegalStateException(
-								Language.strings("apros.codeart.ddd", "NotFoundTableField", master.name(), propertyName));
+						throw new IllegalStateException(Language.strings("apros.codeart.ddd", "NotFoundTableField",
+								master.name(), propertyName));
 					}
 
 					Class<?> objectType = TypeUtil.isCollection(propertyType) ? memberField.tip().monotype()

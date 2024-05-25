@@ -53,6 +53,8 @@ public class DataMapperImpl implements IDataMapper {
 		// 附加字段
 		var attachedFields = getAttachFields(meta);
 		ListUtil.addRange(fields, mapFields(meta.objectType(), attachedFields));
+
+		fields.trimToSize();
 		return fields;
 	}
 
@@ -75,6 +77,7 @@ public class DataMapperImpl implements IDataMapper {
 	}
 
 	protected Iterable<DbField> getAttachFields(ObjectMeta meta) {
+		// 预留未来使用，这里有可能要对继承类做支持
 		return ListUtil.empty();
 	}
 

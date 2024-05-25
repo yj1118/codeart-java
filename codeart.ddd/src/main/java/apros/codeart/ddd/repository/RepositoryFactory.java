@@ -56,8 +56,8 @@ class RepositoryFactory {
 		// 例如：UserSubsytem.IUserRepository的仓储就是UserSubsytem.UserRepository
 		// substring(1) 是移除I
 		var repositoryName = repositoryInterfaceType.getSimpleName().substring(1);
-		return TypeUtil.getClass(repositoryName);
-//		return Class.forName(repositoryInterfaceType.getModule(), repositoryName);
+		var fullName = String.format("%s.%s", repositoryInterfaceType.getPackageName(), repositoryName);
+		return TypeUtil.getClass(fullName);
 	}
 
 	/**
@@ -94,7 +94,7 @@ class RepositoryFactory {
 
 	private static final Function<Class<?>, IRepositoryBase> _getRepositoryByObject = LazyIndexer.init((objectType) -> {
 
-		// 根据对象标记找
+		// 根据对象标记找，这里会优先根据注册和配置文件来
 		var objectTip = ObjectRepositoryImpl.getTip(objectType, false);
 		if (objectTip != null && objectTip.repositoryInterfaceType() != null)
 			return (IRepositoryBase) RepositoryFactory.create(objectTip.repositoryInterfaceType());
@@ -118,7 +118,8 @@ class RepositoryFactory {
 		if (IDynamicObject.class.isAssignableFrom(objectType))
 			return new SqlDynamicRepository(objectType.getSimpleName());
 
-		throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "NotFoundRepository", objectType.getName()));
+		throw new DomainDrivenException(
+				Language.strings("apros.codeart.ddd", "NotFoundRepository", objectType.getName()));
 	});
 
 }

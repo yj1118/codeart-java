@@ -111,11 +111,13 @@ public final class TypeUtil {
 		return targetCls.isAssignableFrom(cls);
 	}
 
-	/// <summary>
-	/// 获得继承链
-	/// </summary>
-	/// <param name="type"></param>
-	/// <returns></returns>
+	/**
+	 * 
+	 * 获得继承链，注意最顶级的排前面
+	 * 
+	 * @param type
+	 * @return
+	 */
 	public static Iterable<Class<?>> getInheriteds(Class<?> type) {
 		return _getInheriteds.apply(type);
 	}
@@ -135,7 +137,7 @@ public final class TypeUtil {
 
 		var type = objectType;
 		while (type.getSuperclass() != null) {
-			inheriteds.add(type.getSuperclass());
+			inheriteds.push(type.getSuperclass());
 			type = type.getSuperclass();
 		}
 		return inheriteds;

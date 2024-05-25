@@ -56,6 +56,8 @@ final class DataTableUtil {
 		ArrayList<IDataField> fields = new ArrayList<IDataField>();
 		for (var objectField : objectFields)
 			fillFields(fields, objectField);
+
+		fields.trimToSize();
 		return fields;
 	}
 
@@ -74,6 +76,8 @@ final class DataTableUtil {
 			field.parentMemberField(current.parentMemberField());
 
 			fields.add(field);
+
+			break;
 		}
 		case DataFieldType.EntityObject:
 		case DataFieldType.AggregateRoot: {
@@ -85,6 +89,8 @@ final class DataTableUtil {
 			field.parentMemberField(current);
 
 			fields.add(field);
+
+			break;
 		}
 		case DataFieldType.ValueObject: {
 			var primaryKey = GeneratedField.createValueObjectPrimaryKey(current.tip().monotype());
@@ -93,6 +99,8 @@ final class DataTableUtil {
 			field.parentMemberField(current);
 
 			fields.add(field);
+
+			break;
 		}
 		default: {
 			break;

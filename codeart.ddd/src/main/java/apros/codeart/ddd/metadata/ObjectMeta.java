@@ -1,6 +1,6 @@
 package apros.codeart.ddd.metadata;
 
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.FrameworkDomain;
@@ -43,7 +43,10 @@ public class ObjectMeta {
 		return _objectType;
 	}
 
-	private ArrayList<PropertyMeta> _properties;
+	/**
+	 * 因为要合并，所以用此数据结构
+	 */
+	private ArrayDeque<PropertyMeta> _properties;
 
 	public Iterable<PropertyMeta> properties() {
 		return _properties;
@@ -86,7 +89,7 @@ public class ObjectMeta {
 		_name = name;
 		_objectType = objectType;
 		_category = category;
-		_properties = new ArrayList<PropertyMeta>();
+		_properties = new ArrayDeque<PropertyMeta>();
 		_validators = validators;
 		_repositoryTip = repositoryTip;
 	}
@@ -134,7 +137,7 @@ public class ObjectMeta {
 				var np = new PropertyMeta(p.name(), p.value(), this, p.accessGet(), p.accessSet(), p.call(),
 						p.validators(), p.lazy(), p.dataLoader());
 
-				_properties.add(np);
+				_properties.push(np);
 			}
 
 		}
