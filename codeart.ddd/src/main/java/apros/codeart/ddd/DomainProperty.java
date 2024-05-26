@@ -200,6 +200,8 @@ public class DomainProperty {
 		var meta = new PropertyMeta(name, valueMeta, declaring, access.get(), access.set(), call, validators,
 				repositoryTip.lazy(), repositoryTip.loader());
 
+		declaring.addProperty(meta); // 关联
+
 		var property = new DomainProperty(meta);
 		addProperty(property);
 		return property;
@@ -344,8 +346,8 @@ public class DomainProperty {
 
 	@SuppressWarnings({ "unchecked", "unlikely-arg-type" })
 	static <T extends Annotation> T getAnnotation(Iterable<Annotation> anns, Class<T> annType) {
-		return (T) ListUtil.find(anns, (type) -> {
-			return annType.equals(type);
+		return (T) ListUtil.find(anns, (ann) -> {
+			return annType == ann.annotationType();
 		});
 	}
 

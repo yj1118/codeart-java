@@ -66,6 +66,7 @@ final class DataTableUtil {
 		switch (current.fieldType()) {
 		case DataFieldType.GeneratedField: {
 			fields.add(current); // 对于生成的键，直接追加
+			break;
 		}
 		case DataFieldType.Value: {
 			var valueField = TypeUtil.as(current, ValueField.class);

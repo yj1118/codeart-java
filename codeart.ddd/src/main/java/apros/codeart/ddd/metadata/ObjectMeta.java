@@ -64,12 +64,11 @@ public class ObjectMeta {
 		return dp;
 	}
 
-	void addProperty(PropertyMeta property) {
+	public void addProperty(PropertyMeta property) {
 		if (existProperty(property.name()))
 			throw new DomainDrivenException(
 					Language.strings("apros.codeart.ddd", "RepeatedDomainProperty", _name, property.name()));
 		_properties.add(property);
-
 	}
 
 	private Iterable<IObjectValidator> _validators;

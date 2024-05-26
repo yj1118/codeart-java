@@ -1276,4 +1276,9 @@ public class DTObject implements INullProxy {
 //		return AppSession.registerItem(new DTObject(DTEObject.obtainEditable(StringUtil.empty()), false));
 	}
 
+	@Override
+	public String toString() {
+		return this.getCode();
+	}
+
 }

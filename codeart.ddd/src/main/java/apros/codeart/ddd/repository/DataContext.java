@@ -248,12 +248,16 @@ public class DataContext implements IDataContext {
 	}
 
 	private void raisePreCommitQueue() {
+		if (_actions == null)
+			return;
 		for (var action : _actions) {
 			raisePreCommit(action);
 		}
 	}
 
 	private void raiseCommittedQueue() {
+		if (_actions == null)
+			return;
 		for (var action : _actions) {
 			raiseCommitted(action);
 		}

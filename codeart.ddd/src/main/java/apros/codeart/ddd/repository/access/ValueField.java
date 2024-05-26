@@ -28,5 +28,4 @@ public class ValueField extends DataField {
 			throw new IllegalStateException(strings("apros.codeart.ddd", "DomainObjectTypeWrong"));
 
 	}
-
 }

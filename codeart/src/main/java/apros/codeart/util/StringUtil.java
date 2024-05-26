@@ -50,6 +50,13 @@ public final class StringUtil {
 		str.append(System.lineSeparator());
 	}
 
+	public static void appendValidLine(StringBuilder str, String content) {
+		if (StringUtil.isNullOrEmpty(content))
+			return;
+		str.append(content);
+		str.append(System.lineSeparator());
+	}
+
 	public static void removeLast(StringBuilder str) {
 		str.deleteCharAt(str.length() - 1);
 	}

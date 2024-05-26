@@ -164,8 +164,6 @@ public class PropertyMeta {
 		_lazy = lazy;
 		_dataLoader = dataLoader;
 
-		declaring.addProperty(this); // 关联
-
 		_fullName = String.format("%s.%s", this.declaringType().getName(), this.name());
 
 		_isEmptyable = IEmptyable.class.isAssignableFrom(this.monotype());
@@ -182,6 +180,11 @@ public class PropertyMeta {
 	@Override
 	public int hashCode() {
 		return _id.hashCode();
+	}
+
+	@Override
+	public String toString() {
+		return "PropertyMeta{name='" + this.name() + "'}";
 	}
 
 	private static DomainPropertyCategory getCategory(ValueMeta valueMeta) {

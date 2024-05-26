@@ -110,6 +110,9 @@ public final class Forker {
 		// 开启获取远程对象的元数据的的rpc服务
 		var masters = CQRSConfig.masters();
 
+		if (masters == null)
+			return;
+
 		for (var master : masters) {
 			// 虽然可以直接用名称，但是需要通过get验证下
 			var objectType = ObjectMetaLoader.get(master.name()).objectType();
@@ -119,6 +122,9 @@ public final class Forker {
 
 	public static void cleanup() {
 		var masters = CQRSConfig.masters();
+
+		if (masters == null)
+			return;
 
 		for (var master : masters) {
 			RPCServer.close(ActionName.getObjectMeta(master.name()));

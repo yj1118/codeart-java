@@ -134,4 +134,9 @@ public abstract class DataField implements IDataField {
 		_dbFieldTypes = ListUtil.map(dbFieldTypes, (t) -> t);
 	}
 
+	@Override
+	public String toString() {
+		return "ValueField{name='" + this.name() + "'}";
+	}
+
 }

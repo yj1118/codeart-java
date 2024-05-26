@@ -1,5 +1,7 @@
 package subsystem.account;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -21,7 +23,9 @@ public class CreateAccountTest {
 
 	@Test
 	void common() {
-		var name = Account.NameProperty.call();
+		var call = Account.NameProperty.call();
+		assertEquals("账户名", call);
+
 //		var cmd = new CreateAccount("risan");
 //		cmd.execute();
 	}

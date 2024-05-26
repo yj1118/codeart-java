@@ -31,8 +31,8 @@ class CreateTable extends CreateTableQB {
 
 		StringUtil.appendFormat(sql, "	%s)", getPrimaryKeySql(table));
 		StringUtil.appendLine(sql);
-		StringUtil.appendLine(sql, getClusteredIndexSql(table));
-		StringUtil.appendLine(sql, getNonclusteredIndexSql(table));
+		StringUtil.appendValidLine(sql, getClusteredIndexSql(table));
+		StringUtil.appendValidLine(sql, getNonclusteredIndexSql(table));
 		sql.append("end");
 		return sql.toString();
 	}

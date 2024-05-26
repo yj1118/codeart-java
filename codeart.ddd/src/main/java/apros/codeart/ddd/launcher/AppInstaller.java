@@ -42,7 +42,7 @@ public class AppInstaller extends AppInstallerBase {
 		case "message":
 			setupMessageModule(args);
 			break;
-		case "sage":
+		case "saga":
 			setupSAGAModule(args);
 			break;
 		case "service":
