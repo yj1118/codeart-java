@@ -310,13 +310,13 @@ final class DataTableLoader {
 		DataTableGenerator.clearUp();
 	}
 
-	/**
-	 * 创建所有表信息，这主要用于支持测试
-	 */
-	@TestSupport
-	public static void generate() {
-		DataTableGenerator.generate();
-	}
+//	/**
+//	 * 创建所有表信息，这主要用于支持测试
+//	 */
+//	@TestSupport
+//	public static void generate() {
+//		DataTableGenerator.generate();
+//	}
 
 	// #endregion
 

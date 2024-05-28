@@ -218,6 +218,11 @@ public class DomainProperty {
 		});
 	}
 
+	public static DomainProperty register(String name, Class<?> propertyType, Class<?> declaringType,
+			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
+		return register(name, false, propertyType, declaringType, getDefaultValue);
+	}
+
 	/**
 	 * 
 	 * 通过领域属性的类型名称来注册领域属性，该方法非常适用于动态领域对象

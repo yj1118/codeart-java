@@ -49,18 +49,18 @@ final class DataTableGenerator {
 		}
 	}
 
-	/// <summary>
-	/// 创建所有表信息，这主要用于支持测试
-	/// </summary>
-	@TestSupport
-	static void generate() {
-		// 开启独立事务，这样创建表的操作就和后续的增删改查没有冲突了，不会造成死锁
-		DataContext.newScope((access) -> {
-			for (var table : _generated) {
-				createTable(access, table);
-			}
-		});
-	}
+//	/// <summary>
+//	/// 创建所有表信息，这主要用于支持测试
+//	/// </summary>
+//	@TestSupport
+//	static void generate() {
+//		// 开启独立事务，这样创建表的操作就和后续的增删改查没有冲突了，不会造成死锁
+//		DataContext.newScope((access) -> {
+//			for (var table : _generated) {
+//				createTable(access, table);
+//			}
+//		});
+//	}
 
 	private static void dropTable(DataAccess access, DataTable table) {
 		var builder = DataSource.getQueryBuilder(DropTableQB.class);
