@@ -3,7 +3,9 @@ package apros.codeart.ddd.repository;
 import java.lang.reflect.Method;
 
 import apros.codeart.ddd.DomainDrivenException;
+import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.IRepositoryBase;
+import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.dynamic.IDynamicRepository;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.i18n.Language;
@@ -84,5 +86,30 @@ public final class Repository {
 					repositoryType.getName(), methodName));
 		return method;
 	}
+
+	// #region 基础方法的快速调用
+
+	public static void add(IAggregateRoot obj) {
+		var repository = createByObjectType(obj.getClass());
+		repository.addRoot(obj);
+	}
+
+	public static void update(IAggregateRoot obj) {
+		var repository = createByObjectType(obj.getClass());
+		repository.updateRoot(obj);
+	}
+
+	public static void delete(IAggregateRoot obj) {
+		var repository = createByObjectType(obj.getClass());
+		repository.deleteRoot(obj);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T extends IAggregateRoot> T find(Class<T> objectType, Object id, QueryLevel level) {
+		var repository = createByObjectType(objectType);
+		return (T) repository.findRoot(id, level);
+	}
+
+	// #endregion
 
 }
