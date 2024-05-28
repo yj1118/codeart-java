@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.function.Supplier;
 
 import apros.codeart.TestSupport;
+import apros.codeart.ddd.DDDConfig;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.util.ListUtil;
 
@@ -24,8 +25,11 @@ final class DataTableGenerator {
 
 	public static void generate(DataTable table) {
 		ifUnBuilt(table.name(), () -> {
-			// 开启独立事务，这样创建表的操作就和后续的增删改查没有冲突了，不会造成死锁
-			DataContext.newScope((access) -> {
+			DataContext.using((access) -> {
+				if (DDDConfig.enableReset()) {
+					// 开启了重置，所以在创建表之前，把表删除，重新创建
+					dropTable(access, table);
+				}
 				createTable(access, table);
 			});
 			return table;
@@ -58,6 +62,12 @@ final class DataTableGenerator {
 		});
 	}
 
+	private static void dropTable(DataAccess access, DataTable table) {
+		var builder = DataSource.getQueryBuilder(DropTableQB.class);
+		var sql = builder.build(new QueryDescription(table));
+		access.execute(sql);
+	}
+
 	/// <summary>
 	/// 删除表
 	/// </summary>
@@ -65,9 +75,7 @@ final class DataTableGenerator {
 	static void drop() {
 		DataContext.newScope((access) -> {
 			for (var table : _generated) {
-				var builder = DataSource.getQueryBuilder(DropTableQB.class);
-				var sql = builder.build(new QueryDescription(table));
-				access.execute(sql);
+				dropTable(access, table);
 			}
 		});
 	}

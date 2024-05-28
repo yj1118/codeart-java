@@ -1,11 +1,9 @@
 package apros.codeart.ddd.dynamic;
 
-import apros.codeart.ddd.DDDConfig;
 import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.FrameworkDomain;
 import apros.codeart.ddd.MergeDomain;
 import apros.codeart.ddd.repository.ConstructorRepository;
-import apros.codeart.dto.DTObject;
 
 @MergeDomain
 @FrameworkDomain
@@ -136,16 +134,16 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
 //		}
 //	}
 
-	/**
-	 * 
-	 * 获取通过配置文件得到的对象元数据
-	 * 
-	 * @param objectName
-	 * @return
-	 */
-	public static DTObject getMetadata(String objectName) {
-		var meta = DDDConfig.objectMeta();
-		return meta.getObject(objectName, null);
-	}
+//	/**
+//	 * 
+//	 * 获取通过配置文件得到的对象元数据
+//	 * 
+//	 * @param objectName
+//	 * @return
+//	 */
+//	public static DTObject getMetadata(String objectName) {
+//		var meta = DDDConfig.objectMeta();
+//		return meta.getObject(objectName, null);
+//	}
 
 }

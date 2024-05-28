@@ -17,7 +17,7 @@ import apros.codeart.rabbitmq.rpc.RabbitMQRPCClientFactory;
 import apros.codeart.rabbitmq.rpc.RabbitMQRPCServerFactory;
 
 /**
- * 
+ * 使用该对象解决启动过程中对模块初始化有顺序的要求的需要
  */
 public class AppInstaller extends AppInstallerBase {
 
@@ -97,7 +97,6 @@ public class AppInstaller extends AppInstallerBase {
 
 	@Override
 	public void dispose() {
-		// TODO Auto-generated method stub
 
 	}
 
