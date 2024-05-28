@@ -57,7 +57,13 @@ class RepositoryFactory {
 		// substring(1) 是移除I
 		var repositoryName = repositoryInterfaceType.getSimpleName().substring(1);
 		var fullName = String.format("%s.%s", repositoryInterfaceType.getPackageName(), repositoryName);
-		return TypeUtil.getClass(fullName);
+		var type = TypeUtil.getClass(fullName);
+
+		if (type == null) {
+			fullName = String.format("%s.repository.%s", repositoryInterfaceType.getPackageName(), repositoryName);
+			type = TypeUtil.getClass(fullName);
+		}
+		return type;
 	}
 
 	/**
@@ -102,6 +108,13 @@ class RepositoryFactory {
 		// 通过约定找
 		// 例如：UserSubsytem.User的仓储就是UserSubsytem.UserRepository
 		var repositoryName = String.format("%sRepository", objectType.getName());
+		if (TypeUtil.exists(repositoryName)) {
+			var repositoryType = TypeUtil.getClass(repositoryName);
+			return (IRepositoryBase) SafeAccessImpl.createSingleton(repositoryType);
+		}
+
+		repositoryName = String.format("%s.repository.%sRepository", objectType.getPackageName(),
+				objectType.getSimpleName());
 		if (TypeUtil.exists(repositoryName)) {
 			var repositoryType = TypeUtil.getClass(repositoryName);
 			return (IRepositoryBase) SafeAccessImpl.createSingleton(repositoryType);
