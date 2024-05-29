@@ -87,13 +87,14 @@ public class GeneratedField extends ValueField {
 		return new GeneratedField(tip, name, GeneratedFieldType.User);
 	}
 
-	/// <summary>
-	/// 创建基础值集合的值字段
-	/// </summary>
-	/// <param name="ownerType"></param>
-	/// <param name="propertyType"></param>
-	/// <param name="name"></param>
-	/// <returns></returns>
+	/**
+	 * 
+	 * 创建基础值集合的值字段
+	 * 
+	 * @param declaringType
+	 * @param field
+	 * @return
+	 */
 	public static GeneratedField createPrimitiveValue(Class<?> declaringType, ValueListField field) {
 		var valueType = field.valueType();
 		var agent = DataSource.getAgent();

@@ -47,6 +47,15 @@ class CreateTable extends CreateTableQB {
 			return String.format("[%s] [%s](%s) %s NULL,", field.name(), (isASCII ? "varchar" : "nvarchar"),
 					((maxLength == 0 || maxLength > max) ? "max" : maxLength),
 					(allowNull ? StringUtil.empty() : "NOT"));
+		}
+		if (field.dbType() == DbType.DateTime) {
+
+//			var maxLength = AccessUtil.getMaxLength(field.tip());
+//			var isASCII = field.dbType() == DbType.AnsiString || AccessUtil.isASCIIString(field.tip());
+//			var max = isASCII ? 8000 : 4000;
+//			return String.format("[%s] [%s](%s) %s NULL,", field.name(), (isASCII ? "varchar" : "nvarchar"),
+//					((maxLength == 0 || maxLength > max) ? "max" : maxLength),
+//					(allowNull ? StringUtil.empty() : "NOT"));
 		} else {
 			return String.format("[%s] [%s] %s NULL,", field.name(), Util.getSqlDbTypeString(field.dbType()),
 					(allowNull ? StringUtil.empty() : "NOT"));

@@ -1,7 +1,5 @@
 package apros.codeart.ddd.repository.access.internal;
 
-import java.lang.annotation.Annotation;
-
 import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.repository.access.GeneratedField;
@@ -37,16 +35,26 @@ public final class AccessUtil {
 		return meta.name().equalsIgnoreCase(EntityObject.IdPropertyName);
 	}
 
-	/**
-	 * 
-	 * 对仓储化有影响的验证器
-	 * 
-	 * @param validatorAnnType
-	 * @return
-	 */
-	public static boolean hasImpact(Class<? extends Annotation> validatorAnnType) {
-		if (validatorAnnType.equals(StringLengthValidator.class) || validatorAnnType.equals(ASCIIStringValidator.class))
-			return true;
-		return false;
+	public static int getTimePrecision(PropertyMeta meta) {
+//		var stringMeta = TypeUtil.as(meta, GeneratedField.StringMeta.class);
+//		if (stringMeta != null) {
+//			return stringMeta.maxLength();
+//		} else {
+//			var sl = meta.findValidator(StringLengthValidator.class);
+//			return sl == null ? 0 : sl.max();
+//		}
 	}
+
+//	/**
+//	 * 
+//	 * 对仓储化有影响的验证器
+//	 * 
+//	 * @param validatorAnnType
+//	 * @return
+//	 */
+//	public static boolean hasImpact(Class<? extends Annotation> validatorAnnType) {
+//		if (validatorAnnType.equals(StringLengthValidator.class) || validatorAnnType.equals(ASCIIStringValidator.class))
+//			return true;
+//		return false;
+//	}
 }
