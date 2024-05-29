@@ -1,4 +1,4 @@
-package apros.codeart.ddd;
+package apros.codeart.ddd.validation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,12 +7,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface PropertyLabel {
-	/**
-	 * 
-	 * 如果需要多语言支持，字符串写 @ 前缀
-	 * 
-	 * @return
-	 */
-	String value();
+public @interface TimePrecision {
+
+	TimePrecisions value() default TimePrecisions.Second;
+
 }
