@@ -7,6 +7,7 @@ import apros.codeart.ddd.repository.access.DataTable;
 import apros.codeart.ddd.repository.access.DbType;
 import apros.codeart.ddd.repository.access.IDataField;
 import apros.codeart.ddd.repository.access.internal.AccessUtil;
+import apros.codeart.ddd.validation.TimePrecisions;
 import apros.codeart.util.SafeAccess;
 import apros.codeart.util.StringUtil;
 
@@ -49,17 +50,36 @@ class CreateTable extends CreateTableQB {
 					(allowNull ? StringUtil.empty() : "NOT"));
 		}
 		if (field.dbType() == DbType.DateTime) {
-
-//			var maxLength = AccessUtil.getMaxLength(field.tip());
-//			var isASCII = field.dbType() == DbType.AnsiString || AccessUtil.isASCIIString(field.tip());
-//			var max = isASCII ? 8000 : 4000;
-//			return String.format("[%s] [%s](%s) %s NULL,", field.name(), (isASCII ? "varchar" : "nvarchar"),
-//					((maxLength == 0 || maxLength > max) ? "max" : maxLength),
-//					(allowNull ? StringUtil.empty() : "NOT"));
+			var precision = AccessUtil.getTimePrecision(field.tip());
+			var pv = getTimePrecisionValue(precision);
+			return String.format("[%s] [%s](%s) %s NULL,", field.name(), "datetime2", pv,
+					(allowNull ? StringUtil.empty() : "NOT"));
 		} else {
 			return String.format("[%s] [%s] %s NULL,", field.name(), Util.getSqlDbTypeString(field.dbType()),
 					(allowNull ? StringUtil.empty() : "NOT"));
 		}
+	}
+
+	private static int getTimePrecisionValue(TimePrecisions value) {
+		switch (value) {
+		case TimePrecisions.Second:
+			return 0;
+		case TimePrecisions.Millisecond100:
+			return 1;
+		case TimePrecisions.Millisecond10:
+			return 2;
+		case TimePrecisions.Millisecond:
+			return 3;
+		case TimePrecisions.Microsecond100:
+			return 4;
+		case TimePrecisions.Microsecond10:
+			return 5;
+		case TimePrecisions.Microsecond:
+			return 6;
+		case TimePrecisions.Nanosecond100:
+			return 7;
+		}
+		return 0;
 	}
 
 	private static String getPrimaryKeySql(DataTable table) {
