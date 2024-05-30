@@ -5,6 +5,8 @@ import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.repository.access.GeneratedField;
 import apros.codeart.ddd.validation.ASCIIStringValidator;
 import apros.codeart.ddd.validation.StringLengthValidator;
+import apros.codeart.ddd.validation.TimePrecisionValidator;
+import apros.codeart.ddd.validation.TimePrecisions;
 import apros.codeart.runtime.TypeUtil;
 
 public final class AccessUtil {
@@ -35,14 +37,14 @@ public final class AccessUtil {
 		return meta.name().equalsIgnoreCase(EntityObject.IdPropertyName);
 	}
 
-	public static int getTimePrecision(PropertyMeta meta) {
-//		var stringMeta = TypeUtil.as(meta, GeneratedField.StringMeta.class);
-//		if (stringMeta != null) {
-//			return stringMeta.maxLength();
-//		} else {
-//			var sl = meta.findValidator(StringLengthValidator.class);
-//			return sl == null ? 0 : sl.max();
-//		}
+	public static TimePrecisions getTimePrecision(PropertyMeta meta) {
+		var dateTimeMeta = TypeUtil.as(meta, GeneratedField.DateTimeMeta.class);
+		if (dateTimeMeta != null) {
+			return dateTimeMeta.precision();
+		} else {
+			var v = meta.findValidator(TimePrecisionValidator.class);
+			return v == null ? TimePrecisions.Second : v.precision();
+		}
 	}
 
 //	/**

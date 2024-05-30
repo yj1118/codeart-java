@@ -1,11 +1,14 @@
 package apros.codeart.ddd.repository.access;
 
+import java.time.LocalDateTime;
+
 import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.metadata.PropertyAccessLevel;
 import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.metadata.ValueMeta;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.access.internal.AccessUtil;
+import apros.codeart.ddd.validation.TimePrecisions;
 import apros.codeart.util.Guid;
 import apros.codeart.util.ListUtil;
 
@@ -109,6 +112,11 @@ public class GeneratedField extends ValueField {
 			}
 			var ascii = AccessUtil.isASCIIString(field.tip());
 			tip = new StringMeta(PrimitiveValueName, declaringType, maxLength, ascii);
+		} else if (valueType.equals(LocalDateTime.class)) {
+			var precision = AccessUtil.getTimePrecision(field.tip());
+
+			fieldType = DbFieldType.NonclusteredIndex;
+			tip = new DateTimeMeta(PrimitiveValueName, declaringType, precision);
 		} else {
 			fieldType = DbFieldType.NonclusteredIndex;
 			tip = new CustomMeta(PrimitiveValueName, valueType, declaringType);
@@ -173,6 +181,20 @@ public class GeneratedField extends ValueField {
 			super(name, String.class, declaringType);
 			_maxLength = maxLength;
 			_ascii = ascii;
+		}
+	}
+
+	public static class DateTimeMeta extends CustomMeta {
+
+		private TimePrecisions _precision;
+
+		public TimePrecisions precision() {
+			return _precision;
+		}
+
+		public DateTimeMeta(String name, Class<?> declaringType, TimePrecisions precision) {
+			super(name, String.class, declaringType);
+			_precision = precision;
 		}
 	}
 
