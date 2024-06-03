@@ -3,6 +3,7 @@ package apros.codeart.ddd.repository.access;
 import static apros.codeart.i18n.Language.strings;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -291,7 +292,8 @@ final class DataTableUtil {
 		_typeMap.put(String.class, DbType.String);
 
 		_typeMap.put(UUID.class, DbType.Guid);
-		_typeMap.put(LocalDateTime.class, DbType.DateTime);
+		_typeMap.put(LocalDateTime.class, DbType.LocalDateTime);
+		_typeMap.put(ZonedDateTime.class, DbType.ZonedDateTime);
 	}
 
 	/**

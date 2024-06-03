@@ -13,29 +13,32 @@ public final class Util {
 		case DbType.AnsiString:
 			return "varchar";
 		case DbType.Byte:
-			return "TINYINT";
+			return "tinyint";
 		case DbType.Boolean:
 			return "BIT";
-		case DbType.DateTime:
-			return "DATETIME";
+		case DbType.LocalDateTime:
+			return "datetime2";
+		case DbType.ZonedDateTime:
+			return "datetimeoffset";
 		case DbType.Float:
-			return "REAL";
+			return "real";
 		case DbType.Double:
-			return "FLOAT";
+			return "float";
 		case DbType.Guid:
-			return "UNIQUEIDENTIFIER";
+			return "uniqueidentifier";
 		case DbType.Int16:
-			return "SMALLINT";
+			return "smallint";
 		case DbType.Int32:
-			return "INT";
+			return "int";
 		case DbType.Int64:
-			return "BIGINT";
+			return "bigint";
 		case DbType.String:
 			return "nvarchar";
 		default:
 			break;
 		}
-		throw new IllegalStateException(Language.strings("apros.codeart.ddd", "UnsupportedFieldType", dbType.toString()));
+		throw new IllegalStateException(
+				Language.strings("apros.codeart.ddd", "UnsupportedFieldType", dbType.toString()));
 	}
 
 //	public static SqlDbType etSqlDbType(DbType dbType) {

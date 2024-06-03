@@ -2,6 +2,7 @@ package apros.codeart.util;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -47,6 +48,8 @@ public final class PrimitiveUtil {
 			return Short.valueOf(value.toString());
 		} else if (targetType.equals(LocalDateTime.class)) {
 			return ISO8601.getLocalDateTime(value.toString());
+		} else if (targetType.equals(ZonedDateTime.class)) {
+			return ISO8601.getZonedDateTime(value.toString());
 		} else if (targetType.equals(Instant.class)) {
 			return ISO8601.getInstant(value.toString());
 		} else if (targetType.equals(char.class) || targetType.equals(Character.class)) {
@@ -93,8 +96,10 @@ public final class PrimitiveUtil {
 			return boolean.class;
 		case "byte":
 			return byte.class;
-		case "datetime":
+		case "localDateTime":
 			return LocalDateTime.class;
+		case "zonedDateTime":
+			return ZonedDateTime.class;
 		case "double":
 			return double.class;
 		case "short":
@@ -124,11 +129,11 @@ public final class PrimitiveUtil {
 	public static boolean is(Class<?> valueType) {
 
 		if (valueType.isPrimitive() || valueType.equals(String.class) || valueType.equals(LocalDateTime.class)
-				|| valueType.equals(UUID.class))
+				|| valueType.equals(ZonedDateTime.class) || valueType.equals(UUID.class))
 			return true;
 		return false;
 	}
 
-	public static final String PrimitiveTypes = "char,bool,boolean,byte,datetime,double,short,int,single,long,float,single,float,string,guid";
+//	public static final String PrimitiveTypes = "char,bool,boolean,byte,datetime,double,short,int,single,long,float,single,float,string,guid";
 
 }

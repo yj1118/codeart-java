@@ -41,7 +41,9 @@ class CreateTable extends CreateTableQB {
 	private static String getFieldSql(IDataField field) {
 		boolean allowNull = field.tip().isEmptyable() || field.isAdditional();
 
-		if (field.dbType() == DbType.String || field.dbType() == DbType.AnsiString) {
+		switch (field.dbType()) {
+		case DbType.AnsiString:
+		case DbType.String: {
 			var maxLength = AccessUtil.getMaxLength(field.tip());
 			var isASCII = field.dbType() == DbType.AnsiString || AccessUtil.isASCIIString(field.tip());
 			var max = isASCII ? 8000 : 4000;
@@ -49,12 +51,19 @@ class CreateTable extends CreateTableQB {
 					((maxLength == 0 || maxLength > max) ? "max" : maxLength),
 					(allowNull ? StringUtil.empty() : "NOT"));
 		}
-		if (field.dbType() == DbType.DateTime) {
+		case DbType.LocalDateTime: {
 			var precision = AccessUtil.getTimePrecision(field.tip());
 			var pv = getTimePrecisionValue(precision);
 			return String.format("[%s] [%s](%s) %s NULL,", field.name(), "datetime2", pv,
 					(allowNull ? StringUtil.empty() : "NOT"));
-		} else {
+		}
+		case DbType.ZonedDateTime: {
+			var precision = AccessUtil.getTimePrecision(field.tip());
+			var pv = getTimePrecisionValue(precision);
+			return String.format("[%s] [%s](%s) %s NULL,", field.name(), "datetimeoffset", pv,
+					(allowNull ? StringUtil.empty() : "NOT"));
+		}
+		default:
 			return String.format("[%s] [%s] %s NULL,", field.name(), Util.getSqlDbTypeString(field.dbType()),
 					(allowNull ? StringUtil.empty() : "NOT"));
 		}
