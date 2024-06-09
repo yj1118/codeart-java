@@ -9,7 +9,7 @@ import apros.codeart.util.EventHandler;
 @FrameworkDomain
 public abstract class AggregateRoot extends EntityObject implements IAggregateRoot {
 
-	private AggregateRootEventManager _eventManager;
+	private final AggregateRootEventManager _eventManager;
 
 	public AggregateRoot() {
 		_eventManager = new AggregateRootEventManager(this);

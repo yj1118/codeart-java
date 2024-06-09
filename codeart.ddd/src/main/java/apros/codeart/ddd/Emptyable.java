@@ -3,6 +3,7 @@ package apros.codeart.ddd;
 import static apros.codeart.i18n.Language.strings;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import apros.codeart.dto.DTObject;
@@ -41,11 +42,12 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, INul
 		_value = Optional.ofNullable(value);
 	}
 
-	/// <summary>
-	/// 将自身的内容序列化到<paramref name="owner"/>中，
-	/// </summary>
-	/// <param name="owner"></param>
-	/// <param name="name">目标对象作为成员的名称</param>
+
+	/**
+	 *
+	 *	将自身的内容序列化到 {@code owner} 中
+	 *
+	 */
 	@Override
 	public void serialize(DTObject owner, String name) {
 		if (this.isEmpty())
@@ -71,6 +73,8 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, INul
 
 	public static Object createEmpty(Class<?> emptyableType) {
 
+		// todo 更多类型
+		
 		if (emptyableType.equals(EmptyableDateTime.class))
 			return EmptyableDateTime.Empty;
 
@@ -79,6 +83,9 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, INul
 
 		if (emptyableType.equals(EmptyableLong.class))
 			return EmptyableLong.Empty;
+		
+		if (emptyableType.equals(EmptyableZonedDateTime.class))
+			return EmptyableZonedDateTime.Empty;
 
 		throw new IllegalStateException(strings("apros.codeart.ddd", "DidNotFindEmptyType", emptyableType.getName()));
 
@@ -94,12 +101,16 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, INul
 
 		if (emptyableType.equals(EmptyableLong.class))
 			return new EmptyableLong((Long) value);
+		
+		if (emptyableType.equals(EmptyableZonedDateTime.class))
+			return new EmptyableZonedDateTime((ZonedDateTime) value);
 
 		throw new IllegalStateException(strings("apros.codeart.ddd", "DidNotFindEmptyType", emptyableType.getName()));
 
 	}
 
 	public static Class<?> getValueType(Class<?> emptyableType) {
+		
 		if (emptyableType.equals(EmptyableDateTime.class))
 			return EmptyableDateTime.ValueType;
 
@@ -108,8 +119,11 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, INul
 
 		if (emptyableType.equals(EmptyableLong.class))
 			return EmptyableLong.ValueType;
+		
+		if (emptyableType.equals(EmptyableZonedDateTime.class))
+			return EmptyableZonedDateTime.ValueType;
+
 
 		throw new IllegalStateException(strings("apros.codeart.ddd", "DidNotFindValueType", emptyableType.getName()));
 	}
-
 }
