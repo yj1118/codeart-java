@@ -1,126 +1,48 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>apros.codeart</groupId>
-  <artifactId>codeart</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>apros.codeart</groupId>
+        <artifactId>codeart-java</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>21</maven.compiler.source>
-    <maven.compiler.target>21</maven.compiler.target>
-  </properties>
+    <artifactId>codeart</artifactId>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <version>33.0.0-jre</version>
-    </dependency>
-    <dependency>
-      <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-engine</artifactId>
-      <version>5.10.2</version>
-    </dependency>
-    <dependency>   
-      <groupId>org.ow2.asm</groupId>   
-      <artifactId>asm</artifactId>    
-      <version>9.6</version>
-    </dependency>
-    <dependency>
-	    <groupId>org.reflections</groupId>
-	    <artifactId>reflections</artifactId>
-	    <version>0.10.2</version>
-	</dependency>
-	<dependency>
-	    <groupId>org.apache.logging.log4j</groupId>
-	    <artifactId>log4j-api</artifactId>
-	    <version>3.0.0-beta2</version>
-	</dependency>
-	<dependency>
-	    <groupId>org.apache.logging.log4j</groupId>
-	    <artifactId>log4j-core</artifactId>
-	    <version>3.0.0-beta2</version>
-	</dependency>
-	<dependency>
-	    <groupId>com.rabbitmq</groupId>
-	    <artifactId>amqp-client</artifactId>
-	    <version>5.21.0</version>
-	</dependency>
-	<dependency>
-	    <groupId>com.google.code.gson</groupId>
-	    <artifactId>gson</artifactId>
-	    <version>2.10.1</version>
-	    <scope>test</scope> <!-- 设置依赖范围为test -->
-	</dependency>
-  </dependencies>
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
-  <build>
-    <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
-      <plugins>
-        <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
-        <plugin>
-          <artifactId>maven-clean-plugin</artifactId>
-          <version>3.3.2</version>
-        </plugin>
-        <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
-        <plugin>
-          <artifactId>maven-resources-plugin</artifactId>
-          <version>3.3.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.13.0</version>
-          <configuration>
-            <source>21</source> <!-- 设置Java源代码版本 -->
-            <target>21</target> <!-- 设置目标Java版本 -->
-            <compilerArgs>
-                <arg>-parameters</arg> <!-- 添加参数以保留方法参数名称 -->
-            </compilerArgs>
-        </configuration>
-        </plugin>
-        <plugin>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.2.5</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-jar-plugin</artifactId>
-          <version>3.4.1</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-install-plugin</artifactId>
-          <version>3.1.2</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <version>3.1.2</version>
-        </plugin>
-        <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
-        <plugin>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>4.0.0-M14</version>
-        </plugin>
-        <plugin>
-          <artifactId>maven-project-info-reports-plugin</artifactId>
-          <version>3.5.0</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-     <resources>
-        <resource>
-            <directory>src/main/resources</directory>
-            <includes>
-                <include>**/*.properties</include>
-            </includes>
-        </resource>
-    </resources>
-  </build>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.ow2.asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>9.6</version>
+        </dependency>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+            <version>0.10.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.rabbitmq</groupId>
+            <artifactId>amqp-client</artifactId>
+            <version>5.21.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
+            <scope>test</scope> <!-- 设置依赖范围为test -->
+        </dependency>
+    </dependencies>
+
+
+
 </project>
