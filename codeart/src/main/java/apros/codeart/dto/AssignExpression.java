@@ -12,10 +12,11 @@ import apros.codeart.util.ArgumentAssert;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
+import org.jetbrains.annotations.NotNull;
 
 class AssignExpression extends TransformExpression {
-	private String _findExp;
-	private String _valueFindExp;
+	private final String _findExp;
+	private final String _valueFindExp;
 
 	public AssignExpression(String exp) {
 		var temp = exp.split("=");
@@ -34,17 +35,17 @@ class AssignExpression extends TransformExpression {
 		changeValue(dto, _findExp, _valueFindExp, transformValue);
 	}
 
-//	#region 更改值
+	//region 更改值
 
-	/// <summary>
-	/// 该方法用于更改成员的值
-	/// </summary>
-	/// <param name="dto"></param>
-	/// <param name="findExp"></param>
-	/// <param name="valueFindExp"></param>
-	/// <param name="transformValue"></param>
-	public void changeValue(DTObject dto, String findExp, String valueFindExp,
-			Function<Object, Object> transformValue) {
+	/**
+	 *  该方法用于更改成员的值
+	 * @param dto 需要更改的dto对象
+	 * @param findExp
+	 * @param valueFindExp
+	 * @param transformValue
+	 */
+	public void changeValue(@NotNull DTObject dto, @NotNull String findExp, @NotNull String valueFindExp,
+							Function<Object, Object> transformValue) {
 		ArgumentAssert.isNotNullOrEmpty(findExp, "findExp");
 		ArgumentAssert.isNotNullOrEmpty(valueFindExp, "valueFindExp");
 
@@ -176,7 +177,7 @@ class AssignExpression extends TransformExpression {
 		return null;
 	}
 
-//	#endregion
+	//endregion
 
 	private static Function<String, String[]> _getFindExpPath = LazyIndexer.init((valueFindExp) -> {
 		return valueFindExp.split(".");

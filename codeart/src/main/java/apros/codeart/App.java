@@ -28,14 +28,12 @@ public final class App {
 	}
 
 	public static void init() {
-		init(DefautlAppInstaller.Instance);
+		init(DefaultAppInstaller.Instance);
 	}
 
 	/**
 	 * 应用程序初始化，请根据不同的上下文环境，在程序入口处调用此方法
-	 * 
-	 * @param archives 需要参与初始化的档案名称，档案是包的顶级名称，比如
-	 *                 subsystem.account和subsystem.user的档案名为subsystem
+	 *
 	 */
 	public static void init(IAppInstaller installer) {
 
@@ -54,7 +52,7 @@ public final class App {
 		runActions(PreApplicationStart.class);
 	}
 
-	private static AtomicBoolean _post_start_completed = new AtomicBoolean(false);
+	private static final AtomicBoolean _post_start_completed = new AtomicBoolean(false);
 
 	public static boolean started() {
 		return _post_start_completed.getAcquire();
@@ -103,9 +101,9 @@ public final class App {
 		}
 	}
 
-	private static class DefautlAppInstaller extends AppInstallerBase {
+	private static class DefaultAppInstaller extends AppInstallerBase {
 
-		private DefautlAppInstaller() {
+		private DefaultAppInstaller() {
 		}
 
 		@Override
@@ -129,7 +127,7 @@ public final class App {
 
 		}
 
-		public static final DefautlAppInstaller Instance = new DefautlAppInstaller();
+		public static final DefaultAppInstaller Instance = new DefaultAppInstaller();
 
 	}
 
