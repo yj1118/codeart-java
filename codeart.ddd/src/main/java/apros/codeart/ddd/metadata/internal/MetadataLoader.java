@@ -75,10 +75,10 @@ public final class MetadataLoader {
 
 	private static boolean isEmptyType(Class<?> objectType) {
 		var name = objectType.getName();
-		return name.indexOf("$") > -1 && name.endsWith("Empty");
+		return name.contains("$") && name.endsWith("Empty");
 	}
 
-	private static ArrayList<Class<? extends IDomainObject>> _registerItems = new ArrayList<Class<? extends IDomainObject>>();
+	private static final ArrayList<Class<? extends IDomainObject>> _registerItems = new ArrayList<Class<? extends IDomainObject>>();
 
 	/**
 	 * 

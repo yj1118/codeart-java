@@ -1,5 +1,6 @@
 package apros.codeart.ddd.validation;
 
+import apros.codeart.i18n.Language;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
@@ -71,7 +72,7 @@ public class NotEmptyValidator extends PropertyValidatorImpl {
 	}
 
 	private void addError(DomainProperty property, ValidationResult result) {
-		result.append(property.name(), "NotEmpty", String.format("codeart.ddd", "NotEmpty", property.call()));
+		result.append(property.name(), "NotEmpty", Language.strings("codeart.ddd", "NotEmpty", property.call()));
 	}
 
 	public static final String ErrorCode = "NotEmptyError";
