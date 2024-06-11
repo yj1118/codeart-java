@@ -9,99 +9,103 @@ import java.util.List;
 /**
  * 在Java中，方法的嵌套调用是通过调用栈（call stack）来实现的。每当你调用一个方法，Java虚拟机会在调用栈上创建一个新的栈帧（stack
  * frame），用于存储该方法的局部变量、参数和执行状态等信息。当方法执行完毕时，对应的栈帧会被从调用栈中移除，控制权回到上一个调用的方法上。
- * 
+ * <p>
  * 因此，虽然方法之间的调用是通过共享调用栈来实现的，但是每个方法调用都会创建自己的栈帧，这些栈帧在调用栈中以堆栈的形式依次排列。
- * 
+ * <p>
  * 每个栈帧都包含了方法的局部变量和其他执行上下文信息，因此它们之间是相互独立的，互不干扰。
  */
 public class EvaluationStack {
-	private LinkedList<StackFrame> _frames;
+    private LinkedList<StackFrame> _frames;
 
-	private StackFrame _current;
+    private StackFrame _current;
 
-	public StackFrame currentFrame() {
-		return _current;
-	}
+    public StackFrame currentFrame() {
+        return _current;
+    }
 
-	public EvaluationStack() {
-		_frames = new LinkedList<StackFrame>();
-		this.enterFrame();
-	}
+    public EvaluationStack() {
+        _frames = new LinkedList<StackFrame>();
+        this.enterFrame();
+    }
 
-	/**
-	 * 进入栈帧
-	 */
-	public void enterFrame() {
-		StackFrame frame = new StackFrame();
-		_frames.push(frame);
-		_current = frame;
-	}
+    /**
+     * 进入栈帧
+     */
+    public void enterFrame() {
+        StackFrame frame = new StackFrame();
+        _frames.push(frame);
+        _current = frame;
+    }
 
-	/**
-	 * 离开栈帧
-	 */
-	public void exitFrame() {
-		_frames.pop();
-		_current = _frames.peek();
-	}
+    /**
+     * 离开栈帧
+     */
+    public void exitFrame() {
+        _frames.pop();
+        _current = _frames.peek();
+    }
 
-	public int frameSize() {
-		return _frames.size();
-	}
+    public int frameSize() {
+        return _frames.size();
+    }
 
-	/**
-	 * 释放调用栈
-	 */
-	public void clearFrames() {
-		_frames.clear();
-		_current = null;
-	}
+    /**
+     * 释放调用栈
+     */
+    public void clearFrames() {
+        _frames.clear();
+        _current = null;
+    }
 
-	public void push(Class<?> type) {
-		_current.push(new StackItem(type));
-	}
+    public void push(Class<?> type) {
+        _current.push(new StackItem(type));
+    }
 
-	public void push(StackItem item) {
-		_current.push(item);
-	}
+    public void push(String typeName) {
+        _current.push(new StackItem(typeName));
+    }
 
-	public StackItem pop() {
-		return _current.pop();
-	}
+    public void push(StackItem item) {
+        _current.push(item);
+    }
 
-	public StackItem peek() {
-		return _current.peek();
-	}
+    public StackItem pop() {
+        return _current.pop();
+    }
 
-	public void pop(int count) {
-		_current.pop(count);
-	}
+    public StackItem peek() {
+        return _current.peek();
+    }
 
-	public int size() {
-		return _current.size();
-	}
+    public void pop(int count) {
+        _current.pop(count);
+    }
 
-	/**
-	 * 查找栈顶上得元素，得到他们得类型，如果他们之间得类型不相同，报错
-	 * 
-	 * @param expectCount 期望栈顶有几个值
-	 * @return
-	 */
-	Class<?> matchType(int expectedCount) {
-		return _current.matchType(expectedCount);
-	}
+    public int size() {
+        return _current.size();
+    }
 
-	public static class StackFrame {
+    /**
+     * 查找栈顶上得元素，得到他们得类型，如果他们之间得类型不相同，报错
+     *
+     * @param expectedCount 期望栈顶有几个值
+     * @return 返回
+     */
+    Class<?> matchType(int expectedCount) {
+        return _current.matchType(expectedCount);
+    }
 
-		private LinkedList<StackItem> _items;
+    public static class StackFrame {
 
-		public StackFrame() {
-			_items = new LinkedList<StackItem>();
-		}
+        private LinkedList<StackItem> _items;
 
-		public List<StackItem> getItems() {
-			return Collections.unmodifiableList(_items);
-		}
+        public StackFrame() {
+            _items = new LinkedList<StackItem>();
+        }
+
+        public List<StackItem> getItems() {
+            return Collections.unmodifiableList(_items);
+        }
 
 //		public StackItem[] getItems(int expectedCount) {
 //			var ts = new StackItem[expectedCount];
@@ -113,91 +117,90 @@ public class EvaluationStack {
 //			return ts;
 //		}
 
-		public void push(StackItem item) {
-			_items.push(item);
-		}
+        public void push(StackItem item) {
+            _items.push(item);
+        }
 
-		public StackItem pop() {
-			return _items.pop();
-		}
+        public StackItem pop() {
+            return _items.pop();
+        }
 
-		public StackItem peek() {
-			return _items.peek();
-		}
+        public StackItem peek() {
+            return _items.peek();
+        }
 
-		public void pop(int count) {
-			int pointer = 0;
-			while (pointer < count) {
-				_items.pop();
-				pointer++;
-			}
-		}
+        public void pop(int count) {
+            int pointer = 0;
+            while (pointer < count) {
+                _items.pop();
+                pointer++;
+            }
+        }
 
-		public int size() {
-			return _items.size();
-		}
+        public int size() {
+            return _items.size();
+        }
 
-		public boolean assertRefs(int expectedCount) {
+        public boolean assertRefs(int expectedCount) {
 
-			assertCount(expectedCount);
+            assertCount(expectedCount);
 
-			for (StackItem item : _items) {
-				if (item.isPrimitive())
-					throw new IllegalArgumentException(strings("apros.codeart", "TypeMismatch"));
-			}
-			return true;
-		}
+            for (StackItem item : _items) {
+                if (item.isPrimitive())
+                    throw new IllegalArgumentException(strings("apros.codeart", "TypeMismatch"));
+            }
+            return true;
+        }
 
-		public boolean assertLeastRefs(int expectedCount) {
+        public boolean assertLeastRefs(int expectedCount) {
 
-			assertLeastCount(expectedCount);
+            assertLeastCount(expectedCount);
 
-			for (var i = 0; i < expectedCount; i++) {
-				var item = _items.get(i);
-				if (item.isPrimitive())
-					throw new IllegalArgumentException(strings("apros.codeart", "TypeMismatch"));
-			}
+            for (var i = 0; i < expectedCount; i++) {
+                var item = _items.get(i);
+                if (item.isPrimitive())
+                    throw new IllegalArgumentException(strings("apros.codeart", "TypeMismatch"));
+            }
 
-			return true;
-		}
+            return true;
+        }
 
-		/**
-		 * 检查栈顶值有多少个
-		 * 
-		 * @param count
-		 */
-		public void assertCount(int expectedCount) {
-			if (this.size() != expectedCount)
-				throw new IllegalArgumentException(
-						strings("apros.codeart", "StackItemCountError", this.size(), expectedCount));
-		}
+        /**
+         * 检查栈顶值有多少个
+         */
+        public void assertCount(int expectedCount) {
+            if (this.size() != expectedCount)
+                throw new IllegalArgumentException(
+                        strings("apros.codeart", "StackItemCountError", this.size(), expectedCount));
+        }
 
-		public void assertLeastCount(int expectedCount) {
-			if (this.size() < expectedCount)
-				throw new IllegalArgumentException(
-						strings("apros.codeart", "StackItemLeastError", this.size(), expectedCount));
-		}
+        public void assertLeastCount(int expectedCount) {
+            if (this.size() < expectedCount)
+                throw new IllegalArgumentException(
+                        strings("apros.codeart", "StackItemLeastError", this.size(), expectedCount));
+        }
 
-		/**
-		 * 查找栈顶上得元素，得到他们得类型，如果他们之间得类型不相同，报错
-		 * 
-		 * @param expectCount 期望栈顶至少有几个值
-		 * @return
-		 */
-		Class<?> matchType(int expectedCount) {
 
-			assertLeastCount(expectedCount);
+        /**
+         * 查找栈顶上得元素，得到他们得类型，如果他们之间得类型不相同，报错
+         *
+         * @param expectedCount 期望栈顶有几个值
+         * @return
+         */
+        Class<?> matchType(int expectedCount) {
 
-			Class<?> targetType = _items.get(0).getValueType();
+            assertLeastCount(expectedCount);
 
-			for (var i = 1; i < expectedCount; i++) {
-				var item = _items.get(i);
-				if (targetType != item.getValueType())
-					throw new IllegalStateException(strings("apros.codeart", "TypeMismatch"));
-			}
-			return targetType;
-		}
+            Class<?> targetType = _items.getFirst().getValueType().type();
 
-	}
+            for (var i = 1; i < expectedCount; i++) {
+                var item = _items.get(i);
+                if (targetType != item.getValueType().type())
+                    throw new IllegalStateException(strings("apros.codeart", "TypeMismatch"));
+            }
+            return targetType;
+        }
+
+    }
 
 }

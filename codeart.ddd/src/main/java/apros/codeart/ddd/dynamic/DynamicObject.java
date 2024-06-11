@@ -9,22 +9,22 @@ import apros.codeart.ddd.repository.ConstructorRepository;
 @FrameworkDomain
 public class DynamicObject extends DomainObject implements IDynamicObject {
 
-	private boolean _isEmpty;
+    private final boolean _isEmpty;
 
-	public boolean isEmpty() {
-		return _isEmpty;
-	}
+    public boolean isEmpty() {
+        return _isEmpty;
+    }
 
-	public DynamicObject(boolean isEmpty) {
-		_isEmpty = isEmpty;
-		this.onConstructed();
-	}
+    public DynamicObject(boolean isEmpty) {
+        _isEmpty = isEmpty;
+        this.onConstructed();
+    }
 
-	@ConstructorRepository
-	public DynamicObject() {
-		_isEmpty = false;
-		this.onConstructed();
-	}
+    @ConstructorRepository
+    public DynamicObject() {
+        _isEmpty = false;
+        this.onConstructed();
+    }
 
 //	/**
 //	 * 将对象 {@target} 的数据同步到当前对象中
