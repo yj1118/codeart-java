@@ -12,64 +12,62 @@ import apros.codeart.ddd.repository.Page;
 
 final class DataModel {
 
-	public Class<?> objectType() {
-		return _objectMeta.objectType();
-	}
+    public Class<?> objectType() {
+        return _objectMeta.objectType();
+    }
 
-	private DataTable _root;
+    private final DataTable _root;
 
-	/**
-	 * 根表的信息
-	 * 
-	 * @return
-	 */
-	public DataTable root() {
-		return _root;
-	}
+    /**
+     * 根表的信息
+     */
+    public DataTable root() {
+        return _root;
+    }
 
-	private ObjectMeta _objectMeta;
+    private final ObjectMeta _objectMeta;
 
-	public ObjectMeta objectMeta() {
-		return _objectMeta;
-	}
+    public ObjectMeta objectMeta() {
+        return _objectMeta;
+    }
 
-	DataModel(ObjectMeta objectMeta, DataTable root) {
-		_objectMeta = objectMeta;
-		_root = root;
-	}
+    DataModel(ObjectMeta objectMeta, DataTable root) {
+        _objectMeta = objectMeta;
+        _root = root;
+    }
 
-	public void insert(DomainObject obj) {
-		_root.insert(obj);
-	}
+    public void insert(DomainObject obj) {
+        _root.insert(obj);
+    }
 
-	public void update(DomainObject obj) {
-		_root.update(obj);
-	}
+    public void update(DomainObject obj) {
+        _root.update(obj);
+    }
 
-	public void delete(DomainObject obj) {
-		_root.delete(obj);
-	}
+    public void delete(DomainObject obj) {
+        _root.delete(obj);
+    }
 
-	public <T extends IDomainObject> T querySingle(Object id, QueryLevel level) {
-		return _root.querySingle(id, level);
-	}
+    public <T extends IDomainObject> T querySingle(Object id, QueryLevel level) {
+        return _root.querySingle(id, level);
+    }
 
-	public <T extends IDomainObject> T querySingle(String expression, Consumer<MapData> fillArg, QueryLevel level) {
-		return _root.querySingle(expression, fillArg, level);
-	}
+    public <T extends IDomainObject> T querySingle(String expression, Consumer<MapData> fillArg, QueryLevel level) {
+        return _root.querySingle(expression, fillArg, level);
+    }
 
-	public <T extends IDomainObject> Iterable<T> query(String expression, Consumer<MapData> fillArg, QueryLevel level) {
-		return _root.query(expression, fillArg, level);
-	}
+    public <T extends IDomainObject> Iterable<T> query(String expression, Consumer<MapData> fillArg, QueryLevel level) {
+        return _root.query(expression, fillArg, level);
+    }
 
-	public <T extends IDomainObject> Page<T> query(String expression, int pageIndex, int pageSize,
-			Consumer<MapData> fillArg) {
-		return _root.query(expression, pageIndex, pageSize, fillArg);
-	}
+    public <T extends IDomainObject> Page<T> query(String expression, int pageIndex, int pageSize,
+                                                   Consumer<MapData> fillArg) {
+        return _root.query(expression, pageIndex, pageSize, fillArg);
+    }
 
-	public int getCount(String expression, Consumer<MapData> fillArg, QueryLevel level) {
-		return _root.getCount(expression, fillArg, level);
-	}
+    public int getCount(String expression, Consumer<MapData> fillArg, QueryLevel level) {
+        return _root.getCount(expression, fillArg, level);
+    }
 
 //	/**
 //	 * 
@@ -90,15 +88,15 @@ final class DataModel {
 //		DataTableLoader.generate();
 //	}
 
-	@TestSupport
-	public static void drop() {
-		DataTableLoader.drop();
-	}
+    @TestSupport
+    public static void drop() {
+        DataTableLoader.drop();
+    }
 
-	@TestSupport
-	public static void clearUp() {
-		DataTableLoader.clearUp();
-	}
+    @TestSupport
+    public static void clearUp() {
+        DataTableLoader.clearUp();
+    }
 
 //	/// <summary>
 //	/// 找出当前应用程序可能涉及到的表信息
