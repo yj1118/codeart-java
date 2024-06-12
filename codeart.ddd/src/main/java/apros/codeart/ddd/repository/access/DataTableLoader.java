@@ -125,12 +125,13 @@ final class DataTableLoader {
      * @param root
      * @param master
      * @param memberField
-     * @param objectType
      * @return
      */
     public static DataTable createValueList(DataTable root, DataTable master, IDataField memberField,
-                                            Class<?> objectType) {
+                                            Class<?> valueType) {
         String tableName = String.format("%s_%s", master.name(), memberField.name());
+
+        Class<?> objectType = memberField.reflectedType();
 
         return tryCreate(tableName, root, memberField, () -> {
             var valueListField = (ValueListField) memberField;
@@ -156,7 +157,7 @@ final class DataTableLoader {
             }
 
             // memberField.GetPropertyType()就是集合类型，中间表的objectType是集合类型
-            return new DataTable(memberField.propertyType(), DataTableType.Middle, tableName, fields, root, master,
+            return new DataTable(valueType, DataTableType.Middle, tableName, fields, root, master,
                     memberField);
         });
     }

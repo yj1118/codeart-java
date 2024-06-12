@@ -7,6 +7,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 
+import apros.codeart.runtime.MethodUtil;
 import com.google.common.base.Objects;
 
 import apros.codeart.ddd.metadata.DomainPropertyCategory;

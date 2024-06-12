@@ -537,8 +537,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
     @SuppressWarnings("unchecked")
     public <T> T getValue(DomainProperty property, Class<T> valueType) {
         var value = getValue(property);
-        if (value == null)
-            Preconditions.checkNotNull(value, strings("apros.codeart.ddd", "DomainCanNotNull", property.name()));
+        Preconditions.checkNotNull(value, strings("apros.codeart.ddd", "DomainCanNotNull", property.name()));
         return (T) value;
     }
 

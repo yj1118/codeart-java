@@ -114,6 +114,7 @@ public final class MethodUtil {
     @Memoized
     public static Method resolveLike(Class<?> objCls, String methodName, Class<?>[] parameterTypes) {
 
+        // 优先找出强类型匹配的
         var method = resolve(objCls, methodName, parameterTypes, (argType, targetType) -> {
             return argType == targetType;
         });

@@ -18,115 +18,113 @@ import apros.codeart.util.StringUtil;
 
 public class ValueMeta {
 
-	private boolean _isCollection;
+    private boolean _isCollection;
 
-	public boolean isCollection() {
-		return _isCollection;
-	}
+    public boolean isCollection() {
+        return _isCollection;
+    }
 
-	private Class<?> _monotype;
+    private Class<?> _monotype;
 
-	/**
-	 * 单体类型，这个类型的意思是，当类型为集合时，是成员element的类型，当不是集合时，那就是单体自身的类型
-	 * 
-	 * @return
-	 */
-	public Class<?> monotype() {
-		return _monotype;
-	}
+    /**
+     * 单体类型，这个类型的意思是，当类型为集合时，是成员element的类型，当不是集合时，那就是单体自身的类型
+     *
+     * @return
+     */
+    public Class<?> monotype() {
+        return _monotype;
+    }
 
-	public Class<?> getType() {
-		if (_isCollection) {
-			return TypeUtil.getClass(DomainCollection.class, _monotype);
-		}
-		return _monotype;
-	}
+    public Class<?> getType() {
+        if (_isCollection) {
+            return DomainCollection.class;
+        }
+        return _monotype;
+    }
 
-	private ObjectMeta _monoMeta;
+    private ObjectMeta _monoMeta;
 
-	/**
-	 * 
-	 * 单体类型的领域元数据描述，对于int/string等基元类型是没有该描述的
-	 * 
-	 * @return
-	 */
-	public ObjectMeta monoMeta() {
-		return _monoMeta;
-	}
+    /**
+     * 单体类型的领域元数据描述，对于int/string等基元类型是没有该描述的
+     *
+     * @return
+     */
+    public ObjectMeta monoMeta() {
+        return _monoMeta;
+    }
 
-	private BiFunction<DomainObject, DomainProperty, Object> _getDefaultValue;
+    private final BiFunction<DomainObject, DomainProperty, Object> _getDefaultValue;
 
-	public BiFunction<DomainObject, DomainProperty, Object> getDefaultValue() {
-		return _getDefaultValue;
-	}
+    public BiFunction<DomainObject, DomainProperty, Object> getDefaultValue() {
+        return _getDefaultValue;
+    }
 
-	private ValueMeta(boolean isCollection, Class<?> monotype, ObjectMeta monoMeta,
-			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
-		_isCollection = isCollection;
-		_monotype = monotype;
-		_monoMeta = monoMeta;
-		_getDefaultValue = getDefaultValue == null ? (obj, pro) -> {
-			if (_isCollection) {
-				var collection = new DomainCollection<>(monotype, pro);
-				collection.setParent(obj);
-				return collection;
-			}
-			return _detectDefaultValue.apply(this);
-		} : getDefaultValue;
-	}
+    private ValueMeta(boolean isCollection, Class<?> monotype, ObjectMeta monoMeta,
+                      BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
+        _isCollection = isCollection;
+        _monotype = monotype;
+        _monoMeta = monoMeta;
+        _getDefaultValue = getDefaultValue == null ? (obj, pro) -> {
+            if (_isCollection) {
+                var collection = new DomainCollection<>(monotype, pro);
+                collection.setParent(obj);
+                return collection;
+            }
+            return _detectDefaultValue.apply(this);
+        } : getDefaultValue;
+    }
 
-	private static Function<ValueMeta, Object> _detectDefaultValue = LazyIndexer.init((valueMeta) -> {
+    private static Function<ValueMeta, Object> _detectDefaultValue = LazyIndexer.init((valueMeta) -> {
 
-		var valueType = valueMeta.monotype();
+        var valueType = valueMeta.monotype();
 
-		if (ObjectMeta.isDomainObject(valueType)) {
-			return DomainObject.getEmpty(valueType);
-		}
-		if (valueType.equals(String.class))
-			return StringUtil.empty();
+        if (ObjectMeta.isDomainObject(valueType)) {
+            return DomainObject.getEmpty(valueType);
+        }
+        if (valueType.equals(String.class))
+            return StringUtil.empty();
 
-		if (valueType.equals(UUID.class))
-			return Guid.Empty;
+        if (valueType.equals(UUID.class))
+            return Guid.Empty;
 
-		if (valueType.equals(LocalDate.class))
-			return LocalDate.MIN;
+        if (valueType.equals(LocalDate.class))
+            return LocalDate.MIN;
 
-		if (valueType.equals(int.class) || valueType.equals(Integer.class) || valueType.equals(long.class)
-				|| valueType.equals(byte.class) || valueType.equals(Byte.class) || valueType.equals(Long.class)
-				|| valueType.equals(float.class) || valueType.equals(Float.class) || valueType.equals(double.class)
-				|| valueType.equals(Double.class) || valueType.equals(short.class) || valueType.equals(Short.class))
-			return 0;
+        if (valueType.equals(int.class) || valueType.equals(Integer.class) || valueType.equals(long.class)
+                || valueType.equals(byte.class) || valueType.equals(Byte.class) || valueType.equals(Long.class)
+                || valueType.equals(float.class) || valueType.equals(Float.class) || valueType.equals(double.class)
+                || valueType.equals(Double.class) || valueType.equals(short.class) || valueType.equals(Short.class))
+            return 0;
 
-		if (IEmptyable.class.isAssignableFrom(valueType))
-			return Emptyable.createEmpty(valueType);
+        if (IEmptyable.class.isAssignableFrom(valueType))
+            return Emptyable.createEmpty(valueType);
 
-		if (char.class.equals(valueType))
-			return StringUtil.empty();
+        if (char.class.equals(valueType))
+            return StringUtil.empty();
 
-		return null;
+        return null;
 
-	});
+    });
 
-	/**
-	 * 
-	 * 根据值的类型，创建值的元数据
-	 * 
-	 * @param valueType
-	 * @return
-	 */
-	public static ValueMeta createBy(boolean isCollection, Class<?> monotype,
-			BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
-		return new ValueMeta(isCollection, monotype, ObjectMetaLoader.tryGet(monotype), getDefaultValue);
-	}
+    /**
+     * 根据值的类型，创建值的元数据
+     *
+     * @param valueType
+     * @return
+     */
+    public static ValueMeta createBy(boolean isCollection, Class<?> monotype,
+                                     BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
+        return new ValueMeta(isCollection, monotype, ObjectMetaLoader.tryGet(monotype), getDefaultValue);
+    }
 
-	/**
-	 * 创建非集合类型得值的元数据
-	 * 
-	 * @param monotype
-	 * @return
-	 */
-	public static ValueMeta createBy(Class<?> monotype) {
-		return createBy(false, monotype, null);
-	}
+    /**
+     * 创建非集合类型得值的元数据
+     *
+     * @param monotype
+     * @return
+     */
+    public static ValueMeta createBy(Class<?> monotype) {
+        return createBy(false, monotype, null);
+    }
 
 }
