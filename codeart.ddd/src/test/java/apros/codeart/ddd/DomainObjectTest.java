@@ -1,11 +1,12 @@
 package apros.codeart.ddd;
 
+import apros.codeart.ddd.validation.ObjectSpecification;
 import org.junit.Test;
 
 public class DomainObjectTest {
 
-	@ObjectValidator(UserSpec.class)
-	public static class User {
+    //    @ObjectValidator(UserSpec.class)
+    public static class User {
 
 //		@StringLength(0, 100)
 //        @ASCIIString()
@@ -39,26 +40,26 @@ public class DomainObjectTest {
 //		@Property
 //		private DomainCollection<UserTeam> _temas;
 
-	}
+    }
 
-	private static class UserSpec extends ObjectValidatorImpl {
+//    private static class UserSpec extends ObjectSpecification<User> {
+//
+//        @Override
+//        public void validateImpl(User obj, ValidationResult result) {
+//            // TODO Auto-generated method stub
+//
+//        }
+//
+//    }
 
-		@Override
-		public void validate(IDomainObject obj, ValidationResult result) {
-			// TODO Auto-generated method stub
-
-		}
-
-	}
-
-	@Test
-	public void getObject() {
+    @Test
+    public void getObject() {
 
 //		var user = DomainContainer.createObject(User.class,);
 //		
 //		user.name();
 //		
 
-	}
+    }
 
 }
