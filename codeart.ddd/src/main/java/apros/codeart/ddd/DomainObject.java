@@ -563,6 +563,11 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         return this.dataProxy().load(property.name());
     }
 
+    public Object getPropertyValue(DomainProperty property) {
+        return getValue(property);
+    }
+
+
     public Object getValue(String propertyName) {
         return this.dataProxy().load(propertyName);
     }

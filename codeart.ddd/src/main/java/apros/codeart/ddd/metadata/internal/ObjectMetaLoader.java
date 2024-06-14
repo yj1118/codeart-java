@@ -25,7 +25,7 @@ public final class ObjectMetaLoader {
     }
 
     // 数据量不大，又不需要区分大小写，所以用 TreeMap<>(String.CASE_INSENSITIVE_ORDER)
-    private static Map<String, ObjectMeta> _metas = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    private static final Map<String, ObjectMeta> _metas = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     private static ObjectMeta create(Class<?> domainType) {
 

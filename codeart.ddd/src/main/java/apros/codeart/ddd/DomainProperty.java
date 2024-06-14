@@ -6,6 +6,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 
 import apros.codeart.runtime.MethodUtil;
 import com.google.common.base.Objects;

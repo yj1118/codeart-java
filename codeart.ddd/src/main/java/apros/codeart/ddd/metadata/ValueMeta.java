@@ -70,13 +70,20 @@ public class ValueMeta {
                 collection.setParent(obj);
                 return collection;
             }
-            return _detectDefaultValue.apply(this);
+            return _detectDefaultValue.apply(this.monotype());
         } : getDefaultValue;
     }
 
-    private static Function<ValueMeta, Object> _detectDefaultValue = LazyIndexer.init((valueMeta) -> {
+    public static boolean isDefaultValue(Object value) {
+        if (value == null) return true;
+        var type = value.getClass();
+        var defaultValue = _detectDefaultValue.apply(type);
+        if (defaultValue == null) return value == null;
+        return defaultValue.equals(value);  //不能直接用==，因为值类型包装后的object对象的地址不同
+    }
 
-        var valueType = valueMeta.monotype();
+    private static final Function<Class<?>, Object> _detectDefaultValue = LazyIndexer.init((valueType) -> {
+
 
         if (ObjectMeta.isDomainObject(valueType)) {
             return DomainObject.getEmpty(valueType);
@@ -109,7 +116,6 @@ public class ValueMeta {
     /**
      * 根据值的类型，创建值的元数据
      *
-     * @param valueType
      * @return
      */
     public static ValueMeta createBy(boolean isCollection, Class<?> monotype,

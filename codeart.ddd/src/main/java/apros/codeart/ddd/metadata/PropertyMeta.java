@@ -1,5 +1,6 @@
 package apros.codeart.ddd.metadata;
 
+import java.util.Objects;
 import java.util.function.BiFunction;
 
 import apros.codeart.ddd.DomainObject;
@@ -174,7 +175,7 @@ public class PropertyMeta {
         var target = TypeUtil.as(obj, PropertyMeta.class);
         if (target == null)
             return false;
-        return this.id() == target.id();
+        return Objects.equals(this.id(), target.id());
     }
 
     @Override

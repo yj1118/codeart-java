@@ -4,6 +4,7 @@ module apros.codeart.ddd {
     requires com.zaxxer.hikari;
     requires transitive apros.codeart;
     requires jsqlparser;
+    requires org.jetbrains.annotations;
 
     exports apros.codeart.ddd;
     exports apros.codeart.ddd.validation;
