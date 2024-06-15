@@ -17,74 +17,74 @@ import apros.codeart.util.IEventObserver;
  */
 public final class ConsoleLauncher {
 
-	private ConsoleLauncher() {
-	}
+    private ConsoleLauncher() {
+    }
 
-	public static void start() {
-		start(new AppInstaller());
-	}
+    public static void start() {
+        start(new AppInstaller());
+    }
 
-	public static void start(IAppInstaller installer) {
+    public static void start(IAppInstaller installer) {
 
-		System.out.println(Language.strings("apros.codeart.ddd", "StartServiceHost"));
+        System.out.println(Language.strings("apros.codeart.ddd", "StartServiceHost"));
 
-		RPCEvents.serverOpened.add(new ServerOpenedObserver());
-		RPCEvents.serverError.add(new ServerErrorObserver());
-		RPCEvents.serverClosed.add(new ServerClosedObserver());
+        RPCEvents.serverOpened.add(new ServerOpenedObserver());
+        RPCEvents.serverError.add(new ServerErrorObserver());
+        RPCEvents.serverClosed.add(new ServerClosedObserver());
 
-		// 要从框架/子系统/服务宿主 3大块里找定义
-		App.init(installer);
+        // 要从框架/子系统/服务宿主 3大块里找定义
+        App.init(installer);
 
-		App.initialized();
+        App.inited();
 
-		// 所有初始化工作完毕后，开通服务
-		RPCServer.open();
+        // 所有初始化工作完毕后，开通服务
+        RPCServer.open();
 
-		System.out.println(Language.strings("apros.codeart.ddd", "CloseServiceHost"));
+        System.out.println(Language.strings("apros.codeart.ddd", "CloseServiceHost"));
 
-		readLine();
+        readLine();
 
-		System.out.println(Language.strings("apros.codeart.ddd", "CloseingServiceHost"));
+        System.out.println(Language.strings("apros.codeart.ddd", "CloseingServiceHost"));
 
-		App.dispose();
+        App.dispose();
 
-		App.disposed();
+        App.disposed();
 
-		System.out.println(Language.strings("apros.codeart.ddd", "ClosedServiceHost"));
-	}
+        System.out.println(Language.strings("apros.codeart.ddd", "ClosedServiceHost"));
+    }
 
-	private static void readLine() {
-		Scanner scanner = new Scanner(System.in);
+    private static void readLine() {
+        Scanner scanner = new Scanner(System.in);
 
-		// 使用nextLine方法读取一行
-		scanner.nextLine();
+        // 使用nextLine方法读取一行
+        scanner.nextLine();
 
-		// 关闭Scanner对象
-		scanner.close();
-	}
+        // 关闭Scanner对象
+        scanner.close();
+    }
 
-	private static class ServerOpenedObserver implements IEventObserver<ServerOpenedArgs> {
+    private static class ServerOpenedObserver implements IEventObserver<ServerOpenedArgs> {
 
-		@Override
-		public void handle(Object sender, ServerOpenedArgs args) {
-			System.out.println(Language.strings("apros.codeart.ddd", "ServiceIsOpen", args.methodName()));
-		}
-	}
+        @Override
+        public void handle(Object sender, ServerOpenedArgs args) {
+            System.out.println(Language.strings("apros.codeart.ddd", "ServiceIsOpen", args.methodName()));
+        }
+    }
 
-	private static class ServerErrorObserver implements IEventObserver<ServerErrorArgs> {
+    private static class ServerErrorObserver implements IEventObserver<ServerErrorArgs> {
 
-		@Override
-		public void handle(Object sender, ServerErrorArgs args) {
-			System.out.println(args.exception().getMessage());
-		}
-	}
+        @Override
+        public void handle(Object sender, ServerErrorArgs args) {
+            System.out.println(args.exception().getMessage());
+        }
+    }
 
-	private static class ServerClosedObserver implements IEventObserver<ServerClosedArgs> {
+    private static class ServerClosedObserver implements IEventObserver<ServerClosedArgs> {
 
-		@Override
-		public void handle(Object sender, ServerClosedArgs args) {
-			System.out.println(Language.strings("apros.codeart.ddd", "ServiceIsClose", args.methodName()));
-		}
-	}
+        @Override
+        public void handle(Object sender, ServerClosedArgs args) {
+            System.out.println(Language.strings("apros.codeart.ddd", "ServiceIsClose", args.methodName()));
+        }
+    }
 
 }

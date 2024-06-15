@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface PostApplicationStart {
-	String method() default "initialized";
+    String value() default "invoke";
 }

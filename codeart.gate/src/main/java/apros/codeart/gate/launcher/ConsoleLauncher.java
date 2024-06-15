@@ -11,14 +11,14 @@ import apros.codeart.gate.FetchPortal;
  */
 public final class ConsoleLauncher {
 
-	private ConsoleLauncher() {
-	}
+    private ConsoleLauncher() {
+    }
 
-	public static void start() {
-		start(new AppInstaller());
-	}
+    public static void start() {
+        start(new AppInstaller());
+    }
 
-	public static void start(IAppInstaller installer) {
+    public static void start(IAppInstaller installer) {
 
 //		System.out.println(Language.strings("apros.codeart.ddd", "StartServiceHost"));
 //
@@ -26,35 +26,35 @@ public final class ConsoleLauncher {
 //		RPCEvents.serverError.add(new ServerErrorObserver());
 //		RPCEvents.serverClosed.add(new ServerClosedObserver());
 
-		App.init(installer);
+        App.init(installer);
 
-		App.initialized();
+        App.inited();
 
-		// 所有初始化工作完毕后，开通服务
-		FetchPortal.open();
+        // 所有初始化工作完毕后，开通服务
+        FetchPortal.open();
 
 //		System.out.println(Language.strings("apros.codeart.ddd", "CloseServiceHost"));
 
-		readLine();
+        readLine();
 
 //		System.out.println(Language.strings("apros.codeart.ddd", "CloseingServiceHost"));
 
-		App.dispose();
+        App.dispose();
 
-		App.disposed();
+        App.disposed();
 
 //		System.out.println(Language.strings("apros.codeart.ddd", "ClosedServiceHost"));
-	}
+    }
 
-	private static void readLine() {
-		Scanner scanner = new Scanner(System.in);
+    private static void readLine() {
+        Scanner scanner = new Scanner(System.in);
 
-		// 使用nextLine方法读取一行
-		scanner.nextLine();
+        // 使用nextLine方法读取一行
+        scanner.nextLine();
 
-		// 关闭Scanner对象
-		scanner.close();
-	}
+        // 关闭Scanner对象
+        scanner.close();
+    }
 //
 //	private static class ServerOpenedObserver implements IEventObserver<ServerOpenedArgs> {
 //

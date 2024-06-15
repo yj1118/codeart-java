@@ -15,168 +15,162 @@ import apros.codeart.util.EventHandler;
 
 public final class DataPortal {
 
-	private DataPortal() {
-	}
+    private DataPortal() {
+    }
 
-	/**
-	 * 
-	 * 在数据层中查找指定编号的数据，并加载到对象实例中
-	 * 
-	 * @param <T>
-	 * @param objectType
-	 * @param id
-	 * @param level
-	 * @return
-	 */
-	public static <T extends IDomainObject> T querySingle(Class<T> objectType, Object id, QueryLevel level) {
-		var model = DataModelLoader.get(objectType);
-		return model.querySingle(id, level);
-	}
+    /**
+     * 在数据层中查找指定编号的数据，并加载到对象实例中
+     *
+     * @param <T>
+     * @param objectType
+     * @param id
+     * @param level
+     * @return
+     */
+    public static <T extends IDomainObject> T querySingle(Class<T> objectType, Object id, QueryLevel level) {
+        var model = DataModelLoader.get(objectType);
+        return model.querySingle(id, level);
+    }
 
-	// 基于对象表达式的查询
+    // 基于对象表达式的查询
 
-	public static <T extends IDomainObject> T querySingle(Class<T> objectType, String expression,
-			Consumer<MapData> fillArg, QueryLevel level) {
-		var model = DataModelLoader.get(objectType);
-		return model.querySingle(expression, fillArg, level);
-	}
+    public static <T extends IDomainObject> T querySingle(Class<T> objectType, String expression,
+                                                          Consumer<MapData> fillArg, QueryLevel level) {
+        var model = DataModelLoader.get(objectType);
+        return model.querySingle(expression, fillArg, level);
+    }
 
-	/// <summary>
-	/// 基于对象表达式的查询
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="expression"></param>
-	/// <param name="level"></param>
-	/// <returns></returns>
+    /// <summary>
+    /// 基于对象表达式的查询
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="expression"></param>
+    /// <param name="level"></param>
+    /// <returns></returns>
 
-	public static <T extends IDomainObject> Iterable<T> query(Class<T> objectType, String expression,
-			Consumer<MapData> fillArg, QueryLevel level) {
-		var model = DataModelLoader.get(objectType);
-		return model.query(expression, fillArg, level);
-	}
+    public static <T extends IDomainObject> Iterable<T> query(Class<T> objectType, String expression,
+                                                              Consumer<MapData> fillArg, QueryLevel level) {
+        var model = DataModelLoader.get(objectType);
+        return model.query(expression, fillArg, level);
+    }
 
-	/**
-	 * 
-	 * 基于对象表达式的查询
-	 * 
-	 * @param <T>
-	 * @param objectType
-	 * @param expression
-	 * @param pageIndex
-	 * @param pageSize
-	 * @param fillArg
-	 * @return
-	 */
-	public static <T extends IDomainObject> Page<T> query(Class<T> objectType, String expression, int pageIndex,
-			int pageSize, Consumer<MapData> fillArg) {
-		var model = DataModelLoader.get(objectType);
-		return model.query(expression, pageIndex, pageSize, fillArg);
-	}
+    /**
+     * 基于对象表达式的查询
+     *
+     * @param <T>
+     * @param objectType
+     * @param expression
+     * @param pageIndex
+     * @param pageSize
+     * @param fillArg
+     * @return
+     */
+    public static <T extends IDomainObject> Page<T> query(Class<T> objectType, String expression, int pageIndex,
+                                                          int pageSize, Consumer<MapData> fillArg) {
+        var model = DataModelLoader.get(objectType);
+        return model.query(expression, pageIndex, pageSize, fillArg);
+    }
 
-	public static <T extends IDomainObject> int getCount(Class<T> objectType, String expression,
-			Consumer<MapData> fillArg, QueryLevel level) {
-		var model = DataModelLoader.get(objectType);
-		return model.getCount(expression, fillArg, level);
-	}
+    public static <T extends IDomainObject> int getCount(Class<T> objectType, String expression,
+                                                         Consumer<MapData> fillArg, QueryLevel level) {
+        var model = DataModelLoader.get(objectType);
+        return model.getCount(expression, fillArg, level);
+    }
 
 //	#region 对外公开的方法
+    
+    private static long getIdentity(DataTable table) {
+        return DataContext.newScope((access) -> {
 
-	/**
-	 * 
-	 * 
-	 * 
-	 * @param tableName
-	 * @return
-	 */
-	public static long getIdentity(String tableName) {
-		return DataContext.newScope((access) -> {
-			String sql = SqlStatement.getIncrIdSql(tableName);
-			return access.queryScalarLong(sql);
-		});
-	}
+            var builder = DataSource.getQueryBuilder(GetIncrIdQB.class);
+            var sql = builder.build(new QueryDescription(table));
+            access.execute(sql);
 
-	/**
-	 * 
-	 * 根据对象类型，获取一个自增的编号，该编号由数据层维护递增
-	 * 
-	 * @param <T>
-	 * @param doType
-	 * @return
-	 */
-	public static <T extends IDomainObject> long getIdentity(Class<T> doType) {
+            return access.queryScalarLong(sql);
+        });
+    }
 
-		var table = DataTableLoader.get(doType);
-		return getIdentity(table.name());
-	}
+    /**
+     * 根据对象类型，获取一个自增的编号，该编号由数据层维护递增
+     *
+     * @param <T>
+     * @param doType
+     * @return
+     */
+    public static <T extends IDomainObject> long getIdentity(Class<T> doType) {
 
-	/**
-	 * 在数据层中销毁数据模型
-	 */
-	public static void dispose() {
-		DataModel.drop();
-	}
+        var table = DataTableLoader.get(doType);
+        return getIdentity(table);
+    }
+
+    /**
+     * 在数据层中销毁数据模型
+     */
+    public static void dispose() {
+        DataModel.drop();
+    }
 
 //	#endregion
 
-	/**
-	 * 清理数据，但是不销毁数据模型
-	 */
-	public static void clearUp() {
-		DataModel.clearUp();
-		onClearUp.raise(null, () -> EmptyEventArgs.Instance);
-	}
+    /**
+     * 清理数据，但是不销毁数据模型
+     */
+    public static void clearUp() {
+        DataModel.clearUp();
+        onClearUp.raise(null, () -> EmptyEventArgs.Instance);
+    }
 
-	public static EventHandler<EmptyEventArgs> onClearUp = new EventHandler<EmptyEventArgs>();
+    public static EventHandler<EmptyEventArgs> onClearUp = new EventHandler<EmptyEventArgs>();
 
-	public static Iterable<MapData> directQuery(String sql, MapData param) {
-		return direct((access) -> {
-			return access.queryRows(sql, param);
-		});
-	}
+    public static Iterable<MapData> directQuery(String sql, MapData param) {
+        return direct((access) -> {
+            return access.queryRows(sql, param);
+        });
+    }
 
-	/**
-	 * 直接使用数据库连接操作数据库
-	 * 
-	 * @param objectType
-	 * @param action
-	 */
-	public static void direct(Consumer<DataAccess> action) {
-		DataContext.using(action);
-	}
+    /**
+     * 直接使用数据库连接操作数据库
+     *
+     * @param objectType
+     * @param action
+     */
+    public static void direct(Consumer<DataAccess> action) {
+        DataContext.using(action);
+    }
 
-	public static <T> T direct(Function<DataAccess, T> action) {
-		return DataContext.using(action);
-	}
+    public static <T> T direct(Function<DataAccess, T> action) {
+        return DataContext.using(action);
+    }
 
-	/**
-	 * 在数据层创建指定对象的数据
-	 * 
-	 * @param obj
-	 */
-	static void insert(DomainObject obj) {
-		var objectType = obj.getClass();
-		var model = DataModelLoader.get(objectType);
-		model.insert(obj);
-	}
+    /**
+     * 在数据层创建指定对象的数据
+     *
+     * @param obj
+     */
+    static void insert(DomainObject obj) {
+        var objectType = obj.getClass();
+        var model = DataModelLoader.get(objectType);
+        model.insert(obj);
+    }
 
-	/// <summary>
-	/// 在数据层中修改指定对象的数据
-	/// </summary>
-	/// <param name="obj"></param>
-	static void update(DomainObject obj) {
-		var objectType = obj.getClass();
-		var model = DataModelLoader.get(objectType);
-		model.update(obj);
-	}
+    /// <summary>
+    /// 在数据层中修改指定对象的数据
+    /// </summary>
+    /// <param name="obj"></param>
+    static void update(DomainObject obj) {
+        var objectType = obj.getClass();
+        var model = DataModelLoader.get(objectType);
+        model.update(obj);
+    }
 
-	/// <summary>
-	/// 在数据层中删除指定对象的数据
-	/// </summary>
-	/// <param name="obj"></param>
-	static void delete(DomainObject obj) {
-		var objectType = obj.getClass();
-		var model = DataModelLoader.get(objectType);
-		model.delete(obj);
-	}
+    /// <summary>
+    /// 在数据层中删除指定对象的数据
+    /// </summary>
+    /// <param name="obj"></param>
+    static void delete(DomainObject obj) {
+        var objectType = obj.getClass();
+        var model = DataModelLoader.get(objectType);
+        model.delete(obj);
+    }
 
 }

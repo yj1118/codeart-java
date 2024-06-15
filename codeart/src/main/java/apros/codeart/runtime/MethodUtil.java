@@ -204,4 +204,15 @@ public final class MethodUtil {
         }
     }
 
+
+    public static Object invoke(Class<?> objClas, String methodName, Object self, Object... args) {
+        try {
+
+            Method method = objClas.getDeclaredMethod(methodName);
+            return method.invoke(self, args);
+        } catch (Exception e) {
+            throw propagate(e);
+        }
+    }
+
 }

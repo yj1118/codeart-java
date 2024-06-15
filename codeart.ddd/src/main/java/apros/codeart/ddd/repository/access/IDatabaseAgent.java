@@ -5,54 +5,43 @@ package apros.codeart.ddd.repository.access;
  */
 public interface IDatabaseAgent {
 
-	/**
-	 * 获得自增编号的sql
-	 * 
-	 * @param tableName 数据库表名
-	 * @return
-	 */
-	String getIncrIdSql(String tableName);
+    /**
+     * 能创建索引的字符串的最大长度
+     *
+     * @return
+     */
+    int getStringIndexableMaxLength();
 
-	/**
-	 * 能创建索引的字符串的最大长度
-	 * 
-	 * @return
-	 */
-	int getStringIndexableMaxLength();
+    /**
+     * 包装标示限定符
+     *
+     * @param field
+     * @return
+     */
+    String qualifier(String field);
 
-	/**
-	 * 
-	 * 包装标示限定符
-	 * 
-	 * @param field
-	 * @return
-	 */
-	String qualifier(String field);
+    /**
+     * 解开标示限定符
+     *
+     * @param field
+     * @return
+     */
+    String unQualifier(String field);
 
-	/**
-	 * 解开标示限定符
-	 * 
-	 * @param field
-	 * @return
-	 */
-	String unQualifier(String field);
+    /**
+     * 获得查询器的实现
+     *
+     * @return
+     */
+    <T extends IQueryBuilder> T getQueryBuilder(Class<T> qbClass);
 
-	/**
-	 * 
-	 * 获得查询器的实现
-	 * 
-	 * @return
-	 */
-	<T extends IQueryBuilder> T getQueryBuilder(Class<T> qbClass);
-
-	/**
-	 * 
-	 * 注册查询器
-	 * 
-	 * @param <T>
-	 * @param qbClass
-	 * @param builder
-	 */
-	<T extends IQueryBuilder> void registerQueryBuilder(Class<T> qbClass, IQueryBuilder builder);
+    /**
+     * 注册查询器
+     *
+     * @param <T>
+     * @param qbClass
+     * @param builder
+     */
+    <T extends IQueryBuilder> void registerQueryBuilder(Class<T> qbClass, IQueryBuilder builder);
 
 }

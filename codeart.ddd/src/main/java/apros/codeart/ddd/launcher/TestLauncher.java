@@ -9,29 +9,29 @@ import apros.codeart.ddd.DDDConfig;
  */
 public final class TestLauncher {
 
-	private TestLauncher() {
-	}
+    private TestLauncher() {
+    }
 
-	public static void start(LauncherConfig config) {
-		start(new AppInstaller(), config);
-	}
+    public static void start(LauncherConfig config) {
+        start(new AppInstaller(), config);
+    }
 
-	public static void start() {
-		start(new AppInstaller(), LauncherConfig.Test);
-	}
+    public static void start() {
+        start(new AppInstaller(), LauncherConfig.Test);
+    }
 
-	public static void start(IAppInstaller installer, LauncherConfig config) {
+    public static void start(IAppInstaller installer, LauncherConfig config) {
 
-		DDDConfig.enableReset(config.enableReset());
+        DDDConfig.enableReset(config.enableReset());
 
-		// 要从框架/子系统/服务宿主 3大块里找定义
-		App.init(installer);
+        // 要从框架/子系统/服务宿主 3大块里找定义
+        App.init(installer);
 
-		App.initialized();
-	}
+        App.inited();
+    }
 
-	public static void stop() {
-		App.dispose();
-		App.disposed();
-	}
+    public static void stop() {
+        App.dispose();
+        App.disposed();
+    }
 }

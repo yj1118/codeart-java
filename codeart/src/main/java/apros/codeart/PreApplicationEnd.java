@@ -12,5 +12,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface PreApplicationEnd {
 
-	String method() default "dispose";
+    String value() default "invoke";
 }
