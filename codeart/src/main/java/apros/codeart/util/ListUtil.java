@@ -19,334 +19,336 @@ import com.google.common.collect.Iterables;
 import apros.codeart.bytecode.ClassGenerator;
 
 public final class ListUtil {
-	private ListUtil() {
-	};
+    private ListUtil() {
+    }
 
-	public static <T> T find(Iterable<T> source, Function<T, Boolean> predicate) {
-		for (T item : source) {
-			if (predicate.apply(item))
-				return item;
-		}
-		return null;
-	}
+    ;
 
-	public static <T> Iterable<T> filter(Iterable<T> source, Function<T, Boolean> predicate) {
-		ArrayList<T> items = null;
-		for (T item : source) {
-			if (predicate.apply(item)) {
-				if (items == null)
-					items = new ArrayList<T>();
-				items.add(item);
-			}
-		}
-		return items == null ? ListUtil.<T>empty() : items;
-	}
+    public static <T> T find(Iterable<T> source, Function<T, Boolean> predicate) {
+        if (source == null) return null;
+        for (T item : source) {
+            if (predicate.apply(item))
+                return item;
+        }
+        return null;
+    }
 
-	public static <T> T find(T[] source, Function<T, Boolean> predicate) {
-		for (T item : source) {
-			if (predicate.apply(item))
-				return item;
-		}
-		return null;
-	}
+    public static <T> Iterable<T> filter(Iterable<T> source, Function<T, Boolean> predicate) {
+        ArrayList<T> items = null;
+        for (T item : source) {
+            if (predicate.apply(item)) {
+                if (items == null)
+                    items = new ArrayList<T>();
+                items.add(item);
+            }
+        }
+        return items == null ? ListUtil.<T>empty() : items;
+    }
 
-	public static <T> Iterable<T> filter(T[] source, Function<T, Boolean> predicate) {
-		ArrayList<T> items = new ArrayList<T>();
-		for (T item : source) {
-			if (predicate.apply(item)) {
-				if (items == null)
-					items = new ArrayList<T>();
-				items.add(item);
-			}
-		}
-		return items == null ? ListUtil.<T>empty() : items;
-	}
+    public static <T> T find(T[] source, Function<T, Boolean> predicate) {
+        for (T item : source) {
+            if (predicate.apply(item))
+                return item;
+        }
+        return null;
+    }
 
-	public static boolean contains(Iterable<Integer> source, Integer target) {
-		for (Integer item : source) {
-			if (item == target)
-				return true;
-		}
-		return false;
-	}
+    public static <T> Iterable<T> filter(T[] source, Function<T, Boolean> predicate) {
+        ArrayList<T> items = new ArrayList<T>();
+        for (T item : source) {
+            if (predicate.apply(item)) {
+                if (items == null)
+                    items = new ArrayList<T>();
+                items.add(item);
+            }
+        }
+        return items == null ? ListUtil.<T>empty() : items;
+    }
 
-	public static <T> boolean contains(Iterable<T> source, Function<T, Boolean> predicate) {
-		return find(source, predicate) != null;
-	}
+    public static boolean contains(Iterable<Integer> source, Integer target) {
+        for (Integer item : source) {
+            if (item == target)
+                return true;
+        }
+        return false;
+    }
 
-	public static <T> boolean contains(Iterable<T> source, T value, BiFunction<T, T, Boolean> equals) {
-		for (T item : source) {
-			if (equals.apply(item, value))
-				return true;
-		}
-		return false;
-	}
+    public static <T> boolean contains(Iterable<T> source, Function<T, Boolean> predicate) {
+        return find(source, predicate) != null;
+    }
 
-	public static <T> boolean contains(T[] source, Function<T, Boolean> predicate) {
-		return find(source, predicate) != null;
-	}
+    public static <T> boolean contains(Iterable<T> source, T value, BiFunction<T, T, Boolean> equals) {
+        for (T item : source) {
+            if (equals.apply(item, value))
+                return true;
+        }
+        return false;
+    }
 
-	public static <T> T first(Iterable<T> source) {
-		for (T item : source) {
-			return item;
-		}
-		return null;
-	}
+    public static <T> boolean contains(T[] source, Function<T, Boolean> predicate) {
+        return find(source, predicate) != null;
+    }
 
-	public static <T, R> ArrayList<R> map(Iterable<T> source, Function<T, R> selector) {
-		ArrayList<R> list = new ArrayList<R>(Iterables.size(source));
-		for (T item : source) {
-			list.add(selector.apply(item));
-		}
-		return list;
-	}
+    public static <T> T first(Iterable<T> source) {
+        for (T item : source) {
+            return item;
+        }
+        return null;
+    }
 
-	public static <T, R> ArrayList<R> map(T[] source, Function<T, R> selector) {
-		ArrayList<R> list = new ArrayList<R>(source.length);
-		for (T item : source) {
-			list.add(selector.apply(item));
-		}
-		return list;
-	}
+    public static <T, R> ArrayList<R> map(Iterable<T> source, Function<T, R> selector) {
+        ArrayList<R> list = new ArrayList<R>(Iterables.size(source));
+        for (T item : source) {
+            list.add(selector.apply(item));
+        }
+        return list;
+    }
 
-	public static <T> ArrayList<T> asList(T[] source) {
-		ArrayList<T> list = new ArrayList<T>(source.length);
-		for (T item : source) {
-			list.add(item);
-		}
-		return list;
-	}
+    public static <T, R> ArrayList<R> map(T[] source, Function<T, R> selector) {
+        ArrayList<R> list = new ArrayList<R>(source.length);
+        for (T item : source) {
+            list.add(selector.apply(item));
+        }
+        return list;
+    }
 
-	public static <T> ArrayList<T> asList(Iterable<T> source) {
-		ArrayList<T> list = new ArrayList<T>(Iterables.size(source));
-		for (T item : source) {
-			list.add(item);
-		}
-		return list;
-	}
+    public static <T> ArrayList<T> asList(T[] source) {
+        ArrayList<T> list = new ArrayList<T>(source.length);
+        for (T item : source) {
+            list.add(item);
+        }
+        return list;
+    }
 
-	@SuppressWarnings("unchecked")
-	public static <T> T[] asArray(Iterable<T> source, Class<T> type) {
-		T[] array = (T[]) Array.newInstance(type, Iterables.size(source));
+    public static <T> ArrayList<T> asList(Iterable<T> source) {
+        ArrayList<T> list = new ArrayList<T>(Iterables.size(source));
+        for (T item : source) {
+            list.add(item);
+        }
+        return list;
+    }
 
-		var index = 0;
-		for (var s : source) {
-			array[index] = s;
-			index++;
-		}
+    @SuppressWarnings("unchecked")
+    public static <T> T[] asArray(Iterable<T> source, Class<T> type) {
+        T[] array = (T[]) Array.newInstance(type, Iterables.size(source));
 
-		return array;
-	}
+        var index = 0;
+        for (var s : source) {
+            array[index] = s;
+            index++;
+        }
 
-	public static <T> List<T> asReadonly(Iterable<T> source) {
-		return ImmutableList.copyOf(source);
-	}
+        return array;
+    }
 
-	public static <T, R> ArrayList<R> mapMany(T[] source, Function<T, Iterable<R>> selector) {
-		ArrayList<R> list = new ArrayList<R>(source.length);
-		for (T item : source) {
-			var items = selector.apply(item);
-			addRange(list, items);
-		}
-		return list;
-	}
+    public static <T> List<T> asReadonly(Iterable<T> source) {
+        return ImmutableList.copyOf(source);
+    }
 
-	public static <T> T removeFirst(Iterable<T> source, Predicate<T> predicate) {
-		var iterator = source.iterator();
-		while (iterator.hasNext()) {
-			T item = iterator.next();
-			if (predicate.test(item)) {
-				iterator.remove(); // 使用迭代器的 remove() 方法安全删除当前元素
-				return item;
-			}
-		}
-		return null;
-	}
+    public static <T, R> ArrayList<R> mapMany(T[] source, Function<T, Iterable<R>> selector) {
+        ArrayList<R> list = new ArrayList<R>(source.length);
+        for (T item : source) {
+            var items = selector.apply(item);
+            addRange(list, items);
+        }
+        return list;
+    }
 
-	public static <T> void remove(Iterable<T> source, Predicate<T> predicate) {
-		var iterator = source.iterator();
-		while (iterator.hasNext()) {
-			T item = iterator.next();
-			if (predicate.test(item)) {
-				iterator.remove();
-			}
-		}
-	}
+    public static <T> T removeFirst(Iterable<T> source, Predicate<T> predicate) {
+        var iterator = source.iterator();
+        while (iterator.hasNext()) {
+            T item = iterator.next();
+            if (predicate.test(item)) {
+                iterator.remove(); // 使用迭代器的 remove() 方法安全删除当前元素
+                return item;
+            }
+        }
+        return null;
+    }
 
-	public static <T> void addRange(AbstractList<T> source, Iterable<T> collection) {
-		addRange(source, collection, false);
-	}
+    public static <T> void remove(Iterable<T> source, Predicate<T> predicate) {
+        var iterator = source.iterator();
+        while (iterator.hasNext()) {
+            T item = iterator.next();
+            if (predicate.test(item)) {
+                iterator.remove();
+            }
+        }
+    }
 
-	public static <T> void addRange(AbstractList<T> source, Iterable<T> collection, boolean distinct) {
-		if (collection == null)
-			return;
-		if (distinct) {
-			for (T item : collection) {
-				if (!source.contains(item))
-					source.add(item);
-			}
-		} else {
-			for (T item : collection) {
-				source.add(item);
-			}
-		}
+    public static <T> void addRange(AbstractList<T> source, Iterable<T> collection) {
+        addRange(source, collection, false);
+    }
 
-	}
+    public static <T> void addRange(AbstractList<T> source, Iterable<T> collection, boolean distinct) {
+        if (collection == null)
+            return;
+        if (distinct) {
+            for (T item : collection) {
+                if (!source.contains(item))
+                    source.add(item);
+            }
+        } else {
+            for (T item : collection) {
+                source.add(item);
+            }
+        }
 
-	public static <T> void addRange(AbstractList<T> source, T[] collection) {
-		addRange(source, collection, false);
-	}
+    }
 
-	public static <T> void addRange(AbstractList<T> source, T[] collection, boolean distinct) {
-		if (collection == null)
-			return;
-		if (distinct) {
-			for (T item : collection) {
-				if (!source.contains(item))
-					source.add(item);
-			}
-		} else {
-			for (T item : collection) {
-				source.add(item);
-			}
-		}
-	}
+    public static <T> void addRange(AbstractList<T> source, T[] collection) {
+        addRange(source, collection, false);
+    }
 
-	public static <T> LinkedList<T> reverse(LinkedList<T> source) {
-		LinkedList<T> temp = new LinkedList<>(source);
-		Collections.reverse(temp);
-		return temp;
-	}
+    public static <T> void addRange(AbstractList<T> source, T[] collection, boolean distinct) {
+        if (collection == null)
+            return;
+        if (distinct) {
+            for (T item : collection) {
+                if (!source.contains(item))
+                    source.add(item);
+            }
+        } else {
+            for (T item : collection) {
+                source.add(item);
+            }
+        }
+    }
 
-	@SuppressWarnings("unused")
-	public static boolean exists(Iterable<?> e) {
-		if (e == null)
-			return false;
-		for (var t : e)
-			return true;
-		return false;
-	}
+    public static <T> LinkedList<T> reverse(LinkedList<T> source) {
+        LinkedList<T> temp = new LinkedList<>(source);
+        Collections.reverse(temp);
+        return temp;
+    }
 
-	/**
-	 * 让集合高效的设置元素，防止2次遍历
-	 * 
-	 * @param <T>
-	 * @param source
-	 * @param predicate
-	 * @param target
-	 */
-	public static <T> void set(AbstractList<T> source, Function<T, Boolean> predicate, Supplier<T> getTarget) {
-		var iterator = source.listIterator();
-		while (iterator.hasNext()) {
-			if (predicate.apply(iterator.next())) {
-				iterator.set(getTarget.get());
-				break; // 找到目标元素后立即退出循环
-			}
-		}
-	}
+    @SuppressWarnings("unused")
+    public static boolean exists(Iterable<?> e) {
+        if (e == null)
+            return false;
+        for (var t : e)
+            return true;
+        return false;
+    }
 
-	/// <summary>
-	/// 将集合<paramref name="source"/>转变成为<paramref name="target"/>，需要增加哪些元素和需要删除哪些元素
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="source"></param>
-	/// <param name="target"></param>
-	/// <returns></returns>
-	public static <T> TransformResult<T, T> transform(Iterable<T> source, Iterable<T> target) {
-		return transform(source, target, (s, t) -> {
-			return s.equals(t);
-		});
-	}
+    /**
+     * 让集合高效的设置元素，防止2次遍历
+     *
+     * @param <T>
+     * @param source
+     * @param predicate
+     */
+    public static <T> void set(AbstractList<T> source, Function<T, Boolean> predicate, Supplier<T> getTarget) {
+        var iterator = source.listIterator();
+        while (iterator.hasNext()) {
+            if (predicate.apply(iterator.next())) {
+                iterator.set(getTarget.get());
+                break; // 找到目标元素后立即退出循环
+            }
+        }
+    }
 
-	public static record TransformResult<TT, ST>(Iterable<TT> adds, Iterable<ST> removes, Iterable<TT> updates) {
-	}
+    /// <summary>
+    /// 将集合<paramref name="source"/>转变成为<paramref name="target"/>，需要增加哪些元素和需要删除哪些元素
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <param name="target"></param>
+    /// <returns></returns>
+    public static <T> TransformResult<T, T> transform(Iterable<T> source, Iterable<T> target) {
+        return transform(source, target, (s, t) -> {
+            return s.equals(t);
+        });
+    }
 
-	/// <summary>
-	/// 将集合<paramref name="source"/>转变成为<paramref name="target"/>，需要增加哪些元素和需要删除哪些元素
-	/// </summary>
-	/// <typeparam name="T"></typeparam>
-	/// <param name="source"></param>
-	/// <param name="target"></param>
-	/// <param name="equals"></param>
-	/// <returns></returns>
-	public static <TT, ST> TransformResult<TT, ST> transform(Iterable<ST> source, Iterable<TT> target,
-			BiFunction<ST, TT, Boolean> equals) {
-		ArrayList<ST> souceCopy = asList(source);
-		ArrayList<TT> targetCopy = asList(target);
+    public static record TransformResult<TT, ST>(Iterable<TT> adds, Iterable<ST> removes, Iterable<TT> updates) {
+    }
 
-		if (Iterables.size(source) == 0)
-			return new TransformResult<TT, ST>(targetCopy, ListUtil.empty(), ListUtil.empty());
+    /// <summary>
+    /// 将集合<paramref name="source"/>转变成为<paramref name="target"/>，需要增加哪些元素和需要删除哪些元素
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="source"></param>
+    /// <param name="target"></param>
+    /// <param name="equals"></param>
+    /// <returns></returns>
+    public static <TT, ST> TransformResult<TT, ST> transform(Iterable<ST> source, Iterable<TT> target,
+                                                             BiFunction<ST, TT, Boolean> equals) {
+        ArrayList<ST> souceCopy = asList(source);
+        ArrayList<TT> targetCopy = asList(target);
 
-		if (Iterables.size(target) == 0)
-			return new TransformResult<TT, ST>(ListUtil.empty(), souceCopy, ListUtil.empty());
+        if (Iterables.size(source) == 0)
+            return new TransformResult<TT, ST>(targetCopy, ListUtil.empty(), ListUtil.empty());
 
-		List<TT> sames = new ArrayList<TT>(); // 需要保留的
+        if (Iterables.size(target) == 0)
+            return new TransformResult<TT, ST>(ListUtil.empty(), souceCopy, ListUtil.empty());
 
-		// 有相同的
-		for (var item : source) {
-			var same = ListUtil.find(target, (t) -> equals.apply(item, t));
+        List<TT> sames = new ArrayList<TT>(); // 需要保留的
 
-			if (same != null) // 找到相同的保留
-			{
-				sames.add(same);
-			}
+        // 有相同的
+        for (var item : source) {
+            var same = ListUtil.find(target, (t) -> equals.apply(item, t));
 
-		}
+            if (same != null) // 找到相同的保留
+            {
+                sames.add(same);
+            }
 
-		for (var same : sames) {
-			ListUtil.removeFirst(souceCopy, (item) -> equals.apply(item, same));
-			targetCopy.remove(same);
-		}
+        }
 
-		return new TransformResult<TT, ST>(targetCopy, souceCopy, sames);
-	}
+        for (var same : sames) {
+            ListUtil.removeFirst(souceCopy, (item) -> equals.apply(item, same));
+            targetCopy.remove(same);
+        }
 
-	private static final Object Empty;
+        return new TransformResult<TT, ST>(targetCopy, souceCopy, sames);
+    }
 
-	private static Object createEmpty() {
-		try (var cg = ClassGenerator.define()) {
+    private static final Object Empty;
 
-			try (var mg = cg.defineMethodPublicStatic("getList", List.class)) {
-				mg.newList().asReadonlyList();
-			}
+    private static Object createEmpty() {
+        try (var cg = ClassGenerator.define()) {
 
-			var cls = cg.toClass();
+            try (var mg = cg.defineMethodPublicStatic("getList", List.class)) {
+                mg.newList().asReadonlyList();
+            }
 
-			var method = cls.getDeclaredMethod("getList");
-			return method.invoke(null);
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-	}
+            var cls = cg.toClass();
 
-	private static final int[] EmptyInts;
+            var method = cls.getDeclaredMethod("getList");
+            return method.invoke(null);
+        } catch (Exception e) {
+            throw propagate(e);
+        }
+    }
 
-	private static final byte[] EmptyBytes;
+    private static final int[] EmptyInts;
 
-	private static final Object[] EmptyObjects;
+    private static final byte[] EmptyBytes;
 
-	static {
-		Empty = createEmpty();
-		EmptyInts = new int[] {};
-		EmptyBytes = new byte[] {};
-		EmptyObjects = new Object[] {};
-	}
+    private static final Object[] EmptyObjects;
 
-	@SuppressWarnings("unchecked")
-	public static <T> Iterable<T> empty() {
-		return (Iterable<T>) Empty;
-	}
+    static {
+        Empty = createEmpty();
+        EmptyInts = new int[]{};
+        EmptyBytes = new byte[]{};
+        EmptyObjects = new Object[]{};
+    }
 
-	public static int[] emptyInts() {
-		return EmptyInts;
-	}
+    @SuppressWarnings("unchecked")
+    public static <T> Iterable<T> empty() {
+        return (Iterable<T>) Empty;
+    }
 
-	public static byte[] emptyByts() {
-		return EmptyBytes;
-	}
+    public static int[] emptyInts() {
+        return EmptyInts;
+    }
 
-	public static Object[] emptyObjects() {
-		return EmptyObjects;
-	}
+    public static byte[] emptyByts() {
+        return EmptyBytes;
+    }
+
+    public static Object[] emptyObjects() {
+        return EmptyObjects;
+    }
 
 }

@@ -3,6 +3,7 @@ package apros.codeart.ddd.launcher;
 import apros.codeart.App;
 import apros.codeart.IAppInstaller;
 import apros.codeart.ddd.DDDConfig;
+import apros.codeart.ddd.repository.DataContext;
 
 /**
  * 用于测试的启动器
@@ -27,7 +28,10 @@ public final class TestLauncher {
         // 要从框架/子系统/服务宿主 3大块里找定义
         App.init(installer);
 
-        App.inited();
+        // 给予数据上下文环境
+        DataContext.using(() -> {
+            App.inited();
+        });
     }
 
     public static void stop() {

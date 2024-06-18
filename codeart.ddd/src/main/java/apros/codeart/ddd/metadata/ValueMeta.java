@@ -53,20 +53,20 @@ public class ValueMeta {
         return _monoMeta;
     }
 
-    private final BiFunction<DomainObject, DomainProperty, Object> _getDefaultValue;
+    private final BiFunction<DomainObject, String, Object> _getDefaultValue;
 
-    public BiFunction<DomainObject, DomainProperty, Object> getDefaultValue() {
+    public BiFunction<DomainObject, String, Object> getDefaultValue() {
         return _getDefaultValue;
     }
 
     private ValueMeta(boolean isCollection, Class<?> monotype, ObjectMeta monoMeta,
-                      BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
+                      BiFunction<DomainObject, String, Object> getDefaultValue) {
         _isCollection = isCollection;
         _monotype = monotype;
         _monoMeta = monoMeta;
-        _getDefaultValue = getDefaultValue == null ? (obj, pro) -> {
+        _getDefaultValue = getDefaultValue == null ? (obj, propertyName) -> {
             if (_isCollection) {
-                var collection = new DomainCollection<>(monotype, pro);
+                var collection = new DomainCollection<>(monotype, propertyName);
                 collection.setParent(obj);
                 return collection;
             }
@@ -83,8 +83,7 @@ public class ValueMeta {
     }
 
     private static final Function<Class<?>, Object> _detectDefaultValue = LazyIndexer.init((valueType) -> {
-
-
+        
         if (ObjectMeta.isDomainObject(valueType)) {
             return DomainObject.getEmpty(valueType);
         }
@@ -119,7 +118,7 @@ public class ValueMeta {
      * @return
      */
     public static ValueMeta createBy(boolean isCollection, Class<?> monotype,
-                                     BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
+                                     BiFunction<DomainObject, String, Object> getDefaultValue) {
         return new ValueMeta(isCollection, monotype, ObjectMetaLoader.tryGet(monotype), getDefaultValue);
     }
 

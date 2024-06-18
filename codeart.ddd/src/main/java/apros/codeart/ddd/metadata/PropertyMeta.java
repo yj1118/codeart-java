@@ -95,10 +95,8 @@ public class PropertyMeta {
         return _call;
     }
 
-    private BiFunction<DomainObject, DomainProperty, Object> _getDefaultValue;
-
-    public BiFunction<DomainObject, DomainProperty, Object> getDefaultValue() {
-        return _getDefaultValue;
+    public BiFunction<DomainObject, String, Object> getDefaultValue() {
+        return _value.getDefaultValue();
     }
 
     private Iterable<IPropertyValidator> _validators;

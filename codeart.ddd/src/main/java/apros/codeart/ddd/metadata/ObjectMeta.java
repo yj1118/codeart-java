@@ -2,14 +2,7 @@ package apros.codeart.ddd.metadata;
 
 import java.util.ArrayDeque;
 
-import apros.codeart.ddd.DomainDrivenException;
-import apros.codeart.ddd.FrameworkDomain;
-import apros.codeart.ddd.IAggregateRoot;
-import apros.codeart.ddd.IDomainObject;
-import apros.codeart.ddd.IEntityObject;
-import apros.codeart.ddd.IObjectValidator;
-import apros.codeart.ddd.IValueObject;
-import apros.codeart.ddd.MergeDomain;
+import apros.codeart.ddd.*;
 import apros.codeart.ddd.dynamic.IDynamicObject;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
@@ -45,7 +38,7 @@ public class ObjectMeta {
     /**
      * 因为要合并，所以用此数据结构
      */
-    private ArrayDeque<PropertyMeta> _properties;
+    private final ArrayDeque<PropertyMeta> _properties;
 
     public Iterable<PropertyMeta> properties() {
         return _properties;
@@ -61,6 +54,11 @@ public class ObjectMeta {
             throw new DomainDrivenException(
                     Language.strings("apros.codeart.ddd", "NotFoundDomainProperty", _name, propertyName));
         return dp;
+    }
+
+    public Object getPropertyDefaultValue(DomainObject owner, String propertyName) {
+        var property = this.findProperty(propertyName);
+        return property.getDefaultValue().apply(owner, propertyName);
     }
 
     public void addProperty(PropertyMeta property) {

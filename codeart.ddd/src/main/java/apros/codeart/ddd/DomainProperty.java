@@ -31,7 +31,7 @@ import apros.codeart.util.StringUtil;
  */
 public class DomainProperty {
 
-    private PropertyMeta _meta;
+    private final PropertyMeta _meta;
 
     /**
      * 属性名称
@@ -88,7 +88,7 @@ public class DomainProperty {
      * @return
      */
     public Object getDefaultValue(DomainObject obj, DomainProperty property) {
-        return _meta.getDefaultValue().apply(obj, property);
+        return _meta.getDefaultValue().apply(obj, property.name());
     }
 
     /**
@@ -182,7 +182,7 @@ public class DomainProperty {
     }
 
     private static DomainProperty register(String name, boolean isCollection, Class<?> monotype, Class<?> declaringType,
-                                           BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
+                                           BiFunction<DomainObject, String, Object> getDefaultValue) {
 
         var valueMeta = ValueMeta.createBy(isCollection, monotype, getDefaultValue);
         // 获得属性上所有的特性标签
@@ -219,7 +219,7 @@ public class DomainProperty {
     }
 
     public static DomainProperty register(String name, Class<?> propertyType, Class<?> declaringType,
-                                          BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
+                                          BiFunction<DomainObject, String, Object> getDefaultValue) {
         return register(name, false, propertyType, declaringType, getDefaultValue);
     }
 
@@ -267,7 +267,7 @@ public class DomainProperty {
     }
 
     public static DomainProperty registerCollection(String name, Class<?> elementType, Class<?> declaringType,
-                                                    BiFunction<DomainObject, DomainProperty, Object> getDefaultValue) {
+                                                    BiFunction<DomainObject, String, Object> getDefaultValue) {
         return register(name, true, elementType, declaringType, getDefaultValue);
     }
 
@@ -338,7 +338,6 @@ public class DomainProperty {
     /**
      * 获得属性与仓储有关的配置
      *
-     * @param propertyName
      * @param declaringType
      * @return
      */
@@ -388,7 +387,6 @@ public class DomainProperty {
     /**
      * 添加领域属性到数据集中，新版中我们要确保 {@code objectType} 一定等于 {@code property.declaringType()}
      *
-     * @param objectType
      * @param property
      */
     private static void addProperty(DomainProperty property) {

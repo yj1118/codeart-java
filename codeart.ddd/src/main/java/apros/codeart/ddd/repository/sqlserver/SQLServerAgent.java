@@ -25,10 +25,11 @@ public class SQLServerAgent extends DatabaseAgent {
         this.registerQueryBuilder(QueryPageQB.class, QueryPage.Instance);
 
         this.registerQueryBuilder(GetIncrIdQB.class, GetIncrId.Instance);
+        this.registerQueryBuilder(DropIncrIdQB.class, DropIncrId.Instance);
     }
 
     public static final IDatabaseAgent Instance = new SQLServerAgent();
-	
+
     /**
      * 可被索引得字符串得最大长度
      */

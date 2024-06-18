@@ -3,6 +3,7 @@ package apros.codeart.ddd.repository.access;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import apros.codeart.TestSupport;
 import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.IDomainObject;
 import apros.codeart.ddd.MapData;
@@ -78,7 +79,7 @@ public final class DataPortal {
     }
 
 //	#region 对外公开的方法
-    
+
     private static long getIdentity(DataTable table) {
         return DataContext.newScope((access) -> {
 
@@ -102,6 +103,14 @@ public final class DataPortal {
         var table = DataTableLoader.get(doType);
         return getIdentity(table);
     }
+
+    @TestSupport
+    static void dropIdentity(DataAccess access, DataTable table) {
+        var builder = DataSource.getQueryBuilder(DropIncrIdQB.class);
+        var sql = builder.build(new QueryDescription(table));
+        access.execute(sql);
+    }
+
 
     /**
      * 在数据层中销毁数据模型

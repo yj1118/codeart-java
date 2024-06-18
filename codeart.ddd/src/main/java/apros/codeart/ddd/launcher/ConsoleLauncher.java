@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 import apros.codeart.App;
 import apros.codeart.IAppInstaller;
+import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.echo.rpc.RPCEvents;
 import apros.codeart.echo.rpc.RPCEvents.ServerClosedArgs;
 import apros.codeart.echo.rpc.RPCEvents.ServerErrorArgs;
@@ -32,10 +33,12 @@ public final class ConsoleLauncher {
         RPCEvents.serverError.add(new ServerErrorObserver());
         RPCEvents.serverClosed.add(new ServerClosedObserver());
 
-        // 要从框架/子系统/服务宿主 3大块里找定义
         App.init(installer);
 
-        App.inited();
+        // 对于inited事件，给予数据上下文环境，方便用户使用数据资源
+        DataContext.using(() -> {
+            App.inited();
+        });
 
         // 所有初始化工作完毕后，开通服务
         RPCServer.open();

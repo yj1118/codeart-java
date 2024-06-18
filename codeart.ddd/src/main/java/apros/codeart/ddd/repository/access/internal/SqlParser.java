@@ -16,122 +16,135 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.OrderByElement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
+import net.sf.jsqlparser.statement.select.*;
 
 final class SqlParser {
-	private SqlParser() {
-	}
+    private SqlParser() {
+    }
 
-	/// <summary>
-	/// 分析sql语句，获得参与查询的列信息
-	/// </summary>
-	/// <param name="sqlSelect"></param>
-	public static SqlColumns parse(String sql) {
-		return _getColumns.apply(sql);
-	}
+    /// <summary>
+    /// 分析sql语句，获得参与查询的列信息
+    /// </summary>
+    /// <param name="sqlSelect"></param>
+    public static SqlColumns parse(String sql) {
+        return _getColumns.apply(sql);
+    }
 
-	private static Function<String, SqlColumns> _getColumns = LazyIndexer.init((sql) -> {
+    private static final Function<String, SqlColumns> _getColumns = LazyIndexer.init((sql) -> {
 
-		try {
+        try {
 
-			Statement statement = CCJSqlParserUtil.parse(sql);
+            Statement statement = CCJSqlParserUtil.parse(sql);
 
-			if (statement instanceof Select) {
-				Select selectStatement = (Select) statement;
-				PlainSelect plain = (PlainSelect) selectStatement.getSelectBody();
+            if (statement instanceof Select) {
+                Select selectStatement = (Select) statement;
+                PlainSelect plain = (PlainSelect) selectStatement.getSelectBody();
 
-				var select = getSelect(plain, sql);
-				var where = getWhere(plain, sql);
-				var order = getOrder(plain, sql);
-				return new SqlColumns(select, where, order);
-			}
-			throw new IllegalStateException(strings("apros.codeart.ddd", "SQLFormatError", sql));
-		} catch (Exception ex) {
-			throw new IllegalStateException(strings("apros.codeart.ddd", "SQLFormatError", sql));
-		}
+                var select = getSelect(plain, sql);
+                var where = getWhere(plain, sql);
+                var order = getOrder(plain, sql);
+                return new SqlColumns(select, where, order);
+            }
+            throw new IllegalStateException(strings("apros.codeart.ddd", "SQLFormatError", sql));
+        } catch (Exception ex) {
+            throw new IllegalStateException(strings("apros.codeart.ddd", "SQLFormatError", sql));
+        }
 
-	});
+    });
 
-	private static Iterable<String> getSelect(PlainSelect plainSelect, String sql) {
-		List<SelectItem> selectItems = plainSelect.getSelectItems();
-		var columnNames = ListUtil.map(selectItems, (item) -> {
+    private static Iterable<String> getSelect(PlainSelect plainSelect, String sql) {
+        List<SelectItem> selectItems = plainSelect.getSelectItems();
+        var columnNames = ListUtil.map(selectItems, (item) -> {
 
-			if (item instanceof SelectExpressionItem) {
-				SelectExpressionItem expressionItem = (SelectExpressionItem) item;
-				Expression expression = expressionItem.getExpression();
+            if (item instanceof AllColumns) {
+                return "*";
+            }
 
-				String fieldName = null;
+            if (item instanceof SelectExpressionItem) {
+                SelectExpressionItem expressionItem = (SelectExpressionItem) item;
+                Expression expression = expressionItem.getExpression();
+
+                String fieldName = null;
 //				String aliasName = null;
 
-				if (expression instanceof Column) {
-					Column column = (Column) expression;
-					fieldName = column.getColumnName(); // Get the column name
-				} else {
-					fieldName = expression.toString(); // Get the expression as string for complex expressions
-				}
+                if (expression instanceof Column) {
+                    Column column = (Column) expression;
+                    fieldName = column.getColumnName(); // Get the column name
+                } else {
+                    fieldName = expression.toString(); // Get the expression as string for complex expressions
+                }
 
-				// 对于 name as xxx的形式，我们只取name
+                // 对于 name as xxx的形式，我们只取name
 //				Alias alias = expressionItem.getAlias();
 //				if (alias != null) {
 //					aliasName = alias.getName(); // Get the alias name
 //					return fieldName + (aliasName != null ? " AS " + aliasName : "");
 //				}
 
-				return SqlStatement.unQualifier(fieldName);
-			}
+                return unQualifier(fieldName);
+            }
 
-			throw new IllegalStateException(strings("apros.codeart.ddd", "SQLFormatError", sql));
+            throw new IllegalStateException(strings("apros.codeart.ddd", "SQLFormatError", sql));
 
-		});
+        });
 
-		return StringUtil.distinctIgnoreCase(columnNames);
+        return StringUtil.distinctIgnoreCase(columnNames);
 
-	}
+    }
 
-	private static Iterable<String> getWhere(PlainSelect plainSelect, String sql) {
+    private static Iterable<String> getWhere(PlainSelect plainSelect, String sql) {
 
-		Expression where = plainSelect.getWhere();
+        Expression where = plainSelect.getWhere();
 
-		List<String> columnNames = new ArrayList<>();
-		where.accept(new ExpressionVisitorAdapter() {
-			@Override
-			public void visit(Column column) {
-				columnNames.add(column.getFullyQualifiedName());
-			}
+        List<String> columnNames = new ArrayList<>();
+        where.accept(new ExpressionVisitorAdapter() {
+            @Override
+            public void visit(Column column) {
+                columnNames.add(column.getFullyQualifiedName());
+            }
 
-			@Override
-			public void visit(ExpressionList expressionList) {
-				super.visit(expressionList);
-				expressionList.getExpressions().forEach(expr -> expr.accept(this));
-			}
-		});
+            @Override
+            public void visit(ExpressionList expressionList) {
+                super.visit(expressionList);
+                expressionList.getExpressions().forEach(expr -> expr.accept(this));
+            }
+        });
 
-		var fields = ListUtil.map(columnNames, (item) -> {
-			return SqlStatement.unQualifier(item);
-		});
+        var fields = ListUtil.map(columnNames, SqlParser::unQualifier);
 
-		return StringUtil.distinctIgnoreCase(fields);
-	}
+        return StringUtil.distinctIgnoreCase(fields);
+    }
 
-	private static Iterable<String> getOrder(PlainSelect plainSelect, String sql) {
-		List<OrderByElement> orderByElements = plainSelect.getOrderByElements();
-		if (orderByElements == null)
-			return new ArrayList<String>(0);
+    private static Iterable<String> getOrder(PlainSelect plainSelect, String sql) {
+        List<OrderByElement> orderByElements = plainSelect.getOrderByElements();
+        if (orderByElements == null)
+            return new ArrayList<String>(0);
 
-		ArrayList<String> columns = new ArrayList<String>(orderByElements.size());
+        ArrayList<String> columns = new ArrayList<String>(orderByElements.size());
 
-		for (OrderByElement orderBy : orderByElements) {
-			Column column = (Column) orderBy.getExpression();
-			String columnName = column.getColumnName();
-			columns.add(SqlStatement.unQualifier(columnName));
-		}
+        for (OrderByElement orderBy : orderByElements) {
+            Column column = (Column) orderBy.getExpression();
+            String columnName = column.getColumnName();
+            columns.add(unQualifier(columnName));
+        }
 
-		return StringUtil.distinctIgnoreCase(columns);
-	}
+        return StringUtil.distinctIgnoreCase(columns);
+    }
+
+
+    public static String qualifier(String field) {
+        if (!field.startsWith("`"))
+            return String.format("`%s`", field);
+        return field;
+    }
+
+
+    public static String unQualifier(String field) {
+        if (field.startsWith("`"))
+            return StringUtil.substr(field, 1, (field.length() - 2));
+        return field;
+    }
+
 //
 //	private static Object GetExpression(Type targetType, object target, string propertyName) {
 //		if (targetType.ResolveProperty(propertyName) == null)

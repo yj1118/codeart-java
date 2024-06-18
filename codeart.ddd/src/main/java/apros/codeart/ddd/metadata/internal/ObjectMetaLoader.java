@@ -76,7 +76,15 @@ public final class ObjectMetaLoader {
         // 初始化期间是单线程的，尚未接受外界请求，所以也是安全的
         var obj = _metas.get(objectName);
         if (obj == null) {
-            throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "NotFoundDomainObject", objectName));
+
+            if (objectName.endsWith("Empty")) {
+                obj = _metas.get(objectName.substring(0, objectName.length() - "Empty".length()));
+            }
+
+            if (obj == null) {
+                throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "NotFoundDomainObject", objectName));
+            }
+            
         }
         return obj;
     }

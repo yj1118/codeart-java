@@ -40,6 +40,7 @@ import apros.codeart.util.LazyIndexer;
  */
 public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSerializable {
 
+
     private ObjectMeta _meta;
 
     /**
@@ -54,7 +55,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
     /**
      * 领域对象的继承深度（注意，仅从DomainObject基类开始算起）
      */
-    private int _typeDepth;
+    private final int _typeDepth;
 
     public DomainObject() {
         _meta = ObjectMetaLoader.get(this.getClass());
@@ -462,7 +463,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
      * 对象验证器
      */
     public Iterable<IObjectValidator> validators() {
-        return _meta.validators();
+        return this.meta().validators();
     }
 
 //	#
@@ -477,12 +478,17 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
      * @param markChanged  加载数据后，是否标记属性为已改变的
      */
     public void loadValue(String propertyName, Object value, boolean markChanged) {
-        var oldValue = this.dataProxy().load(propertyName);
+        var oldValue = this.dataProxy().load(propertyName,
+                () -> this.getPropertyDefaultValue(propertyName));
         this.dataProxy().save(propertyName, value, oldValue);
 
         if (markChanged)
             this.setPropertyChanged(propertyName);
 
+    }
+
+    private Object getPropertyDefaultValue(String propertyName) {
+        return this.meta().getPropertyDefaultValue(this, propertyName);
     }
 
     /**
@@ -492,7 +498,8 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
      * @param value
      */
     public void setValue(DomainProperty property, Object value) {
-        var oldValue = this.dataProxy().load(property.name());
+        var oldValue = this.dataProxy().load(property.name(),
+                () -> this.getPropertyDefaultValue(property.name()));
         boolean isChanged = false;
 
         if (property.isChanged(oldValue, value)) {
@@ -560,7 +567,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
      * @return
      */
     public Object getValue(DomainProperty property) {
-        return this.dataProxy().load(property.name());
+        return this.dataProxy().load(property.name(), () -> this.getPropertyDefaultValue(property.name()));
     }
 
     public Object getPropertyValue(DomainProperty property) {
@@ -569,7 +576,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 
 
     public Object getValue(String propertyName) {
-        return this.dataProxy().load(propertyName);
+        return this.dataProxy().load(propertyName, () -> this.getPropertyDefaultValue(propertyName));
     }
 
     /**
@@ -603,7 +610,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
     /**
      * 处理属性被改变时的行为
      *
-     * @param property
+     * @param propertyName
      * @param newValue
      * @param oldValue
      */
