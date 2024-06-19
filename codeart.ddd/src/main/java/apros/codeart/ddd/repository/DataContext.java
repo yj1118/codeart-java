@@ -131,18 +131,21 @@ public class DataContext implements IDataContext {
 //	region CUD
 
     public <T extends IAggregateRoot> void registerAdded(T item, IPersistRepository repository) {
+        this.openDelayMode();
         processAction(new ScheduledAction(item, repository, ScheduledActionType.Create));
         item.saveState();
         item.markClean();// 无论是延迟执行，还是立即执行，我们都需要提供统一的状态给领域层使用
     }
 
     public <T extends IAggregateRoot> void registerUpdated(T item, IPersistRepository repository) {
+        this.openDelayMode();
         processAction(new ScheduledAction(item, repository, ScheduledActionType.Update));
         item.saveState();
         item.markClean();// 无论是延迟执行，还是立即执行，我们都需要提供统一的状态给领域层使用
     }
 
     public <T extends IAggregateRoot> void registerDeleted(T item, IPersistRepository repository) {
+        this.openDelayMode();
         processAction(new ScheduledAction(item, repository, ScheduledActionType.Delete));
         item.saveState();
         item.markDirty();// 无论是延迟执行，还是立即执行，我们都需要提供统一的状态给领域层使用
@@ -159,9 +162,13 @@ public class DataContext implements IDataContext {
         return level.equals(QueryLevel.HoldSingle) || level.equals(QueryLevel.Single) || level.equals(QueryLevel.Share);
     }
 
-//	region 执行计划
+    //region 执行计划
 
     private ArrayList<ScheduledAction> _actions;
+
+    private boolean hasActions(){
+        return _actions != null && !_actions.isEmpty();
+    }
 
     private ArrayList<ScheduledAction> actions() {
         if (_actions == null)
@@ -191,18 +198,19 @@ public class DataContext implements IDataContext {
             return;
         }
 
-        if (this._transactionStatus == TransactionStatus.None) {
-            // 没有开启事务，立即执行
-            _conn.begin();
-
-            executeAction(action);
-            raisePreCommit(action);
-
-            _conn.commit();
-            raiseCommitted(action);
-
-            return;
-        }
+        // 以下代码不会有执行的机会，因为addActiond的时候，就会提升status的级别
+//        if (this._transactionStatus == TransactionStatus.None) {
+//            // 没有开启事务，立即执行
+//            _conn.begin(this._transactionStatus);
+//
+//            executeAction(action);
+//            raisePreCommit(action);
+//
+//            _conn.commit();
+//            raiseCommitted(action);
+//
+//            return;
+//        }
     }
 
     private void raisePreCommit(ScheduledAction action) {
@@ -250,25 +258,24 @@ public class DataContext implements IDataContext {
     }
 
     private void raisePreCommitQueue() {
-        if (_actions == null)
-            return;
-        for (var action : _actions) {
-            raisePreCommit(action);
+        if (hasActions()){
+            for (var action : _actions) {
+                raisePreCommit(action);
+            }
         }
     }
 
     private void raiseCommittedQueue() {
-        if (_actions == null)
-            return;
-        for (var action : _actions) {
-            raiseCommitted(action);
+        if (hasActions()){
+            for (var action : _actions) {
+                raiseCommitted(action);
+            }
         }
     }
 
     /**
      * 检验执行的计划
      *
-     * @param action
      */
     private void validateAction(ScheduledAction action) {
         if (action.target().isEmpty())
@@ -283,10 +290,10 @@ public class DataContext implements IDataContext {
             throw new ValidationException(result);
     }
 
-    /// <summary>
-    /// 执行计划
-    /// </summary>
-    /// <param name="action"></param>
+    /**
+     * 执行计划
+     * @param action
+     */
     private void executeAction(ScheduledAction action) {
         if (action.expired())
             return;
@@ -313,7 +320,7 @@ public class DataContext implements IDataContext {
         action.markExpired();
     }
 
-//	region 事务管理
+    //region 事务管理
 
     private TransactionStatus _transactionStatus;
 
@@ -356,7 +363,13 @@ public class DataContext implements IDataContext {
     }
 
     public boolean inTransaction() {
-        return _transactionStatus != TransactionStatus.None;
+        return _transactionStatus != TransactionStatus.None || _transactionCount > 0;
+    }
+
+    private void openDelayMode(){
+        if(_transactionStatus == TransactionStatus.None){
+            _transactionStatus = TransactionStatus.Delay;
+        }
     }
 
     /**
@@ -370,7 +383,7 @@ public class DataContext implements IDataContext {
             // 开启即时事务
             this._transactionStatus = TransactionStatus.Timely;
 
-            _conn.begin();
+            _conn.begin(this._transactionStatus);
 
             if (!isCommiting()) {
                 // 没有之前的队列要执行
@@ -387,55 +400,55 @@ public class DataContext implements IDataContext {
         if (this.inTransaction()) {
             _transactionCount++;
         } else {
-            _transactionStatus = TransactionStatus.Delay;
-            if (_actions != null)
-                _actions.clear();
             _transactionCount++;
-
             // 仅初始化，建立了连接，但是并没有开启事务
             _conn.initialize();
         }
     }
 
     public void commit() {
-        if (!this.inTransaction())
+
+        if(hasActions() && !this.inTransaction()){
+            // 有对持久层的增改删的操作，但是没有开启事务
             throw new NotBeginTransactionException();
-        else {
-            _transactionCount--;
-            if (_transactionCount == 0) {
+        }
 
-                if (isCommiting())
-                    throw new RepeatedCommitException();
+        _transactionCount--;
+        if (_transactionCount == 0) {
 
-                _isCommiting = true;
+            if (isCommiting())
+                throw new RepeatedCommitException();
 
-                try {
-                    if (_transactionStatus == TransactionStatus.Delay) {
-                        _transactionStatus = TransactionStatus.Timely; // 开启即时事务
+            _isCommiting = true;
 
-                        _conn.begin();
-                        executeActionQueue();
-                        raisePreCommitQueue();
-                        _conn.commit();
+            try {
+                if (_transactionStatus == TransactionStatus.Delay) {
+                    _transactionStatus = TransactionStatus.Timely; // 开启即时事务
 
-                        raiseCommittedQueue();
-                    } else if (_transactionStatus == TransactionStatus.Timely) {
-                        executeActionQueue();
-                        raisePreCommitQueue();
+                    _conn.begin(_transactionStatus);
+                    executeActionQueue();
+                    raisePreCommitQueue();
+                    _conn.commit();
 
-                        _conn.commit();
+                    raiseCommittedQueue();
+                } else if (_transactionStatus == TransactionStatus.Timely) {
+                    executeActionQueue();
+                    raisePreCommitQueue();
 
-                        raiseCommittedQueue();
-                    }
+                    _conn.commit();
 
-                    this.onCommitted();
-
-                } catch (Exception ex) {
-                    throw ex;
-                } finally {
-                    clear();
-                    _isCommiting = false;
+                    raiseCommittedQueue();
                 }
+
+                //为None的状态不用执行，因为没有actions，只有查询，已经执行了
+
+                this.onCommitted();
+
+            } catch (Exception ex) {
+                throw ex;
+            } finally {
+                clear();
+                _isCommiting = false;
             }
         }
     }
@@ -459,7 +472,7 @@ public class DataContext implements IDataContext {
     private void executeActionQueue() {
         // 执行行为队列之前，我们会对镜像进行锁定
         lockMirrors();
-        if (_actions != null) {
+        if (hasActions()) {
             for (ScheduledAction action : _actions) {
                 this.executeAction(action);
             }
@@ -467,7 +480,7 @@ public class DataContext implements IDataContext {
     }
 
     public boolean isDirty() {
-        return _actions != null && _actions.size() > 0;
+        return _actions != null && !_actions.isEmpty();
     }
 
     /**
@@ -529,7 +542,7 @@ public class DataContext implements IDataContext {
         RolledBack.raise(context, () -> new RolledBackEventArgs(context));
     }
 
-//	region 额外项
+    //region 额外项
 
     private Map<String, Object> _items = null;
 
@@ -558,7 +571,9 @@ public class DataContext implements IDataContext {
         }
     }
 
-//	region 基于当前应用程序会话的数据上下文
+    //endregion
+
+    //region 基于当前应用程序会话的数据上下文
 
     private static final String _sessionKey = "DataContext.Current";
 
@@ -577,7 +592,7 @@ public class DataContext implements IDataContext {
         return AppSession.getItem(_sessionKey) != null;
     }
 
-//	#region 无返回值
+    //region 无返回值
 
     private static void using(DataContext dataContext, Consumer<DataAccess> action, boolean timely) {
         try {
@@ -634,9 +649,9 @@ public class DataContext implements IDataContext {
 
     }
 
-//	#endregion
+    //endregion
 
-//	#region 有返回值
+    //region 有返回值
 
     public static <T> T using(Supplier<T> action) {
         return using(action, false);
@@ -695,7 +710,7 @@ public class DataContext implements IDataContext {
         }
     }
 
-//	#endregion
+    //endregion
 
     public static void newScope(Runnable action) {
         newScope((conn) -> {
@@ -757,4 +772,7 @@ public class DataContext implements IDataContext {
             }
         }
     }
+
+    //endregion
+
 }

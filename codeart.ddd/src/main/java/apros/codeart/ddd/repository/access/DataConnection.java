@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 import apros.codeart.ddd.DomainDrivenException;
+import apros.codeart.ddd.repository.TransactionStatus;
 import apros.codeart.i18n.Language;
 
 public class DataConnection implements AutoCloseable {
@@ -32,10 +33,10 @@ public class DataConnection implements AutoCloseable {
         _access = new DataAccess(_conn);
     }
 
-    public void begin() {
+    public void begin(TransactionStatus status) {
         if (_tranOpened)
             throw new DomainDrivenException(Language.strings("TransactionStarted"));
-        openTransaction(_conn);
+        openTransaction(_conn,status);
         _tranOpened = true;
     }
 
@@ -43,14 +44,19 @@ public class DataConnection implements AutoCloseable {
         return DataSource.getConnection();
     }
 
-    private static void openTransaction(Connection conn) {
+    private static void openTransaction(Connection conn,TransactionStatus status) {
         // 事务的开始是隐式的，从你获取连接并关闭自动提交模式（
         // 通过setAutoCommit(false)）的那一刻开始。这个操作告诉数据库管理系统，
         // 接下来执行的一系列SQL语句应该被视为一个单独的事务，直到你显式地调用commit或rollback方法
         try {
             conn.setAutoCommit(false);
-            // 设置事务隔离级别
-            conn.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+
+            // 设置事务隔离级别(todo test)
+            switch (status){
+                case None ->  conn.setTransactionIsolation(Connection.TRANSACTION_NONE);
+                case Delay -> conn.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+                case Timely -> conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+            }
         } catch (SQLException e) {
             throw propagate(e);
         }
