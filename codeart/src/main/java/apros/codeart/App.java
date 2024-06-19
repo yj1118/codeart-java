@@ -49,6 +49,7 @@ public final class App {
     }
 
     private static void process_pre_start() {
+        
         runActions(PreApplicationStart.class);
     }
 

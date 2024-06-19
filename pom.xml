@@ -12,6 +12,7 @@
         <module>codeart</module>
         <module>codeart.ddd</module>
         <module>codeart.gate</module>
+        <module>test/ddd-test</module>
     </modules>
 
     <properties>
@@ -42,6 +43,7 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>5.10.2</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
