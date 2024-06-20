@@ -48,7 +48,7 @@ public final class ValidatorUtil {
             return DataPortal.querySingle(obj.getClass(), exp, (data) ->
             {
                 data.put(property.name(), propertyValue);
-            }, QueryLevel.HoldSingle);
+            }, QueryLevel.HOLD);
         });
 
         if (target.isEmpty()) return false;  //如果没有找到，那么没有重复

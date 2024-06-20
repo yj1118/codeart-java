@@ -3,13 +3,10 @@ package apros.codeart.ddd.metadata;
 import java.util.Objects;
 import java.util.function.BiFunction;
 
-import apros.codeart.ddd.DomainObject;
-import apros.codeart.ddd.DomainProperty;
-import apros.codeart.ddd.IEmptyable;
-import apros.codeart.ddd.IPropertyDataLoader;
-import apros.codeart.ddd.IPropertyValidator;
+import apros.codeart.ddd.*;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.runtime.TypeUtil;
+import apros.codeart.runtime.Util;
 
 public class PropertyMeta {
 
@@ -125,7 +122,7 @@ public class PropertyMeta {
         return _lazy;
     }
 
-    private IPropertyDataLoader _dataLoader;
+    private final IPropertyDataLoader _dataLoader;
 
     /**
      * 自定义加载器，大部分情况下不需要自定义加载器
@@ -135,14 +132,14 @@ public class PropertyMeta {
     public IPropertyDataLoader dataLoader() {
         return _dataLoader;
     }
-
-    private String _fullName;
+    
+    private final String _fullName;
 
     public String fullName() {
         return _fullName;
     }
 
-    private boolean _isEmptyable;
+    private final boolean _isEmptyable;
 
     public boolean isEmptyable() {
         return _isEmptyable;

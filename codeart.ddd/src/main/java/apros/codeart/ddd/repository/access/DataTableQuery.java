@@ -56,7 +56,7 @@ final class DataTableQuery {
         return querySingle(expression, (param) -> {
             param.put(GeneratedField.RootIdName, rootId);
             param.put(EntityObject.IdPropertyName, id);
-        }, QueryLevel.None);
+        }, QueryLevel.NONE);
     }
 
 //	#region 从构造上下文中获取对象
@@ -124,7 +124,7 @@ final class DataTableQuery {
         var table = StringUtil.isNullOrEmpty(typeKey) ? _self : DataTableUtil.getDataTable(typeKey);
 
         // 非聚合根是不能被加入到缓冲区的
-        return table.createObject(table.objectType(), entry, QueryLevel.None);
+        return table.createObject(table.objectType(), entry, QueryLevel.NONE);
     }
 
     /// <summary>
@@ -141,15 +141,26 @@ final class DataTableQuery {
             var table = StringUtil.isNullOrEmpty(typeKey) ? _self : DataTableUtil.getDataTable(typeKey);
 
             if (level.code() == QueryLevel.MirroringCode) {
-                // 镜像查询会在加入到当前会话中的对象缓冲区，不同的会话有各自的镜像对象，同一个会话的同一个对象的镜像只有一个
                 return DomainBuffer.obtain(table.objectType(), id, () -> {
-                    return (IAggregateRoot) table.loadObject(id, QueryLevel.Mirroring); // 由于查询条目的时候已经锁了数据，所以此处不用再锁定
+                    return (IAggregateRoot) table.createObject(table.objectType(), entry, QueryLevel.MIRRORING);
                 }, true);
             } else {
                 return DomainBuffer.obtain(table.objectType(), id, () -> {
-                    return (IAggregateRoot) table.loadObject(id, QueryLevel.None); // 由于查询条目的时候已经锁了数据，所以此处不用再锁定
+                    return (IAggregateRoot) table.createObject(table.objectType(), entry, QueryLevel.NONE);
                 }, false);
             }
+
+            // 以前的老代码
+//            if (level.code() == QueryLevel.MirroringCode) {
+//                // 镜像查询会在加入到当前会话中的对象缓冲区，不同的会话有各自的镜像对象，同一个会话的同一个对象的镜像只有一个
+//                return DomainBuffer.obtain(table.objectType(), id, () -> {
+//                    return (IAggregateRoot) table.loadObject(id, QueryLevel.MIRRORING); // 由于查询条目的时候已经锁了数据，所以此处不用再锁定
+//                }, true);
+//            } else {
+//                return DomainBuffer.obtain(table.objectType(), id, () -> {
+//                    return (IAggregateRoot) table.loadObject(id, QueryLevel.NONE); // 由于查询条目的时候已经锁了数据，所以此处不用再锁定
+//                }, false);
+//            }
         } else {
             Object rootId = entry.get(GeneratedField.RootIdName);
             Object id = entry.get(EntityObject.IdPropertyName);
@@ -174,7 +185,7 @@ final class DataTableQuery {
             data.put("pageSize", pageSize);
             fillArg.accept(data);
         });
-        int count = getCount(expression, fillArg, QueryLevel.None);
+        int count = getCount(expression, fillArg, QueryLevel.NONE);
         return new Page<T>(pageIndex, pageSize, objects, count);
     }
 
@@ -228,7 +239,7 @@ final class DataTableQuery {
     @SuppressWarnings("unchecked")
     private <T> Iterable<T> getObjectsFromEntriesByPage(String expression, Consumer<MapData> fillArg) {
 
-        var datas = executeQueryEntries(QueryPageQB.class, expression, QueryLevel.None, fillArg);
+        var datas = executeQueryEntries(QueryPageQB.class, expression, QueryLevel.NONE, fillArg);
 
         var list = new ArrayList<T>(Iterables.size(datas));
 
@@ -322,7 +333,7 @@ final class DataTableQuery {
                         var fieldsSql = getDefaultQueryFields(table);
 
                         expression = String.format("%s[select %s]", expression, fieldsSql);
-						
+
                     } else if (selectCount == 1) {
                         var propertyName = firstSelect;
 
@@ -375,7 +386,7 @@ final class DataTableQuery {
         return executeQueryObject(_self.objectType(), expression, (param) -> {
             param.put(GeneratedField.RootIdName, rootId);
             param.put(EntityObject.IdPropertyName, id);
-        }, QueryLevel.None);
+        }, QueryLevel.NONE);
     }
 
     ///// <summary>
@@ -486,7 +497,7 @@ final class DataTableQuery {
 
         // 在领域层主动查看数据编号时，不需要锁；在提交数据时获取数据编号，由于对象已被锁，所以不需要在读取版本号时锁
         int dataVersion = 0;
-        var data = executeQueryEntry(exp, expression, QueryLevel.None, fillArg);
+        var data = executeQueryEntry(exp, expression, QueryLevel.NONE, fillArg);
         if (data.size() > 0) {
             dataVersion = (int) data.get(GeneratedField.DataVersionName);
         }
@@ -509,7 +520,7 @@ final class DataTableQuery {
         var qb = DataSource.getQueryBuilder(GetAssociatedQB.class);
         var sql = qb.build(new QueryDescription(_self));
 
-        return DataAccess.current().queryScalarInt(sql, data, QueryLevel.None);
+        return DataAccess.current().queryScalarInt(sql, data, QueryLevel.NONE);
     }
 
 //	#endregion

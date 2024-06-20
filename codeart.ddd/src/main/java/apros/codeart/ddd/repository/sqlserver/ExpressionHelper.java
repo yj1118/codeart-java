@@ -196,7 +196,7 @@ public final class ExpressionHelper {
                         " left join {0}{6} on {0}.{1}={2}.Id left join {3} as {4}{6} on {0}.{5}={4}.Id",
                         SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
                         SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
-                        SqlStatement.qualifier(chain), GeneratedField.SlaveIdName, getLockCode(QueryLevel.None));
+                        SqlStatement.qualifier(chain), GeneratedField.SlaveIdName, getLockCode(QueryLevel.NONE));
 
             } else {
                 // 中间的查询会多一个{4}.{6}={2}.Id的限定，
@@ -205,14 +205,14 @@ public final class ExpressionHelper {
                         SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
                         SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
                         SqlStatement.qualifier(chain), GeneratedField.SlaveIdName, GeneratedField.RootIdName,
-                        getLockCode(QueryLevel.None));
+                        getLockCode(QueryLevel.NONE));
             }
         } else {
             if (current.type() == DataTableType.AggregateRoot) {
                 var tip = current.memberPropertyTip();
                 StringUtil.appendMessageFormat(sql, " left join {0} as {1}{4} on {2}.{3}Id={1}.Id",
                         SqlStatement.qualifier(current.name()), SqlStatement.qualifier(chain),
-                        SqlStatement.qualifier(masterTableName), tip.name(), getLockCode(QueryLevel.None));
+                        SqlStatement.qualifier(masterTableName), tip.name(), getLockCode(QueryLevel.NONE));
             } else {
                 if (chainRoot.type() == DataTableType.AggregateRoot) {
                     var chainRootMemberPropertyTip = current.chainRoot().memberPropertyTip();
@@ -223,14 +223,14 @@ public final class ExpressionHelper {
                     StringUtil.appendMessageFormat(sql,
                             " left join {0} as {1}{4} on {2}.{3}Id={1}.Id and {1}.{5}={6}.Id",
                             SqlStatement.qualifier(current.name()), SqlStatement.qualifier(chain),
-                            SqlStatement.qualifier(masterTableName), tip.name(), getLockCode(QueryLevel.None),
+                            SqlStatement.qualifier(masterTableName), tip.name(), getLockCode(QueryLevel.NONE),
                             GeneratedField.RootIdName, SqlStatement.qualifier(rootTableName));
                 } else {
                     // 查询不是从根表发出的，而是从引用表，那么直接用@RootId来限定
                     var tip = current.memberPropertyTip();
                     StringUtil.appendMessageFormat(sql, " left join {0} as {1}{4} on {2}.{3}Id={1}.Id and {1}.{5}=@{5}",
                             SqlStatement.qualifier(current.name()), SqlStatement.qualifier(chain),
-                            SqlStatement.qualifier(masterTableName), tip.name(), getLockCode(QueryLevel.None),
+                            SqlStatement.qualifier(masterTableName), tip.name(), getLockCode(QueryLevel.NONE),
                             GeneratedField.RootIdName);
                 }
 

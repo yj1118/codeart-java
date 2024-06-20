@@ -159,14 +159,14 @@ public class DataContext implements IDataContext {
     }
 
     private boolean isLockQuery(QueryLevel level) {
-        return level.equals(QueryLevel.HoldSingle) || level.equals(QueryLevel.Single) || level.equals(QueryLevel.Share);
+        return level.equals(QueryLevel.HOLD) || level.equals(QueryLevel.SINGLE) || level.equals(QueryLevel.SHARE);
     }
 
     //region 执行计划
 
     private ArrayList<ScheduledAction> _actions;
 
-    private boolean hasActions(){
+    private boolean hasActions() {
         return _actions != null && !_actions.isEmpty();
     }
 
@@ -258,7 +258,7 @@ public class DataContext implements IDataContext {
     }
 
     private void raisePreCommitQueue() {
-        if (hasActions()){
+        if (hasActions()) {
             for (var action : _actions) {
                 raisePreCommit(action);
             }
@@ -266,7 +266,7 @@ public class DataContext implements IDataContext {
     }
 
     private void raiseCommittedQueue() {
-        if (hasActions()){
+        if (hasActions()) {
             for (var action : _actions) {
                 raiseCommitted(action);
             }
@@ -275,7 +275,6 @@ public class DataContext implements IDataContext {
 
     /**
      * 检验执行的计划
-     *
      */
     private void validateAction(ScheduledAction action) {
         if (action.target().isEmpty())
@@ -292,6 +291,7 @@ public class DataContext implements IDataContext {
 
     /**
      * 执行计划
+     *
      * @param action
      */
     private void executeAction(ScheduledAction action) {
@@ -366,8 +366,8 @@ public class DataContext implements IDataContext {
         return _transactionStatus != TransactionStatus.None || _transactionCount > 0;
     }
 
-    private void openDelayMode(){
-        if(_transactionStatus == TransactionStatus.None){
+    private void openDelayMode() {
+        if (_transactionStatus == TransactionStatus.None) {
             _transactionStatus = TransactionStatus.Delay;
         }
     }
@@ -408,7 +408,7 @@ public class DataContext implements IDataContext {
 
     public void commit() {
 
-        if(hasActions() && !this.inTransaction()){
+        if (hasActions() && !this.inTransaction()) {
             // 有对持久层的增改删的操作，但是没有开启事务
             throw new NotBeginTransactionException();
         }

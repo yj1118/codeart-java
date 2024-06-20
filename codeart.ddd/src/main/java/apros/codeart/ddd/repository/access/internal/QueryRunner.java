@@ -150,7 +150,7 @@ public final class QueryRunner {
 
     private static class QueryAdapter {
 
-        private String _sql;
+        private final String _sql;
 
         /**
          * 要执行的语句
@@ -164,7 +164,7 @@ public final class QueryRunner {
         /**
          * 每个项是一个参数名称，所在数组的序号+1就是他在sql里的参数序号
          */
-        private String[] _positions;
+        private final String[] _positions;
 
         public QueryAdapter(String sql, String[] positions) {
             _sql = sql;

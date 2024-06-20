@@ -19,83 +19,83 @@ import apros.codeart.util.StringUtil;
 import apros.codeart.util.concurrent.LatchSignal;
 
 public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
-	private volatile String _correlationId;
-	private IPoolItem _busItem;
-	private String _tempQueue;
-	private LatchSignal<TransferData> _signal;
-	private int _secondsTimeout;
-	private boolean _success;
+    private volatile String _correlationId;
+    private final IPoolItem _busItem;
+    private String _tempQueue;
+    private final LatchSignal<TransferData> _signal;
+    private final int _secondsTimeout;
+    private boolean _success;
 
-	public RPCClient(int secondsTimeout) {
-		_busItem = RabbitBus.borrow(RPCConfig.ClientPolicy);
-		initConsumer();
-		_signal = new LatchSignal<TransferData>();
-		_secondsTimeout = secondsTimeout;
-	}
+    public RPCClient(int secondsTimeout) {
+        _busItem = RabbitBus.borrow(RPCConfig.ClientPolicy);
+        initConsumer();
+        _signal = new LatchSignal<>();
+        _secondsTimeout = secondsTimeout;
+    }
 
-	private void initConsumer() {
-		RabbitBus bus = _busItem.getItem();
-		_tempQueue = bus.tempQueueDeclare();
-		bus.consume(_tempQueue, this);
-	}
+    private void initConsumer() {
+        RabbitBus bus = _busItem.getItem();
+        _tempQueue = bus.tempQueueDeclare();
+        bus.consume(_tempQueue, this);
+    }
 
-	public DTObject invoke(String method, DTObject arg) {
-		RabbitBus bus = _busItem.getItem();
+    public DTObject invoke(String method, DTObject arg) {
+        RabbitBus bus = _busItem.getItem();
 
-		_success = false;
-		_correlationId = Guid.compact();
+        _success = false;
+        _correlationId = Guid.compact();
 
-		DTObject dto = DTObject.editable();
-		dto.setString("method", method);
-		dto.combineObject("arg", arg);
+        DTObject dto = DTObject.editable();
+        dto.setString("method", method);
+        dto.combineObject("arg", arg);
 
-		var data = new TransferData(AppSession.language(), dto);
-		var routingKey = RPCConfig.getServerQueue(method); // 将服务器端的方法名称作为路由键
-		bus.publish(Strings.EMPTY, routingKey, data, (properties) -> {
-			properties.replyTo(_tempQueue);
-			properties.correlationId(_correlationId);
-		});
-		var result = _signal.wait(_secondsTimeout, TimeUnit.SECONDS);
+        var data = new TransferData(AppSession.language(), dto);
+        var routingKey = RPCConfig.getServerQueue(method); // 将服务器端的方法名称作为路由键
+        bus.publish(Strings.EMPTY, routingKey, data, (properties) -> {
+            properties.replyTo(_tempQueue);
+            properties.correlationId(_correlationId);
+        });
+        var result = _signal.wait(_secondsTimeout, TimeUnit.SECONDS);
 
-		if (!_success) {
-			_correlationId = Strings.EMPTY;
-			throw new RabbitMQException(Language.strings("apros.codeart", "RequestTimeout", method));
-		}
+        if (!_success) {
+            _correlationId = Strings.EMPTY;
+            throw new RabbitMQException(Language.strings("apros.codeart", "RequestTimeout", method));
+        }
 
-		var body = result.body();
-		var error = body.getString("error", "null");
+        var body = result.body();
+        var error = body.getString("error", "null");
 
-		if (StringUtil.isNullOrEmpty(error)) {
-			throw new RabbitMQException(error);
-		}
+        if (StringUtil.isNullOrEmpty(error)) {
+            throw new RabbitMQException(error);
+        }
 
-		return body;
-	}
+        return body;
+    }
 
-	@Override
-	public void handle(RabbitBus sender, Message message) {
-		if (_correlationId.equalsIgnoreCase(message.properties().getCorrelationId())) {
-			message.success();
-			var result = message.content();
-			_success = true;
-			_signal.set(result);
-		}
-	}
+    @Override
+    public void handle(RabbitBus sender, Message message) {
+        if (_correlationId.equalsIgnoreCase(message.properties().getCorrelationId())) {
+            message.success();
+            var result = message.content();
+            _success = true;
+            _signal.set(result);
+        }
+    }
 
-	/**
-	 * 清理客户端资源，以便可以重用
-	 */
-	@Override
-	public void clear() {
-		_correlationId = Strings.EMPTY;
-		// _busItem 不用释放，可以继续使用
-	}
+    /**
+     * 清理客户端资源，以便可以重用
+     */
+    @Override
+    public void clear() {
+        _correlationId = Strings.EMPTY;
+        // _busItem 不用释放，可以继续使用
+    }
 
-	@Override
-	public void close() {
-		if (_busItem != null) {
-			_busItem.close();
-		}
-	}
+    @Override
+    public void close() {
+        if (_busItem != null) {
+            _busItem.close();
+        }
+    }
 
 }

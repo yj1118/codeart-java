@@ -36,668 +36,661 @@ import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
 
 final class DataTableRead {
-	private DataTable _self;
+    private DataTable _self;
 
-	public DataTableRead(DataTable self) {
-		_self = self;
-	}
+    public DataTableRead(DataTable self) {
+        _self = self;
+    }
 
-	// <summary>
-	/// 1对多的引用关系的读取
-	/// </summary>
-	/// <param name="rootId"></param>
-	/// <param name="id"></param>
-	/// <returns></returns>
-	@SuppressWarnings("unchecked")
-	Object readOneToMore(PropertyMeta tip, ConstructorParameterInfo prmTip, DomainObject parent, Object rootId,
-			Object masterId, QueryLevel level) {
-		var datas = queryRootAndSlaveIds(rootId, masterId);
+    // <summary>
+    /// 1对多的引用关系的读取
+    /// </summary>
+    /// <param name="rootId"></param>
+    /// <param name="id"></param>
+    /// <returns></returns>
+    @SuppressWarnings("unchecked")
+    Object readOneToMore(PropertyMeta tip, ConstructorParameterInfo prmTip, DomainObject parent, Object rootId,
+                         Object masterId, QueryLevel level) {
+        var datas = queryRootAndSlaveIds(rootId, masterId);
 
-		Class<?> implementType = null;
-		if (parent == null) {
-			// 说明还在构造阶段,或者是内部调用
-			if (prmTip != null && prmTip.implementType() != null)
-				implementType = prmTip.implementType();
-			else
-				implementType = _self.middle().objectType(); // middle表对应的是属性的基类类型
-		} else {
-			implementType = _self.middle().objectType(); // middle表对应的是属性的基类类型
-		}
-		var list = createList(parent, implementType, tip);
-		var elementType = _self.middle().elementType();
+        Class<?> implementType = null;
+        if (parent == null) {
+            // 说明还在构造阶段,或者是内部调用
+            if (prmTip != null && prmTip.implementType() != null)
+                implementType = prmTip.implementType();
+            else
+                implementType = _self.middle().objectType(); // middle表对应的是属性的基类类型
+        } else {
+            implementType = _self.middle().objectType(); // middle表对应的是属性的基类类型
+        }
+        var list = createList(parent, implementType, tip);
+        var elementType = _self.middle().elementType();
 
-		if (_self.type() == DataTableType.AggregateRoot) {
-			// 引用了多个外部内聚根
-			var model = DataModelLoader.get((Class<? extends IAggregateRoot>) elementType);
-			var root = model.root();
-			var slaveIdName = GeneratedField.SlaveIdName;
+        if (_self.type() == DataTableType.AggregateRoot) {
+            // 引用了多个外部内聚根
+            var model = DataModelLoader.get((Class<? extends IAggregateRoot>) elementType);
+            var root = model.root();
+            var slaveIdName = GeneratedField.SlaveIdName;
 
-			var queryLevel = getQueryAggreateRootLevel(level);
-			for (var data : datas) {
-				var slaveId = data.get(slaveIdName);
-				var item = (IDomainObject) root.querySingle(slaveId, queryLevel);
-				if (!item.isEmpty()) {
-					list.add(item);
-				}
-			}
-		} else {
-			var slaveIdName = GeneratedField.SlaveIdName;
-			for (var data : datas) {
-				var slaveId = data.get(slaveIdName);
-				var item = (IDomainObject) _self.querySingle(rootId, slaveId);
-				if (!item.isEmpty()) {
-					list.add(item);
-				}
-			}
-		}
-		return list;
-	}
+            var queryLevel = getQueryAggreateRootLevel(level);
+            for (var data : datas) {
+                var slaveId = data.get(slaveIdName);
+                var item = (IDomainObject) root.querySingle(slaveId, queryLevel);
+                if (!item.isEmpty()) {
+                    list.add(item);
+                }
+            }
+        } else {
+            var slaveIdName = GeneratedField.SlaveIdName;
+            for (var data : datas) {
+                var slaveId = data.get(slaveIdName);
+                var item = (IDomainObject) _self.querySingle(rootId, slaveId);
+                if (!item.isEmpty()) {
+                    list.add(item);
+                }
+            }
+        }
+        return list;
+    }
 
-	/**
-	 * 
-	 * 读取基础数据的集合值
-	 * 
-	 * @param tip
-	 * @param prmTip
-	 * @param parent
-	 * @param rootId
-	 * @param masterId
-	 * @param level
-	 * @return
-	 */
-	@SuppressWarnings("unchecked")
-	Object readValues(PropertyMeta tip, ConstructorParameterInfo prmTip, DomainObject parent, Object rootId,
-			Object masterId, QueryLevel level) {
-		var datas = queryPrimitiveValues(rootId, masterId);
+    /**
+     * 读取基础数据的集合值
+     *
+     * @param tip
+     * @param prmTip
+     * @param parent
+     * @param rootId
+     * @param masterId
+     * @param level
+     * @return
+     */
+    @SuppressWarnings("unchecked")
+    Object readValues(PropertyMeta tip, ConstructorParameterInfo prmTip, DomainObject parent, Object rootId,
+                      Object masterId, QueryLevel level) {
+        var datas = queryPrimitiveValues(rootId, masterId);
 
-		Class<?> implementType = null;
-		if (parent == null) {
-			// 说明还在构造阶段,或者是内部调用
-			if (prmTip != null && prmTip.implementType() != null) {
-				implementType = prmTip.implementType();
-			} else
-				implementType = _self.objectType();
-		} else {
-			implementType = _self.objectType();
-		}
-		var list = createList(parent, implementType, tip);
+        Class<?> implementType = null;
+        if (parent == null) {
+            // 说明还在构造阶段,或者是内部调用
+            if (prmTip != null && prmTip.implementType() != null) {
+                implementType = prmTip.implementType();
+            } else
+                implementType = _self.objectType();
+        } else {
+            implementType = _self.objectType();
+        }
+        var list = createList(parent, implementType, tip);
 
-		var valueName = GeneratedField.PrimitiveValueName;
-		for (var data : datas) {
-			var value = data.get(valueName);
-			list.add(value);
-		}
-		return list;
-	}
+        var valueName = GeneratedField.PrimitiveValueName;
+        for (var data : datas) {
+            var value = data.get(valueName);
+            list.add(value);
+        }
+        return list;
+    }
 
-	/**
-	 * 
-	 * 集合在对象中的属性定义
-	 * 
-	 * @param parent
-	 * @param listType
-	 * @param tip
-	 * @return
-	 */
-	@SuppressWarnings("rawtypes")
-	private Collection createList(DomainObject parent, Class<?> listType, PropertyMeta tip) {
-		try {
-			if (_isDomainCollection.apply(listType)) {
-				var constructor = _getDomainCollectionConstructor.apply(listType);
+    /**
+     * 集合在对象中的属性定义
+     *
+     * @param parent
+     * @param listType
+     * @param tip
+     * @return
+     */
+    @SuppressWarnings("rawtypes")
+    private Collection createList(DomainObject parent, Class<?> listType, PropertyMeta tip) {
+        try {
+            if (_isDomainCollection.apply(listType)) {
+                var constructor = _getDomainCollectionConstructor.apply(listType);
 
-				var collection = (IDomainCollection) constructor.newInstance(tip.monotype(),
-						DomainProperty.getProperty(tip));
-				collection.setParent(parent);
-				return (Collection) collection;
-			}
-			return (Collection) Activator.createInstance(listType);
-		} catch (Exception ex) {
-			throw propagate(ex);
-		}
-	}
+                var collection = (IDomainCollection) constructor.newInstance(tip.monotype(),
+                        DomainProperty.getProperty(tip));
+                collection.setParent(parent);
+                return (Collection) collection;
+            }
+            return (Collection) Activator.createInstance(listType);
+        } catch (Exception ex) {
+            throw propagate(ex);
+        }
+    }
 
-	private static Function<Class<?>, Boolean> _isDomainCollection = LazyIndexer.init((type) -> {
-		return DomainCollection.class.isAssignableFrom(type);
-	});
+    private static Function<Class<?>, Boolean> _isDomainCollection = LazyIndexer.init((type) -> {
+        return DomainCollection.class.isAssignableFrom(type);
+    });
 
-	private static Function<Class<?>, Constructor<?>> _getDomainCollectionConstructor = LazyIndexer.init((type) -> {
+    private static Function<Class<?>, Constructor<?>> _getDomainCollectionConstructor = LazyIndexer.init((type) -> {
 
-		try {
-			return type.getConstructor(Class.class, DomainProperty.class);
-		} catch (Exception ex) {
-			throw propagate(ex);
-		}
-	});
+        try {
+            return type.getConstructor(Class.class, DomainProperty.class);
+        } catch (Exception ex) {
+            throw propagate(ex);
+        }
+    });
 
-	/**
-	 * 
-	 * 创建对象
-	 * 
-	 * @param objectType
-	 * @param data
-	 * @param level
-	 * @return
-	 */
-	DomainObject createObject(Class<?> objectType, MapData data, QueryLevel level) {
+    /**
+     * 创建对象
+     *
+     * @param objectType
+     * @param data
+     * @param level
+     * @return
+     */
+    DomainObject createObject(Class<?> objectType, MapData data, QueryLevel level) {
 
-		if (data.isEmpty())
-			return (DomainObject) DomainObject.getEmpty(objectType);
+        if (data.isEmpty())
+            return (DomainObject) DomainObject.getEmpty(objectType);
 
-		DomainObject obj = DataContext.using(() -> {
-			return createObjectImpl(objectType, objectType, data, level);
-		});
-		return obj;
-	}
+        DomainObject obj = DataContext.using(() -> {
+            return createObjectImpl(objectType, objectType, data, level);
+        });
+        return obj;
+    }
 
-	private DomainObject createObjectImpl(Class<?> defineType, Class<?> objectType, MapData data, QueryLevel level) {
-		// 构造对象
-		DomainObject obj = constructObject(objectType, data, level);
+    private DomainObject createObjectImpl(Class<?> defineType, Class<?> objectType, MapData data, QueryLevel level) {
+        // 构造对象
+        DomainObject obj = constructObject(objectType, data, level);
 
-		// 设置代理对象
-		setDataProxy(obj, data, level == QueryLevel.Mirroring);
+        // 设置代理对象
+        setDataProxy(obj, data, level == QueryLevel.MIRRORING);
 
-		// 为了避免死循环，我们先将对象加入到构造上下文中
-		addToConstructContext(obj, data);
+        // 为了避免死循环，我们先将对象加入到构造上下文中
+        addToConstructContext(obj, data);
 
-		// 加载属性
-		loadProperties(defineType, data, obj, level);
+        // 加载属性
+        loadProperties(defineType, data, obj, level);
 
-		removeFromConstructContext(obj);
+        removeFromConstructContext(obj);
 
-		// 补充信息
-		supplement(obj, data, level);
+        // 补充信息
+        supplement(obj, data, level);
 
-		return obj;
-	}
+        return obj;
+    }
 
-	private void addToConstructContext(DomainObject obj, MapData data) {
-		Object id = data.get(EntityObject.IdPropertyName);
-		if (_self.type() == DataTableType.AggregateRoot) {
-			ConstructContext.add(id, obj);
-		} else {
-			Object rootId = data.get(GeneratedField.RootIdName);
-			ConstructContext.add(rootId, id, obj);
-		}
-	}
+    private void addToConstructContext(DomainObject obj, MapData data) {
+        Object id = data.get(EntityObject.IdPropertyName);
+        if (_self.type() == DataTableType.AggregateRoot) {
+            ConstructContext.add(id, obj);
+        } else {
+            Object rootId = data.get(GeneratedField.RootIdName);
+            ConstructContext.add(rootId, id, obj);
+        }
+    }
 
-	private void removeFromConstructContext(DomainObject obj) {
-		ConstructContext.remove(obj);
-	}
+    private void removeFromConstructContext(DomainObject obj) {
+        ConstructContext.remove(obj);
+    }
 
-	private DomainObject constructObject(Class<?> objectType, MapData data, QueryLevel level) {
+    private DomainObject constructObject(Class<?> objectType, MapData data, QueryLevel level) {
 
-		try {
-			var constructorTip = ConstructorRepositoryImpl.getTip(objectType, true);
-			var constructor = constructorTip.constructor();
-			var args = createArguments(constructorTip, data, level);
-			return (DomainObject) constructor.newInstance(args);
-		} catch (Exception ex) {
-			throw propagate(ex);
-		}
-	}
+        try {
+            var constructorTip = ConstructorRepositoryImpl.getTip(objectType, true);
+            var constructor = constructorTip.constructor();
+            var args = createArguments(constructorTip, data, level);
+            return (DomainObject) constructor.newInstance(args);
+        } catch (Exception ex) {
+            throw propagate(ex);
+        }
+    }
 
-	/**
-	 * 
-	 * 加载属性
-	 * 
-	 * @param objectType
-	 * @param data
-	 * @param obj
-	 * @param level
-	 */
-	private void loadProperties(Class<?> objectType, MapData data, DomainObject obj, QueryLevel level) {
-		var propertyTips = PropertyMeta.getProperties(objectType); // 此处不必考虑是否为派生类，直接赋值所有属性
-		for (var propertyTip : propertyTips) {
-			// 只有是可以公开设置的属性和不是延迟加载的属性我们才会主动赋值
-			// 有些属性是私有设置的，这种属性有可能是仅获取外部的数据而不需要赋值的
-			// 如果做了inner处理，那么立即加载
-			if ((propertyTip.isPublicSet() && !propertyTip.lazy()) || containsObjectData(propertyTip, data)) {
-				var value = readPropertyValue(obj, propertyTip, null, data, level); // 已不是构造，所以不需要prmTip参数
-				if (value == null) {
-					throw new IllegalArgumentException(Language.strings("apros.codeart.ddd", "LoadPropertyError",
-							String.format("%s.%s", propertyTip.declaringType().getName(), propertyTip.name())));
-				}
+    /**
+     * 加载属性
+     *
+     * @param objectType
+     * @param data
+     * @param obj
+     * @param level
+     */
+    private void loadProperties(Class<?> objectType, MapData data, DomainObject obj, QueryLevel level) {
+        var propertyTips = PropertyMeta.getProperties(objectType); // 此处不必考虑是否为派生类，直接赋值所有属性
+        for (var propertyTip : propertyTips) {
+            // 只有是可以公开设置的属性和不是延迟加载的属性我们才会主动赋值
+            // 有些属性是私有设置的，这种属性有可能是仅获取外部的数据而不需要赋值的
+            // 如果做了inner处理，那么立即加载
+            if ((propertyTip.isPublicSet() && !propertyTip.lazy()) || containsObjectData(propertyTip, data)) {
+                var value = readPropertyValue(obj, propertyTip, null, data, level); // 已不是构造，所以不需要prmTip参数
+                if (value == null) {
+                    throw new IllegalArgumentException(Language.strings("apros.codeart.ddd", "LoadPropertyError",
+                            String.format("%s.%s", propertyTip.declaringType().getName(), propertyTip.name())));
+                }
 
-				obj.loadValue(propertyTip.name(), value, false);
-			}
-		}
-	}
+                obj.loadValue(propertyTip.name(), value, false);
+            }
+        }
+    }
 
-	private void setDataProxy(DomainObject obj, MapData data, boolean isMirror) {
-		// 设置代理对象
-		obj.dataProxy(new DataProxyImpl(data, _self, isMirror));
-	}
+    private void setDataProxy(DomainObject obj, MapData data, boolean isMirror) {
+        // 设置代理对象
+        obj.dataProxy(new DataProxyImpl(data, _self, isMirror));
+    }
 
-	private void supplement(DomainObject obj, MapData data, QueryLevel level) {
-		var valueObject = TypeUtil.as(obj, IValueObject.class);
-		if (valueObject != null) {
-			Object id = data.get(EntityObject.IdPropertyName);
-			if (id != null) {
-				valueObject.setPersistentIdentity((UUID) id);
-			}
-		}
+    private void supplement(DomainObject obj, MapData data, QueryLevel level) {
+        var valueObject = TypeUtil.as(obj, IValueObject.class);
+        if (valueObject != null) {
+            Object id = data.get(EntityObject.IdPropertyName);
+            if (id != null) {
+                valueObject.setPersistentIdentity((UUID) id);
+            }
+        }
 
-		obj.markClean(); // 对象从数据库中读取，是干净的
-	}
+        obj.markClean(); // 对象从数据库中读取，是干净的
+    }
 
-	private Object[] createArguments(ConstructorRepositoryImpl tip, MapData data, QueryLevel level) {
-		var length = Iterables.size(tip.parameters());
+    private Object[] createArguments(ConstructorRepositoryImpl tip, MapData data, QueryLevel level) {
+        var length = Iterables.size(tip.parameters());
 
-		if (length == 0)
-			return ListUtil.emptyObjects();
-		Object[] args = new Object[length];
-		var prms = tip.parameters();
-		var prmsLength = prms.size();
-		for (var i = 0; i < prmsLength; i++) {
-			var prm = prms.get(i);
-			var arg = createArgument(prm, data, level);
-			args[i] = arg;
-		}
-		return args;
-	}
+        if (length == 0)
+            return ListUtil.emptyObjects();
+        Object[] args = new Object[length];
+        var prms = tip.parameters();
+        var prmsLength = prms.size();
+        for (var i = 0; i < prmsLength; i++) {
+            var prm = prms.get(i);
+            var arg = createArgument(prm, data, level);
+            args[i] = arg;
+        }
+        return args;
+    }
 
-	private Object createArgument(ConstructorParameterInfo prm, MapData data, QueryLevel level) {
-		// 看构造特性中是否定义了加载方法
-		var value = prm.loadData(_self.objectType(), data, level);
-		if (value != null) {
-			return value;
-		}
-		var tip = prm.propertyTip();
-		if (tip == null)
-			throw new IllegalStateException(Language.stringsMessageFormat("codeart.ddd",
-					"ConstructionParameterNoProperty", _self.objectType().getName(), prm.name()));
+    private Object createArgument(ConstructorParameterInfo prm, MapData data, QueryLevel level) {
+        // 看构造特性中是否定义了加载方法
+        var value = prm.loadData(_self.objectType(), data, level);
+        if (value != null) {
+            return value;
+        }
+        var tip = prm.propertyTip();
+        if (tip == null)
+            throw new IllegalStateException(Language.stringsMessageFormat("codeart.ddd",
+                    "ConstructionParameterNoProperty", _self.objectType().getName(), prm.name()));
 
-		// 从属性定义中加载
-		value = readPropertyValue(null, tip, prm, data, level); // 在构造时，还没有产生对象，所以parent为 null
-		if (value == null)
-			throw new IllegalStateException(Language.stringsMessageFormat("codeart.ddd", "ConstructionParameterError",
-					prm.declaringType().getName(), prm.name()));
-		return value;
-	}
+        // 从属性定义中加载
+        value = readPropertyValue(null, tip, prm, data, level); // 在构造时，还没有产生对象，所以parent为 null
+        if (value == null)
+            throw new IllegalStateException(Language.stringsMessageFormat("codeart.ddd", "ConstructionParameterError",
+                    prm.declaringType().getName(), prm.name()));
+        return value;
+    }
 
-	/// <summary>
-	///
-	/// </summary>
-	/// <param name="parent"></param>
-	/// <param name="tip"></param>
-	/// <param name="prmTip"></param>
-	/// <param name="data"></param>
-	/// <param name="level">对象在被加载时用到的查询级别</param>
-	/// <returns></returns>
-	public Object readPropertyValue(DomainObject parent, PropertyMeta tip, ConstructorParameterInfo prm, MapData data,
-			QueryLevel level) {
-		// 看对应的属性特性中是否定义了加载方法，优先执行自定义方法
-		Object value = prm.loadData(_self.objectType(), data, level);
-		if (value != null) {
-			return value;
-		}
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="parent"></param>
+    /// <param name="tip"></param>
+    /// <param name="prmTip"></param>
+    /// <param name="data"></param>
+    /// <param name="level">对象在被加载时用到的查询级别</param>
+    /// <returns></returns>
+    public Object readPropertyValue(DomainObject parent, PropertyMeta tip, ConstructorParameterInfo prm, MapData data,
+                                    QueryLevel level) {
+        // 看对应的属性特性中是否定义了加载方法，优先执行自定义方法
+        var loader = tip.dataLoader();
+        if (loader != null) {
+            return loader.load(data, level);
+        }
 
-		// 自动加载
-		switch (tip.category()) {
-		case DomainPropertyCategory.Primitive: {
-			return readPrimitive(tip, data);
-		}
-		case DomainPropertyCategory.PrimitiveList: {
-			return readPrimitiveList(parent, tip, prm, data, level);
-		}
-		case DomainPropertyCategory.AggregateRoot: {
-			return readAggregateRoot(tip, data, level);
-		}
-		case DomainPropertyCategory.ValueObject:
-		case DomainPropertyCategory.EntityObject: {
-			return readMember(tip, data);
-		}
-		case DomainPropertyCategory.EntityObjectList:
-		case DomainPropertyCategory.ValueObjectList:
-		case DomainPropertyCategory.AggregateRootList: {
-			return readMembers(parent, tip, prm, data, level);
-		}
-		}
-		return null;
-	}
+        // 自动加载
+        switch (tip.category()) {
+            case DomainPropertyCategory.Primitive: {
+                return readPrimitive(tip, data);
+            }
+            case DomainPropertyCategory.PrimitiveList: {
+                return readPrimitiveList(parent, tip, prm, data, level);
+            }
+            case DomainPropertyCategory.AggregateRoot: {
+                return readAggregateRoot(tip, data, level);
+            }
+            case DomainPropertyCategory.ValueObject:
+            case DomainPropertyCategory.EntityObject: {
+                return readMember(tip, data);
+            }
+            case DomainPropertyCategory.EntityObjectList:
+            case DomainPropertyCategory.ValueObjectList:
+            case DomainPropertyCategory.AggregateRootList: {
+                return readMembers(parent, tip, prm, data, level);
+            }
+        }
+        return null;
+    }
 
 //	#region 读取基础的值数据
 
-	private Object readPrimitive(PropertyMeta tip, MapData data) {
-		var value = tip.lazy() ? readValueByLazy(tip, data) : readValueFromData(tip, data);
-		if (!tip.isEmptyable())
-			return value;
-		if (value == null) {
-			// Emptyable类型的数据有可能存的是null值
-			return Emptyable.createEmpty(tip.monotype());
-		}
-		return Emptyable.create(tip.monotype(), value);
-	}
+    private Object readPrimitive(PropertyMeta tip, MapData data) {
+        var value = tip.lazy() ? readValueByLazy(tip, data) : readValueFromData(tip, data);
+        if (!tip.isEmptyable())
+            return value;
+        if (value == null) {
+            // Emptyable类型的数据有可能存的是null值
+            return Emptyable.createEmpty(tip.monotype());
+        }
+        return Emptyable.create(tip.monotype(), value);
+    }
 
-	private Object readValueFromData(PropertyMeta tip, MapData data) {
-		return data.get(tip.name());
-	}
+    private Object readValueFromData(PropertyMeta tip, MapData data) {
+        return data.get(tip.name());
+    }
 
-	private Object readValueByLazy(PropertyMeta tip, MapData data) {
-		Object id = data.get(EntityObject.IdPropertyName);
-		if (id != null) {
+    private Object readValueByLazy(PropertyMeta tip, MapData data) {
+        Object id = data.get(EntityObject.IdPropertyName);
+        if (id != null) {
 
-			var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
-					: GeneratedField.RootIdName;
-			Object rootId = data.get(rootIdName);
-			if (rootId != null) {
-				return queryDataScalar(rootId, id, tip.name());
-			}
-		}
-		return null;
-	}
+            var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
+                    : GeneratedField.RootIdName;
+            Object rootId = data.get(rootIdName);
+            if (rootId != null) {
+                return queryDataScalar(rootId, id, tip.name());
+            }
+        }
+        return null;
+    }
 
 //	region 读取基础值的集合数据
 
-	private Object readPrimitiveList(DomainObject parent, PropertyMeta tip, ConstructorParameterInfo prmTip,
-			MapData data, QueryLevel level) {
-		var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
-				: GeneratedField.RootIdName;
+    private Object readPrimitiveList(DomainObject parent, PropertyMeta tip, ConstructorParameterInfo prmTip,
+                                     MapData data, QueryLevel level) {
+        var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
+                : GeneratedField.RootIdName;
 
-		Object rootId = data.get(rootIdName);
+        Object rootId = data.get(rootIdName);
 
-		if (rootId != null) {
-			// 当前对象的编号，就是子对象的masterId
-			Object masterId = data.get(EntityObject.IdPropertyName);
+        if (rootId != null) {
+            // 当前对象的编号，就是子对象的masterId
+            Object masterId = data.get(EntityObject.IdPropertyName);
 
-			var child = _self.findChild(_self, tip);
-			return child.readValues(tip, prmTip, parent, rootId, masterId, level);
-		}
-		return null;
-	}
+            var child = _self.findChild(_self, tip);
+            return child.readValues(tip, prmTip, parent, rootId, masterId, level);
+        }
+        return null;
+    }
 
 //	#endregion
 
-	private static QueryLevel getQueryAggreateRootLevel(QueryLevel masterLevel) {
-		// 除了镜像外，通过属性读取外部根，我们都是无锁的查询方式
-		return masterLevel == QueryLevel.Mirroring ? QueryLevel.Mirroring : QueryLevel.None;
-	}
+    private static QueryLevel getQueryAggreateRootLevel(QueryLevel masterLevel) {
+        // 除了镜像外，通过属性读取外部根，我们都是无锁的查询方式
+        return masterLevel == QueryLevel.MIRRORING ? QueryLevel.MIRRORING : QueryLevel.NONE;
+    }
 
-	/// <summary>
-	/// 获得子对象的数据
-	/// </summary>
-	/// <param name="name"></param>
-	/// <param name="value"></param>
-	/// <returns></returns>
-	private MapData getObjectData(MapData data, PropertyMeta tip) {
-		// 以前缀来最大化收集，因为会出现类似Good_Unit_Name 这种字段，不是默认字段，但是也要收集，是通过inner good.unit的语法来的
-		var prefix = String.format("%s_", tip.name());
+    /// <summary>
+    /// 获得子对象的数据
+    /// </summary>
+    /// <param name="name"></param>
+    /// <param name="value"></param>
+    /// <returns></returns>
+    private MapData getObjectData(MapData data, PropertyMeta tip) {
+        // 以前缀来最大化收集，因为会出现类似Good_Unit_Name 这种字段，不是默认字段，但是也要收集，是通过inner good.unit的语法来的
+        var prefix = String.format("%s_", tip.name());
 
-		MapData value = null;
-		for (var p : data) {
-			if (p.getKey().startsWith(prefix)) {
-				if (value == null)
-					value = new MapData();
+        MapData value = null;
+        for (var p : data) {
+            if (p.getKey().startsWith(prefix)) {
+                if (value == null)
+                    value = new MapData();
 
-				var name = p.getKey().substring(prefix.length());
+                var name = p.getKey().substring(prefix.length());
 
-				value.put(name, p.getValue());
-			}
-		}
+                value.put(name, p.getValue());
+            }
+        }
 
-		return value;
-	}
+        return value;
+    }
 
-	@SuppressWarnings("unchecked")
-	private boolean containsObjectData(PropertyMeta tip, MapData data) {
-		DataTable table = null;
+    @SuppressWarnings("unchecked")
+    private boolean containsObjectData(PropertyMeta tip, MapData data) {
+        DataTable table = null;
 
-		switch (tip.category()) {
-		case DomainPropertyCategory.AggregateRoot: {
-			var model = DataModelLoader.get((Class<? extends IAggregateRoot>) tip.monotype());
-			table = model.root();
-			break;
-		}
-		case DomainPropertyCategory.EntityObject:
-		case DomainPropertyCategory.ValueObject: {
-			table = _self.findChild(_self, tip);
-			break;
-		}
-		default:
-			return false;
-		}
+        switch (tip.category()) {
+            case DomainPropertyCategory.AggregateRoot: {
+                var model = DataModelLoader.get((Class<? extends IAggregateRoot>) tip.monotype());
+                table = model.root();
+                break;
+            }
+            case DomainPropertyCategory.EntityObject:
+            case DomainPropertyCategory.ValueObject: {
+                table = _self.findChild(_self, tip);
+                break;
+            }
+            default:
+                return false;
+        }
 
-		// 以默认字段来验证
-		var fields = table.defaultQueryFields();
+        // 以默认字段来验证
+        var fields = table.defaultQueryFields();
 
-		for (var field : fields) {
-			var name = String.format("%s %ss", tip.name(), field.name());
-			if (!data.containsKey(name))
-				return false;
-		}
-		return true;
-	}
+        for (var field : fields) {
+            var name = String.format("%s %ss", tip.name(), field.name());
+            if (!data.containsKey(name))
+                return false;
+        }
+        return true;
+    }
 
-	@SuppressWarnings("unchecked")
-	private Object readAggregateRoot(PropertyMeta tip, MapData data, QueryLevel level) {
-		var model = DataModelLoader.get((Class<? extends IAggregateRoot>) tip.monotype());
-		var item = getObjectData(data, tip);
-		if (item != null) {
-			MapData entry = (MapData) item;
-			return model.root().createObject(tip.monotype(), entry, QueryLevel.None); // 从数据中直接加载的根对象信息，一定是不带锁的
-		}
+    @SuppressWarnings("unchecked")
+    private Object readAggregateRoot(PropertyMeta tip, MapData data, QueryLevel level) {
+        var model = DataModelLoader.get((Class<? extends IAggregateRoot>) tip.monotype());
+        var item = getObjectData(data, tip);
+        if (item != null) {
+            MapData entry = (MapData) item;
+            return model.root().createObject(tip.monotype(), entry, QueryLevel.NONE); // 从数据中直接加载的根对象信息，一定是不带锁的
+        }
 
-		var dataKey = DataTableUtil.getIdName(tip.name());
+        var dataKey = DataTableUtil.getIdName(tip.name());
 
-		Object id = data.get(dataKey);
-		if (id != null) {
-			var queryLevel = getQueryAggreateRootLevel(level);
-			return model.root().querySingle(id, queryLevel);
-		}
-		return null;
-	}
+        Object id = data.get(dataKey);
+        if (id != null) {
+            var queryLevel = getQueryAggreateRootLevel(level);
+            return model.root().querySingle(id, queryLevel);
+        }
+        return null;
+    }
 
-	private Object readMember(PropertyMeta tip, MapData data) {
-		return tip.lazy() ? readMemberByLazy(tip, data) : readMemberFromData(tip, data);
-	}
+    private Object readMember(PropertyMeta tip, MapData data) {
+        return tip.lazy() ? readMemberByLazy(tip, data) : readMemberFromData(tip, data);
+    }
 
-	private Object readMemberFromData(PropertyMeta tip, MapData data) {
-		var name = DataTableUtil.getNameWithSeparated(tip.name());
-		var subData = new MapData();
-		for (var p : data) {
-			var dataName = p.getKey();
-			if (dataName.startsWith(name)) {
-				var subName = DataTableUtil.getNextName(dataName);
-				subData.put(subName, p.getValue());
-			}
-		}
+    private Object readMemberFromData(PropertyMeta tip, MapData data) {
+        var name = DataTableUtil.getNameWithSeparated(tip.name());
+        var subData = new MapData();
+        for (var p : data) {
+            var dataName = p.getKey();
+            if (dataName.startsWith(name)) {
+                var subName = DataTableUtil.getNextName(dataName);
+                subData.put(subName, p.getValue());
+            }
+        }
 
-		if (subData.isEmpty())
-			return DomainObject.getEmpty(tip.monotype());
+        if (subData.isEmpty())
+            return DomainObject.getEmpty(tip.monotype());
 
-		var typeKey = (String) subData.get(GeneratedField.TypeKeyName);
-		Class<?> objectType = StringUtil.isNullOrEmpty(typeKey) ? tip.monotype()
-				: DerivedClassImpl.getDerivedType(typeKey);
+        var typeKey = (String) subData.get(GeneratedField.TypeKeyName);
+        Class<?> objectType = StringUtil.isNullOrEmpty(typeKey) ? tip.monotype()
+                : DerivedClassImpl.getDerivedType(typeKey);
 
-		var child = _self.findChild(_self, tip.name(), objectType);
-		// 先尝试中构造上下文中得到
-		var obj = child.getObjectFromConstruct(subData);
-		if (obj == null)
-			obj = child.createObject(objectType, subData, QueryLevel.None); // 成员始终是QueryLevel.None的方式加载
-		return obj;
-	}
+        var child = _self.findChild(_self, tip.name(), objectType);
+        // 先尝试中构造上下文中得到
+        var obj = child.getObjectFromConstruct(subData);
+        if (obj == null)
+            obj = child.createObject(objectType, subData, QueryLevel.NONE); // 成员始终是QueryLevel.None的方式加载
+        return obj;
+    }
 
-	private Object readMemberByLazy(PropertyMeta tip, MapData data) {
-		var child = _self.findChild(_self, tip);
-		var dataKey = DataTableUtil.getIdName(tip.name());
+    private Object readMemberByLazy(PropertyMeta tip, MapData data) {
+        var child = _self.findChild(_self, tip);
+        var dataKey = DataTableUtil.getIdName(tip.name());
 
-		Object id = data.get(dataKey);
-		if (id != null) {
+        Object id = data.get(dataKey);
+        if (id != null) {
 
-			var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
-					: GeneratedField.RootIdName;
+            var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
+                    : GeneratedField.RootIdName;
 
-			Object rootId = data.get(rootIdName);
-			if (rootId != null) {
-				return child.querySingle(rootId, id);
-			}
-		}
-		return null;
-	}
+            Object rootId = data.get(rootIdName);
+            if (rootId != null) {
+                return child.querySingle(rootId, id);
+            }
+        }
+        return null;
+    }
 
-	Object readMembers(DomainObject parent, PropertyMeta tip, ConstructorParameterInfo prmTip, MapData data,
-			QueryLevel level) {
+    Object readMembers(DomainObject parent, PropertyMeta tip, ConstructorParameterInfo prmTip, MapData data,
+                       QueryLevel level) {
 
-		var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
-				: GeneratedField.RootIdName;
+        var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
+                : GeneratedField.RootIdName;
 
-		var rootId = data.get(rootIdName);
+        var rootId = data.get(rootIdName);
 
-		if (rootId != null) {
-			// 当前对象的编号，就是子对象的masterId
-			Object masterId = data.get(EntityObject.IdPropertyName);
+        if (rootId != null) {
+            // 当前对象的编号，就是子对象的masterId
+            Object masterId = data.get(EntityObject.IdPropertyName);
 
-			var child = _self.findChild(_self, tip);
-			return child.readOneToMore(tip, prmTip, parent, rootId, masterId, level);
-		}
-		return null;
-	}
+            var child = _self.findChild(_self, tip);
+            return child.readOneToMore(tip, prmTip, parent, rootId, masterId, level);
+        }
+        return null;
+    }
 
-	/**
-	 * 读取对象集合的内部调用版本，此方法不是用于构造对象，而是为了查询用
-	 * 
-	 * @param tip
-	 * @param data
-	 * @param objs
-	 */
-	public void queryMembers(PropertyMeta tip, MapData data, ArrayList<Object> objs) {
+    /**
+     * 读取对象集合的内部调用版本，此方法不是用于构造对象，而是为了查询用
+     *
+     * @param tip
+     * @param data
+     * @param objs
+     */
+    public void queryMembers(PropertyMeta tip, MapData data, ArrayList<Object> objs) {
 
-		var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
-				: GeneratedField.RootIdName;
+        var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
+                : GeneratedField.RootIdName;
 
-		Object rootId = data.get(rootIdName);
+        Object rootId = data.get(rootIdName);
 
-		// 当前对象的编号，就是子对象的masterId
-		Object masterId = data.get(EntityObject.IdPropertyName);
+        // 当前对象的编号，就是子对象的masterId
+        Object masterId = data.get(EntityObject.IdPropertyName);
 
-		var child = _self.findChild(_self, tip);
-		child.queryOneToMore(rootId, masterId, objs);
-	}
+        var child = _self.findChild(_self, tip);
+        child.queryOneToMore(rootId, masterId, objs);
+    }
 
-	public void queryOneToMore(Object rootId, Object masterId, ArrayList<Object> objs) {
-		var datas = queryRootAndSlaveIds(rootId, masterId);
+    public void queryOneToMore(Object rootId, Object masterId, ArrayList<Object> objs) {
+        var datas = queryRootAndSlaveIds(rootId, masterId);
 
-		var slaveIdName = GeneratedField.SlaveIdName;
-		for (var data : datas) {
-			var slaveId = data.get(slaveIdName);
-			var item = _self.querySingle(rootId, slaveId);
-			objs.add(item);
-		}
-	}
+        var slaveIdName = GeneratedField.SlaveIdName;
+        for (var data : datas) {
+            var slaveId = data.get(slaveIdName);
+            var item = _self.querySingle(rootId, slaveId);
+            objs.add(item);
+        }
+    }
 
-	public Object queryMember(PropertyMeta tip, MapData data) {
-		var child = _self.findChild(_self, tip); // 通过基本表就可以实际查出数据，查数据会自动识别数据的真实类型的
+    public Object queryMember(PropertyMeta tip, MapData data) {
+        var child = _self.findChild(_self, tip); // 通过基本表就可以实际查出数据，查数据会自动识别数据的真实类型的
 
-		var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
-				: GeneratedField.RootIdName;
+        var rootIdName = _self.type() == DataTableType.AggregateRoot ? EntityObject.IdPropertyName
+                : GeneratedField.RootIdName;
 
-		var rootId = data.get(rootIdName);
+        var rootId = data.get(rootIdName);
 
-		if (rootId != null) {
+        if (rootId != null) {
 
-			var field = DataTableUtil.getQuoteField(_self, tip.name());
+            var field = DataTableUtil.getQuoteField(_self, tip.name());
 
-			Object id = data.get(field.name());
+            Object id = data.get(field.name());
 
-			if (id != null) {
-				return child.querySingle(rootId, id);
-			}
-		}
+            if (id != null) {
+                return child.querySingle(rootId, id);
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
 //	#region 查询数据
 
-	/// <summary>
-	/// 查询单值数据，不必缓存，因为延迟加载后就被加载到内存中已被缓存的对象了
-	/// </summary>
-	/// <param name="rootId"></param>
-	/// <param name="id"></param>
-	/// <param name="propertyName"></param>
-	/// <returns></returns>
-	private Object queryDataScalar(Object rootId, Object id, String propertyName) {
+    /// <summary>
+    /// 查询单值数据，不必缓存，因为延迟加载后就被加载到内存中已被缓存的对象了
+    /// </summary>
+    /// <param name="rootId"></param>
+    /// <param name="id"></param>
+    /// <param name="propertyName"></param>
+    /// <returns></returns>
+    private Object queryDataScalar(Object rootId, Object id, String propertyName) {
 
-		var param = new MapData();
-		if (_self.type() != DataTableType.AggregateRoot) {
-			param.put(GeneratedField.RootIdName, rootId);
-		}
-		param.put(EntityObject.IdPropertyName, id);
+        var param = new MapData();
+        if (_self.type() != DataTableType.AggregateRoot) {
+            param.put(GeneratedField.RootIdName, rootId);
+        }
+        param.put(EntityObject.IdPropertyName, id);
 
-		var expression = getScalarByIdExpression(_self, propertyName);
+        var expression = getScalarByIdExpression(_self, propertyName);
 
-		var qb = DataSource.getQueryBuilder(QueryObjectQB.class);
-		var description = QueryDescription.createBy(param, expression, QueryLevel.None, _self);
-		var sql = qb.build(description);
+        var qb = DataSource.getQueryBuilder(QueryObjectQB.class);
+        var description = QueryDescription.createBy(param, expression, QueryLevel.NONE, _self);
+        var sql = qb.build(description);
 
-		return DataAccess.current().queryScalar(sql, param);
-	}
+        return DataAccess.current().queryScalar(sql, param);
+    }
 
-	/**
-	 * 
-	 * 查询1对多引用的成员数据
-	 * 
-	 * @param rootId
-	 * @param masterId
-	 * @param datas
-	 */
-	private Iterable<MapData> queryRootAndSlaveIds(Object rootId, Object masterId) {
-		// 查询涉及到中间表,对对象本身没有任何条件可言
-		var qb = DataSource.getQueryBuilder(GetSlaveIdsQB.class);
-		var sql = qb.build(new QueryDescription(_self));
+    /**
+     * 查询1对多引用的成员数据
+     *
+     * @param rootId
+     * @param masterId
+     * @param datas
+     */
+    private Iterable<MapData> queryRootAndSlaveIds(Object rootId, Object masterId) {
+        // 查询涉及到中间表,对对象本身没有任何条件可言
+        var qb = DataSource.getQueryBuilder(GetSlaveIdsQB.class);
+        var sql = qb.build(new QueryDescription(_self));
 
-		var param = new MapData();
-		param.put(GeneratedField.RootIdName, rootId);
-		// if (!this.Root.IsEqualsOrDerivedOrInherited(this.Master))
-		if (!_self.root().same(_self.master())) {
-			param.put(GeneratedField.MasterIdName, masterId);
-		}
+        var param = new MapData();
+        param.put(GeneratedField.RootIdName, rootId);
+        // if (!this.Root.IsEqualsOrDerivedOrInherited(this.Master))
+        if (!_self.root().same(_self.master())) {
+            param.put(GeneratedField.MasterIdName, masterId);
+        }
 
-		return DataAccess.current().queryRows(sql, param);
-	}
+        return DataAccess.current().queryRows(sql, param);
+    }
 
-	/**
-	 * 
-	 * 查询基础值的集合的数据
-	 * 
-	 * 
-	 * @param rootId
-	 * @param masterId
-	 * @return
-	 */
-	private Iterable<MapData> queryPrimitiveValues(Object rootId, Object masterId) {
-		// 查询涉及到中间表,对对象本身没有任何条件可言
-		var qb = DataSource.getQueryBuilder(GetPrimitiveValuesQB.class);
-		var sql = qb.build(new QueryDescription(_self));
+    /**
+     * 查询基础值的集合的数据
+     *
+     * @param rootId
+     * @param masterId
+     * @return
+     */
+    private Iterable<MapData> queryPrimitiveValues(Object rootId, Object masterId) {
+        // 查询涉及到中间表,对对象本身没有任何条件可言
+        var qb = DataSource.getQueryBuilder(GetPrimitiveValuesQB.class);
+        var sql = qb.build(new QueryDescription(_self));
 
-		var param = new MapData();
-		param.put(GeneratedField.RootIdName, rootId);
-		if (!_self.root().same(_self.master())) {
-			param.put(GeneratedField.MasterIdName, masterId);
-		}
+        var param = new MapData();
+        param.put(GeneratedField.RootIdName, rootId);
+        if (!_self.root().same(_self.master())) {
+            param.put(GeneratedField.MasterIdName, masterId);
+        }
 
-		return DataAccess.current().queryRows(sql, param);
-	}
+        return DataAccess.current().queryRows(sql, param);
+    }
 
 //	#endregion
 
-	private static String getScalarByIdExpression(DataTable table, String propertyName) {
-		return _getScalarById.apply(table).apply(propertyName);
-	}
+    private static String getScalarByIdExpression(DataTable table, String propertyName) {
+        return _getScalarById.apply(table).apply(propertyName);
+    }
 
-	private static Function<DataTable, Function<String, String>> _getScalarById = LazyIndexer.init((table) -> {
-		return LazyIndexer.init((propertyName) -> {
-			String expression = null;
+    private static Function<DataTable, Function<String, String>> _getScalarById = LazyIndexer.init((table) -> {
+        return LazyIndexer.init((propertyName) -> {
+            String expression = null;
 
-			if (table.type() == DataTableType.AggregateRoot) {
-				expression = MessageFormat.format("[{0}=@{0}][select {1}]", EntityObject.IdPropertyName, propertyName);
-			} else {
-				expression = MessageFormat.format("[{0}=@{0} and {1}=@{1}][select {2}]", GeneratedField.RootIdName,
-						EntityObject.IdPropertyName, propertyName);
-			}
+            if (table.type() == DataTableType.AggregateRoot) {
+                expression = MessageFormat.format("[{0}=@{0}][select {1}]", EntityObject.IdPropertyName, propertyName);
+            } else {
+                expression = MessageFormat.format("[{0}=@{0} and {1}=@{1}][select {2}]", GeneratedField.RootIdName,
+                        EntityObject.IdPropertyName, propertyName);
+            }
 
-			return expression;
-		});
-	});
+            return expression;
+        });
+    });
 
 }
