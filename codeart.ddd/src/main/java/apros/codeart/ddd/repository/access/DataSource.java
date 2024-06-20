@@ -5,6 +5,7 @@ import static apros.codeart.runtime.Util.propagate;
 import java.sql.Connection;
 import java.sql.SQLException;
 
+import apros.codeart.ddd.repository.postgresql.PostgreSqlAgent;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
@@ -42,8 +43,8 @@ public final class DataSource {
 			switch (dbType) {
 //			case DatabaseType.MySql:
 //				return null;
-//			case DatabaseType.PostgreSql:
-//				return DatabaseType.PostgreSql;
+			case DatabaseType.PostgreSql:
+				return PostgreSqlAgent.Instance;
 //			case DatabaseType.Oracle:
 //				return DatabaseType.Oracle;
 			case DatabaseType.SqlServer:

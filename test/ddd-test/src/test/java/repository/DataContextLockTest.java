@@ -90,7 +90,7 @@ public class DataContextLockTest {
     @Test
     void concurrency_hold_none() {
 
-        var concurrency = first_concurrency_second(QueryLevel.HOLD,QueryLevel.NONE);
+        var concurrency = first_concurrency_second(QueryLevel.HOLD, QueryLevel.NONE);
         assertFalse(concurrency);
     }
 
@@ -99,7 +99,7 @@ public class DataContextLockTest {
      */
     @Test
     void concurrency_hold_single() {
-        var concurrency = first_concurrency_second(QueryLevel.HOLD,QueryLevel.SINGLE);
+        var concurrency = first_concurrency_second(QueryLevel.HOLD, QueryLevel.SINGLE);
         assertTrue(concurrency);
     }
 
