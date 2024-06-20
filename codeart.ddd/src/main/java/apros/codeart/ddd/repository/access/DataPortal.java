@@ -81,12 +81,12 @@ public final class DataPortal {
 //	#region 对外公开的方法
 
     private static long getIdentity(DataTable table) {
-        return DataContext.newScope((access) -> {
+        return DataContext.newScope((conn) -> {
 
             var builder = DataSource.getQueryBuilder(GetIncrIdQB.class);
             var sql = builder.build(new QueryDescription(table));
             
-            return access.queryScalarLong(sql);
+            return conn.access().queryScalarLong(sql);
         });
     }
 
@@ -131,22 +131,21 @@ public final class DataPortal {
     public static EventHandler<EmptyEventArgs> onClearUp = new EventHandler<EmptyEventArgs>();
 
     public static Iterable<MapData> directQuery(String sql, MapData param) {
-        return direct((access) -> {
-            return access.queryRows(sql, param);
+        return direct((conn) -> {
+            return conn.access().queryRows(sql, param);
         });
     }
 
     /**
      * 直接使用数据库连接操作数据库
      *
-     * @param objectType
      * @param action
      */
-    public static void direct(Consumer<DataAccess> action) {
+    public static void direct(Consumer<DataConnection> action) {
         DataContext.using(action);
     }
 
-    public static <T> T direct(Function<DataAccess, T> action) {
+    public static <T> T direct(Function<DataConnection, T> action) {
         return DataContext.using(action);
     }
 

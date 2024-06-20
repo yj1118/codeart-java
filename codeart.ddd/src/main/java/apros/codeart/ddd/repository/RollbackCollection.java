@@ -20,7 +20,7 @@ class RollbackCollection {
 	 * @param sender
 	 */
 	public void execute(IDataContext sender) {
-		if (_items.size() == 0)
+		if (_items.isEmpty())
 			return;
 		for (var e : _items) {
 			e.target().onRollback(sender, e);

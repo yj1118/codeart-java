@@ -25,7 +25,8 @@ final class DataTableGenerator {
 
     public static void generate(DataTable table) {
         ifUnBuilt(table.name(), () -> {
-            DataContext.using((access) -> {
+            DataContext.using((conn) -> {
+                var access = conn.access();
                 if (DDDConfig.enableReset()) {
                     // 开启了重置，所以在创建表之前，把表删除，重新创建
                     dropTable(access, table);
@@ -74,7 +75,8 @@ final class DataTableGenerator {
     /// </summary>
     @TestSupport
     static void drop() {
-        DataContext.newScope((access) -> {
+        DataContext.newScope((conn) -> {
+            var access = conn.access();
             for (var table : _generated) {
                 dropTable(access, table);
             }
@@ -86,7 +88,8 @@ final class DataTableGenerator {
     /// </summary>
     @TestSupport
     static void clearUp() {
-        DataContext.newScope((access) -> {
+        DataContext.newScope((conn) -> {
+            var access = conn.access();
             for (var table : _generated) {
                 var builder = DataSource.getQueryBuilder(ClearTableQB.class);
                 var sql = builder.build(new QueryDescription(table));

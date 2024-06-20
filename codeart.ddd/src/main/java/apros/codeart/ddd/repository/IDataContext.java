@@ -3,6 +3,8 @@ package apros.codeart.ddd.repository;
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.QueryLevel;
 
+import java.sql.SQLException;
+
 public interface IDataContext extends AutoCloseable {
 
 //	region 事务管理
@@ -23,7 +25,7 @@ public interface IDataContext extends AutoCloseable {
 	/**
 	 * 提交所有执行计划
 	 */
-	void commit();
+	void commit() throws Exception;
 
 	/**
 	 * 抛弃所有未提交的执行计划，并重置事务模式

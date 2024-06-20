@@ -18,6 +18,7 @@ public class DataConnection implements AutoCloseable {
     private DataAccess _access;
 
     public DataAccess access() {
+        this.initialize();
         return _access;
     }
 
@@ -27,15 +28,19 @@ public class DataConnection implements AutoCloseable {
 
 //	region 初始化
 
-    public void initialize() {
+    private void initialize() {
+        if(_conn != null) return;
+
         _conn = createConnection();
         _tranOpened = false;
         _access = new DataAccess(_conn);
     }
 
     public void begin(TransactionStatus status) {
+        this.initialize();
+
         if (_tranOpened)
-            throw new DomainDrivenException(Language.strings("TransactionStarted"));
+            throw new DomainDrivenException(Language.strings("apros.codeart.ddd","TransactionStarted"));
         openTransaction(_conn,status);
         _tranOpened = true;
     }
@@ -50,13 +55,13 @@ public class DataConnection implements AutoCloseable {
         // 接下来执行的一系列SQL语句应该被视为一个单独的事务，直到你显式地调用commit或rollback方法
         try {
             conn.setAutoCommit(false);
-
-            // 设置事务隔离级别(todo test)
-            switch (status){
-                case None ->  conn.setTransactionIsolation(Connection.TRANSACTION_NONE);
-                case Delay -> conn.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-                case Timely -> conn.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
-            }
+            conn.setTransactionIsolation(Connection.TRANSACTION_NONE);
+////            // 设置事务隔离级别(todo test)
+//            switch (status){
+//                case None ->  conn.setTransactionIsolation(Connection.TRANSACTION_NONE);
+//                case Share ->  conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+//                case Delay, Timely -> conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
+//            }
         } catch (SQLException e) {
             throw propagate(e);
         }

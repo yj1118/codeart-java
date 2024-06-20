@@ -1,5 +1,6 @@
 package apros.codeart.ddd.repository;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +22,8 @@ import apros.codeart.i18n.Language;
 import apros.codeart.util.EventHandler;
 import apros.codeart.util.ListUtil;
 
+import static apros.codeart.runtime.Util.propagate;
+
 public class DataContext implements IDataContext {
 
     private DataContext() {
@@ -40,7 +43,7 @@ public class DataContext implements IDataContext {
 
     private void addMirror(IAggregateRoot obj) {
         if (isCommiting())
-            throw new DataContextException(Language.strings("CanNotAddMirror"));
+            throw new DataContextException(Language.strings("apros.codeart.ddd","CanNotAddMirror"));
 
         if (_mirrors == null)
             _mirrors = new ArrayList<IAggregateRoot>();
@@ -154,12 +157,16 @@ public class DataContext implements IDataContext {
 //	region 锁
 
     public void openLock(QueryLevel level) {
-        if (isLockQuery(level))
+        if (level.equals(QueryLevel.HOLD) || level.equals(QueryLevel.SINGLE)){
             openTimelyMode();
-    }
+            return;
+        }
 
-    private boolean isLockQuery(QueryLevel level) {
-        return level.equals(QueryLevel.HOLD) || level.equals(QueryLevel.SINGLE) || level.equals(QueryLevel.SHARE);
+        if(level.equals(QueryLevel.SHARE)){
+            openShareMode();
+            return;
+        }
+
     }
 
     //region 执行计划
@@ -360,15 +367,40 @@ public class DataContext implements IDataContext {
         if (_conn != null) {
             _conn.close();
         }
+
+        if (_committed != null)
+            _committed.clear();
     }
 
     public boolean inTransaction() {
-        return _transactionStatus != TransactionStatus.None || _transactionCount > 0;
+        return _transactionCount > 0;
     }
 
     private void openDelayMode() {
-        if (_transactionStatus == TransactionStatus.None) {
+        if (_transactionStatus == TransactionStatus.None
+                || _transactionStatus == TransactionStatus.Share) {
             _transactionStatus = TransactionStatus.Delay;
+        }
+    }
+
+    private void openShareMode(){
+
+        if(_transactionStatus == TransactionStatus.Share) return;
+        if(_transactionStatus == TransactionStatus.Delay){
+            throw new DataContextException(Language.strings("apros.codeart.ddd","NotSupportTranTo","Delay","Share"));
+        }
+
+        if(_transactionStatus == TransactionStatus.Timely){
+            throw new DataContextException(Language.strings("apros.codeart.ddd","NotSupportTranTo","Timely","Share"));
+        }
+
+        if (!this.inTransaction()) {
+            throw new NotBeginTransactionException();
+        }
+
+        if (_transactionStatus == TransactionStatus.None) {
+            _transactionStatus = TransactionStatus.Share;
+            _conn.begin(_transactionStatus);
         }
     }
 
@@ -376,20 +408,26 @@ public class DataContext implements IDataContext {
      * 开启即时事务,并且锁定事务
      */
     public void openTimelyMode() {
-        if (_transactionStatus != TransactionStatus.Timely) {
-            if (!this.inTransaction())
-                throw new NotBeginTransactionException();
 
-            // 开启即时事务
-            this._transactionStatus = TransactionStatus.Timely;
+        if(_transactionStatus == TransactionStatus.Timely) return;
+        if(_transactionStatus == TransactionStatus.Share){
+            throw new DataContextException(Language.strings("apros.codeart.ddd","NotSupportTranTo","Share","Timely"));
+        }
 
-            _conn.begin(this._transactionStatus);
+        if (!this.inTransaction()) {
+            // 有对持久层的增改删的操作，但是没有开启事务
+            throw new NotBeginTransactionException();
+        }
 
-            if (!isCommiting()) {
-                // 没有之前的队列要执行
-                // 在提交时更改了事务模式,只有可能是在验证行为时发生，该队列会在稍后立即执行，因此此处不执行队列
-                executeActionQueue();
-            }
+        // 开启即时事务
+        this._transactionStatus = TransactionStatus.Timely;
+
+        _conn.begin(this._transactionStatus);
+
+        if (!isCommiting()) {
+            // 没有之前的队列要执行
+            // 在提交时更改了事务模式,只有可能是在验证行为时发生，该队列会在稍后立即执行，因此此处不执行队列
+            executeActionQueue();
         }
     }
 
@@ -397,60 +435,54 @@ public class DataContext implements IDataContext {
      * 开启事务BeginTransaction和提交事务Commit必须成对出现
      */
     public void beginTransaction() {
-        if (this.inTransaction()) {
-            _transactionCount++;
-        } else {
-            _transactionCount++;
-            // 仅初始化，建立了连接，但是并没有开启事务
-            _conn.initialize();
-        }
+        _transactionCount++;
     }
 
-    public void commit() {
+    public void commit() throws Exception {
 
         if (hasActions() && !this.inTransaction()) {
             // 有对持久层的增改删的操作，但是没有开启事务
             throw new NotBeginTransactionException();
         }
 
-        _transactionCount--;
-        if (_transactionCount == 0) {
+       try{
+           _transactionCount--;
+           if (_transactionCount == 0) {
+               if (isCommiting())
+                   throw new RepeatedCommitException();
 
-            if (isCommiting())
-                throw new RepeatedCommitException();
+               _isCommiting = true;
 
-            _isCommiting = true;
+               if (_transactionStatus == TransactionStatus.Delay) {
+                   _transactionStatus = TransactionStatus.Timely; // 开启即时事务
 
-            try {
-                if (_transactionStatus == TransactionStatus.Delay) {
-                    _transactionStatus = TransactionStatus.Timely; // 开启即时事务
+                   _conn.begin(_transactionStatus);
+                   executeActionQueue();
+                   raisePreCommitQueue();
+                   _conn.commit();
 
-                    _conn.begin(_transactionStatus);
-                    executeActionQueue();
-                    raisePreCommitQueue();
-                    _conn.commit();
+                   raiseCommittedQueue();
+               } else if (_transactionStatus == TransactionStatus.Timely) {
+                   executeActionQueue();
+                   raisePreCommitQueue();
 
-                    raiseCommittedQueue();
-                } else if (_transactionStatus == TransactionStatus.Timely) {
-                    executeActionQueue();
-                    raisePreCommitQueue();
+                   _conn.commit();
 
-                    _conn.commit();
+                   raiseCommittedQueue();
+               } else if (_transactionStatus == TransactionStatus.Share) {
+                   _conn.commit();
+                   //为None和Share的状态不用执行，因为没有actions，只有查询，已经执行了
+               }
 
-                    raiseCommittedQueue();
-                }
-
-                //为None的状态不用执行，因为没有actions，只有查询，已经执行了
-
-                this.onCommitted();
-
-            } catch (Exception ex) {
-                throw ex;
-            } finally {
-                clear();
-                _isCommiting = false;
-            }
-        }
+               this.onCommitted();
+               clear();
+           }
+       } catch (Exception ex){
+           // 注意，由于提交失败了，所以这里_transactionCount要恢复+1
+           // 这样外部就知道是处在提交事务中失败的
+           _transactionCount++;
+           throw ex;
+       }
     }
 
     private EventHandler<DataContextEventArgs> _committed;
@@ -493,8 +525,6 @@ public class DataContext implements IDataContext {
         disposeMirror();
         disposeBuffer();
         disposeItems();
-        if (_committed != null)
-            _committed.clear();
     }
 
     @Override
@@ -514,19 +544,13 @@ public class DataContext implements IDataContext {
     }
 
     public void rollback() {
-        if (!this.inTransaction())
-            throw new NotBeginTransactionException();
-        else {
-            if (_rollbacks == null)
-                return;
-            try {
-                _rollbacks.execute(this);
-                raiseRolledBack(this);
-            } catch (Exception ex) {
-                throw ex;
-            } finally {
-                clear();
-            }
+        if (_rollbacks == null)
+            return;
+        try {
+            _rollbacks.execute(this);
+            raiseRolledBack(this);
+        } finally {
+            clear();
         }
     }
 
@@ -594,25 +618,25 @@ public class DataContext implements IDataContext {
 
     //region 无返回值
 
-    private static void using(DataContext dataContext, Consumer<DataAccess> action, boolean timely) {
+    private static void using(DataContext dataContext, Consumer<DataConnection> action, boolean timely) {
         try {
             boolean isCommiting = dataContext.isCommiting();
             if (isCommiting) {
                 // 事务上下文已进入提交阶段，那么不必重复开启事务
-                action.accept(dataContext.connection().access());
+                action.accept(dataContext.connection());
             } else {
                 dataContext.beginTransaction();
                 if (timely)
                     dataContext.openTimelyMode();
 
-                action.accept(dataContext.connection().access());
+                action.accept(dataContext.connection());
                 dataContext.commit();
             }
         } catch (Exception ex) {
             if (dataContext.inTransaction()) {
                 dataContext.rollback();
             }
-            throw ex;
+            throw propagate(ex);
         }
     }
 
@@ -626,11 +650,11 @@ public class DataContext implements IDataContext {
         }, timely);
     }
 
-    public static void using(Consumer<DataAccess> action) {
+    public static void using(Consumer<DataConnection> action) {
         using(action, false);
     }
 
-    public static void using(Consumer<DataAccess> action, boolean timely) {
+    public static void using(Consumer<DataConnection> action, boolean timely) {
         if (DataContext.existCurrent()) {
             var dataContext = DataContext.getCurrent();
             using(dataContext, action, timely);
@@ -663,11 +687,11 @@ public class DataContext implements IDataContext {
         }, timely);
     }
 
-    public static <T> T using(Function<DataAccess, T> action) {
+    public static <T> T using(Function<DataConnection, T> action) {
         return using(action, false);
     }
 
-    public static <T> T using(Function<DataAccess, T> action, boolean timely) {
+    public static <T> T using(Function<DataConnection, T> action, boolean timely) {
         if (DataContext.existCurrent()) {
             var dataContext = DataContext.getCurrent();
             return using(dataContext, action, timely);
@@ -686,19 +710,19 @@ public class DataContext implements IDataContext {
 
     }
 
-    private static <T> T using(DataContext dataContext, Function<DataAccess, T> action, boolean timely) {
+    private static <T> T using(DataContext dataContext, Function<DataConnection, T> action, boolean timely) {
         try {
             T result;
             boolean isCommiting = dataContext.isCommiting();
             if (isCommiting) {
                 // 事务上下文已进入提交阶段，那么不必重复开启事务
-                result = action.apply(dataContext.connection().access());
+                result = action.apply(dataContext.connection());
             } else {
                 dataContext.beginTransaction();
                 if (timely)
                     dataContext.openTimelyMode();
 
-                result = action.apply(dataContext.connection().access());
+                result = action.apply(dataContext.connection());
                 dataContext.commit();
             }
             return result;
@@ -706,7 +730,7 @@ public class DataContext implements IDataContext {
             if (dataContext.inTransaction()) {
                 dataContext.rollback();
             }
-            throw ex;
+            throw propagate(ex);
         }
     }
 
@@ -729,7 +753,7 @@ public class DataContext implements IDataContext {
      *
      * @param action
      */
-    public static void newScope(Consumer<DataAccess> action) {
+    public static void newScope(Consumer<DataConnection> action) {
         DataContext prev = null;
         if (DataContext.existCurrent()) {
             prev = DataContext.getCurrent(); // 保留当前的数据上下文对象
@@ -751,7 +775,7 @@ public class DataContext implements IDataContext {
         }
     }
 
-    public static <T> T newScope(Function<DataAccess, T> action) {
+    public static <T> T newScope(Function<DataConnection, T> action) {
         DataContext prev = null;
         if (DataContext.existCurrent()) {
             prev = DataContext.getCurrent(); // 保留当前的数据上下文对象

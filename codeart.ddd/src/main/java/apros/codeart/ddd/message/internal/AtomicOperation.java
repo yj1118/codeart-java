@@ -15,8 +15,8 @@ public final class AtomicOperation {
 	public static void init() {
 		// 此处要初始化领域消息表
 		var sql = getInitSql();
-		DataContext.newScope((access) -> {
-			access.execute(sql);
+		DataContext.newScope((conn) -> {
+			conn.access().execute(sql);
 		});
 	}
 
@@ -55,9 +55,9 @@ public final class AtomicOperation {
 
 	public static void insert(String msgId) {
 		// 注意，写入文件前，先要写入数据库数据
-		DataContext.using((access) -> {
+		DataContext.using((conn) -> {
 			// 跟主程序同一个事务，确保两者都被同时提交
-			insert(access, msgId);
+			insert(conn.access(), msgId);
 		});
 	}
 
@@ -91,8 +91,8 @@ public final class AtomicOperation {
 
 	public static void delete(String msgId) {
 		// 删除文件后，删除数据库数据
-		DataContext.newScope((access) -> {
-			delete(access, msgId);
+		DataContext.newScope((conn) -> {
+			delete(conn.access(), msgId);
 		});
 	}
 
@@ -121,8 +121,8 @@ public final class AtomicOperation {
 
 	public static List<String> findInterrupteds() {
 		// 注意，要从数据库里读取，只有数据库里的是必须要发送的，而不是文件里存储的
-		var ids = DataContext.using((access) -> {
-			return findInterrupteds(access);
+		var ids = DataContext.using((conn) -> {
+			return findInterrupteds(conn.access());
 		});
 		return ListUtil.asList(ids);
 	}

@@ -14,7 +14,7 @@ import apros.codeart.dto.DTObject;
  */
 public final class DataAccess {
 
-    private Connection _conn;
+    private final Connection _conn;
 
     DataAccess(Connection conn) {
         _conn = conn;
