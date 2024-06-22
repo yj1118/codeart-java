@@ -20,7 +20,7 @@ class CreateTable extends CreateTableQB {
 	@Override
 	protected String buildImpl(DataTable table) {
 		StringBuilder sql = new StringBuilder();
-		StringUtil.appendFormat(sql, "CREATE TABLE IF NOT EXISTS public.%s", table.name());
+		StringUtil.appendFormat(sql, "CREATE TABLE IF NOT EXISTS \"%s\"", table.name());
 		StringUtil.appendLine(sql);
 		StringUtil.appendLine(sql, "(");
 
@@ -45,28 +45,28 @@ class CreateTable extends CreateTableQB {
 			var maxLength = AccessUtil.getMaxLength(field.tip());
 
 			if(maxLength <=0){
-				return String.format("%s text %s,", field.name(),
+				return String.format("\"%s\" text %s,", field.name(),
 						(allowNull ? StringUtil.empty() : "NOT NULL"));
 			}
 
-			return String.format("%s varchar(%s) %s,", field.name(),
+			return String.format("\"%s\" varchar(%s) %s,", field.name(),
 					maxLength,
 					(allowNull ? StringUtil.empty() : "NOT NULL"));
 		}
 		case DbType.LocalDateTime: {
 			var precision = AccessUtil.getTimePrecision(field.tip());
 			var pv = getTimePrecisionValue(precision);
-			return String.format("%s %s(%s) %s,", field.name(), "timestamp", pv,
+			return String.format("\"%s\" %s(%s) %s,", field.name(), "timestamp", pv,
 					(allowNull ? StringUtil.empty() : "NOT NULL"));
 		}
 		case DbType.ZonedDateTime: {
 			var precision = AccessUtil.getTimePrecision(field.tip());
 			var pv = getTimePrecisionValue(precision);
-			return String.format("%s %s(%s) %s,", field.name(), "timestamptz", pv,
+			return String.format("\"%s\" %s(%s) %s,", field.name(), "timestamptz", pv,
 					(allowNull ? StringUtil.empty() : "NOT NULL"));
 		}
 		default:
-			return String.format("%s %s %s,", field.name(), Util.getSqlDbTypeString(field.dbType()),
+			return String.format("\"%s\" %s %s,", field.name(), Util.getSqlDbTypeString(field.dbType()),
 					(allowNull ? StringUtil.empty() : "NOT NULL"));
 		}
 	}
@@ -103,7 +103,7 @@ class CreateTable extends CreateTableQB {
 		sql.append(" PRIMARY KEY (");
 
 		for (var field : fields) {
-			StringUtil.appendFormat(sql, "%s,", field.name());
+			StringUtil.appendFormat(sql, "\"%s\",", field.name());
 		}
 		StringUtil.removeLast(sql);
 		sql.append(")");
@@ -131,7 +131,7 @@ class CreateTable extends CreateTableQB {
 		StringUtil.appendFormat(sql, " ON %s(", table.name());
 
 		for (var field : nonclusteredIndexs) {
-			StringUtil.appendFormat(sql, "%s,", field.name());
+			StringUtil.appendFormat(sql, "\"%s\",", field.name());
 		}
 		StringUtil.removeLast(sql);
 		sql.append(");");

@@ -12,7 +12,7 @@ class DropTable extends DropTableQB {
 
 	@Override
 	protected String buildImpl(DataTable table) {
-		return String.format("DROP TABLE IF EXISTS %s;",table.name());
+		return String.format("DROP TABLE IF EXISTS \"%s\";",table.name());
 	}
 
 	public static final DropTable Instance = new DropTable();

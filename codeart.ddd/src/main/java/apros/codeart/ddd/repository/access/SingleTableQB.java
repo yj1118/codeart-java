@@ -6,7 +6,7 @@ import java.util.function.Function;
 
 import apros.codeart.util.LazyIndexer;
 
-public abstract class SingleTableQB implements IQueryBuilder {
+public abstract class SingleTableQB extends QueryBuilder {
 
     protected boolean enableCache() {
         return true;

@@ -32,7 +32,7 @@ final class DataTableLoader {
         }
     }
 
-    private static Map<Class<?>, DataTable> _roots = new HashMap<>();
+    private static final Map<Class<?>, DataTable> _roots = new HashMap<>();
 
     /**
      * 创建起点表（由领域类型映射的表）

@@ -30,7 +30,7 @@ class GetIncrId extends GetIncrIdQB {
         StringUtil.appendLine(sql);
         StringUtil.appendLine(sql, "begin");
 
-        StringUtil.appendFormat(sql, " insert into [%s](value) values(1);", increment);
+        StringUtil.appendFormat(sql, " insert into [%s]([value]) values(1);", increment);
         StringUtil.appendLine(sql);
         StringUtil.appendLine(sql, " select cast(1 as bigint) as value;");
         StringUtil.appendLine(sql, "end");

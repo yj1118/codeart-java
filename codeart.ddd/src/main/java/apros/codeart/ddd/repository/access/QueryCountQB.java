@@ -2,7 +2,7 @@ package apros.codeart.ddd.repository.access;
 
 import apros.codeart.ddd.QueryLevel;
 
-public abstract class QueryCountQB implements IQueryBuilder {
+public abstract class QueryCountQB extends QueryBuilder {
 
 	public QueryCountQB() {
 

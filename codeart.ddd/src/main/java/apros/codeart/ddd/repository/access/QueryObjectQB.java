@@ -2,7 +2,7 @@ package apros.codeart.ddd.repository.access;
 
 import apros.codeart.ddd.QueryLevel;
 
-public abstract class QueryObjectQB implements IQueryBuilder {
+public abstract class QueryObjectQB extends QueryBuilder {
 
 	public QueryObjectQB() {
 
@@ -17,7 +17,7 @@ public abstract class QueryObjectQB implements IQueryBuilder {
 
 	protected abstract String buildImpl(DataTable target, String expression, QueryLevel level);
 
-	private ExpressionCache<QueryObjectQB> _cache = new ExpressionCache<QueryObjectQB>((target, expression, level) -> {
+	private final ExpressionCache<QueryObjectQB> _cache = new ExpressionCache<QueryObjectQB>((target, expression, level) -> {
 		return buildImpl(target, expression, level);
 	});
 

@@ -23,8 +23,11 @@ public final class AtomicOperation {
 	private static String getInitSql() {
 		switch (DataSource.getDatabaseType()) {
 		case DatabaseType.PostgreSql: {
-			// todo
-			return null;
+			return """
+					CREATE TABLE IF NOT EXISTS "CA_DomainMessage" (
+					       id UUID PRIMARY KEY
+					   );
+					""";
 		}
 		case DatabaseType.MySql: {
 			// todo
@@ -64,7 +67,13 @@ public final class AtomicOperation {
 	private static void insert(DataAccess access, String msgId) {
 		switch (DataSource.getDatabaseType()) {
 		case DatabaseType.PostgreSql: {
-			// todo
+			access.execute("""
+					INSERT INTO "CA_DomainMessage"
+					          (id)
+					    VALUES
+					          '%s');
+					""".formatted(msgId));
+
 			break;
 		}
 		case DatabaseType.MySql: {
@@ -99,7 +108,8 @@ public final class AtomicOperation {
 	private static void delete(DataAccess access, String msgId) {
 		switch (DataSource.getDatabaseType()) {
 		case DatabaseType.PostgreSql: {
-			// todo
+			access.execute(String.format("DELETE FROM \"CA_DomainMessage\" WHERE id='%s';", msgId));
+
 			break;
 		}
 		case DatabaseType.MySql: {
@@ -130,8 +140,8 @@ public final class AtomicOperation {
 	private static Iterable<String> findInterrupteds(DataAccess access) {
 		switch (DataSource.getDatabaseType()) {
 		case DatabaseType.PostgreSql: {
-			// todo
-			return null;
+			return access.queryScalars(String.class, "SELECT id FROM \"CA_DomainMessage\";", null);
+
 		}
 		case DatabaseType.MySql: {
 			// todo

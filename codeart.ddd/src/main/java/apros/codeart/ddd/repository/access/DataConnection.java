@@ -55,7 +55,7 @@ public class DataConnection implements AutoCloseable {
         // 接下来执行的一系列SQL语句应该被视为一个单独的事务，直到你显式地调用commit或rollback方法
         try {
             conn.setAutoCommit(false);
-            conn.setTransactionIsolation(Connection.TRANSACTION_NONE);
+            conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 ////            // 设置事务隔离级别(todo test)
 //            switch (status){
 //                case None ->  conn.setTransactionIsolation(Connection.TRANSACTION_NONE);

@@ -4,7 +4,7 @@ import java.util.function.Function;
 
 import apros.codeart.util.LazyIndexer;
 
-public abstract class QueryPageQB implements IQueryBuilder {
+public abstract class QueryPageQB extends QueryBuilder {
 
 	public QueryPageQB() {
 

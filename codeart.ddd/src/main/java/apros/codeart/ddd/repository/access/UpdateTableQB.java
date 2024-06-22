@@ -1,5 +1,5 @@
 package apros.codeart.ddd.repository.access;
 
-public abstract class UpdateTableQB implements IQueryBuilder {
+public abstract class UpdateTableQB extends QueryBuilder {
 
 }

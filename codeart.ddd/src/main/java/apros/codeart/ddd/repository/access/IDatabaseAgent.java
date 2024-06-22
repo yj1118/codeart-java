@@ -44,4 +44,10 @@ public interface IDatabaseAgent {
      */
     <T extends IQueryBuilder> void registerQueryBuilder(Class<T> qbClass, IQueryBuilder builder);
 
+//    void init();
+//
+//    /**
+//     *
+//     */
+//    void drop();
 }

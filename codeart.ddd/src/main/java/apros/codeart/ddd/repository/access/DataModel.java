@@ -90,7 +90,11 @@ final class DataModel {
 
     @TestSupport
     public static void drop() {
+        //删除表
         DataTableLoader.drop();
+
+//        //执行数据源清理资源
+//        DataSource.drop();
     }
 
     @TestSupport

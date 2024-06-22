@@ -4,7 +4,7 @@ import java.util.function.Function;
 
 import apros.codeart.util.LazyIndexer;
 
-public abstract class ClearTableQB implements IQueryBuilder {
+public abstract class ClearTableQB extends QueryBuilder {
 
 	private Function<DataTable, String> _getSql = LazyIndexer.init((table) -> {
 		return buildImpl(table);

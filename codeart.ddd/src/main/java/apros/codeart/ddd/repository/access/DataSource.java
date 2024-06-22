@@ -99,4 +99,16 @@ public final class DataSource {
 		return agent.getQueryBuilder(qbType);
 	}
 
+//	public static void init() {
+//		var agent = DataSource.getAgent();
+//		agent.init();
+//	}
+//
+//	/**
+//	 *
+//	 */
+//	public static void drop() {
+//		var agent = DataSource.getAgent();
+//		agent.drop();
+//	}
 }
