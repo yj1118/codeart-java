@@ -8,7 +8,7 @@ public class PostgreSqlAgent extends DatabaseAgent {
     private PostgreSqlAgent() {
         // 注入默认的支持
         this.registerQueryBuilder(CreateTableQB.class, CreateTable.Instance);
-//        this.registerQueryBuilder(DropTableQB.class, DropTable.Instance);
+        this.registerQueryBuilder(DropTableQB.class, DropTable.Instance);
 //        this.registerQueryBuilder(InsertTableQB.class, InsertTable.Instance);
 //        this.registerQueryBuilder(DeleteTableQB.class, DeleteTable.Instance);
 //        this.registerQueryBuilder(ClearTableQB.class, ClearTable.Instance);

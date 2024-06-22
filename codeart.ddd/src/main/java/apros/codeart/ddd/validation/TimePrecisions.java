@@ -7,37 +7,37 @@ public enum TimePrecisions {
 	Second((byte) 1),
 
 	/**
-	 * 100毫秒
+	 * 100毫秒（1位小数）
 	 */
 	Millisecond100((byte) 2),
 
 	/**
-	 * 10毫秒
+	 * 10毫秒（2位小数）
 	 */
 	Millisecond10((byte) 3),
 
 	/**
-	 * 毫秒
+	 * 毫秒（3位小数）
 	 */
 	Millisecond((byte) 4),
 
 	/**
-	 * 100微秒
+	 * 100微秒（4位小数）
 	 */
 	Microsecond100((byte) 5),
 
 	/**
-	 * 10微秒
+	 * 10微秒（5位小数）
 	 */
 	Microsecond10((byte) 6),
 
 	/**
-	 * 微秒
+	 * 微秒（6位小数）
 	 */
 	Microsecond((byte) 7),
 
 	/**
-	 * 100纳秒
+	 * 100纳秒（7位小数）
 	 */
 	Nanosecond100((byte) 8);
 

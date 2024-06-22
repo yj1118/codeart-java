@@ -163,13 +163,13 @@ public class GeneratedField extends ValueField {
 
     public static class StringMeta extends CustomMeta {
 
-        private int _maxLength;
+        private final int _maxLength;
 
         public int maxLength() {
             return _maxLength;
         }
 
-        private boolean _ascii;
+        private final boolean _ascii;
 
         public boolean ascii() {
             return _ascii;

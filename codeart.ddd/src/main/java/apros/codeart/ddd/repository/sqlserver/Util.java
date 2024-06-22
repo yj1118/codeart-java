@@ -9,37 +9,23 @@ public final class Util {
 	}
 
 	public static String getSqlDbTypeString(DbType dbType) {
-		switch (dbType) {
-		case DbType.AnsiString:
-			return "varchar";
-		case DbType.Byte:
-			return "tinyint";
-		case DbType.Boolean:
-			return "BIT";
-		case DbType.LocalDateTime:
-			return "datetime2";
-		case DbType.ZonedDateTime:
-			return "datetimeoffset";
-		case DbType.Float:
-			return "real";
-		case DbType.Double:
-			return "float";
-		case DbType.Guid:
-			return "uniqueidentifier";
-		case DbType.Int16:
-			return "smallint";
-		case DbType.Int32:
-			return "int";
-		case DbType.Int64:
-			return "bigint";
-		case DbType.String:
-			return "nvarchar";
-		default:
-			break;
-		}
-		throw new IllegalStateException(
-				Language.strings("apros.codeart.ddd", "UnsupportedFieldType", dbType.toString()));
-	}
+        return switch (dbType) {
+            case DbType.AnsiString -> "varchar";
+            case DbType.Byte -> "tinyint";
+            case DbType.Boolean -> "BIT";
+            case DbType.LocalDateTime -> "datetime2";
+            case DbType.ZonedDateTime -> "datetimeoffset";
+            case DbType.Float -> "real";
+            case DbType.Double -> "float";
+            case DbType.Guid -> "uniqueidentifier";
+            case DbType.Int16 -> "smallint";
+            case DbType.Int32 -> "int";
+            case DbType.Int64 -> "bigint";
+            case DbType.String -> "nvarchar";
+            default -> throw new IllegalStateException(
+                    Language.strings("apros.codeart.ddd", "UnsupportedFieldType", dbType.toString()));
+        };
+    }
 
 //	public static SqlDbType etSqlDbType(DbType dbType) {
 //		return _getSqlDbType(dbType);
