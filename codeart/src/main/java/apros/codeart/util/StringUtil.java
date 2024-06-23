@@ -34,6 +34,10 @@ public final class StringUtil {
         str.append(String.format(format, args));
     }
 
+    public static void append(StringBuilder str, String code) {
+        str.append(code);
+    }
+
     public static void appendMessageFormat(StringBuilder str, String format, Object... args) {
         str.append(MessageFormat.format(format, args));
     }

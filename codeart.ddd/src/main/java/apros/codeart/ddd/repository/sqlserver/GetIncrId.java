@@ -26,7 +26,7 @@ class GetIncrId extends GetIncrIdQB {
                 + "] PRIMARY KEY CLUSTERED ([value] ASC)WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]) ON [PRIMARY];");
 
         StringUtil.appendLine(sql, "end");
-        StringUtil.appendFormat(sql, "if(not exists(select 1 from [%s] with(xlock,holdlock)))", increment);
+        StringUtil.appendFormat(sql, "if(not exists(select 1 from [%s] with(xlock)))", increment);
         StringUtil.appendLine(sql);
         StringUtil.appendLine(sql, "begin");
 

@@ -22,10 +22,12 @@ final class SqlParser {
     private SqlParser() {
     }
 
-    /// <summary>
-    /// 分析sql语句，获得参与查询的列信息
-    /// </summary>
-    /// <param name="sqlSelect"></param>
+
+    /**
+     * 分析sql语句，获得参与查询的列信息
+     * @param sql
+     * @return
+     */
     public static SqlColumns parse(String sql) {
         return _getColumns.apply(sql);
     }

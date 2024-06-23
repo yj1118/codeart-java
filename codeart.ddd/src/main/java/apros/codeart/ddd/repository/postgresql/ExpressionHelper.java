@@ -10,9 +10,18 @@ import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.ddd.repository.postgresql.LockSql;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.util.deparser.ExpressionDeParser;
+import net.sf.jsqlparser.util.deparser.SelectDeParser;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+
+import static apros.codeart.runtime.Util.propagate;
 
 /**
  * 基于表达式的查询,可以指定对象属性等表达式
@@ -31,7 +40,7 @@ public final class ExpressionHelper {
         StringUtil.appendLine(sql, getFromSql(target));
         StringUtil.appendLine(sql, getJoinSql(target, definition));
 
-        return getFinallyObjectSql(sql.toString(), target,level, definition);
+        return getFinallyObjectSql(sql.toString(), target, definition);
     }
 
 //	#region 得到select语句
@@ -274,7 +283,7 @@ public final class ExpressionHelper {
     }
 
     // 获取最终的输出代码
-    private static String getFinallyObjectSql(String tableSql, DataTable table,QueryLevel level, SqlDefinition exp) {
+    private static String getFinallyObjectSql(String tableSql, DataTable table,SqlDefinition exp) {
         String sql = null;
 
         if (exp.hasInner()) {
@@ -295,7 +304,54 @@ public final class ExpressionHelper {
             }
         }
 
-        return String.format("(%s%s) as %s", sql, LockSql.get(level),  SqlStatement.qualifier(table.name()));
+        StringBuilder sb = new StringBuilder();
+        StringUtil.appendFormat(sb,"WITH %s AS (",SqlStatement.qualifier(table.name()));
+        StringUtil.appendLine(sb);
+        StringUtil.appendLine(sb,addQualifier(sql));
+        StringUtil.append(sb,")");
+
+
+        return sb.toString();
+    }
+
+    /**
+     * 由于用户写的对象表达式里的属性是不带postgresql的标识符的，这会执行报错，所以得加上
+     * @param sql
+     * @return
+     */
+    private static String addQualifier(String sql){
+        // Parse the SQL statement
+
+        try {
+            Statement statement = CCJSqlParserUtil.parse(sql);
+
+            if (statement instanceof Select) {
+                Select select = (Select) statement;
+                SelectBody selectBody = select.getSelectBody();
+
+                ExpressionDeParser expressionDeParser = new ExpressionDeParser() {
+                    @Override
+                    public void visit(net.sf.jsqlparser.schema.Column column) {
+                        String columnName = column.getColumnName();
+                        column.setColumnName(SqlStatement.qualifier(columnName));
+                        super.visit(column);
+                    }
+                };
+
+                StringBuilder buffer = new StringBuilder();
+                SelectDeParser deparser = new SelectDeParser(expressionDeParser, buffer);
+                expressionDeParser.setSelectVisitor(deparser);
+                expressionDeParser.setBuffer(buffer);
+
+                selectBody.accept(deparser);
+
+                return buffer.toString();
+            }
+            return sql;
+
+        } catch (JSQLParserException e) {
+            throw propagate(e);
+        }
     }
 
     private static String getFieldsSql(SqlDefinition exp) {
@@ -326,5 +382,5 @@ public final class ExpressionHelper {
         return LockSql.get(level);
     }
 
-//	#endregion
+    //endregion
 }
