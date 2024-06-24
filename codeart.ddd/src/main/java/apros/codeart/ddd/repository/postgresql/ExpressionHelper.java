@@ -31,16 +31,21 @@ public final class ExpressionHelper {
     private ExpressionHelper() {
     }
 
-    public static String getObjectSql(DataTable target, QueryLevel level, SqlDefinition definition) {
+    public static String getObjectSql(DataTable target,QueryLevel level, SqlDefinition definition) {
 
         StringBuilder sql = new StringBuilder();
         sql.append("select ");
         StringUtil.appendLine(sql, getSelectFieldsSql(target, definition));
         StringUtil.appendLine(sql, " from ");
         StringUtil.appendLine(sql, getFromSql(target));
-        StringUtil.appendLine(sql, getJoinSql(target, definition));
+        StringUtil.append(sql, getJoinSql(target, definition));
+        if(!definition.condition().isEmpty()){
+            StringUtil.appendFormat(sql, " where %s",definition.condition().code());
+        }
 
-        return getFinallyObjectSql(sql.toString(), target, definition);
+        String tableSql = String.format("%s%s",sql.toString(),LockSql.get(level));
+
+        return getFinallyObjectSql(tableSql, target,level, definition);
     }
 
 //	#region 得到select语句
@@ -283,33 +288,48 @@ public final class ExpressionHelper {
     }
 
     // 获取最终的输出代码
-    private static String getFinallyObjectSql(String tableSql, DataTable table,SqlDefinition exp) {
+    private static String getFinallyObjectSql(String tableSql, DataTable table,QueryLevel level, SqlDefinition exp) {
         String sql = null;
 
         if (exp.hasInner()) {
-            if (exp.condition().isEmpty()) {
-                sql = String.format("select distinct * from (%s) as {%s}", tableSql,
-                        SqlStatement.qualifier(table.name()));
-            } else {
-                sql = String.format("select distinct * from (%s) as %s where %s", tableSql,
-                        SqlStatement.qualifier(table.name()), exp.condition().code());
-            }
+            sql = String.format("select * from (%s) as {%s}", tableSql,
+                    SqlStatement.qualifier(table.name()));
         } else {
-            if (exp.condition().isEmpty()) {
-                sql = MessageFormat.format("select distinct {2} from ({0}) as {1}", tableSql,
-                        SqlStatement.qualifier(table.name()), getFieldsSql(exp));
-            } else {
-                sql = MessageFormat.format("select distinct {3} from ({0}) as {1} where {2}", tableSql,
-                        SqlStatement.qualifier(table.name()), exp.condition().code(), getFieldsSql(exp));
-            }
+            sql = MessageFormat.format("select {2} from ({0}) as {1}", tableSql,
+                    SqlStatement.qualifier(table.name()), getFieldsSql(exp));
         }
 
+//        if (exp.hasInner()) {
+//            if (exp.condition().isEmpty()) {
+//                sql = String.format("select * from (%s) as {%s}", tableSql,
+//                        SqlStatement.qualifier(table.name()));
+//            } else {
+//                sql = String.format("select * from (%s) as %s where %s", tableSql,
+//                        SqlStatement.qualifier(table.name()), exp.condition().code());
+//            }
+//        } else {
+//            if (exp.condition().isEmpty()) {
+//                sql = MessageFormat.format("select {2} from ({0}) as {1}", tableSql,
+//                        SqlStatement.qualifier(table.name()), getFieldsSql(exp));
+//            } else {
+//                sql = MessageFormat.format("select {3} from ({0}) as {1} where {2}", tableSql,
+//                        SqlStatement.qualifier(table.name()), exp.condition().code(), getFieldsSql(exp));
+//            }
+//        }
+
         StringBuilder sb = new StringBuilder();
+
+//        if(level.equals(QueryLevel.HOLD)) {
+////            StringUtil.appendLine(sb,"DO $$");
+////            StringUtil.appendLine(sb,"BEGIN");
+//            StringUtil.appendLine(sb,"SELECT pg_advisory_xact_lock(hashtext('AuthPlatform-EN-some_value'));");
+////            StringUtil.appendLine(sb,"END $$;");
+//        }
+
         StringUtil.appendFormat(sb,"WITH %s AS (",SqlStatement.qualifier(table.name()));
         StringUtil.appendLine(sb);
         StringUtil.appendLine(sb,addQualifier(sql));
         StringUtil.append(sb,")");
-
 
         return sb.toString();
     }
@@ -320,9 +340,14 @@ public final class ExpressionHelper {
      * @return
      */
     private static String addQualifier(String sql){
-        // Parse the SQL statement
+        boolean containsShare = sql.contains(" FOR SHARE");
 
         try {
+
+            if(containsShare){
+                sql = sql.replace(" FOR SHARE"," FOR UPDATE");
+            }
+
             Statement statement = CCJSqlParserUtil.parse(sql);
 
             if (statement instanceof Select) {
@@ -345,8 +370,13 @@ public final class ExpressionHelper {
 
                 selectBody.accept(deparser);
 
-                return buffer.toString();
+                sql = buffer.toString();
             }
+
+            if(containsShare){
+                sql = sql.replace(" FOR UPDATE"," FOR SHARE");
+            }
+
             return sql;
 
         } catch (JSQLParserException e) {

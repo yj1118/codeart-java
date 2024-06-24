@@ -56,7 +56,7 @@ public class DataConnection implements AutoCloseable {
         try {
             conn.setAutoCommit(false);
             conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
-////            // 设置事务隔离级别(todo test)
+
 //            switch (status){
 //                case None ->  conn.setTransactionIsolation(Connection.TRANSACTION_NONE);
 //                case Share ->  conn.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);

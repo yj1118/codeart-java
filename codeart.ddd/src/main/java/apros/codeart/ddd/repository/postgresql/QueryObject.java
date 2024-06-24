@@ -19,11 +19,13 @@ class QueryObject extends QueryObjectQB {
 
         var definition = SqlDefinition.create(expression);
 
-        String objectSql = ExpressionHelper.getObjectSql(target, level, definition);
+        String objectSql = ExpressionHelper.getObjectSql(target,level, definition);
 
         StringBuilder sb = new StringBuilder();
         StringUtil.appendLine(sb, objectSql);
-        StringUtil.appendFormat(sb, "select %s * from %s %s",definition.top(), SqlStatement.qualifier(target.name()),definition.order());
+        StringUtil.appendFormat(sb, "select distinct %s * from %s %s",definition.top(),
+                SqlStatement.qualifier(target.name()),
+                definition.order());
 
         return sb.toString();
     }

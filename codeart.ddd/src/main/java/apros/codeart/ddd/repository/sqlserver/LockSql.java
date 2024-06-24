@@ -37,7 +37,7 @@ final class LockSql {
     public static String get(QueryLevel level) {
         switch (level.code()) {
             case QueryLevel.ShareCode:
-                return StringUtil.empty();
+                return " with(holdlock) ";
             case QueryLevel.SingleCode:
                 return " with(xlock,rowlock) ";
             case QueryLevel.HoldCode:

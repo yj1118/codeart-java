@@ -40,7 +40,7 @@ public final class DataAccess {
 
     public Object queryScalar(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryScalar(_conn, sql, params);
+        return QueryRunner.queryScalar(_conn, sql, params, level);
     }
 
     public Object queryScalar(String sql, MapData params) {
@@ -49,7 +49,7 @@ public final class DataAccess {
 
     public <T> T queryScalar(Class<T> valueType, String sql, MapData param, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryScalar(valueType, _conn, sql, param);
+        return QueryRunner.queryScalar(valueType, _conn, sql, param, level);
     }
 
     public <T> T queryScalar(Class<T> valueType, String sql, MapData param) {
@@ -58,17 +58,17 @@ public final class DataAccess {
 
     public int queryScalarInt(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryScalarInt(_conn, sql, params);
+        return QueryRunner.queryScalarInt(_conn, sql, params, level);
     }
 
     public long queryScalarLong(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryScalarLong(_conn, sql, params);
+        return QueryRunner.queryScalarLong(_conn, sql, params, level);
     }
 
     public long queryScalarLong(String sql, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryScalarLong(_conn, sql, null);
+        return QueryRunner.queryScalarLong(_conn, sql, null, level);
     }
 
     public long queryScalarLong(String sql) {
@@ -77,12 +77,12 @@ public final class DataAccess {
 
     public UUID queryScalarGuid(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryScalarGuid(_conn, sql, params);
+        return QueryRunner.queryScalarGuid(_conn, sql, params, level);
     }
 
     public Iterable<Object> queryScalars(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryScalars(_conn, sql, params);
+        return QueryRunner.queryScalars(_conn, sql, params, level);
     }
 
     public Iterable<Object> queryScalars(String sql, MapData params) {
@@ -91,7 +91,7 @@ public final class DataAccess {
 
     public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryScalars(elementType, _conn, sql, params);
+        return QueryRunner.queryScalars(elementType, _conn, sql, params, level);
     }
 
     public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, MapData params) {
@@ -100,27 +100,27 @@ public final class DataAccess {
 
     public int[] queryScalarInts(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryScalarInts(_conn, sql, params);
+        return QueryRunner.queryScalarInts(_conn, sql, params, level);
     }
 
     public DTObject queryDTO(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryDTO(_conn, sql, params);
+        return QueryRunner.queryDTO(_conn, sql, params, level);
     }
 
     public Iterable<DTObject> queryDTOs(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryDTOs(_conn, sql, params);
+        return QueryRunner.queryDTOs(_conn, sql, params, level);
     }
 
     public MapData queryRow(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryRow(_conn, sql, params);
+        return QueryRunner.queryRow(_conn, sql, params, level);
     }
 
     public Iterable<MapData> queryRows(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
-        return QueryRunner.queryRows(_conn, sql, params);
+        return QueryRunner.queryRows(_conn, sql, params, level);
     }
 
     public Iterable<MapData> queryRows(String sql, MapData params) {

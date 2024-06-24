@@ -4,7 +4,7 @@ import apros.codeart.runtime.TypeUtil;
 
 public final class QueryLevel {
 
-    private int _code;
+    private final int _code;
 
     public int code() {
         return _code;

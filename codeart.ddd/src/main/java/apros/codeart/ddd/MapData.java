@@ -16,7 +16,7 @@ import apros.codeart.util.StringUtil;
 public class MapData implements Iterable<Map.Entry<String, Object>> {
 
 	// 保存对象动态定义的属性值
-	private HashMap<String, Object> _data;
+	private final HashMap<String, Object> _data;
 
 	public boolean containsKey(String key) {
 		return _data.containsKey(key);
@@ -115,6 +115,10 @@ public class MapData implements Iterable<Map.Entry<String, Object>> {
 			dto.setValue(p.getKey(), p.getValue());
 		}
 		return dto;
+	}
+
+	public Set<Map.Entry<String,Object>> entrySet(){
+		return _data.entrySet();
 	}
 
 }

@@ -5,6 +5,7 @@ module apros.codeart.ddd {
     requires transitive apros.codeart;
     requires jsqlparser;
     requires org.jetbrains.annotations;
+    requires java.xml.crypto;
 
     exports apros.codeart.ddd;
     exports apros.codeart.ddd.validation;

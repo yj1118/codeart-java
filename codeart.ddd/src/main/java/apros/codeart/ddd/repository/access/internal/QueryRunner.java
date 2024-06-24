@@ -10,6 +10,11 @@ import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.Function;
 
+import apros.codeart.ddd.DomainProperty;
+import apros.codeart.ddd.QueryLevel;
+import apros.codeart.ddd.repository.access.DataSource;
+import apros.codeart.ddd.repository.access.DatabaseType;
+import apros.codeart.util.HashUtil;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Iterables;
 
@@ -19,6 +24,8 @@ import apros.codeart.ddd.repository.access.internal.QueryFilter.Row;
 import apros.codeart.ddd.repository.access.internal.QueryFilter.Rows;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.LazyIndexer;
+
+import javax.xml.crypto.Data;
 
 public final class QueryRunner {
     private QueryRunner() {
@@ -58,64 +65,64 @@ public final class QueryRunner {
 
     }
 
-    public static Object queryScalar(Connection conn, String sql, MapData param) {
+    public static Object queryScalar(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.Scalar();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return filter.result();
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> T queryScalar(Class<T> valueType, Connection conn, String sql, MapData param) {
+    public static <T> T queryScalar(Class<T> valueType, Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.Scalar();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return (T) filter.result();
     }
 
-    public static int queryScalarInt(Connection conn, String sql, MapData param) {
+    public static int queryScalarInt(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.ScalarInt();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return filter.result();
     }
 
-    public static long queryScalarLong(Connection conn, String sql, MapData param) {
+    public static long queryScalarLong(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.ScalarLong();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return filter.result();
     }
 
-    public static UUID queryScalarGuid(Connection conn, String sql, MapData param) {
+    public static UUID queryScalarGuid(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.ScalarGuid();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return filter.result();
     }
 
-    public static Iterable<Object> queryScalars(Connection conn, String sql, MapData param) {
+    public static Iterable<Object> queryScalars(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.Scalars<Object>();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return filter.result();
     }
 
-    public static <T> Iterable<T> queryScalars(Class<T> elementType, Connection conn, String sql, MapData param) {
+    public static <T> Iterable<T> queryScalars(Class<T> elementType, Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.Scalars<T>();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return filter.result();
     }
 
-    public static int[] queryScalarInts(Connection conn, String sql, MapData param) {
+    public static int[] queryScalarInts(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.ScalarInts();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return filter.result();
     }
 
-    public static DTObject queryDTO(Connection conn, String sql, MapData param) {
+    public static DTObject queryDTO(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.DTO();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return filter.result();
     }
 
-    public static Iterable<DTObject> queryDTOs(Connection conn, String sql, MapData param) {
+    public static Iterable<DTObject> queryDTOs(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.DTOs();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return filter.result();
     }
 
@@ -127,26 +134,47 @@ public final class QueryRunner {
      * @param param
      * @return
      */
-    public static MapData queryRow(Connection conn, String sql, MapData param) {
+    public static MapData queryRow(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new Row();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return filter.result();
     }
 
-    public static Iterable<MapData> queryRows(Connection conn, String sql, MapData param) {
+    public static Iterable<MapData> queryRows(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new Rows();
-        query(conn, sql, param, filter);
+        query(conn, sql, param, filter, level);
         return filter.result();
     }
 
-    private static void query(Connection conn, String sql, MapData param, IQueryFilter filter) {
-
+    private static void query(Connection conn, String sql, MapData param, IQueryFilter filter,QueryLevel level) {
+        tryOpenAppLock(conn,sql,param,level);
         try (PreparedStatement pstmt = getStatement(conn, sql, param); ResultSet rs = pstmt.executeQuery()) {
             filter.extract(rs);
         } catch (SQLException e) {
             throw propagate(e);
         }
     }
+
+    private static void tryOpenAppLock(Connection conn, String sql, MapData param,QueryLevel level) {
+        // 只有hold锁才需要额外的加应用程序锁
+        if(!level.equals(QueryLevel.HOLD)) return;
+
+        var type = DataSource.getDatabaseType();
+        if(type == DatabaseType.SqlServer) return; //sqlserver不需要应用程序锁就可以实现hold锁
+
+
+        var hashCode =  HashUtil.hash64((hasher) -> {
+            hasher.append(sql);
+            hasher.append(param.entrySet());
+        });
+
+        // 目前仅支持postgresql,以后再补充其他数据库,todo
+        switch (type){
+            case PostgreSql -> execute(conn,String.format("SELECT pg_advisory_xact_lock(%s)",hashCode));
+            default -> throw new IllegalStateException("Unexpected value: " + type);
+        }
+    }
+
 
     private static class QueryAdapter {
 
