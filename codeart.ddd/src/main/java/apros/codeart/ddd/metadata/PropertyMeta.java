@@ -49,7 +49,7 @@ public class PropertyMeta {
         return _value.isCollection();
     }
 
-    private ObjectMeta _declaring;
+    private final ObjectMeta _declaring;
 
     public ObjectMeta declaring() {
         return _declaring;
@@ -59,19 +59,19 @@ public class PropertyMeta {
         return _declaring.objectType();
     }
 
-    private DomainPropertyCategory _category;
+    private final DomainPropertyCategory _category;
 
     public DomainPropertyCategory category() {
         return _category;
     }
 
-    private PropertyAccessLevel _accessGet;
+    private final PropertyAccessLevel _accessGet;
 
     public PropertyAccessLevel accessGet() {
         return _accessGet;
     }
 
-    private PropertyAccessLevel _accessSet;
+    private final PropertyAccessLevel _accessSet;
 
     public PropertyAccessLevel accessSet() {
         return _accessSet;

@@ -41,7 +41,7 @@ import apros.codeart.util.LazyIndexer;
 public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSerializable {
 
 
-    private ObjectMeta _meta;
+    private final ObjectMeta _meta;
 
     /**
      * 领域对象的类型，请注意，在动态领域对象下，该类型是对应的领域对象的类型，而不是DynamicRoot、DynamicValueObject等载体对象

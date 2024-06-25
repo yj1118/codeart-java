@@ -32,17 +32,23 @@ public final class MethodUtil {
         }
     }
 
-    private static Function<Class<?>, Function<String, Iterable<Method>>> _getMethods = LazyIndexer.init((objCls) -> {
+    private static final Function<Class<?>, Function<String, Iterable<Method>>> _getMethods = LazyIndexer.init((objCls) -> {
         return LazyIndexer.init((methodName) -> {
             return findMethods(objCls, methodName);
         });
     });
 
+    /**
+     * 不区分方法大小写，我们实际写程序也不可能写两个名字大小写不同，但是字母相同的方法
+     * @param objCls
+     * @param methodName
+     * @return
+     */
     private static Iterable<Method> findMethods(Class<?> objCls, String methodName) {
         Method[] methods = objCls.getDeclaredMethods();
 
         return ListUtil.filter(methods, (m) -> {
-            return m.getName().equals(methodName);
+            return m.getName().equalsIgnoreCase(methodName);
         });
     }
 

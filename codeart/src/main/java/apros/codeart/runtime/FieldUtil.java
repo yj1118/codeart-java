@@ -130,7 +130,7 @@ public final class FieldUtil {
 
         // getXXX
         {
-            String methodName = String.format("get%s", StringUtil.firstToUpper(name));
+            String methodName = String.format("get%s", name);
             var method = MethodUtil.resolve(objClass, methodName, null);
 
             if (method != null && !method.getReturnType().equals(Void.class) && TypeUtil.isPublic(method))
@@ -140,7 +140,7 @@ public final class FieldUtil {
 
         // xxx()
         {
-            String methodName = StringUtil.firstToLower(name);
+            String methodName = name;
             var method = MethodUtil.resolve(objClass, methodName, null);
 
             if (method != null && !method.getReturnType().equals(Void.class) && TypeUtil.isPublic(method))
@@ -167,7 +167,7 @@ public final class FieldUtil {
 
     }
 
-    private static Function<Class<?>, Function<String, Field>> _getAgreeField = LazyIndexer.init((objClass) -> {
+    private static final Function<Class<?>, Function<String, Field>> _getAgreeField = LazyIndexer.init((objClass) -> {
         return LazyIndexer.init((fieldAgreeName) -> {
             // 把类似 _name得名称，改为name
 
@@ -238,7 +238,7 @@ public final class FieldUtil {
         var name = getAgreeName(fieldName);
         // 先尝试获得getXXX的方法
         {
-            String methodName = String.format("set%s", StringUtil.firstToUpper(name));
+            String methodName = String.format("set%s", name);
             var method = MethodUtil.resolveLike(objClass, methodName, new Class<?>[]{fieldValueClass});
             if (method != null && TypeUtil.isPublic(method)) {
                 return new Accesser(method);
@@ -247,7 +247,7 @@ public final class FieldUtil {
 
         // 再尝试获得xxx()的方法
         {
-            String methodName = StringUtil.firstToLower(name);
+            String methodName = name;
             var method = MethodUtil.resolveLike(objClass, methodName, new Class<?>[]{fieldValueClass});
             if (method != null && TypeUtil.isPublic(method)) {
                 return new Accesser(method);

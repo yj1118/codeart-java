@@ -29,10 +29,11 @@ final class DataTableQuery {
     }
 
     // 根据编号查询数据
-    public Object querySingle(Object id, QueryLevel level) {
+    @SuppressWarnings("unchecked")
+    public <T> T querySingle(Object id, QueryLevel level) {
         var obj = getObjectFromConstruct(id);
         if (obj != null)
-            return obj;
+            return (T) obj;
 
         var expression = getObjectByIdExpression(_self);
         return querySingle(expression, (param) -> {

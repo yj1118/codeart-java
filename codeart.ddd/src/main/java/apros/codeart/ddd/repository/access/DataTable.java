@@ -628,6 +628,11 @@ public class DataTable {
         _insert.insertMembers(root, parent, current, members, tip);
     }
 
+    <T> T querySingle(Object id, QueryLevel level)
+    {
+        return _query.querySingle(id, level);
+    }
+
     <T> T querySingle(Object rootId, Object id) {
         return _query.querySingle(rootId, id);
     }
