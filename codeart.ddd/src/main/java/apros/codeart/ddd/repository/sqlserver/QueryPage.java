@@ -9,12 +9,11 @@ import apros.codeart.util.SafeAccess;
 @SafeAccess
 class QueryPage extends QueryPageQB {
 
+
     @Override
-    protected String buildImpl(DataTable target, String expression) {
+    protected String buildImpl(DataTable target, SqlDefinition definition, QueryLevel level) {
 
-        var definition = SqlDefinition.create(expression);
-
-        String objectSql = ExpressionHelper.getObjectSql(target, QueryLevel.NONE, definition);
+        String objectSql = ExpressionHelper.getObjectSql(target, level, definition);
 
         var sql = new SqlPageTemplate();
         sql.select("*");
@@ -24,5 +23,6 @@ class QueryPage extends QueryPageQB {
     }
 
     public final static QueryPage Instance = new QueryPage();
+
 
 }

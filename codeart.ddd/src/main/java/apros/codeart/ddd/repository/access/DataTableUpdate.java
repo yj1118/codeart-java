@@ -206,7 +206,7 @@ final class DataTableUpdate {
 
                     // 保存引用数据
                     if (!obj.isEmpty()) {
-                        var child = _self.findChild(_self, tip.name(), obj.getClass());
+                        var child = _self.findChild(_self, tip.name());
                         child.insertMember(root, current, obj);
                     }
                     return true;
@@ -215,7 +215,7 @@ final class DataTableUpdate {
                     var obj = (DomainObject) current.getValue(tip.name());
                     if (!obj.isEmpty()) {
                         // 从衍生表中找到对象表
-                        var child = _self.findChild(_self, tip.name(), obj.getClass());
+                        var child = _self.findChild(_self, tip.name());
                         child.updateMember(root, parent, obj);
                     }
                     return true;
@@ -350,7 +350,7 @@ final class DataTableUpdate {
         for (var member : members) {
             DomainObject obj = (DomainObject) member;
             if (!obj.isEmpty()) {
-                var child = _self.findChild(_self, tip.name(), obj.getClass());
+                var child = _self.findChild(_self, tip.name());
                 // 方法内部会检查是否为脏，为脏的才更新
                 child.updateMember(root, current, obj);
             }
@@ -367,7 +367,7 @@ final class DataTableUpdate {
             if (obj.isEmpty())
                 continue;
             if (child == null)
-                child = _self.findChild(_self, propertyName, obj.getClass());
+                child = _self.findChild(_self, propertyName);
             // 删除中间表
             child.middle().deleteMiddle(root, current, obj);
         }

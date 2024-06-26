@@ -12,9 +12,7 @@ class QueryObject extends QueryObjectQB {
     private QueryObject() {
     }
 
-    protected String buildImpl(DataTable target, String expression, QueryLevel level) {
-
-        var definition = SqlDefinition.create(expression);
+    protected String buildImpl(DataTable target, SqlDefinition definition, QueryLevel level) {
 
         String objectSql = ExpressionHelper.getObjectSql(target, level, definition);
 

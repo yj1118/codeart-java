@@ -271,7 +271,7 @@ final class DataTableLoader {
         return table;
     }
 
-    // #region 构建时索引，主要用于防止循环引用导致的死循环
+    //region 构建时索引，主要用于防止循环引用导致的死循环以及在执行过程中，可以快速找到表
 
     private static DataTable getBuildtimeIndex(String key) {
         return _buildtimeIndex.get(key);
@@ -283,17 +283,17 @@ final class DataTableLoader {
 
     private static Map<String, DataTable> _buildtimeIndex = new HashMap<String, DataTable>();
 
-    /**
-     * 加载工作完毕后，清理为了加载而造成的资源
-     */
-    public static void disposeTemp() {
-        _buildtimeIndex.clear();
-        _buildtimeIndex = null;
-    }
-
     public static DataTable get(Class<?> objectType) {
         return DataTableGenerator.getTable(objectType);
     }
+
+//    /**
+//     * 加载工作完毕后，清理为了加载而造成的资源
+//     */
+//    public static void disposeTemp() {
+//        _buildtimeIndex.clear();
+//        _buildtimeIndex = null;
+//    }
 
     /**
      * 删除表
@@ -319,6 +319,6 @@ final class DataTableLoader {
 //		DataTableGenerator.generate();
 //	}
 
-    // #endregion
+    //endregion
 
 }

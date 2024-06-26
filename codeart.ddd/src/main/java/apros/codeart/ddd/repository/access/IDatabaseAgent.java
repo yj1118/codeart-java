@@ -20,6 +20,8 @@ public interface IDatabaseAgent {
      */
     String qualifier(String field);
 
+    boolean hasQualifier(String field);
+
     /**
      * 解开标示限定符
      *

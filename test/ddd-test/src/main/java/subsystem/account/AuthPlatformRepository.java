@@ -22,4 +22,12 @@ public class AuthPlatformRepository extends SqlRepository<AuthPlatform> implemen
         }, level);
 
     }
+
+    @Override
+    public AuthPlatform findByName(String name, QueryLevel level) {
+        return DataPortal.querySingle(AuthPlatform.class, "name like %@name%", (arg) ->
+        {
+            arg.put("name", name);
+        }, level);
+    }
 }

@@ -45,7 +45,7 @@ public final class ExpressionHelper {
 
         String tableSql = String.format("%s%s",sql.toString(),LockSql.get(level));
 
-        return getFinallyObjectSql(tableSql, target,level, definition);
+        return getFinallyObjectSql(tableSql, target, definition);
     }
 
 //	#region 得到select语句
@@ -288,7 +288,7 @@ public final class ExpressionHelper {
     }
 
     // 获取最终的输出代码
-    private static String getFinallyObjectSql(String tableSql, DataTable table,QueryLevel level, SqlDefinition exp) {
+    private static String getFinallyObjectSql(String tableSql, DataTable table, SqlDefinition exp) {
         String sql = null;
 
         if (exp.hasInner()) {
@@ -318,17 +318,9 @@ public final class ExpressionHelper {
 //        }
 
         StringBuilder sb = new StringBuilder();
-
-//        if(level.equals(QueryLevel.HOLD)) {
-////            StringUtil.appendLine(sb,"DO $$");
-////            StringUtil.appendLine(sb,"BEGIN");
-//            StringUtil.appendLine(sb,"SELECT pg_advisory_xact_lock(hashtext('AuthPlatform-EN-some_value'));");
-////            StringUtil.appendLine(sb,"END $$;");
-//        }
-
         StringUtil.appendFormat(sb,"WITH %s AS (",SqlStatement.qualifier(table.name()));
         StringUtil.appendLine(sb);
-        StringUtil.appendLine(sb,addQualifier(sql));
+        StringUtil.appendLine(sb,addQualifier(sql,table));
         StringUtil.append(sb,")");
 
         return sb.toString();
@@ -339,7 +331,7 @@ public final class ExpressionHelper {
      * @param sql
      * @return
      */
-    private static String addQualifier(String sql){
+    private static String addQualifier(String sql, DataTable table){
         boolean containsShare = sql.contains(" FOR SHARE");
 
         try {
@@ -358,7 +350,36 @@ public final class ExpressionHelper {
                     @Override
                     public void visit(net.sf.jsqlparser.schema.Column column) {
                         String columnName = column.getColumnName();
-                        column.setColumnName(SqlStatement.qualifier(columnName));
+
+                        if(!SqlStatement.hasQualifier(columnName)){
+                            if(columnName.contains("_")){
+                                var temp = columnName.split("_");
+                                var target = table;
+                                StringBuilder cn = new StringBuilder();
+                                for(var i=0;i<temp.length;i++){
+                                    var name = temp[i];
+                                    if(i == temp.length-1){
+                                        var field = target.getField(name,true);
+                                        StringUtil.appendFormat(cn,"%s.",SqlStatement.qualifier(field.name()));
+                                    }
+                                    else{
+                                        target = target.findChild(name);
+                                        StringUtil.appendFormat(cn,"%s.",SqlStatement.qualifier(target.memberField().name()));
+                                    }
+                                }
+                                StringUtil.removeLast(cn);
+                                column.setColumnName(cn.toString());
+                            }
+                            else{
+                                var field =  table.getField(columnName,true);
+                                if(field != null) columnName = field.name();
+                                column.setColumnName(SqlStatement.qualifier(columnName));
+                            }
+
+
+                        }
+
+
                         super.visit(column);
                     }
                 };

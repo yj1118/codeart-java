@@ -7,4 +7,6 @@ public interface IAuthPlatformRepository extends IRepository<AuthPlatform> {
     Iterable<AuthPlatform> finds();
 
     AuthPlatform findByEN(String en, QueryLevel level);
+
+    AuthPlatform findByName(String name, QueryLevel level);
 }

@@ -72,7 +72,7 @@ public class NotEmptyValidator extends PropertyValidatorImpl {
 	}
 
 	private void addError(DomainProperty property, ValidationResult result) {
-		result.append(property.name(), "NotEmpty", Language.strings("codeart.ddd", "NotEmpty", property.call()));
+		result.append(property.name(), "NotEmpty", Language.strings("apros.codeart.ddd", "NotEmpty", property.call()));
 	}
 
 	public static final String ErrorCode = "NotEmptyError";

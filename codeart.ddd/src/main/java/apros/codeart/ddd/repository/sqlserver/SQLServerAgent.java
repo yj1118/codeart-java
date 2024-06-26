@@ -47,6 +47,11 @@ public class SQLServerAgent extends DatabaseAgent {
     }
 
     @Override
+    public boolean hasQualifier(String field) {
+        return field.startsWith("[");
+    }
+
+    @Override
     public String unQualifier(String field) {
         if (field.startsWith("["))
             return StringUtil.substr(field, 1, (field.length() - 2));

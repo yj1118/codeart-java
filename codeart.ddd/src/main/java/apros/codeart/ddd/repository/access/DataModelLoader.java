@@ -14,12 +14,10 @@ public final class DataModelLoader {
 
 	public static void load(Iterable<Class<? extends IDomainObject>> doTypes) {
 		DataTableLoader.load(doTypes);
-		DataTableLoader.disposeTemp();
-//		//初始化数据源，持久层可能要做一些初始化操作
-//		DataSource.init();
+//		DataTableLoader.disposeTemp();
 	}
 
-	private static Function<Class<? extends IDomainObject>, DataModel> _getModel = LazyIndexer.init((objectType) -> {
+	private static final Function<Class<? extends IDomainObject>, DataModel> _getModel = LazyIndexer.init((objectType) -> {
 
 		var meta = ObjectMetaLoader.get(objectType);
 		var root = DataTableLoader.getRoot(objectType);

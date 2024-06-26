@@ -13,9 +13,7 @@ class QueryCount extends QueryCountQB {
 	private QueryCount() {
 	}
 
-	protected String buildImpl(DataTable target, String expression, QueryLevel level) {
-
-		var definition = SqlDefinition.create(expression);
+	protected String buildImpl(DataTable target, SqlDefinition definition, QueryLevel level) {
 
 		String objectSql = ExpressionHelper.getObjectSql(target, level, definition);
 

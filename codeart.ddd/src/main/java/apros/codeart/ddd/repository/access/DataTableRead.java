@@ -3,12 +3,16 @@ package apros.codeart.ddd.repository.access;
 import static apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Constructor;
+import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Function;
 
+import apros.codeart.util.TimeUtil;
 import com.google.common.collect.Iterables;
 
 import apros.codeart.ddd.DerivedClassImpl;
@@ -300,13 +304,13 @@ final class DataTableRead {
         }
         var tip = prm.propertyTip();
         if (tip == null)
-            throw new IllegalStateException(Language.stringsMessageFormat("codeart.ddd",
+            throw new IllegalStateException(Language.stringsMessageFormat("apros.codeart.ddd",
                     "ConstructionParameterNoProperty", _self.objectType().getName(), prm.name()));
 
         // 从属性定义中加载
         value = readPropertyValue(null, tip, prm, data, level); // 在构造时，还没有产生对象，所以parent为 null
         if (value == null)
-            throw new IllegalStateException(Language.stringsMessageFormat("codeart.ddd", "ConstructionParameterError",
+            throw new IllegalStateException(Language.stringsMessageFormat("apros.codeart.ddd", "ConstructionParameterError",
                     prm.declaringType().getName(), prm.name()));
         return value;
     }
@@ -352,7 +356,7 @@ final class DataTableRead {
         return null;
     }
 
-//	#region 读取基础的值数据
+    //region 读取基础的值数据
 
     private Object readPrimitive(PropertyMeta tip, MapData data) {
         var value = tip.lazy() ? readValueByLazy(tip, data) : readValueFromData(tip, data);
@@ -366,7 +370,20 @@ final class DataTableRead {
     }
 
     private Object readValueFromData(PropertyMeta tip, MapData data) {
-        return data.get(tip.name());
+
+        var value = data.get(tip.name());
+
+        if(tip.monotype() == LocalDateTime.class){
+            var time = (Timestamp)value;
+            return time.toLocalDateTime();
+        }
+
+        if(tip.monotype() == ZonedDateTime.class){
+            var time = (Timestamp)value;
+            return TimeUtil.toUTC(time.toInstant());
+        }
+
+        return value;
     }
 
     private Object readValueByLazy(PropertyMeta tip, MapData data) {
@@ -505,7 +522,7 @@ final class DataTableRead {
         Class<?> objectType = StringUtil.isNullOrEmpty(typeKey) ? tip.monotype()
                 : DerivedClassImpl.getDerivedType(typeKey);
 
-        var child = _self.findChild(_self, tip.name(), objectType);
+        var child = _self.findChild(_self, tip.name());
         // 先尝试中构造上下文中得到
         var obj = child.getObjectFromConstruct(subData);
         if (obj == null)

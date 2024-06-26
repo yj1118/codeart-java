@@ -27,6 +27,8 @@ import apros.codeart.util.StringUtil;
 
 public class Account extends AggregateRootLong {
 
+    //region 基础代码
+
     //region 账户名
 
     @PropertyRepository()
@@ -186,20 +188,8 @@ public class Account extends AggregateRootLong {
 
     //endregion
 
-
-    public void login(String Ip) {
-        if (!this.status().isEnabled()) throw new UIException(Language.strings("AccountDisabled"));
-        this.status().updateLogin(Ip);
-    }
-
-    public Account(long id, String name) {
-        super(id);
-        this.name(name);
-        this.onConstructed();
-    }
-
     @ConstructorRepository
-    Account(long id, LocalDateTime createTime) {
+    public Account(long id, LocalDateTime createTime) {
         super(id);
         this.createTime(createTime);
         this.onConstructed();
@@ -210,7 +200,7 @@ public class Account extends AggregateRootLong {
     private static class AccountEmpty extends Account {
 
         public AccountEmpty() {
-            super(0, StringUtil.empty());
+            super(0, LocalDateTime.now());
             this.onConstructed();
         }
 
@@ -228,5 +218,20 @@ public class Account extends AggregateRootLong {
 
 
     //endregion
+
+    //endregion
+
+    public Account(long id, String name,String password) {
+        super(id);
+        this.name(name);
+        this.password(password);
+        this.status(new AccountStatus(id, LoginInfo.empty()));
+        this.onConstructed();
+    }
+
+    public void login(String ip) {
+        if (!this.status().isEnabled()) throw new UIException(Language.strings("AccountDisabled"));
+        this.status().updateLogin(ip);
+    }
 
 }

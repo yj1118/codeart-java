@@ -85,5 +85,4 @@ public class AccountStatus extends EntityObjectLong {
 
     //endregion
 
-
 }

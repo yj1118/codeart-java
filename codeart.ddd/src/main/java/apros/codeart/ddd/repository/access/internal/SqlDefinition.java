@@ -108,7 +108,7 @@ public class SqlDefinition {
     }
 
     public boolean isNative() {
-        return StringUtil.isNullOrEmpty(_nativeSql);
+        return !StringUtil.isNullOrEmpty(_nativeSql);
     }
 
     private String _nativeSql;
@@ -121,7 +121,10 @@ public class SqlDefinition {
         _nativeSql = value;
     }
 
-    private SqlDefinition() {
+    private final String _expression;
+
+    private SqlDefinition(String expression) {
+        _expression = expression;
         _top = StringUtil.empty();
         _selectFields = new ArrayList<String>();
         _condition = SqlCondition.Empty;
@@ -131,9 +134,14 @@ public class SqlDefinition {
         _key = StringUtil.empty();
     }
 
-    private SqlDefinition(SqlColumns columns) {
-        this();
+    private SqlDefinition(String expression, SqlColumns columns) {
+        this(expression);
         _columns = columns;
+    }
+
+    @Override
+    public int hashCode() {
+        return _expression.hashCode();
     }
 
     /// <summary>
@@ -231,8 +239,8 @@ public class SqlDefinition {
         return _create.apply(expression);
     }
 
-    private static Function<String, SqlDefinition> _create = LazyIndexer.init((expression) -> {
-        SqlDefinition define = new SqlDefinition();
+    private static final Function<String, SqlDefinition> _create = LazyIndexer.init((expression) -> {
+        SqlDefinition define = new SqlDefinition(expression);
         final String sqlTip = "[sql]";
         if (expression.startsWith("[sql]")) {
             define.nativeSql(StringUtil.substr(expression, sqlTip.length()));
@@ -408,10 +416,9 @@ public class SqlDefinition {
     }
 
 //	#endregion
-//
-//	#
 
-//	region 处理命令文本
+
+    //region 处理命令文本
 
     public String process(String commandText, MapData param) {
         if (this.isNative())
@@ -421,13 +428,13 @@ public class SqlDefinition {
         return this.condition().process(commandText, param);
     }
 
-//	#endregion
+    //endregion
 
-    public static final SqlDefinition Empty = new SqlDefinition();
+    public static final SqlDefinition Empty = new SqlDefinition("");
 
     /// <summary>
     /// 除根之外都加载
     /// </summary>
-    public static final SqlDefinition All = new SqlDefinition(SqlColumns.All);
+    public static final SqlDefinition All = new SqlDefinition("",SqlColumns.All);
 
 }

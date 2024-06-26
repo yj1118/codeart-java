@@ -200,7 +200,7 @@ final class DataTableDelete {
 			var obj = (DomainObject) member;
 			if (obj.isEmpty())
 				continue;
-			var child = _self.findChild(_self, propertyName, obj.getClass());
+			var child = _self.findChild(_self, propertyName);
 			// 删除对象的数据
 			child.deleteMember(root, current, obj);
 			child.middle().deleteMiddle(root, current, obj);
@@ -252,7 +252,7 @@ final class DataTableDelete {
 			PropertyMeta tip) {
 		var obj = (DomainObject) current.getValue(tip.name());
 		if (!obj.isEmpty()) {
-			var child = _self.findChild(_self, tip.name(), obj.getClass());
+			var child = _self.findChild(_self, tip.name());
 			child.deleteMember(root, parent, obj);
 		}
 	}
@@ -271,7 +271,7 @@ final class DataTableDelete {
 		var originalData = DataTableUtil.getOriginalData(current);
 		var obj = (DomainObject) _self.queryMember(tip, originalData);
 		if (!obj.isEmpty()) {
-			var child = _self.findChild(_self, tip.name(), obj.getClass());
+			var child = _self.findChild(_self, tip.name());
 			child.deleteMember(root, parent, obj);
 		}
 	}

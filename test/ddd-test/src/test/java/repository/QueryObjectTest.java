@@ -12,7 +12,9 @@ import apros.codeart.util.concurrent.LatchSignal;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import subsystem.account.Account;
 import subsystem.account.AuthPlatform;
+import subsystem.account.IAccountRepository;
 import subsystem.account.IAuthPlatformRepository;
 
 import java.util.concurrent.TimeUnit;
@@ -35,6 +37,7 @@ public class QueryObjectTest {
         DataContext.using(() -> {
             create("系统控制", "admin");
             create("用户博客", "blog");
+            createAccount("小李");
         });
     }
 
@@ -42,6 +45,12 @@ public class QueryObjectTest {
         var id = DataPortal.getIdentity(AuthPlatform.class);
         var platform = new AuthPlatform(id, name, en);
         Repository.add(platform);
+    }
+
+    private static void createAccount(String name) {
+        var id = DataPortal.getIdentity(Account.class);
+        var account = new Account(id,name,"111111");
+        Repository.add(account);
     }
 
     @AfterAll
@@ -59,12 +68,34 @@ public class QueryObjectTest {
 
         DataContext.using(() -> {
             var obj = Repository.find(AuthPlatform.class,id,QueryLevel.NONE);
-            assertEquals("admin",obj.en());
-            assertEquals("系统控制",obj.name());
+            assertAdmin(obj);
         });
 
     }
 
+    @Test
+    void query_by_like_name() {
+        DataContext.using(() -> {
+            IAuthPlatformRepository repository = Repository.create(IAuthPlatformRepository.class);
+            var obj = repository.findByName("统控",QueryLevel.NONE);
+            assertAdmin(obj);
+        });
+    }
+
+    private static void assertAdmin(AuthPlatform obj){
+        assertEquals("admin",obj.en());
+        assertEquals("系统控制",obj.name());
+    }
+
+
+    @Test
+    void query_by_external_entity() {
+        DataContext.using(() -> {
+            IAccountRepository repository = Repository.create(IAccountRepository.class);
+            var obj = repository.findByIsEnabled(true);
+            assertFalse(obj.isEmpty());
+        });
+    }
 
 
 }

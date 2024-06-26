@@ -87,8 +87,12 @@ public class ValueMeta {
         if (ObjectMeta.isDomainObject(valueType)) {
             return DomainObject.getEmpty(valueType);
         }
+
         if (valueType.equals(String.class))
             return StringUtil.empty();
+
+        if (valueType.equals(boolean.class))
+            return false;
 
         if (valueType.equals(UUID.class))
             return Guid.Empty;

@@ -156,7 +156,7 @@ public final class StringUtil {
     }
 
     public static String insert(String str, int offset, String value) {
-        var sb = new StringBuilder();
+        var sb = new StringBuilder(str);
         sb.insert(offset, value);
         return sb.toString();
     }

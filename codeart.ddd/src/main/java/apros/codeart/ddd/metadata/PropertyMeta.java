@@ -96,7 +96,7 @@ public class PropertyMeta {
         return _value.getDefaultValue();
     }
 
-    private Iterable<IPropertyValidator> _validators;
+    private final Iterable<IPropertyValidator> _validators;
 
     public Iterable<IPropertyValidator> validators() {
         return _validators;

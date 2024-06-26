@@ -225,10 +225,17 @@ public class DataTable {
         return _chain.getPath(parent);
     }
 
-    private Iterable<IDataField> _fields;
+    private final Iterable<IDataField> _fields;
 
     public Iterable<IDataField> fields() {
         return _fields;
+    }
+
+    public IDataField getField(String fieldName,boolean ignoreCase) {
+        if(ignoreCase)
+            return ListUtil.find(this.fields(),(f)-> f.name().equalsIgnoreCase(fieldName));
+        else
+            return ListUtil.find(this.fields(),(f)-> f.name().equals(fieldName));
     }
 
     private Iterable<IDataField> getFields(Iterable<IDataField> objectFields) {
@@ -413,7 +420,12 @@ public class DataTable {
      * @return
      */
     public DataTable findChild(DataTable master, PropertyMeta tip) {
-        return _getRuntimeTable.apply(master).apply(tip.name()).apply(tip.monotype());
+        return _getRuntimeTable.apply(master).apply(tip.name());
+    }
+
+
+    public DataTable findChild(String propertyName) {
+        return findChild(this, propertyName);
     }
 
     /**
@@ -429,34 +441,30 @@ public class DataTable {
      *
      * @param master
      * @param propertyName
-     * @param objectType   表示实际运行时propertyName对应的objectType
      * @return
      */
-    public DataTable findChild(DataTable master, String propertyName, Class<?> objectType) {
-        return _getRuntimeTable.apply(master).apply(propertyName).apply(objectType);
+    public DataTable findChild(DataTable master, String propertyName) {
+        return _getRuntimeTable.apply(master).apply(propertyName);
     }
 
-    private Function<DataTable, Function<String, Function<Class<?>, DataTable>>> _getRuntimeTable;
+    private Function<DataTable, Function<String, DataTable>> _getRuntimeTable;
 
     private void initGetRuntimeTable() {
         _getRuntimeTable = LazyIndexer.init((master) -> {
             return LazyIndexer.init((propertyName) -> {
-                return LazyIndexer.init((propertyType) -> {
-                    var memberField = ListUtil.find(master.objectFields(), (field) -> {
-                        return field.propertyName().equalsIgnoreCase(propertyName);
-                    });
-
-                    if (memberField == null) {
-
-                        throw new IllegalStateException(Language.strings("apros.codeart.ddd", "NotFoundTableField",
-                                master.name(), propertyName));
-                    }
-
-                    Class<?> objectType = TypeUtil.isCollection(propertyType) ? memberField.tip().monotype()
-                            : propertyType;
-
-                    return createChildTable(master, memberField, objectType);
+                var memberField = ListUtil.find(master.objectFields(), (field) -> {
+                    return field.propertyName().equalsIgnoreCase(propertyName);
                 });
+
+                if (memberField == null) {
+
+                    throw new IllegalStateException(Language.strings("apros.codeart.ddd", "NotFoundTableField",
+                            master.name(), propertyName));
+                }
+
+                Class<?> objectType = memberField.tip().monotype();
+
+                return createChildTable(master, memberField, objectType);
             });
         });
     }

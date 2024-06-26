@@ -16,6 +16,10 @@ public final class SqlStatement {
         return DataSource.getAgent().qualifier(field);
     }
 
+    public static boolean hasQualifier(String field) {
+        return DataSource.getAgent().hasQualifier(field);
+    }
+
     /**
      * 解开标示限定符
      *

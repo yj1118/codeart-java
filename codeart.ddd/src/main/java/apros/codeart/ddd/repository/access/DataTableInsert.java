@@ -273,7 +273,7 @@ final class DataTableInsert {
 
 			// 保存引用数据
 			if (!obj.isEmpty()) {
-				var child = _self.findChild(_self, tip.name(), obj.getClass());
+				var child = _self.findChild(_self, tip.name());
 				child.insertMember(root, current, obj);
 			}
 		}
@@ -306,7 +306,7 @@ final class DataTableInsert {
 			data.put(field.name(), id);
 
 			// 保存数据
-			var child = _self.findChild(_self, tip.name(), obj.getClass());
+			var child = _self.findChild(_self, tip.name());
 			child.insertMember(root, current, obj);
 		}
 	}
@@ -323,7 +323,7 @@ final class DataTableInsert {
 			var obj = (DomainObject) member;
 			if (obj.isEmpty())
 				continue;
-			var child = _self.findChild(_self, tip.name(), obj.getClass());
+			var child = _self.findChild(_self, tip.name());
 			if (child.type() == DataTableType.ValueObject) {
 				// 我们需要为ValueObject补充编号
 				((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
