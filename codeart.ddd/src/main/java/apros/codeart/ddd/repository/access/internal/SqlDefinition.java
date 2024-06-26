@@ -144,6 +144,30 @@ public class SqlDefinition {
         return _expression.hashCode();
     }
 
+    public String getFieldsSql() {
+        if (!this.hasSelectFields())
+            return "*";
+        else {
+            // where涉及到的字段内置到GetObjectSql中，所以不必考虑
+            ArrayList<String> temp = new ArrayList<String>();
+            ListUtil.addRange(temp, this.columns().select());
+            ListUtil.addRange(temp, this.columns().order());
+
+            var fields = StringUtil.distinctIgnoreCase(temp);
+
+            StringBuilder sql = new StringBuilder();
+
+            for (var field : fields) {
+                sql.append(SqlStatement.qualifier(field));
+                sql.append(",");
+            }
+
+            if (!sql.isEmpty())
+                StringUtil.removeLast(sql);
+            return sql.toString();
+        }
+    }
+
     /// <summary>
     /// 对象链是否包括在inner表达式中,对象链的格式是 a_b_c
     /// </summary>

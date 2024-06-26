@@ -5,28 +5,19 @@ import static apros.codeart.runtime.Util.propagate;
 import java.lang.reflect.Constructor;
 import java.sql.Timestamp;
 import java.text.MessageFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Function;
 
+import apros.codeart.ddd.*;
 import apros.codeart.util.TimeUtil;
 import com.google.common.collect.Iterables;
 
-import apros.codeart.ddd.DerivedClassImpl;
-import apros.codeart.ddd.DomainCollection;
-import apros.codeart.ddd.DomainObject;
-import apros.codeart.ddd.DomainProperty;
-import apros.codeart.ddd.Emptyable;
-import apros.codeart.ddd.EntityObject;
-import apros.codeart.ddd.IAggregateRoot;
-import apros.codeart.ddd.IDomainCollection;
-import apros.codeart.ddd.IDomainObject;
-import apros.codeart.ddd.IValueObject;
-import apros.codeart.ddd.MapData;
-import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.repository.ConstructorParameterInfo;
@@ -273,6 +264,7 @@ final class DataTableRead {
         if (valueObject != null) {
             Object id = data.get(EntityObject.IdPropertyName);
             if (id != null) {
+                id = converData(id,UUID.class);
                 valueObject.setPersistentIdentity((UUID) id);
             }
         }
@@ -370,17 +362,26 @@ final class DataTableRead {
     }
 
     private Object readValueFromData(PropertyMeta tip, MapData data) {
-
         var value = data.get(tip.name());
+        return converData(value,tip.monotype());
+    }
 
-        if(tip.monotype() == LocalDateTime.class){
+    private static Object converData(Object value ,Class<?> exceptType){
+
+        if(value == null) return null;
+
+        if(exceptType == UUID.class){
+            if(value.getClass() == String.class){
+                return UUID.fromString(value.toString());
+            }
+        }
+        else if(exceptType == LocalDateTime.class || exceptType == EmptyableDateTime.class){
             var time = (Timestamp)value;
             return time.toLocalDateTime();
         }
-
-        if(tip.monotype() == ZonedDateTime.class){
+        else if(exceptType == ZonedDateTime.class || exceptType == EmptyableZonedDateTime.class){
             var time = (Timestamp)value;
-            return TimeUtil.toUTC(time.toInstant());
+            return new EmptyableZonedDateTime(TimeUtil.toUTC(time.toInstant()));
         }
 
         return value;

@@ -8,7 +8,7 @@ import apros.codeart.ddd.repository.DataContext;
 
 class DataProxyImpl extends DataProxy {
 
-    private MapData _originalData;
+    private final MapData _originalData;
 
     /**
      * 从数据库中加载的数据

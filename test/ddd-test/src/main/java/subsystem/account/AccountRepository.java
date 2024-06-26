@@ -18,5 +18,13 @@ public class AccountRepository extends SqlRepository<Account> implements IAccoun
         }, QueryLevel.NONE);
     }
 
+    @Override
+    public Account findByIp(String ip) {
+        return DataPortal.querySingle(Account.class, "status.loginInfo.lastIP=@ip", (arg) ->
+        {
+            arg.put("ip", ip);
+        }, QueryLevel.NONE);
+    }
+
 
 }

@@ -37,7 +37,9 @@ public class QueryObjectTest {
         DataContext.using(() -> {
             create("系统控制", "admin");
             create("用户博客", "blog");
-            createAccount("小李");
+            createAccount("小李","127.0.0.1");
+            createAccount("小张","127.0.0.2");
+            createAccount("小明","127.0.0.2");
         });
     }
 
@@ -47,9 +49,10 @@ public class QueryObjectTest {
         Repository.add(platform);
     }
 
-    private static void createAccount(String name) {
+    private static void createAccount(String name,String ip) {
         var id = DataPortal.getIdentity(Account.class);
         var account = new Account(id,name,"111111");
+        account.login(ip);
         Repository.add(account);
     }
 
@@ -87,13 +90,27 @@ public class QueryObjectTest {
         assertEquals("系统控制",obj.name());
     }
 
+    private static void assertAccountXL(Account obj){
+        assertEquals("小李",obj.name());
+        assertEquals("127.0.0.1",obj.status().loginInfo().lastIP());
+    }
+
 
     @Test
-    void query_by_external_entity() {
+    void query_by_status_isEnabled() {
         DataContext.using(() -> {
             IAccountRepository repository = Repository.create(IAccountRepository.class);
             var obj = repository.findByIsEnabled(true);
-            assertFalse(obj.isEmpty());
+            assertAccountXL(obj);
+        });
+    }
+
+    @Test
+    void query_by_status_loginInfo_ip() {
+        DataContext.using(() -> {
+            IAccountRepository repository = Repository.create(IAccountRepository.class);
+            var obj = repository.findByIp("127.0.0.1");
+            assertAccountXL(obj);
         });
     }
 

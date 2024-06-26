@@ -10,6 +10,7 @@ import apros.codeart.ddd.repository.access.GeneratedField;
 import apros.codeart.ddd.repository.access.TempDataTableIndex;
 import apros.codeart.ddd.repository.access.internal.SqlDefinition;
 import apros.codeart.ddd.repository.access.internal.SqlStatement;
+import apros.codeart.ddd.repository.db.DBUtil;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
 
@@ -28,10 +29,15 @@ public final class ExpressionHelper {
         StringUtil.appendLine(sql, getSelectFieldsSql(target, definition));
         StringUtil.appendLine(sql, " from ");
         StringUtil.appendLine(sql, getFromSql(target, level, definition));
-        StringUtil.appendLine(sql, getJoinSql(target, definition));
+        StringUtil.append(sql, getJoinSql(target, definition));
+        if(!definition.condition().isEmpty()){
+            StringUtil.appendFormat(sql, " where %s",definition.condition().code());
+        }
 
-        return getFinallyObjectSql(sql.toString(), target, definition);
+        return getFinallyObjectSql(sql.toString(), target, level);
     }
+
+
 
 //	#region 得到select语句
 
@@ -193,26 +199,25 @@ public final class ExpressionHelper {
 
             if (current.type() == DataTableType.AggregateRoot) {
                 StringUtil.appendMessageFormat(sql,
-                        " left join {0}{6} on {0}.{1}={2}.Id left join {3} as {4}{6} on {0}.{5}={4}.Id",
+                        " left join {0} on {0}.{1}={2}.Id left join {3} as {4} on {0}.{5}={4}.Id",
                         SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
                         SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
-                        SqlStatement.qualifier(chain), GeneratedField.SlaveIdName, getLockCode(QueryLevel.NONE));
+                        SqlStatement.qualifier(chain), GeneratedField.SlaveIdName);
 
             } else {
                 // 中间的查询会多一个{4}.{6}={2}.Id的限定，
                 StringUtil.appendMessageFormat(sql,
-                        " left join {0}{7} on {0}.{1}={2}.Id left join {3} as {4}{7} on {0}.{5}={4}.Id and {4}.{6}={2}.Id",
+                        " left join {0} on {0}.{1}={2}.Id left join {3} as {4} on {0}.{5}={4}.Id and {4}.{6}={2}.Id",
                         SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
                         SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
-                        SqlStatement.qualifier(chain), GeneratedField.SlaveIdName, GeneratedField.RootIdName,
-                        getLockCode(QueryLevel.NONE));
+                        SqlStatement.qualifier(chain), GeneratedField.SlaveIdName, GeneratedField.RootIdName);
             }
         } else {
             if (current.type() == DataTableType.AggregateRoot) {
                 var tip = current.memberPropertyTip();
-                StringUtil.appendMessageFormat(sql, " left join {0} as {1}{4} on {2}.{3}Id={1}.Id",
+                StringUtil.appendMessageFormat(sql, " left join {0} as {1} on {2}.{3}Id={1}.Id",
                         SqlStatement.qualifier(current.name()), SqlStatement.qualifier(chain),
-                        SqlStatement.qualifier(masterTableName), tip.name(), getLockCode(QueryLevel.NONE));
+                        SqlStatement.qualifier(masterTableName), tip.name());
             } else {
                 if (chainRoot.type() == DataTableType.AggregateRoot) {
                     var chainRootMemberPropertyTip = current.chainRoot().memberPropertyTip();
@@ -221,16 +226,16 @@ public final class ExpressionHelper {
                             : chainRootMemberPropertyTip.name();
                     var tip = current.memberPropertyTip();
                     StringUtil.appendMessageFormat(sql,
-                            " left join {0} as {1}{4} on {2}.{3}Id={1}.Id and {1}.{5}={6}.Id",
+                            " left join {0} as {1} on {2}.{3}Id={1}.Id and {1}.{4}={5}.Id",
                             SqlStatement.qualifier(current.name()), SqlStatement.qualifier(chain),
-                            SqlStatement.qualifier(masterTableName), tip.name(), getLockCode(QueryLevel.NONE),
+                            SqlStatement.qualifier(masterTableName), tip.name(),
                             GeneratedField.RootIdName, SqlStatement.qualifier(rootTableName));
                 } else {
                     // 查询不是从根表发出的，而是从引用表，那么直接用@RootId来限定
                     var tip = current.memberPropertyTip();
-                    StringUtil.appendMessageFormat(sql, " left join {0} as {1}{4} on {2}.{3}Id={1}.Id and {1}.{5}=@{5}",
+                    StringUtil.appendMessageFormat(sql, " left join {0} as {1} on {2}.{3}Id={1}.Id and {1}.{4}=@{4}",
                             SqlStatement.qualifier(current.name()), SqlStatement.qualifier(chain),
-                            SqlStatement.qualifier(masterTableName), tip.name(), getLockCode(QueryLevel.NONE),
+                            SqlStatement.qualifier(masterTableName), tip.name(),
                             GeneratedField.RootIdName);
                 }
 
@@ -274,52 +279,61 @@ public final class ExpressionHelper {
     }
 
     // 获取最终的输出代码
-    private static String getFinallyObjectSql(String tableSql, DataTable table, SqlDefinition exp) {
-        String sql = null;
+    private static String getFinallyObjectSql(String tableSql, DataTable table, QueryLevel level) {
+//        String sql = null;
+//
+//        if (exp.hasInner()) {
+//            if (exp.condition().isEmpty()) {
+//                sql = String.format("select distinct * from (%s) as {%s}", tableSql,
+//                        SqlStatement.qualifier(table.name()));
+//            } else {
+//                sql = String.format("select distinct * from (%s) as %s where %s", tableSql,
+//                        SqlStatement.qualifier(table.name()), exp.condition().code());
+//            }
+//        } else {
+//            if (exp.condition().isEmpty()) {
+//                sql = MessageFormat.format("select distinct {2} from ({0}) as {1}", tableSql,
+//                        SqlStatement.qualifier(table.name()), getFieldsSql(exp));
+//            } else {
+//                sql = MessageFormat.format("select distinct {3} from ({0}) as {1} where {2}", tableSql,
+//                        SqlStatement.qualifier(table.name()), exp.condition().code(), getFieldsSql(exp));
+//            }
+//        }
+//
+//        return String.format("(%s) as %s", sql, SqlStatement.qualifier(table.name()));
 
-        if (exp.hasInner()) {
-            if (exp.condition().isEmpty()) {
-                sql = String.format("select distinct * from (%s) as {%s}", tableSql,
-                        SqlStatement.qualifier(table.name()));
-            } else {
-                sql = String.format("select distinct * from (%s) as %s where %s", tableSql,
-                        SqlStatement.qualifier(table.name()), exp.condition().code());
-            }
-        } else {
-            if (exp.condition().isEmpty()) {
-                sql = MessageFormat.format("select distinct {2} from ({0}) as {1}", tableSql,
-                        SqlStatement.qualifier(table.name()), getFieldsSql(exp));
-            } else {
-                sql = MessageFormat.format("select distinct {3} from ({0}) as {1} where {2}", tableSql,
-                        SqlStatement.qualifier(table.name()), exp.condition().code(), getFieldsSql(exp));
-            }
-        }
+        StringBuilder sb = new StringBuilder();
+        StringUtil.appendFormat(sb,"WITH %sCTE AS (",table.name());
+        StringUtil.appendLine(sb);
+        StringUtil.appendLine(sb, addQualifier(tableSql,table,level));
+        StringUtil.append(sb,")");
 
-        return String.format("(%s) as %s", sql, SqlStatement.qualifier(table.name()));
+        return sb.toString();
+
     }
 
-    private static String getFieldsSql(SqlDefinition exp) {
-        if (exp.hasSelectFields())
-            return "*";
-        else {
-            // where涉及到的字段内置到GetObjectSql中，所以不必考虑
-            ArrayList<String> temp = new ArrayList<String>();
-            ListUtil.addRange(temp, exp.columns().select());
-            ListUtil.addRange(temp, exp.columns().order());
+    private static  String addQualifier(String sql, DataTable table,QueryLevel level){
+        var lockCode = getLockCode(level);
+        sql = mapToCCJSqlParser(sql,lockCode);
+        sql = DBUtil.addQualifier(sql,table);
+        return mapToSQLServer(sql,lockCode);
+    }
 
-            var fields = StringUtil.distinctIgnoreCase(temp);
 
-            StringBuilder sql = new StringBuilder();
+    /**
+     * JSqlParser 可以识别 WITH (NOLOCK)锁提示，但是无法识别其他的锁提示，因此用这个占位，然后恢复真正的锁代码
+     */
+    private static final String placeHolder = " WITH (NOLOCK) ";
 
-            for (var field : fields) {
-                sql.append(SqlStatement.qualifier(field));
-                sql.append(",");
-            }
+    private static String mapToCCJSqlParser(String sql,String lockCode){
+        sql = sql.replace("[","\"").replace("]","\"");
+        sql = sql.replace(lockCode, placeHolder);
+        return sql;
+    }
 
-            if (!sql.isEmpty())
-                StringUtil.removeLast(sql);
-            return sql.toString();
-        }
+    private static String mapToSQLServer(String sql,String lockCode){
+        sql = sql.replace(placeHolder,lockCode);
+        return sql;
     }
 
     private static String getLockCode(QueryLevel level) {

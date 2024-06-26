@@ -7,6 +7,7 @@ import apros.codeart.ddd.repository.access.GeneratedField;
 import apros.codeart.ddd.repository.access.TempDataTableIndex;
 import apros.codeart.ddd.repository.access.internal.SqlDefinition;
 import apros.codeart.ddd.repository.access.internal.SqlStatement;
+import apros.codeart.ddd.repository.db.DBUtil;
 import apros.codeart.ddd.repository.postgresql.LockSql;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
@@ -289,15 +290,15 @@ public final class ExpressionHelper {
 
     // 获取最终的输出代码
     private static String getFinallyObjectSql(String tableSql, DataTable table, SqlDefinition exp) {
-        String sql = null;
-
-        if (exp.hasInner()) {
-            sql = String.format("select * from (%s) as {%s}", tableSql,
-                    SqlStatement.qualifier(table.name()));
-        } else {
-            sql = MessageFormat.format("select {2} from ({0}) as {1}", tableSql,
-                    SqlStatement.qualifier(table.name()), getFieldsSql(exp));
-        }
+//        String sql = null;
+//
+//        if (exp.hasInner()) {
+//            sql = String.format("select * from (%s) as {%s}", tableSql,
+//                    SqlStatement.qualifier(table.name()));
+//        } else {
+//            sql = MessageFormat.format("select {2} from ({0}) as {1}", tableSql,
+//                    SqlStatement.qualifier(table.name()), getFieldsSql(exp));
+//        }
 
 //        if (exp.hasInner()) {
 //            if (exp.condition().isEmpty()) {
@@ -320,114 +321,13 @@ public final class ExpressionHelper {
         StringBuilder sb = new StringBuilder();
         StringUtil.appendFormat(sb,"WITH %s AS (",SqlStatement.qualifier(table.name()));
         StringUtil.appendLine(sb);
-        StringUtil.appendLine(sb,addQualifier(sql,table));
+        StringUtil.appendLine(sb, DBUtil.addQualifier(tableSql,table));
         StringUtil.append(sb,")");
 
         return sb.toString();
     }
 
-    /**
-     * 由于用户写的对象表达式里的属性是不带postgresql的标识符的，这会执行报错，所以得加上
-     * @param sql
-     * @return
-     */
-    private static String addQualifier(String sql, DataTable table){
-        boolean containsShare = sql.contains(" FOR SHARE");
 
-        try {
-
-            if(containsShare){
-                sql = sql.replace(" FOR SHARE"," FOR UPDATE");
-            }
-
-            Statement statement = CCJSqlParserUtil.parse(sql);
-
-            if (statement instanceof Select) {
-                Select select = (Select) statement;
-                SelectBody selectBody = select.getSelectBody();
-
-                ExpressionDeParser expressionDeParser = new ExpressionDeParser() {
-                    @Override
-                    public void visit(net.sf.jsqlparser.schema.Column column) {
-                        String columnName = column.getColumnName();
-
-                        if(!SqlStatement.hasQualifier(columnName)){
-                            if(columnName.contains("_")){
-                                var temp = columnName.split("_");
-                                var target = table;
-                                StringBuilder cn = new StringBuilder();
-                                for(var i=0;i<temp.length;i++){
-                                    var name = temp[i];
-                                    if(i == temp.length-1){
-                                        var field = target.getField(name,true);
-                                        StringUtil.appendFormat(cn,"%s.",SqlStatement.qualifier(field.name()));
-                                    }
-                                    else{
-                                        target = target.findChild(name);
-                                        StringUtil.appendFormat(cn,"%s.",SqlStatement.qualifier(target.memberField().name()));
-                                    }
-                                }
-                                StringUtil.removeLast(cn);
-                                column.setColumnName(cn.toString());
-                            }
-                            else{
-                                var field =  table.getField(columnName,true);
-                                if(field != null) columnName = field.name();
-                                column.setColumnName(SqlStatement.qualifier(columnName));
-                            }
-
-
-                        }
-
-
-                        super.visit(column);
-                    }
-                };
-
-                StringBuilder buffer = new StringBuilder();
-                SelectDeParser deparser = new SelectDeParser(expressionDeParser, buffer);
-                expressionDeParser.setSelectVisitor(deparser);
-                expressionDeParser.setBuffer(buffer);
-
-                selectBody.accept(deparser);
-
-                sql = buffer.toString();
-            }
-
-            if(containsShare){
-                sql = sql.replace(" FOR UPDATE"," FOR SHARE");
-            }
-
-            return sql;
-
-        } catch (JSQLParserException e) {
-            throw propagate(e);
-        }
-    }
-
-    private static String getFieldsSql(SqlDefinition exp) {
-        if (exp.hasSelectFields())
-            return "*";
-        else {
-            // where涉及到的字段内置到GetObjectSql中，所以不必考虑
-            ArrayList<String> temp = new ArrayList<String>();
-            ListUtil.addRange(temp, exp.columns().select());
-            ListUtil.addRange(temp, exp.columns().order());
-
-            var fields = StringUtil.distinctIgnoreCase(temp);
-
-            StringBuilder sql = new StringBuilder();
-
-            for (var field : fields) {
-                sql.append(SqlStatement.qualifier(field));
-                sql.append(",");
-            }
-
-            if (!sql.isEmpty())
-                StringUtil.removeLast(sql);
-            return sql.toString();
-        }
-    }
 
     private static String getLockCode(QueryLevel level) {
         return LockSql.get(level);

@@ -21,15 +21,13 @@ public final class TimeUtil {
 		return instant.atZone(zoneId).toLocalDateTime();
 	}
 
-	public static Instant toUTC(Instant value) {
-		ZonedDateTime utcZonedDateTimeFromInstant = value.atZone(ZoneId.of("UTC"));
-		return utcZonedDateTimeFromInstant.toInstant();
+	public static ZonedDateTime toUTC(Instant value) {
+		return value.atZone(ZoneId.of("UTC"));
 	}
 
-	public static Instant toUTC(LocalDateTime value) {
-		ZonedDateTime utcZonedDateTimeFromLocalDateTime = value.atZone(ZoneId.systemDefault())
+	public static ZonedDateTime toUTC(LocalDateTime value) {
+        return value.atZone(ZoneId.systemDefault())
 				.withZoneSameInstant(ZoneId.of("UTC"));
-		return utcZonedDateTimeFromLocalDateTime.toInstant();
 	}
 
 	public static String format(Instant value, String pattern) {

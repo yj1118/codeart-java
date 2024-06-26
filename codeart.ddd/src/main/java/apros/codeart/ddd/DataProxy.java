@@ -51,7 +51,9 @@ public abstract class DataProxy implements IDataProxy {
     public Object load(String propertyName, Supplier<Object> defaultValue) {
         var value = _data.get(propertyName);
         if (value == null) {
-            return defaultValue.get();
+            value = this.loadData(propertyName);
+            if (value == null) value =  defaultValue.get();
+            _data.put(propertyName, value);
         }
         return value;
     }

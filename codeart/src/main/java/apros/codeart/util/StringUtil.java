@@ -63,6 +63,11 @@ public final class StringUtil {
         str.append(System.lineSeparator());
     }
 
+    public static void removeFirst(StringBuilder str) {
+        if (str == null || str.isEmpty()) return;
+        str.deleteCharAt(0);
+    }
+
     public static void removeLast(StringBuilder str) {
         if (str == null || str.isEmpty()) return;
         str.deleteCharAt(str.length() - 1);

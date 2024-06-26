@@ -21,7 +21,8 @@ class QueryObject extends QueryObjectQB {
 
         StringBuilder sb = new StringBuilder();
         StringUtil.appendLine(sb, objectSql);
-        StringUtil.appendFormat(sb, "select distinct %s * from %s %s",definition.top(),
+        StringUtil.appendFormat(sb, "select distinct %s %s from %s %s",definition.top(),
+                definition.getFieldsSql(),
                 SqlStatement.qualifier(target.name()),
                 definition.order());
 
