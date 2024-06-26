@@ -14,6 +14,13 @@ class DropTable extends DropTableQB {
 	protected String buildImpl(DataTable table) {
 		StringBuilder sql = new StringBuilder();
 
+		StringUtil.appendFormat(sql, "if ISNULL(object_id(N'[%sIncrement]'),'') > 0", table.name());
+		StringUtil.appendLine(sql);
+		StringUtil.appendLine(sql, "begin");
+		StringUtil.appendFormat(sql, "DROP TABLE [%sIncrement]", table.name());
+		StringUtil.appendLine(sql);
+		sql.append("end");
+		StringUtil.appendLine(sql);
 		StringUtil.appendFormat(sql, "if ISNULL(object_id(N'[%s]'),'') > 0", table.name());
 		StringUtil.appendLine(sql);
 		StringUtil.appendLine(sql, "begin");

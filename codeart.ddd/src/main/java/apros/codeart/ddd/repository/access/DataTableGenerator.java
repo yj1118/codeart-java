@@ -30,7 +30,6 @@ final class DataTableGenerator {
                 if (DDDConfig.enableReset()) {
                     // 开启了重置，所以在创建表之前，把表删除，重新创建
                     dropTable(access, table);
-                    DataPortal.dropIdentity(access, table);
                 }
                 createTable(access, table);
             });

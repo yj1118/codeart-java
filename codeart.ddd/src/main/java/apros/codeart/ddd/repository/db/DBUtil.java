@@ -1,6 +1,7 @@
 package apros.codeart.ddd.repository.db;
 
 import apros.codeart.ddd.repository.access.DataTable;
+import apros.codeart.ddd.repository.access.DbType;
 import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.util.StringUtil;
 import net.sf.jsqlparser.JSQLParserException;
@@ -103,6 +104,15 @@ public final class DBUtil {
         } catch (JSQLParserException e) {
             throw propagate(e);
         }
+    }
+
+    public static boolean needInc(DataTable table){
+        var idField = table.idField();
+        if(idField != null){
+            var idType = idField.dbType();
+            return idType ==  DbType.Int64 || idType ==  DbType.Int32 || idType == DbType.Int16;
+        }
+        return  false;
     }
 
 }

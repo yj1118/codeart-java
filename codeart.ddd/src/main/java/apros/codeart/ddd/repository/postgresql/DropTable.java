@@ -12,7 +12,14 @@ class DropTable extends DropTableQB {
 
 	@Override
 	protected String buildImpl(DataTable table) {
-		return String.format("DROP TABLE IF EXISTS \"%s\";",table.name());
+
+		StringBuilder sb = new StringBuilder();
+		StringUtil.appendFormat(sb,"DROP TABLE IF EXISTS \"%s\";", table.name());
+		StringUtil.appendLine(sb);
+		StringUtil.appendFormat(sb,"DROP TABLE IF EXISTS \"%sIncrement\";", table.name());
+		StringUtil.appendLine(sb);
+		StringUtil.appendFormat(sb,"DROP FUNCTION IF EXISTS get_%s_increment;", table.name());
+		return  sb.toString();
 	}
 
 	public static final DropTable Instance = new DropTable();

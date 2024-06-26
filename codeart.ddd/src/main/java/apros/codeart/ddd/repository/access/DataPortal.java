@@ -103,14 +103,6 @@ public final class DataPortal {
         return getIdentity(table);
     }
 
-    @TestSupport
-    static void dropIdentity(DataAccess access, DataTable table) {
-        var builder = DataSource.getQueryBuilder(DropIncrIdQB.class);
-        var sql = builder.build(new QueryDescription(table));
-        access.execute(sql);
-    }
-
-
     /**
      * 在数据层中销毁数据模型
      */

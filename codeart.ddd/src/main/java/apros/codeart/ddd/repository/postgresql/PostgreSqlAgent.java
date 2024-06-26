@@ -25,7 +25,6 @@ public class PostgreSqlAgent extends DatabaseAgent {
         this.registerQueryBuilder(QueryPageQB.class, QueryPage.Instance);
 
         this.registerQueryBuilder(GetIncrIdQB.class, GetIncrId.Instance);
-        this.registerQueryBuilder(DropIncrIdQB.class, DropIncrId.Instance);
     }
 
     public static final IDatabaseAgent Instance = new PostgreSqlAgent();

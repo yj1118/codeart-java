@@ -1,5 +1,6 @@
 package apros.codeart.ddd.repository.sqlserver;
 
+import apros.codeart.ddd.repository.db.DBUtil;
 import com.google.common.collect.Iterables;
 
 import apros.codeart.ddd.repository.access.CreateTableQB;
@@ -35,6 +36,11 @@ class CreateTable extends CreateTableQB {
 		StringUtil.appendValidLine(sql, getClusteredIndexSql(table));
 		StringUtil.appendValidLine(sql, getNonclusteredIndexSql(table));
 		sql.append("end");
+		if(DBUtil.needInc(table)){
+			StringUtil.appendLine(sql);
+			var code = getCreateIncCode(table.name());
+			StringUtil.append(sql, code);
+		}
 		return sql.toString();
 	}
 
@@ -151,6 +157,20 @@ class CreateTable extends CreateTableQB {
 		}
 		StringUtil.removeLast(sql);
 		sql.append(")");
+		return sql.toString();
+	}
+
+	private static String getCreateIncCode(String tableName){
+		String increment = String.format("%sIncrement", tableName);
+
+		StringBuilder sql = new StringBuilder();
+		StringUtil.appendFormat(sql, "if(object_id('[%s]') is null)", increment);
+		StringUtil.appendLine(sql, "begin");
+		StringUtil.appendLine(sql, "	create table [" + increment + "]([value] [bigint] NOT NULL,CONSTRAINT [PK_"
+				+ increment
+				+ "] PRIMARY KEY CLUSTERED ([value] ASC)WITH (IGNORE_DUP_KEY = OFF) ON [PRIMARY]) ON [PRIMARY];");
+		StringUtil.appendFormat(sql, "insert into [%s]([value]) values(0);", increment);
+		StringUtil.appendLine(sql, "end");
 		return sql.toString();
 	}
 
