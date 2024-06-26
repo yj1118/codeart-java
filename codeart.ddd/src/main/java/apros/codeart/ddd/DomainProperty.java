@@ -5,6 +5,7 @@ import static apros.codeart.runtime.Util.propagate;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -119,7 +120,7 @@ public class DomainProperty {
         return !Objects.equal(oldValue, newValue);
     }
 
-    public String id() {
+    public UUID id() {
         return _meta.id();
     }
 

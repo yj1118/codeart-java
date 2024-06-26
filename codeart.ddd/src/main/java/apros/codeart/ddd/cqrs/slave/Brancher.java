@@ -51,6 +51,7 @@ public final class Brancher {
 	 */
 	private static void cancelEvents() {
 		var slaves = CQRSConfig.slaves();
+		if (slaves == null) return;
 		for (var slave : slaves) {
 			RemoteObjectAdded.cancel(slave.name());
 			RemoteObjectUpdated.cancel(slave.name());

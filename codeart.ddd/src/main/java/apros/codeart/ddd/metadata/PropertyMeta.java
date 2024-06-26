@@ -1,22 +1,24 @@
 package apros.codeart.ddd.metadata;
 
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.BiFunction;
 
 import apros.codeart.ddd.*;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.runtime.Util;
+import apros.codeart.util.Guid;
 
 public class PropertyMeta {
 
-    private String _id;
+    private final UUID _id;
 
-    public String id() {
+    public UUID id() {
         return _id;
     }
 
-    private String _name;
+    private final String _name;
 
     /**
      * 属性名称
@@ -30,7 +32,7 @@ public class PropertyMeta {
     /**
      * 属性的值的类型，比如字符串/整型等
      */
-    private ValueMeta _value;
+    private final ValueMeta _value;
 
     public ValueMeta value() {
         return _value;
@@ -81,7 +83,7 @@ public class PropertyMeta {
         return _accessSet == PropertyAccessLevel.Public;
     }
 
-    private String _call;
+    private final String _call;
 
     /**
      * 称呼
@@ -148,6 +150,7 @@ public class PropertyMeta {
     public PropertyMeta(String name, ValueMeta value, ObjectMeta declaring, PropertyAccessLevel accessGet,
                         PropertyAccessLevel accessSet, String call, Iterable<IPropertyValidator> validators, boolean lazy,
                         IPropertyDataLoader dataLoader) {
+        _id = Guid.NewGuid();
         _name = name;
         _value = value;
         _declaring = declaring;
