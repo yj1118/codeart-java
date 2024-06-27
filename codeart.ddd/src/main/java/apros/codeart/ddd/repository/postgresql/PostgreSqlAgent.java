@@ -2,6 +2,7 @@ package apros.codeart.ddd.repository.postgresql;
 
 import apros.codeart.ddd.repository.access.*;
 import apros.codeart.ddd.repository.db.*;
+import apros.codeart.ddd.repository.postgresql.QueryCount;
 import apros.codeart.util.StringUtil;
 
 public class PostgreSqlAgent extends DatabaseAgent {
@@ -15,6 +16,7 @@ public class PostgreSqlAgent extends DatabaseAgent {
         this.registerQueryBuilder(ClearTableQB.class, ClearTable.Instance);
         this.registerQueryBuilder(UpdateTableQB.class, UpdateTable.Instance);
         this.registerQueryBuilder(QueryObjectQB.class, QueryObject.Instance);
+        this.registerQueryBuilder(QueryCountQB.class, QueryCount.Instance);
 
         this.registerQueryBuilder(IncrementAssociatedQB.class, IncrementAssociated.Instance);
         this.registerQueryBuilder(DecrementAssociatedQB.class, DecrementAssociated.Instance);

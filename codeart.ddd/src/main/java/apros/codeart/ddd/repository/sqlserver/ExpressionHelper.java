@@ -325,14 +325,15 @@ public final class ExpressionHelper {
      */
     private static final String placeHolder = " WITH (NOLOCK) ";
 
-    private static String mapToCCJSqlParser(String sql,String lockCode){
-        sql = sql.replace("[","\"").replace("]","\"");
-        sql = sql.replace(lockCode, placeHolder);
+    public static String mapToCCJSqlParser(String sql,String lockCode){
+        if(!StringUtil.isNullOrEmpty(lockCode))
+            sql = sql.replace(lockCode, placeHolder);
         return sql;
     }
 
-    private static String mapToSQLServer(String sql,String lockCode){
-        sql = sql.replace(placeHolder,lockCode);
+    public static String mapToSQLServer(String sql,String lockCode){
+        if(!StringUtil.isNullOrEmpty(lockCode))
+            sql = sql.replace(placeHolder,lockCode);
         return sql;
     }
 

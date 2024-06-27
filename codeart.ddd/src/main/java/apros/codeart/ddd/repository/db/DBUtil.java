@@ -17,13 +17,19 @@ import static apros.codeart.runtime.Util.propagate;
 public final class DBUtil {
     private DBUtil(){}
 
+
+    public static String addQualifier(String sql, DataTable table) {
+        return addQualifier(sql,table,null);
+    }
+
     /**
      * 由于用户写的对象表达式里的属性是不带postgresql的标识符的，这会执行报错，所以得加上
      * @param sql
      * @return
      */
-    public static String addQualifier(String sql, DataTable table){
+    public static String addQualifier(String sql, DataTable table,String tableAlias){
         boolean containsShare = sql.contains(" FOR SHARE");
+        String tableName = StringUtil.isNullOrEmpty(tableAlias) ? table.name() : tableAlias;
 
         try {
 
@@ -67,7 +73,7 @@ public final class DBUtil {
                                 var field =  table.getField(columnName,true);
                                 if(column.getTable() == null){
                                     if(field != null) columnName = field.name();
-                                    String cn = String.format("%s.%s",SqlStatement.qualifier(table.name()),SqlStatement.qualifier(columnName));
+                                    String cn = String.format("%s.%s",SqlStatement.qualifier(tableName),SqlStatement.qualifier(columnName));
                                     column.setColumnName(cn);
                                 }
                                 else {

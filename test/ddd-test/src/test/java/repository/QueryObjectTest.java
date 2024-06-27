@@ -116,6 +116,14 @@ public class QueryObjectTest {
         });
     }
 
+    @Test
+    void query_by_status_loginInfo_ip_list() {
+        DataContext.using(() -> {
+            IAccountRepository repository = Repository.create(IAccountRepository.class);
+            var objs = repository.findsByIp("127.0.0.2");
+            assertEquals(2, Iterables.size(objs));
+        });
+    }
 
     @Test
     void query_by_status_loginInfo_ip_count() {

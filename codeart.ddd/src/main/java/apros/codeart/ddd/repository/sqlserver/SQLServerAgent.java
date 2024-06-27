@@ -16,6 +16,7 @@ public class SQLServerAgent extends DatabaseAgent {
         this.registerQueryBuilder(UpdateTableQB.class, UpdateTable.Instance);
 
         this.registerQueryBuilder(QueryObjectQB.class, QueryObject.Instance);
+        this.registerQueryBuilder(QueryCountQB.class, QueryCount.Instance);
 
         this.registerQueryBuilder(IncrementAssociatedQB.class, IncrementAssociated.Instance);
         this.registerQueryBuilder(DecrementAssociatedQB.class, DecrementAssociated.Instance);
@@ -40,19 +41,19 @@ public class SQLServerAgent extends DatabaseAgent {
 
     @Override
     public String qualifier(String field) {
-        if (!field.startsWith("["))
-            return String.format("[%s]", field);
+        if (!field.startsWith("\""))
+            return String.format("\"%s\"", field);
         return field;
     }
 
     @Override
     public boolean hasQualifier(String field) {
-        return field.startsWith("[");
+        return field.startsWith("\"");
     }
 
     @Override
     public String unQualifier(String field) {
-        if (field.startsWith("["))
+        if (field.startsWith("\""))
             return StringUtil.substr(field, 1, (field.length() - 2));
         return field;
     }
