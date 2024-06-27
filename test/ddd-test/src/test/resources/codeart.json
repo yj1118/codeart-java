@@ -1,8 +1,8 @@
 {
   "repository": {
     "db": {
-      "type": "sqlserver",
-      "url": "jdbc:sqlserver://YJ1118;databaseName=ca-test;user=sa;password=Rw$510th%v;trustServerCertificate=true;"
+      "type": "postgresql",
+      "url": "jdbc:postgresql://YJ1118:5432/ca-test?user=postgres&password=Q!1&trustServerCertificate=true"
     }
   },
   "event": {
