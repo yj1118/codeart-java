@@ -44,10 +44,18 @@ public class AccountRepository extends SqlRepository<Account> implements IAccoun
     }
 
     @Override
-    public Page<Account> finds(String name,int pageIndex,int pageSize){
+    public Page<Account> findPage(String name,int pageIndex,int pageSize){
         return DataPortal.query(Account.class, "name like %@name%",pageIndex,pageSize, (arg) ->
         {
             arg.put("name", name);
+        });
+    }
+
+    @Override
+    public Page<Account> findPageByIp(String ip, int pageIndex, int pageSize) {
+        return DataPortal.query(Account.class, "status.loginInfo.lastIP=@ip",pageIndex,pageSize, (arg) ->
+        {
+            arg.put("ip", ip);
         });
     }
 

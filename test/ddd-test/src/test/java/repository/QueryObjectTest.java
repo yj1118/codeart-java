@@ -35,7 +35,7 @@ public class QueryObjectTest {
             createAccount("小李","127.0.0.1");
             createAccount("小张","127.0.0.2");
             createAccount("小明","127.0.0.2");
-            createAccount("王强","127.0.0.3");
+            createAccount("王强","127.0.0.2");
         });
     }
 
@@ -133,7 +133,7 @@ public class QueryObjectTest {
     void query_by_page_1() {
         DataContext.using(() -> {
             IAccountRepository repository = Repository.create(IAccountRepository.class);
-            var page = repository.finds("小",1,20);
+            var page = repository.findPage("小",1,20);
             assertEquals(3, Iterables.size(page.objects()));
             assertEquals(3, page.dataCount());
         });
@@ -143,7 +143,17 @@ public class QueryObjectTest {
     void query_by_page_2() {
         DataContext.using(() -> {
             IAccountRepository repository = Repository.create(IAccountRepository.class);
-            var page = repository.finds("小",2,2);
+            var page = repository.findPage("小",2,2);
+            assertEquals(1, Iterables.size(page.objects()));
+            assertEquals(3, page.dataCount());
+        });
+    }
+
+    @Test
+    void query_by_page_ip() {
+        DataContext.using(() -> {
+            IAccountRepository repository = Repository.create(IAccountRepository.class);
+            var page = repository.findPageByIp("127.0.0.2",2,2);
             assertEquals(1, Iterables.size(page.objects()));
             assertEquals(3, page.dataCount());
         });

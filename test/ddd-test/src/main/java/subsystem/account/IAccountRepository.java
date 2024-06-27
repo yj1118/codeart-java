@@ -12,6 +12,8 @@ public interface IAccountRepository extends IRepository<Account> {
 
     int getCountByIp(String ip);
 
-    Page<Account> finds(String name,int pageIndex,int pageSize);
+    Page<Account> findPage(String name,int pageIndex,int pageSize);
+
+    Page<Account> findPageByIp(String ip,int pageIndex,int pageSize);
 
 }
