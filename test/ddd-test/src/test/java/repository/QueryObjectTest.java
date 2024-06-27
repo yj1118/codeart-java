@@ -2,13 +2,9 @@ package repository;
 
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.launcher.TestLauncher;
-import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.Repository;
-import apros.codeart.ddd.repository.TransactionStatus;
 import apros.codeart.ddd.repository.access.DataPortal;
-import apros.codeart.util.WrapperBoolean;
-import apros.codeart.util.concurrent.LatchSignal;
 import com.google.common.collect.Iterables;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,9 +14,6 @@ import subsystem.account.AuthPlatform;
 import subsystem.account.IAccountRepository;
 import subsystem.account.IAuthPlatformRepository;
 
-import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
@@ -42,6 +35,7 @@ public class QueryObjectTest {
             createAccount("小李","127.0.0.1");
             createAccount("小张","127.0.0.2");
             createAccount("小明","127.0.0.2");
+            createAccount("王强","127.0.0.3");
         });
     }
 
@@ -131,6 +125,27 @@ public class QueryObjectTest {
             IAccountRepository repository = Repository.create(IAccountRepository.class);
             var count = repository.getCountByIp("127.0.0.2");
             assertEquals(2, count);
+        });
+    }
+
+
+    @Test
+    void query_by_page_1() {
+        DataContext.using(() -> {
+            IAccountRepository repository = Repository.create(IAccountRepository.class);
+            var page = repository.finds("小",1,20);
+            assertEquals(3, Iterables.size(page.objects()));
+            assertEquals(3, page.dataCount());
+        });
+    }
+
+    @Test
+    void query_by_page_2() {
+        DataContext.using(() -> {
+            IAccountRepository repository = Repository.create(IAccountRepository.class);
+            var page = repository.finds("小",2,2);
+            assertEquals(1, Iterables.size(page.objects()));
+            assertEquals(3, page.dataCount());
         });
     }
 

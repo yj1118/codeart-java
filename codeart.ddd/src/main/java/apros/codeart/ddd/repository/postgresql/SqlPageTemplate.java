@@ -1,4 +1,4 @@
-package apros.codeart.ddd.repository.sqlserver;
+package apros.codeart.ddd.repository.postgresql;
 
 import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.QueryLevel;
@@ -90,18 +90,16 @@ public class SqlPageTemplate {
 
 	private String getFirstPageCT() {
 		var temp =  MessageFormat.format("select {0} from {1} {2} {3} {4}", _select, _from,_condition,getGroupBy(), _orderBy);
-		temp = DBUtil.addQualifier(temp,_table,_table.name()+"CTE");
-		temp = temp.substring(6);
-		return String.format("select top @data_length %s;",temp);
+		temp = DBUtil.addQualifier(temp,_table);
+		return String.format("%s LIMIT @data_length;",temp);
 	}
 
 	private String getPageCT() {
 		String temp = MessageFormat.format(
 				"select row_number() over({0}) as ind,{3} from {1} {2} {4} {0}",
 				_orderBy, _from, _condition,_select,getGroupBy());
-		temp = DBUtil.addQualifier(temp,_table,_table.name()+"CTE");
-		temp = temp.substring(6);
-		String aSql = String.format("select top @data_end %s",temp);
+		temp = DBUtil.addQualifier(temp,_table);
+		String aSql = String.format("%s LIMIT @data_end ", temp);
 
 		return String.format("select %s from (%s) as a where a.ind > @data_start and a.ind <= @data_end",
 				_select,aSql);

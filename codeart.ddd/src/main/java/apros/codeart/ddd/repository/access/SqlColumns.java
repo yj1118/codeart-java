@@ -19,7 +19,7 @@ public class SqlColumns {
 		return _where;
 	}
 
-	private Iterable<String> _order;
+	private final Iterable<String> _order;
 
 	public Iterable<String> order() {
 		return _order;
@@ -46,7 +46,7 @@ public class SqlColumns {
 				|| StringUtil.containsIgnoreCase(_order, fieldName);
 	}
 
-	private boolean _isAll;
+	private final boolean _isAll;
 
 	public boolean isAll() {
 		return _isAll;
