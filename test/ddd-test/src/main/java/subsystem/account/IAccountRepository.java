@@ -8,4 +8,8 @@ public interface IAccountRepository extends IRepository<Account> {
     Account findByIp(String ip);
 
     Iterable<Account> findsByIp(String ip);
+
+
+    int getCountByIp(String ip);
+
 }

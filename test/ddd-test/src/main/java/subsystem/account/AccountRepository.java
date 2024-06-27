@@ -34,4 +34,11 @@ public class AccountRepository extends SqlRepository<Account> implements IAccoun
         }, QueryLevel.NONE);
     }
 
+    public int getCountByIp(String ip){
+        return DataPortal.getCount(Account.class, "status.loginInfo.lastIP=@ip", (arg) ->
+        {
+            arg.put("ip", ip);
+        }, QueryLevel.NONE);
+    }
+
 }
