@@ -115,7 +115,7 @@ public class QueryObjectTest {
         DataContext.using(() -> {
             IAccountRepository repository = Repository.create(IAccountRepository.class);
             var objs = repository.findsByIp("127.0.0.2");
-            assertEquals(2, Iterables.size(objs));
+            assertEquals(3, Iterables.size(objs));
         });
     }
 
@@ -124,7 +124,7 @@ public class QueryObjectTest {
         DataContext.using(() -> {
             IAccountRepository repository = Repository.create(IAccountRepository.class);
             var count = repository.getCountByIp("127.0.0.2");
-            assertEquals(2, count);
+            assertEquals(3, count);
         });
     }
 
