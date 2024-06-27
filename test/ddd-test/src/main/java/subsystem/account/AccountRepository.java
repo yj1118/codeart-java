@@ -26,5 +26,12 @@ public class AccountRepository extends SqlRepository<Account> implements IAccoun
         }, QueryLevel.NONE);
     }
 
+    @Override
+    public Iterable<Account> findsByIp(String ip){
+        return DataPortal.query(Account.class, "status.loginInfo.lastIP=@ip[order by name]", (arg) ->
+        {
+            arg.put("ip", ip);
+        }, QueryLevel.NONE);
+    }
 
 }

@@ -9,6 +9,7 @@ import apros.codeart.ddd.repository.TransactionStatus;
 import apros.codeart.ddd.repository.access.DataPortal;
 import apros.codeart.util.WrapperBoolean;
 import apros.codeart.util.concurrent.LatchSignal;
+import com.google.common.collect.Iterables;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -20,6 +21,7 @@ import subsystem.account.IAuthPlatformRepository;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * 我们提供对单元测试里实现的锁关系承诺
@@ -111,6 +113,19 @@ public class QueryObjectTest {
             IAccountRepository repository = Repository.create(IAccountRepository.class);
             var obj = repository.findByIp("127.0.0.1");
             assertAccountXL(obj);
+        });
+    }
+
+
+    @Test
+    void query_by_status_loginInfo_ip_list() {
+        DataContext.using(() -> {
+            IAccountRepository repository = Repository.create(IAccountRepository.class);
+            var objs = repository.findsByIp("127.0.0.2");
+            assertEquals(2, Iterables.size(objs));
+
+            assertEquals("小明",Iterables.get(objs,0).name());
+            assertEquals("小张",Iterables.get(objs,1).name());
         });
     }
 

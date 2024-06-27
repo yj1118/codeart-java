@@ -30,6 +30,7 @@ final class DomainHost {
 	public static void initialize() {
 		if (_initialized) {
 			if(DDDConfig.enableReset()){
+				//如果需要重置，那么仅将数据清空
 				DataPortal.clearUp();
 			}
 			return;
