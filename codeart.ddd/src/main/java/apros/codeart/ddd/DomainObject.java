@@ -5,6 +5,7 @@ import static apros.codeart.i18n.Language.strings;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import apros.codeart.ddd.repository.ScheduledActionType;
 import apros.codeart.runtime.MethodUtil;
 import com.google.common.base.Preconditions;
 
@@ -370,6 +371,8 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
      * @param action
      */
     private void invokeProperties(Consumer<DomainObject> action) {
+        if (this.isEmpty()) return;
+        
         var properties = DomainProperty.getProperties(this.getClass());
         for (var property : properties) {
             switch (property.category()) {
@@ -455,8 +458,8 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
     /**
      * 验证固定规则
      */
-    public ValidationResult validate() {
-        return this.fixedRules().validate(this);
+    public ValidationResult validate(ScheduledActionType actionType) {
+        return this.fixedRules().validate(this, actionType);
     }
 
     /**

@@ -3,11 +3,7 @@ package apros.codeart.util;
 import static apros.codeart.runtime.Util.propagate;
 
 import java.lang.reflect.Array;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -54,7 +50,7 @@ public final class ListUtil {
     }
 
     public static <T> Iterable<T> filter(T[] source, Function<T, Boolean> predicate) {
-        ArrayList<T> items = new ArrayList<T>();
+        ArrayList<T> items = null;
         for (T item : source) {
             if (predicate.apply(item)) {
                 if (items == null)
@@ -67,7 +63,7 @@ public final class ListUtil {
 
     public static boolean contains(Iterable<Integer> source, Integer target) {
         for (Integer item : source) {
-            if (item == target)
+            if (Objects.equals(item, target))
                 return true;
         }
         return false;
@@ -323,6 +319,8 @@ public final class ListUtil {
 
     private static final int[] EmptyInts;
 
+    private static final long[] EmptyLongs;
+
     private static final byte[] EmptyBytes;
 
     private static final Object[] EmptyObjects;
@@ -330,6 +328,7 @@ public final class ListUtil {
     static {
         Empty = createEmpty();
         EmptyInts = new int[]{};
+        EmptyLongs = new long[]{};
         EmptyBytes = new byte[]{};
         EmptyObjects = new Object[]{};
     }
@@ -337,6 +336,10 @@ public final class ListUtil {
     @SuppressWarnings("unchecked")
     public static <T> Iterable<T> empty() {
         return (Iterable<T>) Empty;
+    }
+
+    public static long[] emptyLongs() {
+        return EmptyLongs;
     }
 
     public static int[] emptyInts() {

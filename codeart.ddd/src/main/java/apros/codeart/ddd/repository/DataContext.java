@@ -43,7 +43,7 @@ public class DataContext implements IDataContext {
 
     private void addMirror(IAggregateRoot obj) {
         if (isCommiting())
-            throw new DataContextException(Language.strings("apros.codeart.ddd","CanNotAddMirror"));
+            throw new DataContextException(Language.strings("apros.codeart.ddd", "CanNotAddMirror"));
 
         if (_mirrors == null)
             _mirrors = new ArrayList<IAggregateRoot>();
@@ -157,12 +157,12 @@ public class DataContext implements IDataContext {
 //	region 锁
 
     public void openLock(QueryLevel level) {
-        if (level.equals(QueryLevel.HOLD) || level.equals(QueryLevel.SINGLE)){
+        if (level.equals(QueryLevel.HOLD) || level.equals(QueryLevel.SINGLE)) {
             openTimelyMode();
             return;
         }
 
-        if(level.equals(QueryLevel.SHARE)){
+        if (level.equals(QueryLevel.SHARE)) {
             openShareMode();
             return;
         }
@@ -288,9 +288,6 @@ public class DataContext implements IDataContext {
             throw new ActionTargetIsEmptyException(Language.strings("apros.codeart.ddd", "EmptyObjectNotRepository",
                     action.target().getClass().getName()));
 
-        if (action.type() == ScheduledActionType.Delete)
-            return; // 删除操作，不需要验证固定规则
-
         ValidationResult result = action.validate();
         if (!result.isSatisfied())
             throw new ValidationException(result);
@@ -383,15 +380,15 @@ public class DataContext implements IDataContext {
         }
     }
 
-    private void openShareMode(){
+    private void openShareMode() {
 
-        if(_transactionStatus == TransactionStatus.Share) return;
-        if(_transactionStatus == TransactionStatus.Delay){
-            throw new DataContextException(Language.strings("apros.codeart.ddd","NotSupportTranTo","Delay","Share"));
+        if (_transactionStatus == TransactionStatus.Share) return;
+        if (_transactionStatus == TransactionStatus.Delay) {
+            throw new DataContextException(Language.strings("apros.codeart.ddd", "NotSupportTranTo", "Delay", "Share"));
         }
 
-        if(_transactionStatus == TransactionStatus.Timely){
-            throw new DataContextException(Language.strings("apros.codeart.ddd","NotSupportTranTo","Timely","Share"));
+        if (_transactionStatus == TransactionStatus.Timely) {
+            throw new DataContextException(Language.strings("apros.codeart.ddd", "NotSupportTranTo", "Timely", "Share"));
         }
 
         if (!this.inTransaction()) {
@@ -409,9 +406,9 @@ public class DataContext implements IDataContext {
      */
     public void openTimelyMode() {
 
-        if(_transactionStatus == TransactionStatus.Timely) return;
-        if(_transactionStatus == TransactionStatus.Share){
-            throw new DataContextException(Language.strings("apros.codeart.ddd","NotSupportTranTo","Share","Timely"));
+        if (_transactionStatus == TransactionStatus.Timely) return;
+        if (_transactionStatus == TransactionStatus.Share) {
+            throw new DataContextException(Language.strings("apros.codeart.ddd", "NotSupportTranTo", "Share", "Timely"));
         }
 
         if (!this.inTransaction()) {
@@ -445,44 +442,44 @@ public class DataContext implements IDataContext {
             throw new NotBeginTransactionException();
         }
 
-       try{
-           _transactionCount--;
-           if (_transactionCount == 0) {
-               if (isCommiting())
-                   throw new RepeatedCommitException();
+        try {
+            _transactionCount--;
+            if (_transactionCount == 0) {
+                if (isCommiting())
+                    throw new RepeatedCommitException();
 
-               _isCommiting = true;
+                _isCommiting = true;
 
-               if (_transactionStatus == TransactionStatus.Delay) {
-                   _transactionStatus = TransactionStatus.Timely; // 开启即时事务
+                if (_transactionStatus == TransactionStatus.Delay) {
+                    _transactionStatus = TransactionStatus.Timely; // 开启即时事务
 
-                   _conn.begin(_transactionStatus);
-                   executeActionQueue();
-                   raisePreCommitQueue();
-                   _conn.commit();
+                    _conn.begin(_transactionStatus);
+                    executeActionQueue();
+                    raisePreCommitQueue();
+                    _conn.commit();
 
-                   raiseCommittedQueue();
-               } else if (_transactionStatus == TransactionStatus.Timely) {
-                   executeActionQueue();
-                   raisePreCommitQueue();
+                    raiseCommittedQueue();
+                } else if (_transactionStatus == TransactionStatus.Timely) {
+                    executeActionQueue();
+                    raisePreCommitQueue();
 
-                   _conn.commit();
+                    _conn.commit();
 
-                   raiseCommittedQueue();
-               } else if (_transactionStatus == TransactionStatus.Share) {
-                   _conn.commit();
-                   //为None和Share的状态不用执行，因为没有actions，只有查询，已经执行了
-               }
+                    raiseCommittedQueue();
+                } else if (_transactionStatus == TransactionStatus.Share) {
+                    _conn.commit();
+                    //为None和Share的状态不用执行，因为没有actions，只有查询，已经执行了
+                }
 
-               this.onCommitted();
-               clear();
-           }
-       } catch (Exception ex){
-           // 注意，由于提交失败了，所以这里_transactionCount要恢复+1
-           // 这样外部就知道是处在提交事务中失败的
-           _transactionCount++;
-           throw ex;
-       }
+                this.onCommitted();
+                clear();
+            }
+        } catch (Exception ex) {
+            // 注意，由于提交失败了，所以这里_transactionCount要恢复+1
+            // 这样外部就知道是处在提交事务中失败的
+            _transactionCount++;
+            throw ex;
+        }
     }
 
     private EventHandler<DataContextEventArgs> _committed;

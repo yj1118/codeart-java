@@ -1,5 +1,5 @@
 package apros.codeart.ddd.repository;
 
-enum ScheduledActionType {
-	Create, Delete, Update,
+public enum ScheduledActionType {
+    Create, Delete, Update,
 }

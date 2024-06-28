@@ -221,6 +221,7 @@ final class DataTableRead {
         try {
             var constructorTip = ConstructorRepositoryImpl.getTip(objectType, true);
             var constructor = constructorTip.constructor();
+            constructor.setAccessible(true);
             var args = createArguments(constructorTip, data, level);
             return (DomainObject) constructor.newInstance(args);
         } catch (Exception ex) {
@@ -264,7 +265,7 @@ final class DataTableRead {
         if (valueObject != null) {
             Object id = data.get(EntityObject.IdPropertyName);
             if (id != null) {
-                id = converData(id,UUID.class);
+                id = converData(id, UUID.class);
                 valueObject.setPersistentIdentity((UUID) id);
             }
         }
@@ -363,24 +364,22 @@ final class DataTableRead {
 
     private Object readValueFromData(PropertyMeta tip, MapData data) {
         var value = data.get(tip.name());
-        return converData(value,tip.monotype());
+        return converData(value, tip.monotype());
     }
 
-    private static Object converData(Object value ,Class<?> exceptType){
+    private static Object converData(Object value, Class<?> exceptType) {
 
-        if(value == null) return null;
+        if (value == null) return null;
 
-        if(exceptType == UUID.class){
-            if(value.getClass() == String.class){
+        if (exceptType == UUID.class) {
+            if (value.getClass() == String.class) {
                 return UUID.fromString(value.toString());
             }
-        }
-        else if(exceptType == LocalDateTime.class || exceptType == EmptyableDateTime.class){
-            var time = (Timestamp)value;
+        } else if (exceptType == LocalDateTime.class || exceptType == EmptyableDateTime.class) {
+            var time = (Timestamp) value;
             return time.toLocalDateTime();
-        }
-        else if(exceptType == ZonedDateTime.class || exceptType == EmptyableZonedDateTime.class){
-            var time = (Timestamp)value;
+        } else if (exceptType == ZonedDateTime.class || exceptType == EmptyableZonedDateTime.class) {
+            var time = (Timestamp) value;
             return new EmptyableZonedDateTime(TimeUtil.toUTC(time.toInstant()));
         }
 

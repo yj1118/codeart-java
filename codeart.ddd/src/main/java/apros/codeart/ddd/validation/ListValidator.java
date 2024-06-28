@@ -1,6 +1,7 @@
 package apros.codeart.ddd.validation;
 
 import apros.codeart.ddd.*;
+import apros.codeart.ddd.repository.ScheduledActionType;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
@@ -28,8 +29,7 @@ public class ListValidator extends PropertyValidatorImpl {
 
     @Override
     protected void validate(DomainObject domainObject, DomainProperty property, Object propertyValue,
-                            ValidationResult result) {
-
+                            ScheduledActionType actionType, ValidationResult result) {
         var list = TypeUtil.as(propertyValue, Iterable.class);
 
         if (list != null) {
@@ -45,7 +45,7 @@ public class ListValidator extends PropertyValidatorImpl {
                 for (var item : list) {
                     ISupportFixedRules support = TypeUtil.as(item, ISupportFixedRules.class);
                     if (support != null) {
-                        ValidationResult t = support.validate();
+                        ValidationResult t = support.validate(actionType);
                         if (!t.isSatisfied())
                             result.append(property.name(), ListItemError, Language.strings("apros.codeart.ddd", "ListItemError", property.call(), t.getMessage()));
                     }

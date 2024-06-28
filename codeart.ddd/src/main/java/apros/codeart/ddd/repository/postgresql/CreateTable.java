@@ -15,71 +15,80 @@ import java.util.function.Function;
 @SafeAccess
 class CreateTable extends CreateTableQB {
 
-	private CreateTable() {
-	}
+    private CreateTable() {
+    }
 
-	@Override
-	protected String buildImpl(DataTable table) {
-		StringBuilder sql = new StringBuilder();
-		StringUtil.appendFormat(sql, "CREATE TABLE IF NOT EXISTS \"%s\"", table.name());
-		StringUtil.appendLine(sql);
-		StringUtil.appendLine(sql, "(");
+    @Override
+    protected String buildImpl(DataTable table) {
+        StringBuilder sql = new StringBuilder();
+        StringUtil.appendFormat(sql, "CREATE TABLE IF NOT EXISTS \"%s\"", table.name());
+        StringUtil.appendLine(sql);
+        StringUtil.appendLine(sql, "(");
 
-		for (var field : table.fields()) {
-			StringUtil.appendLine(sql, getFieldSql(field));
-		}
+        var pkSql = getPrimaryKeySql(table);
 
-		StringUtil.appendFormat(sql, "%s", getPrimaryKeySql(table));
-		StringUtil.appendLine(sql);
-		StringUtil.appendValidLine(sql, getClusteredIndexSql(table));
-		StringUtil.appendValidLine(sql, getNonclusteredIndexSql(table));
-		sql.append(");");
+        var fieldCount = Iterables.size(table.fields());
+        var index = 0;
+        for (var field : table.fields()) {
+            StringUtil.append(sql, getFieldSql(field));
+            index++;
+            if (index == fieldCount && StringUtil.isNullOrEmpty(pkSql))
+                StringUtil.removeLast(sql);
+            StringUtil.appendLine(sql);
+        }
 
-		if(DBUtil.needInc(table)){
-			StringUtil.appendLine(sql);
-			var code = getFUNCTIONCode(table.name());
-			StringUtil.append(sql, code);
-		}
+        StringUtil.appendFormat(sql, "%s", pkSql);
+        StringUtil.appendLine(sql);
+        sql.append(");");
+        StringUtil.appendLine(sql);
+        StringUtil.appendValidLine(sql, getClusteredIndexSql(table));
+        StringUtil.appendValidLine(sql, getNonclusteredIndexSql(table));
 
-		return sql.toString();
-	}
+        if (DBUtil.needInc(table)) {
+            StringUtil.appendLine(sql);
+            var code = getFUNCTIONCode(table.name());
+            StringUtil.append(sql, code);
+        }
 
-	private static String getFieldSql(IDataField field) {
-		boolean allowNull = field.tip().isEmptyable() || field.isAdditional();
+        return sql.toString();
+    }
 
-		switch (field.dbType()) {
-		case DbType.AnsiString:
-		case DbType.String: {
-			var maxLength = AccessUtil.getMaxLength(field.tip());
+    private static String getFieldSql(IDataField field) {
+        boolean allowNull = field.tip().isEmptyable() || field.isAdditional();
 
-			if(maxLength <=0){
-				return String.format("\"%s\" text %s,", field.name(),
-						(allowNull ? StringUtil.empty() : "NOT NULL"));
-			}
+        switch (field.dbType()) {
+            case DbType.AnsiString:
+            case DbType.String: {
+                var maxLength = AccessUtil.getMaxLength(field.tip());
 
-			return String.format("\"%s\" varchar(%s) %s,", field.name(),
-					maxLength,
-					(allowNull ? StringUtil.empty() : "NOT NULL"));
-		}
-		case DbType.LocalDateTime: {
-			var precision = AccessUtil.getTimePrecision(field.tip());
-			var pv = getTimePrecisionValue(precision);
-			return String.format("\"%s\" %s(%s) %s,", field.name(), "timestamp", pv,
-					(allowNull ? StringUtil.empty() : "NOT NULL"));
-		}
-		case DbType.ZonedDateTime: {
-			var precision = AccessUtil.getTimePrecision(field.tip());
-			var pv = getTimePrecisionValue(precision);
-			return String.format("\"%s\" %s(%s) %s,", field.name(), "timestamptz", pv,
-					(allowNull ? StringUtil.empty() : "NOT NULL"));
-		}
-		default:
-			return String.format("\"%s\" %s %s,", field.name(), Util.getSqlDbTypeString(field.dbType()),
-					(allowNull ? StringUtil.empty() : "NOT NULL"));
-		}
-	}
+                if (maxLength <= 0) {
+                    return String.format("\"%s\" text %s,", field.name(),
+                            (allowNull ? StringUtil.empty() : "NOT NULL"));
+                }
 
-	private static int getTimePrecisionValue(TimePrecisions value) {
+                return String.format("\"%s\" varchar(%s) %s,", field.name(),
+                        maxLength,
+                        (allowNull ? StringUtil.empty() : "NOT NULL"));
+            }
+            case DbType.LocalDateTime: {
+                var precision = AccessUtil.getTimePrecision(field.tip());
+                var pv = getTimePrecisionValue(precision);
+                return String.format("\"%s\" %s(%s) %s,", field.name(), "timestamp", pv,
+                        (allowNull ? StringUtil.empty() : "NOT NULL"));
+            }
+            case DbType.ZonedDateTime: {
+                var precision = AccessUtil.getTimePrecision(field.tip());
+                var pv = getTimePrecisionValue(precision);
+                return String.format("\"%s\" %s(%s) %s,", field.name(), "timestamptz", pv,
+                        (allowNull ? StringUtil.empty() : "NOT NULL"));
+            }
+            default:
+                return String.format("\"%s\" %s %s,", field.name(), Util.getSqlDbTypeString(field.dbType()),
+                        (allowNull ? StringUtil.empty() : "NOT NULL"));
+        }
+    }
+
+    private static int getTimePrecisionValue(TimePrecisions value) {
         return switch (value) {
             case TimePrecisions.Second -> 0;
             case TimePrecisions.Millisecond100 -> 1;
@@ -92,93 +101,93 @@ class CreateTable extends CreateTableQB {
         };
     }
 
-	private static String getPrimaryKeySql(DataTable table) {
-		var primaryKeys = table.primaryKeys();
+    private static String getPrimaryKeySql(DataTable table) {
+        var primaryKeys = table.primaryKeys();
 
-		return getPrimaryKeySql(table,primaryKeys);
-	}
+        return getPrimaryKeySql(table, primaryKeys);
+    }
 
-	private static String getPrimaryKeySql(DataTable table,Iterable<IDataField> fields) {
+    private static String getPrimaryKeySql(DataTable table, Iterable<IDataField> fields) {
 
-		if (Iterables.size(fields) == 0)
-			return StringUtil.empty();
-		StringBuilder sql = new StringBuilder();
-		StringUtil.appendFormat(sql, "CONSTRAINT PK_%s", table.name());
+        if (Iterables.size(fields) == 0)
+            return StringUtil.empty();
+        StringBuilder sql = new StringBuilder();
+        StringUtil.appendFormat(sql, "CONSTRAINT PK_%s", table.name());
 
-		for (var field : fields) {
-			StringUtil.appendFormat(sql, "_%s", field.name());
-		}
-		sql.append(" PRIMARY KEY (");
+        for (var field : fields) {
+            StringUtil.appendFormat(sql, "_%s", field.name());
+        }
+        sql.append(" PRIMARY KEY (");
 
-		for (var field : fields) {
-			StringUtil.appendFormat(sql, "\"%s\",", field.name());
-		}
-		StringUtil.removeLast(sql);
-		sql.append(")");
-		return sql.toString();
-	}
+        for (var field : fields) {
+            StringUtil.appendFormat(sql, "\"%s\",", field.name());
+        }
+        StringUtil.removeLast(sql);
+        sql.append(")");
+        return sql.toString();
+    }
 
-	private static String getClusteredIndexSql(DataTable table) {
-		var clusteredIndexs = table.clusteredIndexs();
+    private static String getClusteredIndexSql(DataTable table) {
+        var clusteredIndexs = table.clusteredIndexs();
 
-		// postgresql里的聚集索引就是多字段主键
-		return getPrimaryKeySql(table,clusteredIndexs);
-	}
+        // postgresql里的聚集索引就是多字段主键
+        return getPrimaryKeySql(table, clusteredIndexs);
+    }
 
-	private static String getNonclusteredIndexSql(DataTable table) {
-		var nonclusteredIndexs = table.nonclusteredIndexs();
+    private static String getNonclusteredIndexSql(DataTable table) {
+        var nonclusteredIndexs = table.nonclusteredIndexs();
 
-		if (Iterables.size(nonclusteredIndexs) == 0)
-			return StringUtil.empty();
-		StringBuilder sql = new StringBuilder();
-		StringUtil.appendFormat(sql, "CREATE INDEX IX_%s", table.name());
+        if (Iterables.size(nonclusteredIndexs) == 0)
+            return StringUtil.empty();
+        StringBuilder sql = new StringBuilder();
+        StringUtil.appendFormat(sql, "CREATE INDEX IF NOT EXISTS IX_%s", table.name());
 
-		for (var field : nonclusteredIndexs) {
-			StringUtil.appendFormat(sql, "_%s", field.name());
-		}
-		StringUtil.appendFormat(sql, " ON %s(", table.name());
+        for (var field : nonclusteredIndexs) {
+            StringUtil.appendFormat(sql, "_%s", field.name());
+        }
+        StringUtil.appendFormat(sql, " ON \"%s\"(", table.name());
 
-		for (var field : nonclusteredIndexs) {
-			StringUtil.appendFormat(sql, "\"%s\",", field.name());
-		}
-		StringUtil.removeLast(sql);
-		sql.append(");");
-		return sql.toString();
-	}
+        for (var field : nonclusteredIndexs) {
+            StringUtil.appendFormat(sql, "\"%s\",", field.name());
+        }
+        StringUtil.removeLast(sql);
+        sql.append(");");
+        return sql.toString();
+    }
 
 
-	private static String getFUNCTIONCode(String tableName){
-		String increment = String.format("%sIncrement", tableName);
+    private static String getFUNCTIONCode(String tableName) {
+        String increment = String.format("%sIncrement", tableName);
 
-		StringBuilder sql = new StringBuilder();
-		StringUtil.appendLine(sql,"DO $$");
-		StringUtil.appendLine(sql, "BEGIN");
-		StringUtil.appendFormat(sql, "IF NOT EXISTS (SELECT FROM pg_catalog.pg_tables WHERE tablename = '%s') THEN", increment);
-		StringUtil.appendLine(sql);
-		StringUtil.appendFormat(sql, "CREATE TABLE \"%s\"", increment);
-		StringUtil.appendLine(sql, "(");
-		StringUtil.appendLine(sql, "    \"value\" bigint NOT NULL,CONSTRAINT PK_"
-				+ increment
-				+ " PRIMARY KEY (\"value\")");
-		StringUtil.appendLine(sql, ");");
-		StringUtil.appendFormat(sql, "INSERT INTO \"%s\"(\"value\") VALUES(0);", increment);
-		StringUtil.appendLine(sql);
-		StringUtil.appendLine(sql, "END IF;");
-		StringUtil.appendLine(sql,"END $$;");
-		StringUtil.appendFormat(sql,"CREATE OR REPLACE FUNCTION get_%s_increment()",tableName);
-		StringUtil.appendLine(sql);
-		StringUtil.appendLine(sql,"RETURNS TABLE(value bigint)");
-		StringUtil.appendLine(sql,"LANGUAGE plpgsql");
-		StringUtil.appendLine(sql,"AS $$");
-		StringUtil.appendLine(sql, "BEGIN");
-		StringUtil.appendMessageFormat(sql, "UPDATE \"{0}\" SET \"value\"=\"{0}\".\"value\"+1;", increment);
-		StringUtil.appendLine(sql);
-		StringUtil.appendMessageFormat(sql, "RETURN QUERY SELECT \"{0}\".\"value\" FROM  \"{0}\";", increment);
-		StringUtil.appendLine(sql);
-		StringUtil.appendFormat(sql, "END $$;");
-		return sql.toString();
-	}
+        StringBuilder sql = new StringBuilder();
+        StringUtil.appendLine(sql, "DO $$");
+        StringUtil.appendLine(sql, "BEGIN");
+        StringUtil.appendFormat(sql, "IF NOT EXISTS (SELECT FROM pg_catalog.pg_tables WHERE tablename = '%s') THEN", increment);
+        StringUtil.appendLine(sql);
+        StringUtil.appendFormat(sql, "CREATE TABLE \"%s\"", increment);
+        StringUtil.appendLine(sql, "(");
+        StringUtil.appendLine(sql, "    \"value\" bigint NOT NULL,CONSTRAINT PK_"
+                + increment
+                + " PRIMARY KEY (\"value\")");
+        StringUtil.appendLine(sql, ");");
+        StringUtil.appendFormat(sql, "INSERT INTO \"%s\"(\"value\") VALUES(0);", increment);
+        StringUtil.appendLine(sql);
+        StringUtil.appendLine(sql, "END IF;");
+        StringUtil.appendLine(sql, "END $$;");
+        StringUtil.appendFormat(sql, "CREATE OR REPLACE FUNCTION get_%s_increment()", tableName);
+        StringUtil.appendLine(sql);
+        StringUtil.appendLine(sql, "RETURNS TABLE(value bigint)");
+        StringUtil.appendLine(sql, "LANGUAGE plpgsql");
+        StringUtil.appendLine(sql, "AS $$");
+        StringUtil.appendLine(sql, "BEGIN");
+        StringUtil.appendMessageFormat(sql, "UPDATE \"{0}\" SET \"value\"=\"{0}\".\"value\"+1;", increment);
+        StringUtil.appendLine(sql);
+        StringUtil.appendMessageFormat(sql, "RETURN QUERY SELECT \"{0}\".\"value\" FROM  \"{0}\";", increment);
+        StringUtil.appendLine(sql);
+        StringUtil.appendFormat(sql, "END $$;");
+        return sql.toString();
+    }
 
-	public static final CreateTable Instance = new CreateTable();
+    public static final CreateTable Instance = new CreateTable();
 
 }

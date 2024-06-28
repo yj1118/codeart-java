@@ -1,5 +1,7 @@
 package apros.codeart.ddd;
 
+import apros.codeart.ddd.repository.ScheduledActionType;
+
 public interface IObjectValidator {
-	void validate(IDomainObject domainObject, ValidationResult result);
+    void validate(IDomainObject domainObject, ScheduledActionType actionType, ValidationResult result);
 }
