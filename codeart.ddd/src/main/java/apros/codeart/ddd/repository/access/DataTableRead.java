@@ -104,17 +104,18 @@ final class DataTableRead {
                       Object masterId, QueryLevel level) {
         var datas = queryPrimitiveValues(rootId, masterId);
 
-        Class<?> implementType = null;
-        if (parent == null) {
-            // 说明还在构造阶段,或者是内部调用
-            if (prmTip != null && prmTip.implementType() != null) {
-                implementType = prmTip.implementType();
-            } else
-                implementType = _self.objectType();
-        } else {
-            implementType = _self.objectType();
-        }
-        var list = createList(parent, implementType, tip);
+//        Class<?> implementType = null;
+//        if (parent == null) {
+//            // 说明还在构造阶段,或者是内部调用
+//            if (prmTip != null && prmTip.implementType() != null) {
+//                implementType = prmTip.implementType();
+//            } else
+//                implementType = _self.objectType();
+//        } else {
+//            implementType = _self.objectType();
+//        }
+        var elementType = _self.elementType();
+        var list = createList(parent, elementType, tip);
 
         var valueName = GeneratedField.PrimitiveValueName;
         for (var data : datas) {
@@ -133,17 +134,25 @@ final class DataTableRead {
      * @return
      */
     @SuppressWarnings("rawtypes")
-    private Collection createList(DomainObject parent, Class<?> listType, PropertyMeta tip) {
+    private Collection createList(DomainObject parent, Class<?> elementType, PropertyMeta tip) {
         try {
-            if (_isDomainCollection.apply(listType)) {
-                var constructor = _getDomainCollectionConstructor.apply(listType);
+//            if (_isDomainCollection.apply(listType)) {
+//                var constructor = _getDomainCollectionConstructor.apply(listType);
+//
+//                var collection = (IDomainCollection) constructor.newInstance(tip.monotype(),
+//                        DomainProperty.getProperty(tip));
+//                collection.setParent(parent);
+//                return (Collection) collection;
+//            }
+//            return (Collection) Activator.createInstance(listType);
+            
+            var constructor = DomainCollection.class.getConstructor(Class.class, DomainProperty.class);
+            var collection = (IDomainCollection) constructor.newInstance(elementType,
+                    DomainProperty.getProperty(tip));
+            collection.setParent(parent);
+            return (Collection) collection;
 
-                var collection = (IDomainCollection) constructor.newInstance(tip.monotype(),
-                        DomainProperty.getProperty(tip));
-                collection.setParent(parent);
-                return (Collection) collection;
-            }
-            return (Collection) Activator.createInstance(listType);
+
         } catch (Exception ex) {
             throw propagate(ex);
         }
@@ -153,14 +162,14 @@ final class DataTableRead {
         return DomainCollection.class.isAssignableFrom(type);
     });
 
-    private static Function<Class<?>, Constructor<?>> _getDomainCollectionConstructor = LazyIndexer.init((type) -> {
-
-        try {
-            return type.getConstructor(Class.class, DomainProperty.class);
-        } catch (Exception ex) {
-            throw propagate(ex);
-        }
-    });
+//    private static Function<Class<?>, Constructor<?>> _getDomainCollectionConstructor = LazyIndexer.init((elementType) -> {
+//
+//        try {
+//            return DomainCollection.class.getConstructor(Class.class, DomainProperty.class);
+//        } catch (Exception ex) {
+//            throw propagate(ex);
+//        }
+//    });
 
     /**
      * 创建对象

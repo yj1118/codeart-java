@@ -127,10 +127,14 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 
     private StateMachine _machine = new StateMachine();
 
-    /// <summary>
-    /// 是否为脏对象
-    /// </summary>
+
+    /**
+     * 是否为脏对象
+     *
+     * @return
+     */
     public boolean isDirty() {
+        if (this.isEmpty()) return false;
         return _machine.isDirty() || hasDirtyProperty();
     }
 
@@ -138,6 +142,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
     /// 内存中新创建的对象
     /// </summary>
     public boolean isNew() {
+        if (this.isEmpty()) return false;
         return _machine.isNew();
     }
 
@@ -372,7 +377,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
      */
     private void invokeProperties(Consumer<DomainObject> action) {
         if (this.isEmpty()) return;
-        
+
         var properties = DomainProperty.getProperties(this.getClass());
         for (var property : properties) {
             switch (property.category()) {

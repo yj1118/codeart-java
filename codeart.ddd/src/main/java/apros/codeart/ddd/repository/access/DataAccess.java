@@ -38,6 +38,59 @@ public final class DataAccess {
         return QueryRunner.execute(_conn, sql, param);
     }
 
+    //region execute的适配模式
+
+    public ExecuteAdaptation execute(MapData param) {
+        return new ExecuteAdaptation(this, param);
+    }
+
+    public ExecuteAdaptation execute() {
+        return new ExecuteAdaptation(this, null);
+    }
+
+    public static class ExecuteAdaptation {
+
+        private final DataAccess _access;
+        private final MapData _param;
+
+        private boolean _matched = false;
+
+        public ExecuteAdaptation(DataAccess access, MapData param) {
+            _access = access;
+            _param = param;
+        }
+
+        public ExecuteAdaptation postgreSql(String sql) {
+            return exec(DatabaseType.PostgreSql, sql);
+        }
+
+        public ExecuteAdaptation sqlserver(String sql) {
+            return exec(DatabaseType.SqlServer, sql);
+        }
+
+        public ExecuteAdaptation mysql(String sql) {
+            return exec(DatabaseType.MySql, sql);
+        }
+
+        public ExecuteAdaptation oracle(String sql) {
+            return exec(DatabaseType.Oracle, sql);
+        }
+
+
+        private ExecuteAdaptation exec(DatabaseType dbType, String sql) {
+            if (_matched) return this;
+            if (DataSource.getDatabaseType() == dbType) {
+                _access.execute(sql, _param);
+                _matched = true;
+            }
+            return this;
+        }
+
+
+    }
+
+    //endregion
+
     public Object queryScalar(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);
         return QueryRunner.queryScalar(_conn, sql, params, level);
@@ -55,6 +108,70 @@ public final class DataAccess {
     public <T> T queryScalar(Class<T> valueType, String sql, MapData param) {
         return queryScalar(valueType, sql, param, QueryLevel.NONE);
     }
+
+    //region queryScalar的适配模式
+
+    public <T> QueryScalarAdaptation<T> queryScalar(Class<T> valueType, MapData param, QueryLevel level) {
+        return new QueryScalarAdaptation<T>(this, valueType, param, level);
+    }
+
+    public <T> QueryScalarAdaptation<T> queryScalar(Class<T> valueType, MapData param) {
+        return new QueryScalarAdaptation<T>(this, valueType, param, QueryLevel.NONE);
+    }
+
+    public static class QueryScalarAdaptation<T> {
+
+        private T _value;
+
+        public T value() {
+            return _value;
+        }
+
+        private final DataAccess _access;
+        private final Class<T> _valueType;
+        private final MapData _param;
+        private QueryLevel _level;
+
+        private boolean _matched = false;
+
+        public QueryScalarAdaptation(DataAccess access, Class<T> valueType, MapData param, QueryLevel level) {
+            _access = access;
+            _valueType = valueType;
+            _param = param;
+            _level = level;
+        }
+
+        public QueryScalarAdaptation<T> postgreSql(String sql) {
+            return exec(DatabaseType.PostgreSql, sql);
+        }
+
+        public QueryScalarAdaptation<T> sqlserver(String sql) {
+            return exec(DatabaseType.SqlServer, sql);
+        }
+
+        public QueryScalarAdaptation<T> mysql(String sql) {
+            return exec(DatabaseType.MySql, sql);
+        }
+
+        public QueryScalarAdaptation<T> oracle(String sql) {
+            return exec(DatabaseType.Oracle, sql);
+        }
+
+
+        private QueryScalarAdaptation<T> exec(DatabaseType dbType, String sql) {
+            if (_matched) return this;
+            if (DataSource.getDatabaseType() == dbType) {
+                _value = _access.queryScalar(_valueType, sql, _param, _level);
+                _matched = true;
+            }
+            return this;
+        }
+
+
+    }
+
+    //endregion
+
 
     public int queryScalarInt(String sql, MapData params, QueryLevel level) {
         DataContext.getCurrent().openLock(level);

@@ -1,32 +1,38 @@
 package apros.codeart.ddd.validation;
 
-import apros.codeart.ddd.DomainObject;
-import apros.codeart.ddd.DomainProperty;
-import apros.codeart.ddd.IDomainObject;
-import apros.codeart.ddd.IPropertyValidator;
-import apros.codeart.ddd.ValidationResult;
+import apros.codeart.ddd.*;
+import apros.codeart.ddd.repository.ScheduledActionType;
 import apros.codeart.runtime.TypeUtil;
+
+import java.lang.annotation.Annotation;
 
 /**
  * 既能验证目标类型，也能验证当目标类型为集合的成员类型时的情况
  */
-public abstract class PropertyListabelValidator implements IPropertyValidator {
+public abstract class PropertyListabelValidator extends PropertyValidatorImpl {
 
-	public void validate(IDomainObject domainObject, DomainProperty property, ValidationResult result) {
-		var obj = (DomainObject) domainObject;
-		var pro = (DomainProperty) property;
+    public PropertyListabelValidator(Annotation tip) {
+        super(tip);
+    }
 
-		if (TypeUtil.isCollection(pro.declaringType())) {
-			var values = TypeUtil.as(obj.getValue(pro), Iterable.class);
-			for (var value : values) {
-				validate(obj, pro, value, result);
-			}
-		} else {
-			var propertyValue = obj.getValue(pro);
-			validate(obj, pro, propertyValue, result);
-		}
-	}
+    @Override
+    public void validate(IDomainObject domainObject, DomainProperty property, ScheduledActionType actionType, ValidationResult result) {
+        // 属性验证在删除对象时不必验证
+        if (actionType == ScheduledActionType.Delete) return;
 
-	protected abstract void validate(DomainObject domainObject, DomainProperty property, Object propertyValue,
-			ValidationResult result);
+        var obj = (DomainObject) domainObject;
+
+        if (property.isCollection()) {
+            var values = TypeUtil.as(obj.getValue(property), Iterable.class);
+            for (var value : values) {
+                validate(obj, property, value, actionType, result);
+            }
+        } else {
+            var value = obj.getValue(property);
+            validate(obj, property, value, actionType, result);
+        }
+    }
+
+    protected abstract void validate(DomainObject domainObject, DomainProperty property, Object propertyValue, ScheduledActionType actionType,
+                                     ValidationResult result);
 }

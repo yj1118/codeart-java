@@ -12,93 +12,92 @@ import apros.codeart.util.thread.Timer;
 
 public final class EventHost {
 
-	private EventHost() {
-	}
+    private EventHost() {
+    }
 
 //	#region 驻留和取消事件
 
-	/**
-	 * 订阅触发事件
-	 * 
-	 * @param event
-	 */
-	private static void subscribeRaise(DomainEvent event) {
+    /**
+     * 订阅触发事件
+     *
+     * @param event
+     */
+    private static void subscribeRaise(DomainEvent event) {
 
-		var raiseName = EventUtil.getRaise(event.name());
-		// 作为事件的提供方，我们订阅了触发事件，这样当外界发布了“触发事件”后，这里就可以收到消息并且执行事件
-		EventPortal.subscribe(raiseName, RaiseEventHandler.Instance, true);
-	}
+        var raiseName = EventUtil.getRaise(event.name());
+        // 作为事件的提供方，我们订阅了触发事件，这样当外界发布了“触发事件”后，这里就可以收到消息并且执行事件
+        EventPortal.subscribe(raiseName, RaiseEventHandler.Instance, true);
+    }
 
-	/**
-	 * 
-	 * 订阅回逆
-	 * 
-	 * @param event
-	 */
-	private static void subscribeReverse(DomainEvent event) {
-		var reverseName = EventUtil.getReverse(event.name());
-		EventPortal.subscribe(reverseName, ReverseEventHandler.Instance, true);
-	}
+    /**
+     * 订阅回逆
+     *
+     * @param event
+     */
+    private static void subscribeReverse(DomainEvent event) {
+        var reverseName = EventUtil.getReverse(event.name());
+        EventPortal.subscribe(reverseName, ReverseEventHandler.Instance, true);
+    }
 
-	private static void cancelRaise(DomainEvent event) {
+    private static void cancelRaise(DomainEvent event) {
 
-		var raiseName = EventUtil.getRaise(event.name());
-		EventPortal.cancel(raiseName);
-	}
+        var raiseName = EventUtil.getRaise(event.name());
+        EventPortal.cancel(raiseName);
+    }
 
-	private static void cancelReverse(DomainEvent event) {
-		var reverseName = EventUtil.getReverse(event.name());
-		EventPortal.cancel(reverseName);
-	}
+    private static void cancelReverse(DomainEvent event) {
+        var reverseName = EventUtil.getReverse(event.name());
+        EventPortal.cancel(reverseName);
+    }
 
-	public static void initialize() {
+    public static void initialize() {
 
-		setupSAGA();
+        setupSAGA();
 
-		EventLoader.load();
+        EventLoader.load();
 
-		// 领域事件初始化
-		EventLog.init();
+        // 领域事件初始化
+        EventLog.init();
 
-		// 订阅事件
-		subscribeEvents();
-	}
+        // 订阅事件
+        subscribeEvents();
+    }
 
-	private static void setupSAGA() {
-		App.setup("saga");
-	}
+    private static void setupSAGA() {
+        App.setup("saga");
+    }
 
-	public static void cleanup() {
-		// 取消订阅
-		cancelEvents();
-		endScheduleClean();
-	}
+    public static void dispose() {
+        // 取消订阅
+        cancelEvents();
+        endScheduleClean();
+    }
 
 //	#region 订阅/取消订阅事件
 
-	private static void subscribeEvents() {
-		var es = EventLoader.events();
-		for (var e : es) {
-			subscribeRaise(e);
-			subscribeReverse(e);
-		}
-	}
+    private static void subscribeEvents() {
+        var es = EventLoader.events();
+        for (var e : es) {
+            subscribeRaise(e);
+            subscribeReverse(e);
+        }
+    }
 
-	/// <summary>
-	/// 取消订阅
-	/// </summary>
-	private static void cancelEvents() {
-		var es = EventLoader.events();
-		for (var e : es) {
-			cancelRaise(e);
-			cancelReverse(e);
-		}
-	}
+    /// <summary>
+    /// 取消订阅
+    /// </summary>
+    private static void cancelEvents() {
+        var es = EventLoader.events();
+        for (var e : es) {
+            cancelRaise(e);
+            cancelReverse(e);
+        }
+    }
 
-	public static void initialized() {
-		EventProtector.restoreInterrupted();
-		startScheduleClean();
-	}
+    public static void initialized() {
+        EventProtector.restoreInterrupted();
+        startScheduleClean();
+    }
 
 ////	region 事件的启用和禁用
 //
@@ -139,17 +138,17 @@ public final class EventHost {
 
 //	region 定时清理
 
-	private static final Timer _scheduler = new Timer(1, TimeUnit.DAYS);
+    private static final Timer _scheduler = new Timer(1, TimeUnit.DAYS);
 
-	private static void startScheduleClean() {
-		_scheduler.immediate(() -> {
-			EventLog.clean();
-		});
-	}
+    private static void startScheduleClean() {
+        _scheduler.immediate(() -> {
+            EventLog.clean();
+        });
+    }
 
-	private static void endScheduleClean() {
-		_scheduler.stop();
-	}
+    private static void endScheduleClean() {
+        _scheduler.stop();
+    }
 
 //	#endregion
 

@@ -10,7 +10,7 @@ import apros.codeart.i18n.Language;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess
-public class StringLengthValidator extends PropertyValidatorImpl {
+public class StringLengthValidator extends PropertyListabelValidator {
 
     public StringLengthValidator(StringLength tip) {
         super(tip);

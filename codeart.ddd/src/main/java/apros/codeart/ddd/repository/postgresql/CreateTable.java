@@ -20,6 +20,7 @@ class CreateTable extends CreateTableQB {
 
     @Override
     protected String buildImpl(DataTable table) {
+        
         StringBuilder sql = new StringBuilder();
         StringUtil.appendFormat(sql, "CREATE TABLE IF NOT EXISTS \"%s\"", table.name());
         StringUtil.appendLine(sql);

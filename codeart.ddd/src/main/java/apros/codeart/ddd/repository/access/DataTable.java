@@ -231,11 +231,11 @@ public class DataTable {
         return _fields;
     }
 
-    public IDataField getField(String fieldName,boolean ignoreCase) {
-        if(ignoreCase)
-            return ListUtil.find(this.fields(),(f)-> f.name().equalsIgnoreCase(fieldName));
+    public IDataField getField(String fieldName, boolean ignoreCase) {
+        if (ignoreCase)
+            return ListUtil.find(this.fields(), (f) -> f.name().equalsIgnoreCase(fieldName));
         else
-            return ListUtil.find(this.fields(),(f)-> f.name().equals(fieldName));
+            return ListUtil.find(this.fields(), (f) -> f.name().equals(fieldName));
     }
 
     private Iterable<IDataField> getFields(Iterable<IDataField> objectFields) {
@@ -558,7 +558,7 @@ public class DataTable {
 
     public DataTable(Class<?> objectType, DataTableType type, String name, Iterable<IDataField> objectFields,
                      DataTable chainRoot, DataTable master, IDataField memberField) {
-
+        
         _id = DataTableUtil.getId(memberField, chainRoot, name);
         _objectType = objectType;
         _type = type;
@@ -636,8 +636,7 @@ public class DataTable {
         _insert.insertMembers(root, parent, current, members, tip);
     }
 
-    <T> T querySingle(Object id, QueryLevel level)
-    {
+    <T> T querySingle(Object id, QueryLevel level) {
         return _query.querySingle(id, level);
     }
 

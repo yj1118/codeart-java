@@ -8,16 +8,16 @@ import apros.codeart.util.SafeAccess;
 @SafeAccess
 public class SqlDynamicRepository extends SqlRepository<DynamicRoot> implements IDynamicRepository {
 
-	private String _typeName;
+    private final String _typeName;
 
-	public SqlDynamicRepository(String typeName) {
-		_typeName = typeName;
-	}
+    public SqlDynamicRepository(String typeName) {
+        _typeName = typeName;
+    }
 
-	@SuppressWarnings("unchecked")
-	@Override
-	protected Class<? extends DynamicRoot> getRootTypeImpl() {
-		return (Class<? extends DynamicRoot>) ObjectMetaLoader.get(_typeName).objectType();
-	}
+    @SuppressWarnings("unchecked")
+    @Override
+    protected Class<? extends DynamicRoot> getRootTypeImpl() {
+        return (Class<? extends DynamicRoot>) ObjectMetaLoader.get(_typeName).objectType();
+    }
 
 }

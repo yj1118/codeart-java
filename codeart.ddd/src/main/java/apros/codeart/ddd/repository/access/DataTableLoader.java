@@ -7,10 +7,13 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 import apros.codeart.TestSupport;
+import apros.codeart.ddd.DDDConfig;
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.IDomainObject;
 import apros.codeart.ddd.metadata.DomainObjectCategory;
+import apros.codeart.ddd.metadata.internal.MetadataLoader;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
+import apros.codeart.ddd.repository.Repository;
 import apros.codeart.util.ListUtil;
 
 /**
@@ -27,7 +30,9 @@ final class DataTableLoader {
         for (var domainType : domainTypes) {
             var objectMeta = ObjectMetaLoader.get(domainType);
             if (objectMeta.category() == DomainObjectCategory.AggregateRoot) {
-                createRoot((Class<? extends IAggregateRoot>) domainType);
+                var rootType = (Class<? extends IAggregateRoot>) domainType;
+                createRoot(rootType);
+                initRepository(rootType);
             }
         }
     }
@@ -53,6 +58,17 @@ final class DataTableLoader {
 
         return table;
     }
+
+    private static void initRepository(Class<? extends IAggregateRoot> domainType) {
+        var repository = Repository.createByObjectType(domainType);
+        //如果开启了重置，那么在初始化之前，先清理
+        //init 和 clearUp里自行保证幂等性
+        if (DDDConfig.enableReset())
+            repository.clearUp();
+
+        repository.init();
+    }
+
 
     public static DataTable getRoot(Class<?> objectType) {
         return _roots.get(objectType);
@@ -183,7 +199,7 @@ final class DataTableLoader {
     public static DataTable createAggregateRoot(DataTable root, DataTable master, IDataField memberField,
                                                 Class<?> objectType) {
         var tableName = objectType.getSimpleName();
-
+        
         return tryCreate(tableName, root, memberField, () -> {
             var objectFields = DataTableUtil.getObjectFields((Class<? extends IAggregateRoot>) objectType);
             return new DataTable(objectType, DataTableType.AggregateRoot, tableName, objectFields, root, master,
@@ -307,8 +323,23 @@ final class DataTableLoader {
      * 清空数据，但是不删除表
      */
     @TestSupport
+    @SuppressWarnings("unchecked")
     public static void clearUp() {
+
         DataTableGenerator.clearUp();
+        var domainTypes = MetadataLoader.getDomainTypes();
+        for (var domainType : domainTypes) {
+            var objectMeta = ObjectMetaLoader.get(domainType);
+            if (objectMeta.category() == DomainObjectCategory.AggregateRoot) {
+                var rootType = (Class<? extends IAggregateRoot>) domainType;
+                clearUpRepository(rootType);
+            }
+        }
+    }
+
+    private static void clearUpRepository(Class<? extends IAggregateRoot> domainType) {
+        var repository = Repository.createByObjectType(domainType);
+        repository.clearUp();
     }
 
 //	/**

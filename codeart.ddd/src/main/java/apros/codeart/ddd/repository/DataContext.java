@@ -601,7 +601,7 @@ public class DataContext implements IDataContext {
     public static DataContext getCurrent() {
         DataContext dataContext = AppSession.getItem(_sessionKey);
         if (dataContext == null)
-            throw new IllegalStateException(Language.strings("DataContextNull"));
+            throw new IllegalStateException(Language.strings("apros.codeart.ddd", "DataContextNull"));
         return dataContext;
     }
 

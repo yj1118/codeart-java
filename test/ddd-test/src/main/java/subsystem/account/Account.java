@@ -221,7 +221,7 @@ public class Account extends AggregateRootLong {
 
     //endregion
 
-    public Account(long id, String name,String password) {
+    public Account(long id, String name, String password) {
         super(id);
         this.name(name);
         this.password(password);
@@ -230,7 +230,7 @@ public class Account extends AggregateRootLong {
     }
 
     public void login(String ip) {
-        if (!this.status().isEnabled()) throw new UIException(Language.strings("AccountDisabled"));
+        if (!this.status().isEnabled()) throw new UIException(Language.get("AccountDisabled"));
         this.status().updateLogin(ip);
     }
 
