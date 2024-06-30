@@ -52,9 +52,10 @@ public class CommonTest {
 
     private Collection createList(DomainObject parent, Class<?> elementType, DomainProperty tip) {
         try {
-            var constructor = DomainCollection.class.getConstructor(Class.class, DomainProperty.class);
-            var collection = (IDomainCollection) constructor.newInstance(elementType,
-                    tip);
+//            var constructor = DomainCollection.class.getConstructor(Class.class, DomainProperty.class);
+//            var collection = (IDomainCollection) constructor.newInstance(elementType,
+//                    tip);
+            var collection = new DomainCollection<>(elementType, tip);
             collection.setParent(parent);
             return (Collection) collection;
 

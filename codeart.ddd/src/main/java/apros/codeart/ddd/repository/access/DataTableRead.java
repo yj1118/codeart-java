@@ -135,32 +135,14 @@ final class DataTableRead {
      */
     @SuppressWarnings("rawtypes")
     private Collection createList(DomainObject parent, Class<?> elementType, PropertyMeta tip) {
-        try {
-//            if (_isDomainCollection.apply(listType)) {
-//                var constructor = _getDomainCollectionConstructor.apply(listType);
-//
-//                var collection = (IDomainCollection) constructor.newInstance(tip.monotype(),
-//                        DomainProperty.getProperty(tip));
-//                collection.setParent(parent);
-//                return (Collection) collection;
-//            }
-//            return (Collection) Activator.createInstance(listType);
-            
-            var constructor = DomainCollection.class.getConstructor(Class.class, DomainProperty.class);
-            var collection = (IDomainCollection) constructor.newInstance(elementType,
-                    DomainProperty.getProperty(tip));
-            collection.setParent(parent);
-            return (Collection) collection;
-
-
-        } catch (Exception ex) {
-            throw propagate(ex);
-        }
+        var collection = new DomainCollection<>(elementType, DomainProperty.getProperty(tip));
+        collection.setParent(parent);
+        return collection;
     }
 
-    private static Function<Class<?>, Boolean> _isDomainCollection = LazyIndexer.init((type) -> {
-        return DomainCollection.class.isAssignableFrom(type);
-    });
+//    private static Function<Class<?>, Boolean> _isDomainCollection = LazyIndexer.init((type) -> {
+//        return DomainCollection.class.isAssignableFrom(type);
+//    });
 
 //    private static Function<Class<?>, Constructor<?>> _getDomainCollectionConstructor = LazyIndexer.init((elementType) -> {
 //
