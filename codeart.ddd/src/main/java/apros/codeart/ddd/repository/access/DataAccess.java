@@ -1,13 +1,18 @@
 package apros.codeart.ddd.repository.access;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.UUID;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 import apros.codeart.ddd.MapData;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.access.internal.QueryRunner;
 import apros.codeart.dto.DTObject;
+
+import static apros.codeart.runtime.Util.propagate;
 
 /**
  * 所有查询都要通过该对象，由该对象传递锁定级别给DataContext
@@ -18,6 +23,12 @@ public final class DataAccess {
 
     DataAccess(Connection conn) {
         _conn = conn;
+    }
+
+    private void openDataContextLock(QueryLevel level) {
+        // 也有可能在没有数据上下文的情况下查询，这时候是独立的数据库连接，与上下文无关
+        if (DataContext.existCurrent())
+            DataContext.getCurrent().openLock(level);
     }
 
     /**
@@ -85,14 +96,12 @@ public final class DataAccess {
             }
             return this;
         }
-
-
     }
 
     //endregion
 
     public Object queryScalar(String sql, MapData params, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryScalar(_conn, sql, params, level);
     }
 
@@ -101,7 +110,7 @@ public final class DataAccess {
     }
 
     public <T> T queryScalar(Class<T> valueType, String sql, MapData param, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryScalar(valueType, _conn, sql, param, level);
     }
 
@@ -115,8 +124,17 @@ public final class DataAccess {
         return new QueryScalarAdaptation<T>(this, valueType, param, level);
     }
 
+    public <T> QueryScalarAdaptation<T> queryScalar(Class<T> valueType, QueryLevel level) {
+        return new QueryScalarAdaptation<T>(this, valueType, null, level);
+    }
+
+
     public <T> QueryScalarAdaptation<T> queryScalar(Class<T> valueType, MapData param) {
         return new QueryScalarAdaptation<T>(this, valueType, param, QueryLevel.NONE);
+    }
+
+    public <T> QueryScalarAdaptation<T> queryScalar(Class<T> valueType) {
+        return new QueryScalarAdaptation<T>(this, valueType, null, QueryLevel.NONE);
     }
 
     public static class QueryScalarAdaptation<T> {
@@ -130,7 +148,7 @@ public final class DataAccess {
         private final DataAccess _access;
         private final Class<T> _valueType;
         private final MapData _param;
-        private QueryLevel _level;
+        private final QueryLevel _level;
 
         private boolean _matched = false;
 
@@ -174,17 +192,17 @@ public final class DataAccess {
 
 
     public int queryScalarInt(String sql, MapData params, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryScalarInt(_conn, sql, params, level);
     }
 
     public long queryScalarLong(String sql, MapData params, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryScalarLong(_conn, sql, params, level);
     }
 
     public long queryScalarLong(String sql, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryScalarLong(_conn, sql, null, level);
     }
 
@@ -193,12 +211,12 @@ public final class DataAccess {
     }
 
     public UUID queryScalarGuid(String sql, MapData params, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryScalarGuid(_conn, sql, params, level);
     }
 
     public Iterable<Object> queryScalars(String sql, MapData params, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryScalars(_conn, sql, params, level);
     }
 
@@ -207,7 +225,7 @@ public final class DataAccess {
     }
 
     public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, MapData params, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryScalars(elementType, _conn, sql, params, level);
     }
 
@@ -216,27 +234,27 @@ public final class DataAccess {
     }
 
     public int[] queryScalarInts(String sql, MapData params, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryScalarInts(_conn, sql, params, level);
     }
 
     public DTObject queryDTO(String sql, MapData params, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryDTO(_conn, sql, params, level);
     }
 
     public Iterable<DTObject> queryDTOs(String sql, MapData params, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryDTOs(_conn, sql, params, level);
     }
 
     public MapData queryRow(String sql, MapData params, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryRow(_conn, sql, params, level);
     }
 
     public Iterable<MapData> queryRows(String sql, MapData params, QueryLevel level) {
-        DataContext.getCurrent().openLock(level);
+        openDataContextLock(level);
         return QueryRunner.queryRows(_conn, sql, params, level);
     }
 
@@ -248,6 +266,36 @@ public final class DataAccess {
         if (!DataContext.existCurrent())
             return null;
         return DataContext.getCurrent().connection().access();
+    }
+
+    public static void using(Consumer<DataAccess> action) {
+
+        var current = DataAccess.current();
+        if (current != null) {
+            action.accept(current);
+        } else {
+            try (var conn = DataSource.getConnection()) {
+                var access = new DataAccess(conn);
+                action.accept(access);
+            } catch (Exception e) {
+                throw propagate(e);
+            }
+        }
+    }
+
+    public static <T> T using(Function<DataAccess, T> action) {
+
+        var current = DataAccess.current();
+        if (current != null) {
+            return action.apply(current);
+        } else {
+            try (var conn = DataSource.getConnection()) {
+                var access = new DataAccess(conn);
+                return action.apply(access);
+            } catch (Exception e) {
+                throw propagate(e);
+            }
+        }
     }
 
 }

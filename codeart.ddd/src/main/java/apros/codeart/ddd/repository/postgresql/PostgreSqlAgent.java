@@ -2,7 +2,6 @@ package apros.codeart.ddd.repository.postgresql;
 
 import apros.codeart.ddd.repository.access.*;
 import apros.codeart.ddd.repository.db.*;
-import apros.codeart.ddd.repository.postgresql.QueryCount;
 import apros.codeart.util.StringUtil;
 
 public class PostgreSqlAgent extends DatabaseAgent {
@@ -27,6 +26,7 @@ public class PostgreSqlAgent extends DatabaseAgent {
         this.registerQueryBuilder(QueryPageQB.class, QueryPage.Instance);
 
         this.registerQueryBuilder(GetIncrIdQB.class, GetIncrId.Instance);
+        this.registerQueryBuilder(UpdateDataVersionQB.class, UpdateDataVersion.Instance);
     }
 
     public static final IDatabaseAgent Instance = new PostgreSqlAgent();

@@ -5,20 +5,22 @@ import apros.codeart.io.BytesReader;
 import apros.codeart.io.BytesWriter;
 import apros.codeart.util.StringUtil;
 
+import java.nio.charset.StandardCharsets;
+
 public class TransferData {
 
-	private String _language;
+    private final String _language;
 
-	public String language() {
-		return _language;
-	}
+    public String language() {
+        return _language;
+    }
 
-	private DTObject _body;
+    private DTObject _body;
 
-	public DTObject body() {
-		return _body;
-	}
-//
+    public DTObject body() {
+        return _body;
+    }
+
 //	public void setInfo(DTObject info) {
 //		_info = info;
 //	}
@@ -49,12 +51,12 @@ public class TransferData {
 
 //	#endregion
 
-	public TransferData(String language, DTObject body) {
-		_language = language;
-		_body = body;
+    private TransferData(String language, DTObject body) {
+        _language = language;
+        _body = body;
 //		_binaryDataTotalLength = binaryDataTotalLength;
 //		_binaryData = binaryData;
-	}
+    }
 
 //	public TransferData(String language, DTObject info) {
 //		_language = language;
@@ -63,58 +65,74 @@ public class TransferData {
 //		_binaryData = null;
 //	}
 
-	public static TransferData deserialize(byte[] content) {
+    public static TransferData deserialize(byte[] content) {
 
-		var reader = new BytesReader(content);
+        String message = new String(content, StandardCharsets.UTF_8);
 
-		var language = reader.readString();
-		var dtoCode = reader.readString();
+        DTObject dto = DTObject.readonly(message);
+        var language = dto.getString("__lang");
 
-		DTObject dto = DTObject.readonly(dtoCode);
-
-//		int binaryTotalLength = reader.readInt();
-//		ByteBuffer binaryData = null;
+//        var reader = new BytesReader(content);
 //
-//		if (reader.hasRemaining()) {
-//			var thisTimeLength = reader.readInt();
-//			binaryData = reader.readBuffer(thisTimeLength);
-//		}
-
-//		return new TransferData(language, dto, binaryTotalLength, binaryData);
-		return new TransferData(language, dto);
-	}
-
-	public static byte[] serialize(TransferData result) {
-		// 注意，我们使用估算值快速得到可能的最大占用大小
-		int estimateSize = 0;
-		// 语言占用字节数
-		estimateSize += StringUtil.maxBytesPerChar(result.language());
-
-		// info占用字节数
-		var bodyCode = result.body().getCode();
-
-		estimateSize += StringUtil.maxBytesPerChar(bodyCode);
-
-//		estimateSize += 4; // binaryDataTotalLength的记录占用4个字节
-//		// 二进制数据占用字节数
-//		estimateSize += result.binaryData() == null ? 0 : result.binaryData().capacity();
-
-		try (var writer = new BytesWriter(estimateSize)) {
-
-			writer.write(result.language());
-			writer.write(bodyCode);
-
-//			writer.write(result.binaryDataTotalLength());
+//        var language = reader.readString();
+//        var dtoCode = reader.readString();
 //
-//			if (result.binaryData() != null) {
-//				writer.write(result.binaryData());
-//			}
+//        DTObject dto = DTObject.readonly(dtoCode);
+//
+////		int binaryTotalLength = reader.readInt();
+////		ByteBuffer binaryData = null;
+////
+////		if (reader.hasRemaining()) {
+////			var thisTimeLength = reader.readInt();
+////			binaryData = reader.readBuffer(thisTimeLength);
+////		}
+//
+////		return new TransferData(language, dto, binaryTotalLength, binaryData);
+        return new TransferData(language, dto);
+    }
 
-			return writer.toBytesAndEnd();
-		}
-	}
+    public static byte[] serialize(DTObject data) {
 
-	public static TransferData createEmpty() {
-		return new TransferData(StringUtil.empty(), DTObject.Empty);
-	}
+        return data.toBytes();
+
+
+//        var lang = result.language();
+//        var body = result.body();
+//        body.setString("__lang", lang);
+//
+//        var message = body.getCode();
+//        return message.getBytes(StandardCharsets.UTF_8);
+
+//        // 注意，我们使用估算值快速得到可能的最大占用大小，以便给BytesWriter赋予初值，注意，估算大小不会影响实际写入大小
+//        int estimateSize = 0;
+//        // 语言占用字节数
+//        estimateSize += StringUtil.maxBytesPerChar(result.language());
+//
+//        // info占用字节数
+//        var bodyCode = result.body().getCode();
+//
+//        estimateSize += StringUtil.maxBytesPerChar(bodyCode);
+//
+////		estimateSize += 4; // binaryDataTotalLength的记录占用4个字节
+////		// 二进制数据占用字节数
+////		estimateSize += result.binaryData() == null ? 0 : result.binaryData().capacity();
+//
+//        try (var writer = new BytesWriter(estimateSize)) {
+//
+//            writer.write(result.language());
+//            writer.write(bodyCode);
+//
+////			writer.write(result.binaryDataTotalLength());
+////
+////			if (result.binaryData() != null) {
+////				writer.write(result.binaryData());
+////			}
+//
+//            return writer.toBytesAndEnd();
+//        }
+    }
+
+    public static TransferData createEmpty() {
+        return new TransferData(StringUtil.empty(), DTObject.Empty);
+    }
 }

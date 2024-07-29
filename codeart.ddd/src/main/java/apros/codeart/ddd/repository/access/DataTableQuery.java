@@ -109,7 +109,7 @@ final class DataTableQuery {
         Object result = null;
 
         var data = executeQueryEntry(query, expression, level, fillArg);
-        if (data.size() > 0) {
+        if (!data.isEmpty()) {
             result = getObjectFromEntry(data, level);
         }
 
@@ -198,7 +198,6 @@ final class DataTableQuery {
         var qb = DataSource.getQueryBuilder(QueryCountQB.class);
 
         var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
-
         return DataAccess.current().queryScalarInt(sql, param, level);
     }
 
@@ -278,8 +277,10 @@ final class DataTableQuery {
         // 编译表达式获取执行文本
         var description = QueryDescription.createBy(param, expression, level, _self);
         var sql = query.build(description);
-
-        return DataAccess.current().queryRow(sql, param, level);
+        //return DataAccess.current().queryRow(sql, param, level);
+        return DataAccess.using((access) -> {
+            return access.queryRow(sql, param, level);
+        });
     }
 
     private Iterable<MapData> executeQueryEntries(Class<? extends IQueryBuilder> qbType, String expression,
@@ -289,7 +290,9 @@ final class DataTableQuery {
 
         var qb = DataSource.getQueryBuilder(qbType);
         var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
-        return DataAccess.current().queryRows(sql, param, level);
+        return DataAccess.using((access) -> {
+            return access.queryRows(sql, param, level);
+        });
     }
 
     /// <summary>
@@ -412,7 +415,9 @@ final class DataTableQuery {
         var qb = DataSource.getQueryBuilder(QueryObjectQB.class);
         var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
 
-        var data = DataAccess.current().queryRow(sql, param, level);
+        var data = DataAccess.using((access) -> {
+            return access.queryRow(sql, param, level);
+        });
         return _self.createObject(objectType, data, level);
     }
 
@@ -499,7 +504,7 @@ final class DataTableQuery {
         // 在领域层主动查看数据编号时，不需要锁；在提交数据时获取数据编号，由于对象已被锁，所以不需要在读取版本号时锁
         int dataVersion = 0;
         var data = executeQueryEntry(exp, expression, QueryLevel.NONE, fillArg);
-        if (data.size() > 0) {
+        if (!data.isEmpty()) {
             dataVersion = (int) data.get(GeneratedField.DataVersionName);
         }
 

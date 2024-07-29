@@ -3,7 +3,10 @@ package apros.codeart.ddd.dynamic;
 import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.FrameworkDomain;
 import apros.codeart.ddd.MergeDomain;
+import apros.codeart.ddd.internal.DTOMapper;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.ConstructorRepository;
+import apros.codeart.dto.DTObject;
 
 @MergeDomain
 @FrameworkDomain

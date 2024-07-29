@@ -4,15 +4,15 @@ import apros.codeart.dto.DTObject;
 
 class SchemaCodeReader extends DTOReader {
 
-	/// <summary>
-	/// 成员的架构代码
-	/// </summary>
-	private SchemaCodes _schemaCodes;
+    /// <summary>
+    /// 成员的架构代码
+    /// </summary>
+    private final SchemaCodes _schemaCodes;
 
-	public SchemaCodeReader(DTObject dto, SchemaCodes schemaCodes) {
-		super(dto);
-		_schemaCodes = schemaCodes;
-	}
+    public SchemaCodeReader(DTObject dto, SchemaCodes schemaCodes) {
+        super(dto);
+        _schemaCodes = schemaCodes;
+    }
 
 //	public override T ReadElement<T>(
 //	string name,
@@ -28,27 +28,27 @@ class SchemaCodeReader extends DTOReader {
 //	     return (T)DTObjectMapper.Instance.Save(elementType, schemaCode, dtoElement);
 //	 }
 
-	@Override
-	public Object readElement(String name, int index, Class<?> elementType) {
-		var e = _dto.getElement(name, index, false);
-		if (e == null)
-			return null;
+    @Override
+    public Object readElement(String name, int index, Class<?> elementType) {
+        var e = _dto.getElement(name, index, false);
+        if (e == null)
+            return null;
 
-		if (e.isSingleValue())
-			return e.getValue();
+        if (e.isSingleValue())
+            return e.getValue();
 
-		String schemaCode = _schemaCodes.getSchemaCode(name, () -> elementType);
+        String schemaCode = _schemaCodes.getSchemaCode(name, () -> elementType);
 
-		return e.save(elementType, schemaCode);
-	}
+        return e.save(elementType, schemaCode);
+    }
 
-	@Override
-	public Object readObject(Class<?> objectType, String name) {
-		var dtoValue = _dto.getObject(name, null);
-		if (dtoValue == null)
-			return null;
+    @Override
+    public Object readObject(Class<?> objectType, String name) {
+        var dtoValue = _dto.getObject(name, null);
+        if (dtoValue == null)
+            return null;
 
-		String schemaCode = _schemaCodes.getSchemaCode(name, () -> objectType);
-		return DTObjectMapper.save(objectType, schemaCode, dtoValue);
-	}
+        String schemaCode = _schemaCodes.getSchemaCode(name, () -> objectType);
+        return DTObjectMapper.save(objectType, schemaCode, dtoValue);
+    }
 }

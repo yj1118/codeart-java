@@ -9,7 +9,7 @@ import apros.codeart.ddd.metadata.internal.MetadataLoader;
 import apros.codeart.ddd.repository.access.DataModelLoader;
 import apros.codeart.ddd.repository.access.DataPortal;
 import apros.codeart.ddd.saga.internal.EventHost;
-import apros.codeart.ddd.service.internal.SerivceImpl;
+import apros.codeart.ddd.service.internal.ServiceImpl;
 import apros.codeart.i18n.Language;
 
 final class DomainHost {
@@ -56,7 +56,7 @@ final class DomainHost {
         Forker.initialize();
 
         // 对外提供的服务初始化
-        SerivceImpl.initialize();
+        ServiceImpl.initialize();
     }
 
     /**

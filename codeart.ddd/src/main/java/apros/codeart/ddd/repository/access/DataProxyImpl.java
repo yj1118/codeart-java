@@ -71,7 +71,7 @@ class DataProxyImpl extends DataProxy {
         return current != latest; // 当对象已经被删除，对象版本号大于数据库版本号，当对象被修改，当前对象版本号小于数据库版本号
     }
 
-    private boolean _isMirror;
+    private final boolean _isMirror;
 
     @Override
     public boolean isMirror() {

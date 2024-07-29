@@ -19,7 +19,6 @@
 
 
     <dependencies>
-
         <dependency>
             <groupId>org.ow2.asm</groupId>
             <artifactId>asm</artifactId>
@@ -42,7 +41,6 @@
             <scope>test</scope> <!-- 设置依赖范围为test -->
         </dependency>
     </dependencies>
-
 
 
 </project>

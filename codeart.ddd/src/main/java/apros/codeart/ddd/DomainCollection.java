@@ -17,7 +17,7 @@ public class DomainCollection<E> extends ArrayList<E>
     @Serial
     private static final long serialVersionUID = 1243664948610752956L;
 
-    private Class<E> _elementType;
+    private final Class<E> _elementType;
 
     public Class<E> elementType() {
         return _elementType;
@@ -76,6 +76,7 @@ public class DomainCollection<E> extends ArrayList<E>
         if (oldValue != null)
             unbindChanged(element);
         bindChanged(element);
+        collectionChanged();
         return oldValue;
     }
 
@@ -84,6 +85,7 @@ public class DomainCollection<E> extends ArrayList<E>
         boolean added = super.add(e);
         if (added) {
             bindChanged(e);
+            collectionChanged();
         }
         return added;
     }
@@ -92,29 +94,36 @@ public class DomainCollection<E> extends ArrayList<E>
     public void add(int index, E element) {
         super.add(index, element);
         bindChanged(element);
+        collectionChanged();
     }
 
     @Override
     public E remove(int index) {
         var oldValue = super.remove(index);
-        if (oldValue != null)
+        if (oldValue != null) {
             unbindChanged(oldValue);
+            collectionChanged();
+        }
         return oldValue;
     }
 
     @Override
     public E removeFirst() {
         var oldValue = super.removeFirst();
-        if (oldValue != null)
+        if (oldValue != null) {
             unbindChanged(oldValue);
+            collectionChanged();
+        }
         return oldValue;
     }
 
     @Override
     public E removeLast() {
         var oldValue = super.removeLast();
-        if (oldValue != null)
+        if (oldValue != null) {
             unbindChanged(oldValue);
+            collectionChanged();
+        }
         return oldValue;
     }
 
@@ -122,8 +131,10 @@ public class DomainCollection<E> extends ArrayList<E>
     @Override
     public boolean remove(Object o) {
         var removed = super.remove(o);
-        if (removed)
+        if (removed) {
             unbindChanged((E) o);
+            collectionChanged();
+        }
         return removed;
     }
 
@@ -132,6 +143,7 @@ public class DomainCollection<E> extends ArrayList<E>
         for (var o : this)
             unbindChanged(o);
         super.clear();
+        collectionChanged();
     }
 
     @Override
@@ -140,6 +152,7 @@ public class DomainCollection<E> extends ArrayList<E>
         if (added) {
             for (var o : this)
                 bindChanged(o);
+            collectionChanged();
         }
         return added;
     }
@@ -150,6 +163,7 @@ public class DomainCollection<E> extends ArrayList<E>
         if (added) {
             for (var o : this)
                 bindChanged(o);
+            collectionChanged();
         }
         return added;
     }
@@ -160,6 +174,7 @@ public class DomainCollection<E> extends ArrayList<E>
         if (removed) {
             for (var o : this)
                 unbindChanged(o);
+            collectionChanged();
         }
         return removed;
     }
@@ -170,7 +185,7 @@ public class DomainCollection<E> extends ArrayList<E>
             if (!c.contains(o))
                 unbindChanged(o);
         }
-
+        collectionChanged();
         return super.retainAll(c);
     }
 
@@ -182,7 +197,9 @@ public class DomainCollection<E> extends ArrayList<E>
                 unbindChanged(o);
         }
 
-        return super.removeIf(filter);
+        boolean success = super.removeIf(filter);
+        if (success) collectionChanged();
+        return success;
     }
 
     private void bindChanged(E item) {
@@ -209,6 +226,10 @@ public class DomainCollection<E> extends ArrayList<E>
 
     @Override
     public void handle(Object sender, DomainObjectChangedEventArgs args) {
+        markChanged();
+    }
+
+    private void collectionChanged() {
         markChanged();
     }
 

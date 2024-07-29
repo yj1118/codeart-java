@@ -51,7 +51,7 @@ public final class Forker {
         if (!isEnabled(root))
             return;
 
-        var data = DTOMapper.toDTO((DomainObject) root, (obj) -> {
+        var data = DTOMapper.toDTO((DomainObject) root, null, (obj) -> {
             var master = findMaster(obj, true);
             return master.members();
         });
@@ -70,7 +70,7 @@ public final class Forker {
         if (!isEnabled(root))
             return;
 
-        var data = DTOMapper.toDTO((DomainObject) root, (obj) -> {
+        var data = DTOMapper.toDTO((DomainObject) root, null, (obj) -> {
             var master = findMaster(obj, true);
             if (obj == root) {
                 // 只收集更改了的属性

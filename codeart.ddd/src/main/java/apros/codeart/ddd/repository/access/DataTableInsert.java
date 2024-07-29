@@ -17,336 +17,338 @@ import apros.codeart.util.StringUtil;
 
 final class DataTableInsert {
 
-	private DataTable _self;
+    private DataTable _self;
 
-	public DataTableInsert(DataTable self) {
-		_self = self;
-	}
+    public DataTableInsert(DataTable self) {
+        _self = self;
+    }
 
-	public void insert(DomainObject obj) {
-		if (obj == null || obj.isEmpty())
-			return;
-		if (!obj.isDirty()) {
-			// 脏对象才有保存的必要
-			return;
-		}
+    public void insert(DomainObject obj) {
+        if (obj == null || obj.isEmpty())
+            return;
+        if (!obj.isDirty()) {
+            // 脏对象才有保存的必要
+            return;
+        }
 
-		DomainObject root = null;
-		if (_self.type() == DataTableType.AggregateRoot)
-			root = obj;
-		if (root == null || root.isEmpty())
-			throw new IllegalStateException(
-					Language.strings("apros.codeart.ddd", "PersistentObjectError", obj.getClass().getName()));
+        DomainObject root = null;
+        if (_self.type() == DataTableType.AggregateRoot)
+            root = obj;
+        if (root == null || root.isEmpty())
+            throw new IllegalStateException(
+                    Language.strings("apros.codeart.ddd", "PersistentObjectError", obj.getClass().getName()));
 
-		onPreDataInsert(obj);
-		var data = insertData(root, null, obj);
-		onDataInserted(root, obj, data);
-	}
+        onPreDataInsert(obj);
+        var data = insertData(root, null, obj);
+        onDataInserted(root, obj, data);
+    }
 
-	/// <summary>
-	/// 插入数据
-	/// </summary>
-	/// <param name="obj"></param>
-	/// <returns></returns>
-	private MapData insertData(DomainObject root, DomainObject parent, DomainObject obj) {
-		var data = getInsertData(root, parent, obj);
+    /// <summary>
+    /// 插入数据
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    private MapData insertData(DomainObject root, DomainObject parent, DomainObject obj) {
+        var data = getInsertData(root, parent, obj);
 
-		DataAccess.current().execute(this.sqlInsert(), data);
+        DataAccess.current().execute(this.sqlInsert(), data);
 
-		return data;
-	}
+        return data;
+    }
 
-	private void onPreDataInsert(DomainObject obj) {
-		_self.mapper().onPreInsert(obj, _self);
-	}
+    private void onPreDataInsert(DomainObject obj) {
+        _self.mapper().onPreInsert(obj, _self);
+    }
 
-	/**
-	 * 
-	 * 保存数据后
-	 * 
-	 * @param root
-	 * @param obj
-	 * @param objData
-	 */
-	private void onDataInserted(DomainObject root, DomainObject obj, MapData objData) {
-		if (_self.type() == DataTableType.AggregateRoot) {
-			var ar = (IAggregateRoot) obj;
-			DomainBuffer.add(ar);
-		}
+    /**
+     * 保存数据后
+     *
+     * @param root
+     * @param obj
+     * @param objData
+     */
+    private void onDataInserted(DomainObject root, DomainObject obj, MapData objData) {
 
-		_self.mapper().onInserted(obj, _self);
-	}
+        //更新数据代理
+        obj.dataProxy(new DataProxyImpl(objData, _self, false));
 
-	private MapData getInsertData(DomainObject root, DomainObject parent, DomainObject obj) {
-		Class<?> objectType = _self.objectType();
+        if (_self.type() == DataTableType.AggregateRoot) {
+            var ar = (IAggregateRoot) obj;
+            DomainBuffer.add(ar);
+        }
 
-		var tips = PropertyMeta.getProperties(objectType);
-		var data = new MapData();
-		for (var tip : tips) {
-			insertAndCollectValue(root, parent, obj, tip, data);
-		}
+        _self.mapper().onInserted(obj, _self);
+    }
 
-		switch (_self.type()) {
-		case DataTableType.ValueObject: {
-			// 需要补充编号
-			data.put(EntityObject.IdPropertyName, DataTableUtil.getObjectId(obj));
-			// 插入时默认为1
-			data.put(GeneratedField.AssociatedCountName, 1);
-			// 补充外键
-			data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
-			break;
-		}
-		case DataTableType.EntityObject: {
-			// 插入时默认为1
-			data.put(GeneratedField.AssociatedCountName, 1);
-			// 补充外键
-			data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
-			break;
-		}
-		case DataTableType.Middle: {
-			// 补充外键
-			data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
-			break;
-		}
-		default:
-			break;
-		}
+    private MapData getInsertData(DomainObject root, DomainObject parent, DomainObject obj) {
+        Class<?> objectType = _self.objectType();
 
-		// this.Mapper.FillInsertData(obj, data, this);
+        var tips = PropertyMeta.getProperties(objectType);
+        var data = new MapData();
+        for (var tip : tips) {
+            insertAndCollectValue(root, parent, obj, tip, data);
+        }
 
-		// 只有非派生表才记录TypeKey和DataVersion
-		data.put(GeneratedField.TypeKeyName, StringUtil.empty()); // 追加类型编号，非派生类默认类型编号为空
-		data.put(GeneratedField.DataVersionName, 1); // 追加数据版本号
+        switch (_self.type()) {
+            case DataTableType.ValueObject: {
+                // 需要补充编号
+                data.put(EntityObject.IdPropertyName, DataTableUtil.getObjectId(obj));
+                // 插入时默认为1
+                data.put(GeneratedField.AssociatedCountName, 1);
+                // 补充外键
+                data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
+                break;
+            }
+            case DataTableType.EntityObject: {
+                // 插入时默认为1
+                data.put(GeneratedField.AssociatedCountName, 1);
+                // 补充外键
+                data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
+                break;
+            }
+            case DataTableType.Middle: {
+                // 补充外键
+                data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));
+                break;
+            }
+            default:
+                break;
+        }
 
-		return data;
-	}
+        // this.Mapper.FillInsertData(obj, data, this);
 
-	/// <summary>
-	/// 插入成员数据
-	/// </summary>
-	/// <param name="root"></param>
-	/// <param name="parent"></param>
-	/// <param name="obj"></param>
-	/// <returns>成员有可能已经在别的引用中被插入，此时返回false,否则返回true</returns>
-	public void insertMember(DomainObject root, DomainObject parent, DomainObject obj) {
-		if (obj == null || obj.isEmpty())
-			return;
+        // 只有非派生表才记录TypeKey和DataVersion
+        data.put(GeneratedField.TypeKeyName, StringUtil.empty()); // 追加类型编号，非派生类默认类型编号为空
+        data.put(GeneratedField.DataVersionName, 1); // 追加数据版本号
 
-		// 我们需要先查，看数据库中是否存在数据，如果不存在就新增，存在就增加引用次数
-		var existObject = _self.querySingle(DataTableUtil.getObjectId(root), DataTableUtil.getObjectId(obj));
+        return data;
+    }
 
-		if (ObjectUtil.isNull(existObject)) {
-			onPreDataInsert(obj);
-			var data = insertData(root, parent, obj);
-			onDataInserted(root, obj, data);
-		} else {
-			// 递增引用次数
-			incrementAssociated(DataTableUtil.getObjectId(root), DataTableUtil.getObjectId(obj));
-		}
-	}
+    /// <summary>
+    /// 插入成员数据
+    /// </summary>
+    /// <param name="root"></param>
+    /// <param name="parent"></param>
+    /// <param name="obj"></param>
+    /// <returns>成员有可能已经在别的引用中被插入，此时返回false,否则返回true</returns>
+    public void insertMember(DomainObject root, DomainObject parent, DomainObject obj) {
+        if (obj == null || obj.isEmpty())
+            return;
 
-	/**
-	 * 
-	 * 递增引用次数
-	 * 
-	 * @param rootId
-	 * @param id
-	 */
-	private void incrementAssociated(Object rootId, Object id) {
-		var data = new MapData();
-		data.put(GeneratedField.RootIdName, rootId);
-		data.put(EntityObject.IdPropertyName, id);
+        // 我们需要先查，看数据库中是否存在数据，如果不存在就新增，存在就增加引用次数
+        var existObject = _self.querySingle(DataTableUtil.getObjectId(root), DataTableUtil.getObjectId(obj));
 
-		var builder = DataSource.getQueryBuilder(IncrementAssociatedQB.class);
-		var sql = builder.build(new QueryDescription(_self));
-		// 递增引用次数不需要复刻
-		DataAccess.current().execute(sql, data);
-	}
+        if (ObjectUtil.isNull(existObject)) {
+            onPreDataInsert(obj);
+            var data = insertData(root, parent, obj);
+            onDataInserted(root, obj, data);
+        } else {
+            // 递增引用次数
+            incrementAssociated(DataTableUtil.getObjectId(root), DataTableUtil.getObjectId(obj));
+        }
+    }
 
-	public void insertMiddle(IDomainObject root, IDomainObject master, Iterable<?> slaves) {
-		if (_self.isPrimitiveValue()) {
-			insertMiddleByValues(root, master, slaves);
-			return;
-		}
+    /**
+     * 递增引用次数
+     *
+     * @param rootId
+     * @param id
+     */
+    private void incrementAssociated(Object rootId, Object id) {
+        var data = new MapData();
+        data.put(GeneratedField.RootIdName, rootId);
+        data.put(EntityObject.IdPropertyName, id);
 
-		var rootId = DataTableUtil.getObjectId(root);
-		var rootIdName = GeneratedField.RootIdName;
-		var slaveIdName = GeneratedField.SlaveIdName;
+        var builder = DataSource.getQueryBuilder(IncrementAssociatedQB.class);
+        var sql = builder.build(new QueryDescription(_self));
+        // 递增引用次数不需要复刻
+        DataAccess.current().execute(sql, data);
+    }
 
-		if (_self.masterIsRoot()) {
-			int index = 0;
-			for (var slave : slaves) {
-				if (ObjectUtil.isNull(slave))
-					continue;
-				var slaveId = DataTableUtil.getObjectId(slave);
-				var data = new MapData();
-				data.put(rootIdName, rootId);
-				data.put(slaveIdName, slaveId);
-				data.put(GeneratedField.OrderIndexName, index);
+    public void insertMiddle(IDomainObject root, IDomainObject master, Iterable<?> slaves) {
+        if (_self.isPrimitiveValue()) {
+            insertMiddleByValues(root, master, slaves);
+            return;
+        }
 
-				DataAccess.current().execute(this.sqlInsert(), data);
-				index++;
-			}
-		} else {
-			var masterIdName = GeneratedField.MasterIdName;
-			var masterId = DataTableUtil.getObjectId(master);
-			int index = 0;
-			for (var slave : slaves) {
-				if (ObjectUtil.isNull(slave))
-					continue;
-				var slaveId = DataTableUtil.getObjectId(slave);
-				var data = new MapData();
-				data.put(rootIdName, rootId);
-				data.put(masterIdName, masterId);
-				data.put(slaveIdName, slaveId);
-				data.put(GeneratedField.OrderIndexName, index);
+        var rootId = DataTableUtil.getObjectId(root);
+        var rootIdName = GeneratedField.RootIdName;
+        var slaveIdName = GeneratedField.SlaveIdName;
 
-				DataAccess.current().execute(this.sqlInsert(), data);
-				index++;
-			}
+        if (_self.masterIsRoot()) {
+            int index = 0;
+            for (var slave : slaves) {
+                if (ObjectUtil.isNull(slave))
+                    continue;
+                var slaveId = DataTableUtil.getObjectId(slave);
+                var data = new MapData();
+                data.put(rootIdName, rootId);
+                data.put(slaveIdName, slaveId);
+                data.put(GeneratedField.OrderIndexName, index);
 
-		}
-	}
+                DataAccess.current().execute(this.sqlInsert(), data);
+                index++;
+            }
+        } else {
+            var masterIdName = GeneratedField.MasterIdName;
+            var masterId = DataTableUtil.getObjectId(master);
+            int index = 0;
+            for (var slave : slaves) {
+                if (ObjectUtil.isNull(slave))
+                    continue;
+                var slaveId = DataTableUtil.getObjectId(slave);
+                var data = new MapData();
+                data.put(rootIdName, rootId);
+                data.put(masterIdName, masterId);
+                data.put(slaveIdName, slaveId);
+                data.put(GeneratedField.OrderIndexName, index);
 
-	private void insertMiddleByValues(IDomainObject root, IDomainObject master, Iterable<?> values) {
-		var rootId = DataTableUtil.getObjectId(root);
-		var rootIdName = GeneratedField.RootIdName;
-		if (_self.masterIsRoot()) {
-			int index = 0;
-			for (var value : values) {
-				var data = new MapData();
-				data.put(rootIdName, rootId);
-				data.put(GeneratedField.PrimitiveValueName, value);
-				data.put(GeneratedField.OrderIndexName, index);
-				DataAccess.current().execute(this.sqlInsert(), data);
-				index++;
-			}
-		} else {
-			var masterIdName = GeneratedField.MasterIdName;
-			var masterId = DataTableUtil.getObjectId(master);
-			int index = 0;
-			for (var value : values) {
-				var data = new MapData();
-				data.put(rootIdName, rootId);
-				data.put(masterIdName, masterId);
-				data.put(GeneratedField.PrimitiveValueName, value);
-				data.put(GeneratedField.OrderIndexName, index);
-				DataAccess.current().execute(this.sqlInsert(), data);
-				index++;
-			}
-		}
-	}
+                DataAccess.current().execute(this.sqlInsert(), data);
+                index++;
+            }
 
-	private void insertAndCollectValue(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip,
-			MapData data) {
-		switch (tip.category()) {
-		case DomainPropertyCategory.Primitive: {
-			var value = DataTableUtil.getPrimitivePropertyValue(current, tip);
-			data.put(tip.name(), value);
-		}
-			break;
-		case DomainPropertyCategory.PrimitiveList: {
-			var value = current.getValue(tip.name());
-			// 仅存中间表
-			var values = DataTableUtil.getValueListData(value, tip.monotype());
-			var child = _self.findChild(_self, tip);// 无论是派生还是基类，基础表对应的中间表都一样
-			child.insertMiddle(root, current, values);
-		}
-			break;
-		case DomainPropertyCategory.ValueObject: {
-			insertAndCollectValueObject(root, parent, current, tip, data);
-		}
-			break;
-		case DomainPropertyCategory.AggregateRoot: {
-			var field = DataTableUtil.getQuoteField(_self, tip.name());
-			Object obj = current.getValue(tip.name());
-			var id = DataTableUtil.getObjectId(obj);
-			data.put(field.name(), id);
-		}
-			break;
-		case DomainPropertyCategory.EntityObject: {
-			var obj = (DomainObject) current.getValue(tip.name());
+        }
+    }
 
-			var id = DataTableUtil.getObjectId(obj);
-			var field = DataTableUtil.getQuoteField(_self, tip.name());
-			data.put(field.name(), id); // 收集外键
+    private void insertMiddleByValues(IDomainObject root, IDomainObject master, Iterable<?> values) {
+        var rootId = DataTableUtil.getObjectId(root);
+        var rootIdName = GeneratedField.RootIdName;
+        if (_self.masterIsRoot()) {
+            int index = 0;
+            for (var value : values) {
+                var data = new MapData();
+                data.put(rootIdName, rootId);
+                data.put(GeneratedField.PrimitiveValueName, value);
+                data.put(GeneratedField.OrderIndexName, index);
+                DataAccess.current().execute(this.sqlInsert(), data);
+                index++;
+            }
+        } else {
+            var masterIdName = GeneratedField.MasterIdName;
+            var masterId = DataTableUtil.getObjectId(master);
+            int index = 0;
+            for (var value : values) {
+                var data = new MapData();
+                data.put(rootIdName, rootId);
+                data.put(masterIdName, masterId);
+                data.put(GeneratedField.PrimitiveValueName, value);
+                data.put(GeneratedField.OrderIndexName, index);
+                DataAccess.current().execute(this.sqlInsert(), data);
+                index++;
+            }
+        }
+    }
 
-			// 保存引用数据
-			if (!obj.isEmpty()) {
-				var child = _self.findChild(_self, tip.name());
-				child.insertMember(root, current, obj);
-			}
-		}
-			break;
-		case DomainPropertyCategory.AggregateRootList: {
-			// 仅存中间表
-			var objs = TypeUtil.as(current.getValue(tip.name()), Iterable.class);
-			var child = _self.findChild(_self, tip);// 基础表对应的中间表都一样
-			child.middle().insertMiddle(root, current, objs);
-		}
-			break;
-		case DomainPropertyCategory.ValueObjectList:
-		case DomainPropertyCategory.EntityObjectList: {
-			insertMembers(root, parent, current, tip);
-		}
-			break;
-		}
-	}
+    private void insertAndCollectValue(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip,
+                                       MapData data) {
+        switch (tip.category()) {
+            case DomainPropertyCategory.Primitive: {
+                var value = DataTableUtil.getPrimitivePropertyValue(current, tip);
+                data.put(tip.name(), value);
+            }
+            break;
+            case DomainPropertyCategory.PrimitiveList: {
+                var value = current.getValue(tip.name());
+                // 仅存中间表
+                var values = DataTableUtil.getValueListData(value, tip.monotype());
+                var child = _self.findChild(_self, tip);// 无论是派生还是基类，基础表对应的中间表都一样
+                child.insertMiddle(root, current, values);
+            }
+            break;
+            case DomainPropertyCategory.ValueObject: {
+                insertAndCollectValueObject(root, parent, current, tip, data);
+            }
+            break;
+            case DomainPropertyCategory.AggregateRoot: {
+                var field = DataTableUtil.getQuoteField(_self, tip.name());
+                Object obj = current.getValue(tip.name());
+                var id = DataTableUtil.getObjectId(obj);
+                data.put(field.name(), id);
+            }
+            break;
+            case DomainPropertyCategory.EntityObject: {
+                var obj = (DomainObject) current.getValue(tip.name());
 
-	private void insertAndCollectValueObject(DomainObject root, DomainObject parent, DomainObject current,
-			PropertyMeta tip, MapData data) {
-		var field = DataTableUtil.getQuoteField(_self, tip.name());
-		var obj = TypeUtil.as(current.getValue(tip.name()), DomainObject.class);
+                var id = DataTableUtil.getObjectId(obj);
+                var field = DataTableUtil.getQuoteField(_self, tip.name());
+                data.put(field.name(), id); // 收集外键
 
-		if (obj.isEmpty()) {
-			data.put(field.name(), Guid.Empty);
-		} else {
-			((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
-			var id = DataTableUtil.getObjectId(obj);
-			data.put(field.name(), id);
+                // 保存引用数据
+                if (!obj.isEmpty()) {
+                    var child = _self.findChild(_self, tip.name());
+                    child.insertMember(root, current, obj);
+                }
+            }
+            break;
+            case DomainPropertyCategory.AggregateRootList: {
+                // 仅存中间表
+                var objs = TypeUtil.as(current.getValue(tip.name()), Iterable.class);
+                var child = _self.findChild(_self, tip);// 基础表对应的中间表都一样
+                child.middle().insertMiddle(root, current, objs);
+            }
+            break;
+            case DomainPropertyCategory.ValueObjectList:
+            case DomainPropertyCategory.EntityObjectList: {
+                insertMembers(root, parent, current, tip);
+            }
+            break;
+        }
+    }
 
-			// 保存数据
-			var child = _self.findChild(_self, tip.name());
-			child.insertMember(root, current, obj);
-		}
-	}
+    private void insertAndCollectValueObject(DomainObject root, DomainObject parent, DomainObject current,
+                                             PropertyMeta tip, MapData data) {
+        var field = DataTableUtil.getQuoteField(_self, tip.name());
+        var obj = TypeUtil.as(current.getValue(tip.name()), DomainObject.class);
 
-	void insertMembers(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
-		var objs = TypeUtil.as(current.getValue(tip.name()), Iterable.class);
-		insertMembers(root, parent, current, objs, tip);
-	}
+        if (obj.isEmpty()) {
+            data.put(field.name(), Guid.Empty);
+        } else {
+            ((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
+            var id = DataTableUtil.getObjectId(obj);
+            data.put(field.name(), id);
 
-	void insertMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable<?> members,
-			PropertyMeta tip) {
-		DataTable middle = null;
-		for (var member : members) {
-			var obj = (DomainObject) member;
-			if (obj.isEmpty())
-				continue;
-			var child = _self.findChild(_self, tip.name());
-			if (child.type() == DataTableType.ValueObject) {
-				// 我们需要为ValueObject补充编号
-				((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
-			}
-			child.insertMember(root, current, obj);
-			if (middle == null)
-				middle = child.middle();
-		}
-		if (middle != null)
-			middle.insertMiddle(root, current, members);
-	}
+            // 保存数据
+            var child = _self.findChild(_self, tip.name());
+            child.insertMember(root, current, obj);
+        }
+    }
 
-	private String _sqlInsert;
+    void insertMembers(DomainObject root, DomainObject parent, DomainObject current, PropertyMeta tip) {
+        var objs = TypeUtil.as(current.getValue(tip.name()), Iterable.class);
+        insertMembers(root, parent, current, objs, tip);
+    }
 
-	public String sqlInsert() {
-		if (_sqlInsert == null) {
-			_sqlInsert = getInsertSql();
-		}
-		return _sqlInsert;
-	}
+    void insertMembers(DomainObject root, DomainObject parent, DomainObject current, Iterable<?> members,
+                       PropertyMeta tip) {
+        DataTable middle = null;
+        for (var member : members) {
+            var obj = (DomainObject) member;
+            if (obj.isEmpty())
+                continue;
+            var child = _self.findChild(_self, tip.name());
+            if (child.type() == DataTableType.ValueObject) {
+                // 我们需要为ValueObject补充编号
+                ((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
+            }
+            child.insertMember(root, current, obj);
+            if (middle == null)
+                middle = child.middle();
+        }
+        if (middle != null)
+            middle.insertMiddle(root, current, members);
+    }
 
-	private String getInsertSql() {
-		var builder = DataSource.getQueryBuilder(InsertTableQB.class);
-		return builder.build(new QueryDescription(_self));
-	}
+    private String _sqlInsert;
+
+    public String sqlInsert() {
+        if (_sqlInsert == null) {
+            _sqlInsert = getInsertSql();
+        }
+        return _sqlInsert;
+    }
+
+    private String getInsertSql() {
+        var builder = DataSource.getQueryBuilder(InsertTableQB.class);
+        return builder.build(new QueryDescription(_self));
+    }
 }

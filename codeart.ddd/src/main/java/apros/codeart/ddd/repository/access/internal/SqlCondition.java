@@ -2,36 +2,38 @@ package apros.codeart.ddd.repository.access.internal;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import apros.codeart.ddd.MapData;
 import apros.codeart.ddd.repository.access.SqlAny;
 import apros.codeart.runtime.TypeUtil;
+import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
 
 public final class SqlCondition {
 
-    private ArrayList<SqlLike> _likes;
+    private final ArrayList<SqlLike> _likes;
 
     public Iterable<SqlLike> likes() {
         return _likes;
     }
 
-    private ArrayList<SqlIn> _ins;
+    private final ArrayList<SqlIn> _ins;
 
     public Iterable<SqlIn> ins() {
         return _ins;
     }
 
-    private ArrayList<SqlAny> _anys;
+    private final ArrayList<SqlAny> _anys;
 
     public Iterable<SqlAny> anys() {
         return _anys;
     }
 
-    private String _code;
+    private final String _code;
 
     public String code() {
         return _code;
@@ -102,11 +104,12 @@ public final class SqlCondition {
         return code;
     }
 
-    /// <summary>
-    /// 解析in写法 id in @ids 转为可以执行的语句
-    /// </summary>
-    /// <param name="code"></param>
-    /// <returns></returns>
+    /**
+     * 解析in写法 id in @ids 转为可以执行的语句
+     *
+     * @param code
+     * @return
+     */
     private String parseIn(String code) {
 
         Matcher matcher = _inRegex.matcher(code);
@@ -118,7 +121,7 @@ public final class SqlCondition {
             var field = matcher.group(1);
 
             var newExp = StringUtil.trim(matcher.group(2));
-            var para = StringUtil.substr(newExp, 1);
+            var para = newExp;
             newExp = String.format("%s in (@%s)", field, para);
 
             SqlIn sin = new SqlIn(field, para, newExp);
@@ -192,7 +195,47 @@ public final class SqlCondition {
                 param.put(name, MessageFormat.format("%{0}", value));
         }
 
-        for (var sin : _ins) {
+        if (!_ins.isEmpty()) {
+            commandText = processIn(commandText, param);
+        }
+
+
+//        for (var sin : _ins) {
+//            var name = sin.paramName();
+//            var values = TypeUtil.as(param.get(name), Iterable.class);
+//            param.remove(name);
+//
+//            if (ListUtil.exists(values)) {
+//                var code = new StringBuilder();
+//                int index = 0;
+//                StringUtil.appendFormat(code, "%s in (", sin.field());
+//                for (var value : values) {
+//                    var valueName = String.format("%s%s", name, index);
+//                    param.put(valueName, value);
+//                    StringUtil.appendFormat(code, "@%s,", valueName);
+//                    index++;
+//                }
+//                if (code.length() > 1)
+//                    StringUtil.removeLast(code);
+//                code.append(")");
+//
+//                var temp = new SqlCondition(commandText);
+//
+//                commandText = commandText.replace(sin.placeholder(), code.toString());
+//            } else {
+//                commandText = commandText.replace(sin.placeholder(), "0=1"); // 在in语句中，如果 id in
+//                // ()，没有任何匹配的数值条件，那么就是无匹配结果，所以0=1
+//            }
+//        }
+
+        return commandText;
+    }
+
+    private String processIn(String commandText, MapData param) {
+        // 针对最终生成的sql，收集一次ins，然后再替换，可以解决程序员写的表达式与生成后的表达式不匹配的问题
+        
+        var ins = _getIns.apply(commandText);
+        for (var sin : ins) {
             var name = sin.paramName();
             var values = TypeUtil.as(param.get(name), Iterable.class);
             param.remove(name);
@@ -200,7 +243,7 @@ public final class SqlCondition {
             if (ListUtil.exists(values)) {
                 var code = new StringBuilder();
                 int index = 0;
-                StringUtil.appendFormat(code, "%s in (", sin.field());
+                StringUtil.appendFormat(code, "%s IN (", sin.field());
                 for (var value : values) {
                     var valueName = String.format("%s%s", name, index);
                     param.put(valueName, value);
@@ -217,18 +260,39 @@ public final class SqlCondition {
                 // ()，没有任何匹配的数值条件，那么就是无匹配结果，所以0=1
             }
         }
-
         return commandText;
-
     }
 
     private static final Pattern _likeRegex = Pattern.compile("[ ]+?like([ %]+?@[%\\d\\w0-9]+)", Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern _inRegex = Pattern.compile("([\\d\\w0-9]+?)[ ]+?in[ ]+?(@[\\d\\w0-9]+)",
+    private static final Pattern _inRegex = Pattern.compile("([^\\s]+)\\s+IN\\s+\\(?\\s*@([^\\s\\)]+)\\s*\\)?",
             Pattern.CASE_INSENSITIVE);
 
     private static final Pattern _anyRegex = Pattern.compile("@([^\\{ ]+)\\{([^\\}]+)\\}", Pattern.CASE_INSENSITIVE);
 
     public static final SqlCondition Empty = new SqlCondition(StringUtil.empty());
+
+    private static final Function<String, Iterable<SqlIn>> _getIns = LazyIndexer.init((commandText) -> {
+        ArrayList<SqlIn> ins = new ArrayList<>();
+
+        Matcher matcher = _inRegex.matcher(commandText);
+        int offset = 0;
+        while (matcher.find()) {
+            var g = matcher.group(0);
+            int length = g.length();
+
+            var field = matcher.group(1);
+
+            var newExp = StringUtil.trim(matcher.group(2));
+            var para = newExp;
+            newExp = String.format("%s IN (@%s)", field, para);
+
+            SqlIn sin = new SqlIn(field, para, newExp);
+            ins.add(sin);
+        }
+
+        return ins;
+    });
+
 
 }

@@ -4,17 +4,17 @@ import java.util.ArrayList;
 
 public final class ConsumerClusterFactory {
 
-	private ConsumerClusterFactory() {
-	}
+    private ConsumerClusterFactory() {
+    }
 
-	public static Iterable<IConsumerCluster> getAll() {
-		return _clusters;
-	}
+    public static Iterable<IConsumerCluster> getAll() {
+        return _clusters;
+    }
 
-	private static ArrayList<IConsumerCluster> _clusters = new ArrayList<IConsumerCluster>();
+    private static final ArrayList<IConsumerCluster> _clusters = new ArrayList<IConsumerCluster>();
 
-	public static void add(IConsumerCluster cluster) {
-		_clusters.add(cluster);
-	}
+    public static void add(IConsumerCluster cluster) {
+        _clusters.add(cluster);
+    }
 
 }

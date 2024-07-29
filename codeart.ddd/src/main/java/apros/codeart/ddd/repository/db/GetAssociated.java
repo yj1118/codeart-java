@@ -11,18 +11,20 @@ import apros.codeart.util.SafeAccess;
 
 @SafeAccess
 public class GetAssociated extends GetAssociatedQB {
-	private GetAssociated() {
-	}
+    private GetAssociated() {
+    }
 
-	@Override
-	protected String buildImpl(DataTable table) {
-		return MessageFormat.format("select {0} from {1} where {2}=@{2} and {3}=@{3};",
-				SqlStatement.qualifier(GeneratedField.AssociatedCountName),
-				SqlStatement.qualifier(table.name()),
-				SqlStatement.qualifier(GeneratedField.RootIdName),
-				SqlStatement.qualifier(EntityObject.IdPropertyName));
-	}
+    @Override
+    protected String buildImpl(DataTable table) {
+        return MessageFormat.format("select {0} from {1} where {2}=@{3} and {4}=@{5};",
+                SqlStatement.qualifier(GeneratedField.AssociatedCountName),
+                SqlStatement.qualifier(table.name()),
+                SqlStatement.qualifier(GeneratedField.RootIdName),
+                GeneratedField.RootIdName,
+                SqlStatement.qualifier(EntityObject.IdPropertyName),
+                EntityObject.IdPropertyName);
+    }
 
-	public static final GetAssociated Instance = new GetAssociated();
+    public static final GetAssociated Instance = new GetAssociated();
 
 }

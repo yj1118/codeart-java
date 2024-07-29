@@ -12,26 +12,27 @@ import apros.codeart.util.SafeAccess;
 @SafeAccess
 class EventPublisher implements IPublisher {
 
-	private EventPublisher() {
-	}
+    private EventPublisher() {
+    }
 
-	/**
-	 * 发布事件，不需要等返回值，所以用单例发送，方法体里会用不同的bug发送事件
-	 */
-	@Override
-	public void publish(String eventName, DTObject arg) {
-		try (var temp = RabbitBus.borrow(EventConfig.PublisherPolicy)) {
-			RabbitBus bus = temp.getItem();
-			try {
-				bus.exchangeDeclare(EventConfig.Exchange, "topic");
-				var routingKey = eventName;
-				bus.publish(EventConfig.Exchange, routingKey, new TransferData(AppSession.language(), arg), null);
-			} catch (Exception e) {
-				throw propagate(e);
-			}
-		}
-	}
+    /**
+     * 发布事件，不需要等返回值，所以用单例发送，方法体里会用不同的bug发送事件
+     */
+    @Override
+    public void publish(String eventName, DTObject arg) {
+        try (var temp = RabbitBus.borrow(EventConfig.PublisherPolicy)) {
+            RabbitBus bus = temp.getItem();
+            try {
+                bus.exchangeDeclare(EventConfig.Exchange, "topic");
+                var routingKey = eventName;
+                arg.setString("__lang", AppSession.language());
+                bus.publish(EventConfig.Exchange, routingKey, arg, null);
+            } catch (Exception e) {
+                throw propagate(e);
+            }
+        }
+    }
 
-	public static final EventPublisher Instance = new EventPublisher();
+    public static final EventPublisher Instance = new EventPublisher();
 
 }

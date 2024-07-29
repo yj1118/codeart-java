@@ -146,8 +146,8 @@ public final class QueryRunner {
         return filter.result();
     }
 
-    private static void query(Connection conn, String sql, MapData param, IQueryFilter filter,QueryLevel level) {
-        tryOpenAppLock(conn,sql,param,level);
+    private static void query(Connection conn, String sql, MapData param, IQueryFilter filter, QueryLevel level) {
+        tryOpenAppLock(conn, sql, param, level);
         try (PreparedStatement pstmt = getStatement(conn, sql, param); ResultSet rs = pstmt.executeQuery()) {
             filter.extract(rs);
         } catch (SQLException e) {
@@ -155,22 +155,23 @@ public final class QueryRunner {
         }
     }
 
-    private static void tryOpenAppLock(Connection conn, String sql, MapData param,QueryLevel level) {
+    private static void tryOpenAppLock(Connection conn, String sql, MapData param, QueryLevel level) {
         // 只有hold锁才需要额外的加应用程序锁
-        if(!level.equals(QueryLevel.HOLD)) return;
+        if (!level.equals(QueryLevel.HOLD)) return;
 
         var type = DataSource.getDatabaseType();
-        if(type == DatabaseType.SqlServer) return; //sqlserver不需要应用程序锁就可以实现hold锁
+        if (type == DatabaseType.SqlServer) return; //sqlserver不需要应用程序锁就可以实现hold锁
 
 
-        var hashCode =  HashUtil.hash64((hasher) -> {
+        var hashCode = HashUtil.hash64((hasher) -> {
             hasher.append(sql);
-            hasher.append(param.entrySet());
+            if (param != null)
+                hasher.append(param.entrySet());
         });
 
         // 目前仅支持postgresql,以后再补充其他数据库,todo
-        switch (type){
-            case PostgreSql -> execute(conn,String.format("SELECT pg_advisory_xact_lock(%s)",hashCode));
+        switch (type) {
+            case PostgreSql -> execute(conn, String.format("SELECT pg_advisory_xact_lock(%s)", hashCode));
             default -> throw new IllegalStateException("Unexpected value: " + type);
         }
     }

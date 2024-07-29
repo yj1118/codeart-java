@@ -22,7 +22,7 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
     private volatile String _correlationId;
     private final IPoolItem _busItem;
     private String _tempQueue;
-    private final LatchSignal<TransferData> _signal;
+    private final LatchSignal<DTObject> _signal;
     private final int _secondsTimeout;
     private boolean _success;
 
@@ -45,11 +45,12 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
         _success = false;
         _correlationId = Guid.compact();
 
-        DTObject dto = DTObject.editable();
-        dto.setString("method", method);
-        dto.combineObject("arg", arg);
+        DTObject data = DTObject.editable();
+        data.setString("method", method);
+        data.combineObject("arg", arg);
+        data.setString("language", AppSession.language());
 
-        var data = new TransferData(AppSession.language(), dto);
+//        var data = new TransferData(AppSession.language(), dto);
         var routingKey = RPCConfig.getServerQueue(method); // 将服务器端的方法名称作为路由键
         bus.publish(Strings.EMPTY, routingKey, data, (properties) -> {
             properties.replyTo(_tempQueue);
@@ -62,14 +63,13 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
             throw new RabbitMQException(Language.strings("apros.codeart", "RequestTimeout", method));
         }
 
-        var body = result.body();
-        var error = body.getString("error", "null");
+        var error = result.getString("error", null);
 
         if (StringUtil.isNullOrEmpty(error)) {
             throw new RabbitMQException(error);
         }
 
-        return body;
+        return result.getObject("data");
     }
 
     @Override

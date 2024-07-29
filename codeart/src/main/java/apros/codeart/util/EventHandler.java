@@ -5,48 +5,48 @@ import java.util.function.Supplier;
 
 public class EventHandler<T> {
 
-	private ArrayList<IEventObserver<T>> _observers;
+    private ArrayList<IEventObserver<T>> _observers;
 
-	public EventHandler() {
+    public EventHandler() {
 
-	}
+    }
 
-	public void add(IEventObserver<T> observer) {
-		if (_observers == null)
-			_observers = new ArrayList<IEventObserver<T>>();
+    public void add(IEventObserver<T> observer) {
+        if (_observers == null)
+            _observers = new ArrayList<IEventObserver<T>>();
 
-		if (_observers.contains(observer))
-			return;
+        if (_observers.contains(observer))
+            return;
 
-		_observers.add(observer);
-	}
+        _observers.add(observer);
+    }
 
-	public void remove(IEventObserver<T> observer) {
-		if (this.isEmpty())
-			return;
+    public void remove(IEventObserver<T> observer) {
+        if (this.isEmpty())
+            return;
 
-		_observers.remove(observer);
-	}
+        _observers.remove(observer);
+    }
 
-	public void raise(Object sender, Supplier<T> getArags) {
-		if (this.isEmpty())
-			return;
+    public void raise(Object sender, Supplier<T> getArags) {
+        if (this.isEmpty())
+            return;
 
-		var args = getArags.get();
-		for (var observer : _observers) {
-			observer.handle(sender, args);
-		}
-	}
+        var args = getArags.get();
+        for (var observer : _observers) {
+            observer.handle(sender, args);
+        }
+    }
 
-	/**
-	 * 移除所有挂载的事件
-	 */
-	public void clear() {
-		_observers.clear();
-	}
+    /**
+     * 移除所有挂载的事件
+     */
+    public void clear() {
+        _observers.clear();
+    }
 
-	public boolean isEmpty() {
-		return _observers == null || _observers.size() == 0;
-	}
+    public boolean isEmpty() {
+        return _observers == null || _observers.isEmpty();
+    }
 
 }

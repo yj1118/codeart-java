@@ -63,7 +63,7 @@ final class DataTableUpdate {
 
         // this.Mapper.FillUpdateData(obj, data, this);
 
-        if (data.size() > 0) {
+        if (!data.isEmpty()) {
             if (_self.type() != DataTableType.AggregateRoot) {
                 // 补充根键
                 data.put(GeneratedField.RootIdName, DataTableUtil.getObjectId(root));

@@ -253,8 +253,8 @@ public class SqlDefinition {
     }
 
     private static boolean confirmEmpty(SqlDefinition def) {
-        return def.top().length() == 0 && Iterables.size(def.selectFields()) == 0 && def.condition().isEmpty()
-                && def.order().length() == 0;
+        return def.top().isEmpty() && Iterables.size(def.selectFields()) == 0 && def.condition().isEmpty()
+                && def.order().isEmpty();
     }
 
     public static SqlDefinition create(String expression) {
@@ -459,6 +459,6 @@ public class SqlDefinition {
     /// <summary>
     /// 除根之外都加载
     /// </summary>
-    public static final SqlDefinition All = new SqlDefinition("",SqlColumns.All);
+    public static final SqlDefinition All = new SqlDefinition("", SqlColumns.All);
 
 }

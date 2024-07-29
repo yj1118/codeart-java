@@ -81,6 +81,15 @@ public final class ListUtil {
         return false;
     }
 
+    public static boolean containsIgnoreCase(Iterable<String> list, String target) {
+        for (String element : list) {
+            if (element.equalsIgnoreCase(target)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static <T> boolean contains(T[] source, Function<T, Boolean> predicate) {
         return find(source, predicate) != null;
     }

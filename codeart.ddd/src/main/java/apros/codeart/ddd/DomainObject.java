@@ -798,12 +798,12 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         if (this.isEmpty())
             return;
         // 一次性使用this.getData(),所以可以用combineObject，性能高
-        owner.combineObject(name, this.getData());
+        owner.combineObject(name, this.getData(null));
     }
 
     @Override
-    public DTObject getData() {
-        return DTOMapper.toDTO(this, (obj) -> {
+    public DTObject getData(String schemaCode) {
+        return DTOMapper.toDTO(this, schemaCode, (obj) -> {
             var meta = ObjectMetaLoader.get(obj.getClass());
             return meta.properties();
         }, (p) -> p.name());

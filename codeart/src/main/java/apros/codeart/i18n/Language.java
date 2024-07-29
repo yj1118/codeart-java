@@ -4,6 +4,7 @@ import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
+import apros.codeart.context.AppSession;
 import apros.codeart.util.StringUtil;
 
 public final class Language {
@@ -13,7 +14,7 @@ public final class Language {
 
     public static String strings(String baseName, String key) {
         var name = StringUtil.isNullOrEmpty(baseName) ? "strings" : String.format("%s.strings", baseName);
-        ResourceBundle bundle = ResourceBundle.getBundle(name);
+        ResourceBundle bundle = ResourceBundle.getBundle(name, AppSession.locale());
         return bundle.getString(key);
     }
 

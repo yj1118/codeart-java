@@ -21,6 +21,13 @@ public class UIException extends RuntimeException {
         super(message, innerException);
     }
 
+    @Override
+    public String toString() {
+        // 通过重写后，确保抛出的异常不会有 BusinessException.xxx:message 的信息
+        // this.getMessage(); 只会有原始的信息
+        return this.getMessage();
+    }
+
     public static boolean is(Exception ex) {
         return UIException.class.isAssignableFrom(ex.getClass());
     }

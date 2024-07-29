@@ -541,11 +541,11 @@ public class DataContext implements IDataContext {
     }
 
     public void rollback() {
-        if (_rollbacks == null)
-            return;
         try {
-            _rollbacks.execute(this);
-            raiseRolledBack(this);
+            if (_rollbacks != null) {
+                _rollbacks.execute(this);
+                raiseRolledBack(this);
+            }
         } finally {
             clear();
         }

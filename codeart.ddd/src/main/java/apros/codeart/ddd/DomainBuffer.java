@@ -7,29 +7,30 @@ import java.util.function.Supplier;
 import apros.codeart.ddd.repository.DataContext;
 
 public final class DomainBuffer {
-	private DomainBuffer() {
-	}
+    private DomainBuffer() {
+    }
 
-	public static void add(IAggregateRoot root) {
-		add(root, false);
-	}
+    public static void add(IAggregateRoot root) {
+        add(root, false);
+    }
 
-	public static void add(IAggregateRoot root, boolean isMirror) {
-		if (DataContext.existCurrent())
-			DataContext.getCurrent().addBuffer(root, isMirror); // 加入数据上下文缓冲区
-	}
+    public static void add(IAggregateRoot root, boolean isMirror) {
+        if (DataContext.existCurrent())
+            DataContext.getCurrent().addBuffer(root, isMirror); // 加入数据上下文缓冲区
+    }
 
-	public static void remove(Class<?> objectType, Object id) {
-		if (DataContext.existCurrent())
-			DataContext.getCurrent().removeBuffer(objectType, id);
-	}
+    public static void remove(Class<?> objectType, Object id) {
+        if (DataContext.existCurrent())
+            DataContext.getCurrent().removeBuffer(objectType, id);
+    }
 
-	public static IAggregateRoot obtain(Class<?> objectType, Object id, Supplier<IAggregateRoot> load,
-			boolean isMirror) {
-		if (DataContext.existCurrent())
-			return DataContext.getCurrent().obtainBuffer(objectType, id, load, isMirror);
+    public static IAggregateRoot obtain(Class<?> objectType, Object id, Supplier<IAggregateRoot> load,
+                                        boolean isMirror) {
+        if (DataContext.existCurrent())
+            return DataContext.getCurrent().obtainBuffer(objectType, id, load, isMirror);
 
-		throw new IllegalStateException(strings("apros.codeart.ddd", "UnknownException"));
-	}
+        // 在顶层，简单的查询的情况下，会不带数据上下文
+        return load.get();
+    }
 
 }
