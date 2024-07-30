@@ -656,7 +656,9 @@ final class DataTableRead {
             param.put(GeneratedField.MasterIdName, masterId);
         }
 
-        return DataAccess.current().queryRows(sql, param);
+        return DataAccess.using((access) -> {
+            return access.queryRows(sql, param);
+        });
     }
 
     /**
@@ -677,7 +679,9 @@ final class DataTableRead {
             param.put(GeneratedField.MasterIdName, masterId);
         }
 
-        return DataAccess.current().queryRows(sql, param);
+        return DataAccess.using((access) -> {
+            return access.queryRows(sql, param);
+        });
     }
 
 //	#endregion

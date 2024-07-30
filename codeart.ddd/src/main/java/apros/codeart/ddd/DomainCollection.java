@@ -190,16 +190,24 @@ public class DomainCollection<E> extends ArrayList<E>
     }
 
     @Override
-    public boolean removeIf(Predicate<? super E> filter) {
+    public boolean removeIf(Predicate<? super E> predicate) {
 
         for (var o : this) {
-            if (filter.test(o))
+            if (predicate.test(o))
                 unbindChanged(o);
         }
 
-        boolean success = super.removeIf(filter);
+        boolean success = super.removeIf(predicate);
         if (success) collectionChanged();
         return success;
+    }
+
+    public boolean contains(Predicate<? super E> predicate) {
+        for (var o : this) {
+            if (predicate.test(o))
+                return true;
+        }
+        return false;
     }
 
     private void bindChanged(E item) {

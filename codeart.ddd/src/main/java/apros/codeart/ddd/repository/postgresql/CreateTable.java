@@ -20,7 +20,7 @@ class CreateTable extends CreateTableQB {
 
     @Override
     protected String buildImpl(DataTable table) {
-        
+
         StringBuilder sql = new StringBuilder();
         StringUtil.appendFormat(sql, "CREATE TABLE IF NOT EXISTS \"%s\"", table.name());
         StringUtil.appendLine(sql);
@@ -49,6 +49,14 @@ class CreateTable extends CreateTableQB {
             StringUtil.appendLine(sql);
             var code = getFUNCTIONCode(table.name());
             StringUtil.append(sql, code);
+        }
+
+        if (table.type() == DataTableType.Middle) {
+            var code = DeleteTable.getPROCEDURE_DeleteMiddle_Code(table);
+            if (!StringUtil.isNullOrEmpty(code)) {
+                StringUtil.appendLine(sql);
+                StringUtil.append(sql, code);
+            }
         }
 
         return sql.toString();

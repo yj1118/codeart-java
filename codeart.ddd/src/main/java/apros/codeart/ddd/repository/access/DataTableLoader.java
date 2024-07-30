@@ -199,7 +199,7 @@ final class DataTableLoader {
     public static DataTable createAggregateRoot(DataTable root, DataTable master, IDataField memberField,
                                                 Class<?> objectType) {
         var tableName = objectType.getSimpleName();
-        
+
         return tryCreate(tableName, root, memberField, () -> {
             var objectFields = DataTableUtil.getObjectFields((Class<? extends IAggregateRoot>) objectType);
             return new DataTable(objectType, DataTableType.AggregateRoot, tableName, objectFields, root, master,
@@ -262,7 +262,7 @@ final class DataTableLoader {
             middle.slave(slave);
 
             // 如果从表是根，那么需要记录从表和中间表的联系，当删除根对象时，会删除该中间表的数据
-            RootIsSlaveIndex.tryAdd(slave);
+            RootIsSlaveIndex.tryAdd(middle);
 
             return middle;
         });

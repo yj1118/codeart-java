@@ -346,7 +346,7 @@ public class DataTable {
         return _idField;
     }
 
-    private boolean _isMultiple;
+    private final boolean _isMultiple;
 
     /**
      * 每次插入数据，是多条的
@@ -558,7 +558,7 @@ public class DataTable {
 
     public DataTable(Class<?> objectType, DataTableType type, String name, Iterable<IDataField> objectFields,
                      DataTable chainRoot, DataTable master, IDataField memberField) {
-        
+
         _id = DataTableUtil.getId(memberField, chainRoot, name);
         _objectType = objectType;
         _type = type;
@@ -567,14 +567,13 @@ public class DataTable {
         _chainRoot = chainRoot;
         _master = master;
 
+        initMemberField(name, master, memberField);
+
         _root = findActualRoot(chainRoot);
 
         _fields = getFields(objectFields);
         _objectFields = objectFields;
-
-
-        initMemberField(name, master, memberField);
-
+        
         initObjectType(objectType, memberField == null ? null : memberField.tip());
 
         this._chain = this.memberField() == null ? ObjectChain.Empty : new ObjectChain(this.memberField());

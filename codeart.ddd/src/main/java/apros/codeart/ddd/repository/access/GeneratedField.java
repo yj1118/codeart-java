@@ -20,7 +20,7 @@ public class GeneratedField extends ValueField {
         return DataFieldType.GeneratedField;
     }
 
-    private GeneratedFieldType _generatedFieldType;
+    private final GeneratedFieldType _generatedFieldType;
 
     public GeneratedFieldType generatedFieldType() {
         return _generatedFieldType;
