@@ -634,7 +634,9 @@ final class DataTableRead {
         var description = QueryDescription.createBy(param, expression, QueryLevel.NONE, _self);
         var sql = qb.build(description);
 
-        return DataAccess.current().queryScalar(sql, param);
+        return DataAccess.using((access) -> {
+            return access.queryScalar(sql, param);
+        });
     }
 
     /**

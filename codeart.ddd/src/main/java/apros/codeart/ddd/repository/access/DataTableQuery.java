@@ -198,7 +198,10 @@ final class DataTableQuery {
         var qb = DataSource.getQueryBuilder(QueryCountQB.class);
 
         var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
-        return DataAccess.current().queryScalarInt(sql, param, level);
+
+        return DataAccess.using((access) -> {
+            return access.queryScalarInt(sql, param, level);
+        });
     }
 
 //	/**
@@ -277,7 +280,7 @@ final class DataTableQuery {
         // 编译表达式获取执行文本
         var description = QueryDescription.createBy(param, expression, level, _self);
         var sql = query.build(description);
-        //return DataAccess.current().queryRow(sql, param, level);
+
         return DataAccess.using((access) -> {
             return access.queryRow(sql, param, level);
         });
@@ -525,7 +528,7 @@ final class DataTableQuery {
 
         var qb = DataSource.getQueryBuilder(GetAssociatedQB.class);
         var sql = qb.build(new QueryDescription(_self));
-
+        
         return DataAccess.current().queryScalarInt(sql, data, QueryLevel.NONE);
     }
 
