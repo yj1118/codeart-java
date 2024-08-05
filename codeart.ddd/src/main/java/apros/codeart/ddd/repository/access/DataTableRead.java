@@ -697,9 +697,9 @@ final class DataTableRead {
             String expression = null;
 
             if (table.type() == DataTableType.AggregateRoot) {
-                expression = MessageFormat.format("[{0}=@{0}][select {1}]", EntityObject.IdPropertyName, propertyName);
+                expression = StringUtil.format("[{0}=@{0}][select {1}]", EntityObject.IdPropertyName, propertyName);
             } else {
-                expression = MessageFormat.format("[{0}=@{0} and {1}=@{1}][select {2}]", GeneratedField.RootIdName,
+                expression = StringUtil.format("[{0}=@{0} and {1}=@{1}][select {2}]", GeneratedField.RootIdName,
                         EntityObject.IdPropertyName, propertyName);
             }
 

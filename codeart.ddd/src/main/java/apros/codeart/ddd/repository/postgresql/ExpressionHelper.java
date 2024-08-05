@@ -32,7 +32,7 @@ public final class ExpressionHelper {
     private ExpressionHelper() {
     }
 
-    public static String getObjectSql(DataTable target,QueryLevel level, SqlDefinition definition) {
+    public static String getObjectSql(DataTable target, QueryLevel level, SqlDefinition definition) {
 
         StringBuilder sql = new StringBuilder();
         sql.append("select ");
@@ -40,11 +40,11 @@ public final class ExpressionHelper {
         StringUtil.appendLine(sql, " from ");
         StringUtil.appendLine(sql, getFromSql(target));
         StringUtil.append(sql, getJoinSql(target, definition));
-        if(!definition.condition().isEmpty()){
-            StringUtil.appendFormat(sql, " where %s",definition.condition().code());
+        if (!definition.condition().isEmpty()) {
+            StringUtil.appendFormat(sql, " where %s", definition.condition().code());
         }
 
-        String tableSql = String.format("%s%s",sql.toString(),LockSql.get(level));
+        String tableSql = String.format("%s%s", sql.toString(), LockSql.get(level));
 
         return getFinallyObjectSql(tableSql, target, definition);
     }
@@ -296,7 +296,7 @@ public final class ExpressionHelper {
 //            sql = String.format("select * from (%s) as {%s}", tableSql,
 //                    SqlStatement.qualifier(table.name()));
 //        } else {
-//            sql = MessageFormat.format("select {2} from ({0}) as {1}", tableSql,
+//            sql = StringUtil.format("select {2} from ({0}) as {1}", tableSql,
 //                    SqlStatement.qualifier(table.name()), getFieldsSql(exp));
 //        }
 
@@ -310,23 +310,22 @@ public final class ExpressionHelper {
 //            }
 //        } else {
 //            if (exp.condition().isEmpty()) {
-//                sql = MessageFormat.format("select {2} from ({0}) as {1}", tableSql,
+//                sql = StringUtil.format("select {2} from ({0}) as {1}", tableSql,
 //                        SqlStatement.qualifier(table.name()), getFieldsSql(exp));
 //            } else {
-//                sql = MessageFormat.format("select {3} from ({0}) as {1} where {2}", tableSql,
+//                sql = StringUtil.format("select {3} from ({0}) as {1} where {2}", tableSql,
 //                        SqlStatement.qualifier(table.name()), exp.condition().code(), getFieldsSql(exp));
 //            }
 //        }
 
         StringBuilder sb = new StringBuilder();
-        StringUtil.appendFormat(sb,"WITH %s AS (",SqlStatement.qualifier(table.name()));
+        StringUtil.appendFormat(sb, "WITH %s AS (", SqlStatement.qualifier(table.name()));
         StringUtil.appendLine(sb);
-        StringUtil.appendLine(sb, DBUtil.addQualifier(tableSql,table));
-        StringUtil.append(sb,")");
+        StringUtil.appendLine(sb, DBUtil.addQualifier(tableSql, table));
+        StringUtil.append(sb, ")");
 
         return sb.toString();
     }
-
 
 
     private static String getLockCode(QueryLevel level) {

@@ -8,19 +8,20 @@ import apros.codeart.ddd.repository.access.DecrementAssociatedQB;
 import apros.codeart.ddd.repository.access.GeneratedField;
 import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.util.SafeAccess;
+import apros.codeart.util.StringUtil;
 
 @SafeAccess
 public class DecrementAssociated extends DecrementAssociatedQB {
-	private DecrementAssociated() {
-	}
+    private DecrementAssociated() {
+    }
 
-	@Override
-	protected String buildImpl(DataTable table) {
-		return MessageFormat.format("update {0} set {3}={3}-1 where {1}=@{1} and {2}=@{2};",
-				SqlStatement.qualifier(table.name()),
-				SqlStatement.qualifier(GeneratedField.RootIdName), SqlStatement.qualifier(EntityObject.IdPropertyName),
-				SqlStatement.qualifier(GeneratedField.AssociatedCountName));
-	}
+    @Override
+    protected String buildImpl(DataTable table) {
+        return StringUtil.format("update {0} set {3}={3}-1 where {1}=@{1} and {2}=@{2};",
+                SqlStatement.qualifier(table.name()),
+                SqlStatement.qualifier(GeneratedField.RootIdName), SqlStatement.qualifier(EntityObject.IdPropertyName),
+                SqlStatement.qualifier(GeneratedField.AssociatedCountName));
+    }
 
-	public static final DecrementAssociated Instance = new DecrementAssociated();
+    public static final DecrementAssociated Instance = new DecrementAssociated();
 }

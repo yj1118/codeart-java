@@ -1,78 +1,84 @@
 package apros.codeart.ddd.repository.access.internal;
 
 public final class SqlLike {
-	private byte _position;
+    private byte _position;
 
-	public boolean before() {
-		return (_position & Position.Before.getValue()) == Position.Before.getValue();
-	}
+    public boolean before() {
+        return (_position & Position.Before.getValue()) == Position.Before.getValue();
+    }
 
-	/**
-	 * 是否前置匹配
-	 * 
-	 * @param value
-	 * @return
-	 */
-	private void setBefore(boolean value) {
-		_position &= ~Position.Before.getValue();
-		if (value)
-			_position |= Position.Before.getValue();
-	}
+    /**
+     * 是否前置匹配
+     *
+     * @param value
+     * @return
+     */
+    private void setBefore(boolean value) {
+        _position &= ~Position.Before.getValue();
+        if (value)
+            _position |= Position.Before.getValue();
+    }
 
-	public boolean after() {
-		return (_position & Position.After.getValue()) == Position.After.getValue();
-	}
+    public boolean after() {
+        return (_position & Position.After.getValue()) == Position.After.getValue();
+    }
 
-	/**
-	 * 
-	 * 是否后置通配
-	 * 
-	 * @param value
-	 * @return
-	 */
-	private void setAfter(boolean value) {
-		_position &= ~Position.After.getValue();
-		if (value)
-			_position |= Position.After.getValue();
-	}
+    /**
+     * 是否后置通配
+     *
+     * @param value
+     * @return
+     */
+    private void setAfter(boolean value) {
+        _position &= ~Position.After.getValue();
+        if (value)
+            _position |= Position.After.getValue();
+    }
 
-	private String _paramName;
+    private final String _paramName;
 
-	/**
-	 * 匹配的参数名称
-	 * 
-	 * @return
-	 */
-	public String paramName() {
-		return _paramName;
-	}
+    /**
+     * 匹配的参数名称
+     *
+     * @return
+     */
+    public String paramName() {
+        return _paramName;
+    }
 
-	SqlLike(String paramName, boolean before, boolean after) {
-		_paramName = paramName;
-		setBefore(before);
-		setAfter(after);
-	}
+    private final String _fieldName;
 
-	private enum Position {
+    public String fieldName() {
+        return _fieldName;
+    }
 
-		// 前置通配
-		Before((byte) 0x1),
+    SqlLike(String fieldName, String paramName, boolean before, boolean after) {
+        _fieldName = fieldName;
+        _paramName = paramName;
+        setBefore(before);
+        setAfter(after);
+    }
 
-//		后置通配
-		After((byte) 0x2);
+    private enum Position {
 
-		private final byte value;
+        // 前置通配
+        Before((byte) 0x1),
 
-		// 构造器，为每个枚举值设置byte值
-		private Position(byte value) {
-			this.value = value;
-		}
+        //		后置通配
+        After((byte) 0x2);
 
-		// 公开方法，允许外部访问枚举的byte值
-		public byte getValue() {
-			return value;
-		}
+        private final byte value;
 
-	}
+        // 构造器，为每个枚举值设置byte值
+        private Position(byte value) {
+            this.value = value;
+        }
+
+        // 公开方法，允许外部访问枚举的byte值
+        public byte getValue() {
+            return value;
+        }
+
+    }
 
 }

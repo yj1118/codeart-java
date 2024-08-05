@@ -39,7 +39,7 @@ public final class StringUtil {
     }
 
     public static void appendMessageFormat(StringBuilder str, String format, Object... args) {
-        str.append(MessageFormat.format(format, args));
+        str.append(StringUtil.format(format, args));
     }
 
     /**
@@ -354,5 +354,23 @@ public final class StringUtil {
             return end - start;
         }
     }
+
+    public static String format(String template, Object... values) {
+        StringBuilder result = new StringBuilder(template);
+
+        for (int i = 0; i < values.length; i++) {
+            String placeholder = "{" + i + "}";
+            String replacement = values[i].toString();
+            int startIndex = result.indexOf(placeholder);
+
+            while (startIndex != -1) {
+                result.replace(startIndex, startIndex + placeholder.length(), replacement);
+                startIndex = result.indexOf(placeholder, startIndex + replacement.length());
+            }
+        }
+
+        return result.toString();
+    }
+
 
 }

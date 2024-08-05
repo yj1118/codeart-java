@@ -222,7 +222,7 @@ public class SqlDefinition {
 
         var fields = table.fields();
         for (var field : fields) {
-            if (field.name() == EntityObject.IdPropertyName)
+            if (field.name().equals(EntityObject.IdPropertyName))
                 continue;
             if (this.columns().contains(field.name()))
                 return true;

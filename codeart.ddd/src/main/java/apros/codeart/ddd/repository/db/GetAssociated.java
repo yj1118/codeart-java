@@ -8,6 +8,7 @@ import apros.codeart.ddd.repository.access.GeneratedField;
 import apros.codeart.ddd.repository.access.GetAssociatedQB;
 import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.util.SafeAccess;
+import apros.codeart.util.StringUtil;
 
 @SafeAccess
 public class GetAssociated extends GetAssociatedQB {
@@ -16,7 +17,7 @@ public class GetAssociated extends GetAssociatedQB {
 
     @Override
     protected String buildImpl(DataTable table) {
-        return MessageFormat.format("select {0} from {1} where {2}=@{3} and {4}=@{5};",
+        return StringUtil.format("select {0} from {1} where {2}=@{3} and {4}=@{5};",
                 SqlStatement.qualifier(GeneratedField.AssociatedCountName),
                 SqlStatement.qualifier(table.name()),
                 SqlStatement.qualifier(GeneratedField.RootIdName),

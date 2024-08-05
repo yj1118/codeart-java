@@ -25,7 +25,7 @@ public final class Language {
     }
 
     public static String stringsMessageFormat(String baseName, String key, Object... args) {
-        return MessageFormat.format(strings(baseName, key), args);
+        return StringUtil.format(strings(baseName, key), args);
     }
 
     public static String strings(String baseName, String key, Object... args) {

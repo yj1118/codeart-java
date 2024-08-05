@@ -864,7 +864,7 @@ public class DTObject implements INullProxy, IDTOSchema {
         result.setInt("pageSize", pageSize);
         result.setInt("dataCount", dataCount);
 
-        var start = (pageIndex - 1) * pageSize;
+        var start = pageIndex * pageSize;
         if (start >= dataCount) {
             result.obtainList(findExp);
             return result;

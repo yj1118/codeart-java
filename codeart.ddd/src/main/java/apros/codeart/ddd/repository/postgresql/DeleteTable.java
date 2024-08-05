@@ -64,14 +64,14 @@ public class DeleteTable extends DeleteTableQB {
 
     private static String getDeleteByRootIdSql(DataTable table) {
         if (table.type() == DataTableType.AggregateRoot) {
-            return MessageFormat.format("DELETE FROM \"{0}\" WHERE \"{1}\"=@{1};", table.name(), EntityObject.IdPropertyName);
+            return StringUtil.format("DELETE FROM \"{0}\" WHERE \"{1}\"=@{1};", table.name(), EntityObject.IdPropertyName);
         } else {
-            return MessageFormat.format("DELETE FROM \"{0}\" WHERE \"{1}\"=@{1};", table.name(), GeneratedField.RootIdName);
+            return StringUtil.format("DELETE FROM \"{0}\" WHERE \"{1}\"=@{1};", table.name(), GeneratedField.RootIdName);
         }
     }
 
     private static String getDeleteMemberSql(DataTable table) {
-        return MessageFormat.format("DELETE FROM \"{0}\" WHERE \"{1}\"=@{1} and \"{2}\"=@{2};", table.name(),
+        return StringUtil.format("DELETE FROM \"{0}\" WHERE \"{1}\"=@{1} and \"{2}\"=@{2};", table.name(),
                 GeneratedField.RootIdName, EntityObject.IdPropertyName);
     }
 
@@ -184,11 +184,11 @@ public class DeleteTable extends DeleteTableQB {
         var rootId = GeneratedField.RootIdName;
 
         if (middle.root().equals(middle.master())) {
-            return MessageFormat.format("DELETE FROM \"{0}\" WHERE \"{1}\"=@{1};", middle.name(), rootId);
+            return StringUtil.format("DELETE FROM \"{0}\" WHERE \"{1}\"=@{1};", middle.name(), rootId);
         } else {
             var masterId = GeneratedField.MasterIdName;
 
-            return MessageFormat.format("DELETE FROM \"{0}\" WHERE \"{1}\"=@{1} and \"{2}\"=@{2};", middle.name(), rootId,
+            return StringUtil.format("DELETE FROM \"{0}\" WHERE \"{1}\"=@{1} and \"{2}\"=@{2};", middle.name(), rootId,
                     masterId);
         }
     }

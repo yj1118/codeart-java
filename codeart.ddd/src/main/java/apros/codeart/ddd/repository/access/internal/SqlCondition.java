@@ -80,7 +80,8 @@ public final class SqlCondition {
 
         // 检查文本中的所有匹配项
         while (matcher.find()) {
-            var g = matcher.group(1);
+            var fieldName = matcher.group(1);
+            var g = matcher.group(2);
             int length = g.length();
 
             var newExp = StringUtil.trim(g);
@@ -90,10 +91,10 @@ public final class SqlCondition {
             var para = StringUtil.substr(newExp, 1);
             newExp = String.format(" %s", newExp);// 补充一个空格
 
-            SqlLike like = new SqlLike(para, before, after);
+            SqlLike like = new SqlLike(fieldName, para, before, after);
             _likes.add(like);
 
-            var index = matcher.start(1);
+            var index = matcher.start(2);
 
             code = StringUtil.insert(code, index + offset, newExp);
             code = StringUtil.remove(code, index + offset + newExp.length(), length);
@@ -145,17 +146,30 @@ public final class SqlCondition {
     private String parseAny(String code) {
         var probeCode = code;
         Matcher matcher = _anyRegex.matcher(code);
+
+        int offset = 0;
+
         while (matcher.find()) {
             var placeholder = matcher.group(0);
             var paraName = matcher.group(1);
             var content = matcher.group(2);
+
             // 转义
 //            content = content.Replace("&lt;","<").Replace("&gt;", ">");
 
-            SqlAny any = new SqlAny(paraName, placeholder, content);
+            probeCode = probeCode.replace(placeholder, content);
+
+            String replaceStr = String.format("'__@%s'='__@%s' AND (%s)", paraName, paraName, content);
+
+            var index = matcher.start();
+            int length = matcher.end() - index; // 计算匹配的字符串长度
+
+            code = StringUtil.insert(code, index + offset, replaceStr);
+            code = StringUtil.remove(code, index + offset + replaceStr.length(), length);
+
+            SqlAny any = new SqlAny(paraName, replaceStr, content);
             _anys.add(any);
 
-            probeCode = probeCode.replace(placeholder, content);
         }
 
         _probeCode = probeCode;
@@ -174,6 +188,9 @@ public final class SqlCondition {
 
         // 先处理any
         for (var any : _anys) {
+            // 经过sqlParser转移后，占位符可能会变，需要更新下，这样后续操作效率高
+            any.tryUpdatePlaceholder(commandText);
+
             if (param.containsKey(any.paramName()))
                 commandText = commandText.replace(any.placeholder(), any.content());
             else
@@ -188,11 +205,11 @@ public final class SqlCondition {
                 continue; // 因为有any语法，所以没有传递参数也正常
 
             if (like.after() && like.before())
-                param.put(name, MessageFormat.format("%{0}%", value));
+                param.put(name, StringUtil.format("%{0}%", value));
             else if (like.after())
-                param.put(name, MessageFormat.format("{0}%", value));
+                param.put(name, StringUtil.format("{0}%", value));
             else if (like.before())
-                param.put(name, MessageFormat.format("%{0}", value));
+                param.put(name, StringUtil.format("%{0}", value));
         }
 
         if (!_ins.isEmpty()) {
@@ -233,7 +250,7 @@ public final class SqlCondition {
 
     private String processIn(String commandText, MapData param) {
         // 针对最终生成的sql，收集一次ins，然后再替换，可以解决程序员写的表达式与生成后的表达式不匹配的问题
-        
+
         var ins = _getIns.apply(commandText);
         for (var sin : ins) {
             var name = sin.paramName();
@@ -263,7 +280,9 @@ public final class SqlCondition {
         return commandText;
     }
 
-    private static final Pattern _likeRegex = Pattern.compile("[ ]+?like([ %]+?@[%\\d\\w0-9]+)", Pattern.CASE_INSENSITIVE);
+    //String regex = "\\s*(@\\w+)\\{([^{}]*)\\}";
+
+    private static final Pattern _likeRegex = Pattern.compile("([^\\s{]+?)\\s+like([ %]+?@[%\\d\\w0-9]+)", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern _inRegex = Pattern.compile("([^\\s]+)\\s+IN\\s+\\(?\\s*@([^\\s\\)]+)\\s*\\)?",
             Pattern.CASE_INSENSITIVE);

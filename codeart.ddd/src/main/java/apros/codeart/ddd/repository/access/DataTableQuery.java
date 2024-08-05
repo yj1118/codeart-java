@@ -345,12 +345,12 @@ final class DataTableQuery {
                         var propertyName = firstSelect;
 
                         if (table.type() == DataTableType.AggregateRoot) {
-                            expression = MessageFormat.format(
+                            expression = StringUtil.format(
                                     "{0}[select {1}.{2} as {2},{1}.{3} as {3},{1}.{4} as {4}]", expression,
                                     propertyName, EntityObject.IdPropertyName, GeneratedField.DataVersionName,
                                     GeneratedField.TypeKeyName);
                         } else {
-                            expression = MessageFormat.format("{0}[select {1},{2}.{3},{2}.{4},{2}.{5}]", expression,
+                            expression = StringUtil.format("{0}[select {1},{2}.{3},{2}.{4},{2}.{5}]", expression,
                                     GeneratedField.RootIdName, propertyName, EntityObject.IdPropertyName,
                                     GeneratedField.DataVersionName, GeneratedField.TypeKeyName);
                         }
@@ -528,7 +528,7 @@ final class DataTableQuery {
 
         var qb = DataSource.getQueryBuilder(GetAssociatedQB.class);
         var sql = qb.build(new QueryDescription(_self));
-        
+
         return DataAccess.current().queryScalarInt(sql, data, QueryLevel.NONE);
     }
 
@@ -566,9 +566,9 @@ final class DataTableQuery {
     private static Function<DataTable, String> _getObjectIdExpression = LazyIndexer.init((table) -> {
         String expression = null;
         if (table.type() == DataTableType.AggregateRoot) {
-            expression = MessageFormat.format("{0}=@{0}", EntityObject.IdPropertyName);
+            expression = StringUtil.format("{0}=@{0}", EntityObject.IdPropertyName);
         } else {
-            expression = MessageFormat.format("{0}=@{0} and {1}=@{1}", GeneratedField.RootIdName,
+            expression = StringUtil.format("{0}=@{0} and {1}=@{1}", GeneratedField.RootIdName,
                     EntityObject.IdPropertyName);
         }
 

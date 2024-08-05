@@ -30,13 +30,12 @@ public final class ExpressionHelper {
         StringUtil.appendLine(sql, " from ");
         StringUtil.appendLine(sql, getFromSql(target, level, definition));
         StringUtil.append(sql, getJoinSql(target, definition));
-        if(!definition.condition().isEmpty()){
-            StringUtil.appendFormat(sql, " where %s",definition.condition().code());
+        if (!definition.condition().isEmpty()) {
+            StringUtil.appendFormat(sql, " where %s", definition.condition().code());
         }
 
         return getFinallyObjectSql(sql.toString(), target, level);
     }
-
 
 
 //	#region 得到select语句
@@ -292,10 +291,10 @@ public final class ExpressionHelper {
 //            }
 //        } else {
 //            if (exp.condition().isEmpty()) {
-//                sql = MessageFormat.format("select distinct {2} from ({0}) as {1}", tableSql,
+//                sql = StringUtil.format("select distinct {2} from ({0}) as {1}", tableSql,
 //                        SqlStatement.qualifier(table.name()), getFieldsSql(exp));
 //            } else {
-//                sql = MessageFormat.format("select distinct {3} from ({0}) as {1} where {2}", tableSql,
+//                sql = StringUtil.format("select distinct {3} from ({0}) as {1} where {2}", tableSql,
 //                        SqlStatement.qualifier(table.name()), exp.condition().code(), getFieldsSql(exp));
 //            }
 //        }
@@ -303,20 +302,20 @@ public final class ExpressionHelper {
 //        return String.format("(%s) as %s", sql, SqlStatement.qualifier(table.name()));
 
         StringBuilder sb = new StringBuilder();
-        StringUtil.appendFormat(sb,"WITH %sCTE AS (",table.name());
+        StringUtil.appendFormat(sb, "WITH %sCTE AS (", table.name());
         StringUtil.appendLine(sb);
-        StringUtil.appendLine(sb, addQualifier(tableSql,table,level));
-        StringUtil.append(sb,")");
+        StringUtil.appendLine(sb, addQualifier(tableSql, table, level));
+        StringUtil.append(sb, ")");
 
         return sb.toString();
 
     }
 
-    private static  String addQualifier(String sql, DataTable table,QueryLevel level){
+    private static String addQualifier(String sql, DataTable table, QueryLevel level) {
         var lockCode = getLockCode(level);
-        sql = mapToCCJSqlParser(sql,lockCode);
-        sql = DBUtil.addQualifier(sql,table);
-        return mapToSQLServer(sql,lockCode);
+        sql = mapToCCJSqlParser(sql, lockCode);
+        sql = DBUtil.addQualifier(sql, table);
+        return mapToSQLServer(sql, lockCode);
     }
 
 
@@ -325,15 +324,15 @@ public final class ExpressionHelper {
      */
     private static final String placeHolder = " WITH (NOLOCK) ";
 
-    public static String mapToCCJSqlParser(String sql,String lockCode){
-        if(!StringUtil.isNullOrEmpty(lockCode))
+    public static String mapToCCJSqlParser(String sql, String lockCode) {
+        if (!StringUtil.isNullOrEmpty(lockCode))
             sql = sql.replace(lockCode, placeHolder);
         return sql;
     }
 
-    public static String mapToSQLServer(String sql,String lockCode){
-        if(!StringUtil.isNullOrEmpty(lockCode))
-            sql = sql.replace(placeHolder,lockCode);
+    public static String mapToSQLServer(String sql, String lockCode) {
+        if (!StringUtil.isNullOrEmpty(lockCode))
+            sql = sql.replace(placeHolder, lockCode);
         return sql;
     }
 
