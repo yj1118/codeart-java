@@ -189,7 +189,7 @@ public final class SqlCondition {
         // 先处理any
         for (var any : _anys) {
             // 经过sqlParser转移后，占位符可能会变，需要更新下，这样后续操作效率高
-            any.tryUpdatePlaceholder(commandText);
+            any.tryUpdate(commandText);
 
             if (param.containsKey(any.paramName()))
                 commandText = commandText.replace(any.placeholder(), any.content());
