@@ -70,7 +70,7 @@ public final class FieldUtil {
             for (Field field : fields) {
                 action.accept(field.getName(), field.get(obj));
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }
@@ -290,7 +290,7 @@ public final class FieldUtil {
 
         try {
             return type.getDeclaredField(name);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }

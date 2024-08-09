@@ -474,7 +474,7 @@ public class DataContext implements IDataContext {
                 this.onCommitted();
                 clear();
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             // 注意，由于提交失败了，所以这里_transactionCount要恢复+1
             // 这样外部就知道是处在提交事务中失败的
             _transactionCount++;
@@ -629,7 +629,7 @@ public class DataContext implements IDataContext {
                 action.accept(dataContext.connection());
                 dataContext.commit();
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (dataContext.inTransaction()) {
                 dataContext.rollback();
             }
@@ -661,7 +661,7 @@ public class DataContext implements IDataContext {
             DataContext.setCurrent(dataContext);
             try {
                 using(dataContext, action, timely);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 throw e;
             } finally {
                 DataContext.setCurrent(null);// 执行完后，释放
@@ -698,7 +698,7 @@ public class DataContext implements IDataContext {
             DataContext.setCurrent(dataContext);
             try {
                 return using(dataContext, action, timely);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 throw e;
             } finally {
                 DataContext.setCurrent(null);// 执行完后，释放
@@ -723,7 +723,7 @@ public class DataContext implements IDataContext {
                 dataContext.commit();
             }
             return result;
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             if (dataContext.inTransaction()) {
                 dataContext.rollback();
             }
@@ -761,7 +761,7 @@ public class DataContext implements IDataContext {
             DataContext.setCurrent(dataContext);
             using(dataContext, action, true);
 
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw ex;
         } finally {
             if (prev != null) {
@@ -783,7 +783,7 @@ public class DataContext implements IDataContext {
             DataContext.setCurrent(dataContext);
             return using(dataContext, action, true);
 
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw ex;
         } finally {
             if (prev != null) {

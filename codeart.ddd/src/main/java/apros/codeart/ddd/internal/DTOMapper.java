@@ -193,7 +193,7 @@ public final class DTOMapper {
             var constructor = constructorTip.constructor();
             var args = createArguments(constructorTip, data);
             return (DomainObject) constructor.newInstance(args);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
     }

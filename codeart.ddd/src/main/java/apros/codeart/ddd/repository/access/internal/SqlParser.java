@@ -25,6 +25,7 @@ final class SqlParser {
 
     /**
      * 分析sql语句，获得参与查询的列信息
+     *
      * @param sql
      * @return
      */
@@ -48,7 +49,7 @@ final class SqlParser {
                 return new SqlColumns(select, where, order);
             }
             throw new IllegalStateException(strings("apros.codeart.ddd", "SQLFormatError", sql));
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw new IllegalStateException(strings("apros.codeart.ddd", "SQLFormatError", sql));
         }
 

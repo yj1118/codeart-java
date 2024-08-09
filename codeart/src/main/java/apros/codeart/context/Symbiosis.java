@@ -16,63 +16,61 @@ import apros.codeart.pooling.Util;
  */
 final class Symbiosis implements IReusable {
 
-	private HashSet<Object> _items = new HashSet<Object>();
+    private HashSet<Object> _items = new HashSet<Object>();
 
-	private Symbiosis() {
-	}
+    private Symbiosis() {
+    }
 
-	public void add(Object item) {
-		// 回收和释放，所以没有实现这两个接口的对象不用加入到集合中
-		if (any(item, IReusable.class, AutoCloseable.class)) {
-			_items.add(item);
-		}
-	}
+    public void add(Object item) {
+        // 回收和释放，所以没有实现这两个接口的对象不用加入到集合中
+        if (any(item, IReusable.class, AutoCloseable.class)) {
+            _items.add(item);
+        }
+    }
 
-	public int getCount() {
-		return _items.size();
-	}
+    public int getCount() {
+        return _items.size();
+    }
 
-	@Override
-	public void clear() {
-		Util.stop(_items);
-		_items.clear();
-	}
+    @Override
+    public void clear() {
+        Util.stop(_items);
+        _items.clear();
+    }
 
-	private static Pool<Symbiosis> _pool = new Pool<Symbiosis>(Symbiosis.class, new PoolConfig(10, 200, 60),
-			(isTempItem) -> {
-				return new Symbiosis();
-			});
+    private static Pool<Symbiosis> _pool = new Pool<Symbiosis>(Symbiosis.class, new PoolConfig(10, 200, 60),
+            (isTempItem) -> {
+                return new Symbiosis();
+            });
 
-	private final static String _sessionKey = "__Symbiosis.Current";
+    private final static String _sessionKey = "__Symbiosis.Current";
 
-	/**
-	 * 
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
-	public static Symbiosis getCurrent() {
-		return AppSession.<Symbiosis>obtainItem(_sessionKey, _pool);
-	}
+    /**
+     * @return
+     * @throws Exception
+     */
+    public static Symbiosis getCurrent() {
+        return AppSession.<Symbiosis>obtainItem(_sessionKey, _pool);
+    }
 
-	public static <T> T obtain(Pool<T> pool) {
-		try {
-			var temp = pool.borrow();
-			getCurrent().add(temp);
-			return temp.getItem();
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-	}
+    public static <T> T obtain(Pool<T> pool) {
+        try {
+            var temp = pool.borrow();
+            getCurrent().add(temp);
+            return temp.getItem();
+        } catch (Throwable e) {
+            throw propagate(e);
+        }
+    }
 
-	/**
-	 * 注册对象，当会话上下文结束后，会被回收或者清理
-	 * 
-	 * @param <T>
-	 * @param obj
-	 */
-	public static <T> void register(T obj) {
-		getCurrent().add(obj);
-	}
+    /**
+     * 注册对象，当会话上下文结束后，会被回收或者清理
+     *
+     * @param <T>
+     * @param obj
+     */
+    public static <T> void register(T obj) {
+        getCurrent().add(obj);
+    }
 
 }

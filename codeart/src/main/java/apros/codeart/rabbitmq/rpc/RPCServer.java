@@ -66,7 +66,7 @@ class RPCServer extends Consumer implements AutoCloseable {
                 sender.publish(Strings.EMPTY, routingKey, result, (replyProps) -> {
                     replyProps.correlationId(correlationId);
                 });
-            } catch (Exception ex) {
+            } catch (Throwable ex) {
                 Logger.fatal(ex);
 
                 var arg = new RPCEvents.ServerErrorArgs(ex);
@@ -90,14 +90,14 @@ class RPCServer extends Consumer implements AutoCloseable {
         try {
             var result = _handler.process(method, arg);
             body.combineObject("data", result);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Logger.fatal(ex);
             body.setString("error", ex.getMessage());
         }
         return body;
     }
 
-    private DTObject processError(Exception ex) {
+    private DTObject processError(Throwable ex) {
         DTObject body = DTObject.editable();
         body.setString("error", ex.getMessage());
         return body;

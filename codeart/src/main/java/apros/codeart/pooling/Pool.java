@@ -56,13 +56,13 @@ public class Pool<T> implements AutoCloseable {
         _pointer.set(value);
     }
 
-    private boolean _itemDisposable;
+    private final boolean _itemDisposable;
 
     public boolean itemDisposable() {
         return _itemDisposable;
     }
 
-    private LongAdder _borrowedCount = new LongAdder();
+    private final LongAdder _borrowedCount = new LongAdder();
 
     public int borrowedCount() {
         return _borrowedCount.intValue();
@@ -76,13 +76,13 @@ public class Pool<T> implements AutoCloseable {
         _borrowedCount.decrement();
     }
 
-    private DualMatrix _matrix;
+    private final DualMatrix _matrix;
 
     public int vectorCapacity() {
         return _matrix.vectorCapacity();
     }
 
-    private Timer _timer;
+    private final Timer _timer;
 
     /**
      * @param segmentSize  每个分段的大小
@@ -203,7 +203,7 @@ public class Pool<T> implements AutoCloseable {
             var disposableObject = TypeUtil.as(item.getItem(), AutoCloseable.class);
             if (disposableObject != null)
                 disposableObject.close();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new PoolingException(Language.strings("apros.codeart", "DisposePoolItemFailed", this.getClass().getName()),
                     e);
         }

@@ -27,7 +27,7 @@ class EventPublisher implements IPublisher {
                 var routingKey = eventName;
                 arg.setString("__lang", AppSession.language());
                 bus.publish(EventConfig.Exchange, routingKey, arg, null);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 throw propagate(e);
             }
         }

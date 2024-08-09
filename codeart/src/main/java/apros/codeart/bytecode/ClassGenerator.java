@@ -205,7 +205,7 @@ public final class ClassGenerator implements AutoCloseable {
         try (FileOutputStream fos = new FileOutputStream(filePath)) {
             // 写入字节码到文件
             fos.write(this.toBytes());
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }
@@ -220,7 +220,7 @@ public final class ClassGenerator implements AutoCloseable {
             byte[] bytes = this.toBytes();
             ClassLoaderImpl classLoader = new ClassLoaderImpl(bytes);
             return classLoader.loadClass(_className);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }

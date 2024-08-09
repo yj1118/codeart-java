@@ -124,7 +124,7 @@ public class Account extends AggregateRootLong {
             SecretKeyFactory skf = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
             byte[] hash = skf.generateSecret(spec).getEncoded();
             return bytesToHex(hash);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }

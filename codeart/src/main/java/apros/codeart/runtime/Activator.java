@@ -18,187 +18,185 @@ import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;
 
 public final class Activator {
-	private Activator() {
-	}
+    private Activator() {
+    }
 
-	public static Object createInstance(String className, Object... args) {
-		try {
-			Class<?> clazz = Class.forName(className);
-			return createInstance(clazz, args);
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-	}
+    public static Object createInstance(String className, Object... args) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return createInstance(clazz, args);
+        } catch (Throwable e) {
+            throw propagate(e);
+        }
+    }
 
-	public static Object createInstance(Class<?> clazz, Object... args) {
-		var types = new Class<?>[1 + args.length];
-		types[0] = clazz;
-		for (var i = 0; i < args.length; i++) {
-			var arg = args[i];
-			if (arg instanceof Annotation) {
-				types[i + 1] = ((Annotation) arg).annotationType();
-			} else {
-				types[i + 1] = arg.getClass();
-			}
-		}
-		return createInstance(types, args);
-	}
+    public static Object createInstance(Class<?> clazz, Object... args) {
+        var types = new Class<?>[1 + args.length];
+        types[0] = clazz;
+        for (var i = 0; i < args.length; i++) {
+            var arg = args[i];
+            if (arg instanceof Annotation) {
+                types[i + 1] = ((Annotation) arg).annotationType();
+            } else {
+                types[i + 1] = arg.getClass();
+            }
+        }
+        return createInstance(types, args);
+    }
 
-	@SuppressWarnings("unchecked")
-	public static <T> T createInstance(Class<T> exceptType, String className, Object... args) {
-		try {
-			Class<?> clazz = Class.forName(className);
-			return (T) createInstance(clazz, args);
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-	}
+    @SuppressWarnings("unchecked")
+    public static <T> T createInstance(Class<T> exceptType, String className, Object... args) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return (T) createInstance(clazz, args);
+        } catch (Throwable e) {
+            throw propagate(e);
+        }
+    }
 
-	/**
-	 * 创建实例，IL的实现，高效率
-	 * 
-	 * @return
-	 */
-	public static Object createInstance(Class<?> instanceType) {
-		try {
-			var method = getCreateInstanceMethod.apply(instanceType);
-			return method.invoke(null);
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-	}
+    /**
+     * 创建实例，IL的实现，高效率
+     *
+     * @return
+     */
+    public static Object createInstance(Class<?> instanceType) {
+        try {
+            var method = getCreateInstanceMethod.apply(instanceType);
+            return method.invoke(null);
+        } catch (Throwable e) {
+            throw propagate(e);
+        }
+    }
 
-	/**
-	 * 创建实例，IL的实现，高效率
-	 * 
-	 * @return
-	 */
-	public static Object createInstance(Class<?>[] instanceandArgTypes, Object... args) {
-		try {
-			// 注意，数组是不能作为hashMap的key得，因为数组得hashCode是该数组得内存地址，而不是成员内容
-			ArrayList<Class<?>> key = ListUtil.asList(instanceandArgTypes);
-			var method = getCreateInstanceMethodByListTypes.apply(key);
-			return method.invoke(null, args);
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-	}
+    /**
+     * 创建实例，IL的实现，高效率
+     *
+     * @return
+     */
+    public static Object createInstance(Class<?>[] instanceandArgTypes, Object... args) {
+        try {
+            // 注意，数组是不能作为hashMap的key得，因为数组得hashCode是该数组得内存地址，而不是成员内容
+            ArrayList<Class<?>> key = ListUtil.asList(instanceandArgTypes);
+            var method = getCreateInstanceMethodByListTypes.apply(key);
+            return method.invoke(null, args);
+        } catch (Throwable e) {
+            throw propagate(e);
+        }
+    }
 
-	private static Function<Class<?>, Method> getCreateInstanceMethod = LazyIndexer.init((objectType) -> {
-		return generateCreateInstanceMethod(objectType);
-	});
+    private static Function<Class<?>, Method> getCreateInstanceMethod = LazyIndexer.init((objectType) -> {
+        return generateCreateInstanceMethod(objectType);
+    });
 
-	private static Function<ArrayList<Class<?>>, Method> getCreateInstanceMethodByListTypes = LazyIndexer
-			.init((types) -> {
-				return generateCreateInstanceMethod(types);
-			});
+    private static Function<ArrayList<Class<?>>, Method> getCreateInstanceMethodByListTypes = LazyIndexer
+            .init((types) -> {
+                return generateCreateInstanceMethod(types);
+            });
 
-	/**
-	 * 
-	 * 专门为无参构造单独写个方法，提高这类需求的执行效率
-	 * 
-	 * @param objectType
-	 * @return
-	 */
-	private static Method generateCreateInstanceMethod(Class<?> objectType) {
+    /**
+     * 专门为无参构造单独写个方法，提高这类需求的执行效率
+     *
+     * @param objectType
+     * @return
+     */
+    private static Method generateCreateInstanceMethod(Class<?> objectType) {
 
-		String methodName = String.format("createInstance_%s", objectType.getSimpleName());
+        String methodName = String.format("createInstance_%s", objectType.getSimpleName());
 
-		try (var cg = ClassGenerator.define()) {
+        try (var cg = ClassGenerator.define()) {
 
-			try (var mg = cg.defineMethodPublicStatic(methodName, objectType)) {
-				var obj = mg.declare(objectType, "obj");
-				mg.assign(obj, () -> {
-					mg.newObject(objectType);
-				});
+            try (var mg = cg.defineMethodPublicStatic(methodName, objectType)) {
+                var obj = mg.declare(objectType, "obj");
+                mg.assign(obj, () -> {
+                    mg.newObject(objectType);
+                });
 
-				obj.load();
-			}
+                obj.load();
+            }
 
-			// 返回生成的字节码
-			var cls = cg.toClass();
+            // 返回生成的字节码
+            var cls = cg.toClass();
 
-			return cls.getDeclaredMethod(methodName);
+            return cls.getDeclaredMethod(methodName);
 
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-	}
+        } catch (Throwable e) {
+            throw propagate(e);
+        }
+    }
 
-	private static Method generateCreateInstanceMethod(ArrayList<Class<?>> types) {
-		var objectType = types.get(0);
-		Class<?>[] argTypes = new Class<?>[types.size() - 1];
-		for (var i = 0; i < argTypes.length; i++) {
-			argTypes[i] = types.get(i + 1);
-		}
+    private static Method generateCreateInstanceMethod(ArrayList<Class<?>> types) {
+        var objectType = types.get(0);
+        Class<?>[] argTypes = new Class<?>[types.size() - 1];
+        for (var i = 0; i < argTypes.length; i++) {
+            argTypes[i] = types.get(i + 1);
+        }
 
-		String methodName = String.format("createInstance_%s", objectType.getSimpleName());
+        String methodName = String.format("createInstance_%s", objectType.getSimpleName());
 
-		try (var cg = ClassGenerator.define()) {
+        try (var cg = ClassGenerator.define()) {
 
-			try (var mg = cg.defineMethodPublicStatic(methodName, objectType, (args) -> {
-				for (var i = 0; i < argTypes.length; i++) {
-					args.add(String.format("arg%s", i), argTypes[i]);
-				}
+            try (var mg = cg.defineMethodPublicStatic(methodName, objectType, (args) -> {
+                for (var i = 0; i < argTypes.length; i++) {
+                    args.add(String.format("arg%s", i), argTypes[i]);
+                }
 
-			})) {
-				var obj = mg.declare(objectType, "obj");
-				mg.assign(obj, () -> {
+            })) {
+                var obj = mg.declare(objectType, "obj");
+                mg.assign(obj, () -> {
 
-					mg.newObject(objectType, () -> {
-						for (var i = 0; i < argTypes.length; i++) {
-							mg.loadVariable(String.format("arg%s", i));
-						}
-					});
-				});
+                    mg.newObject(objectType, () -> {
+                        for (var i = 0; i < argTypes.length; i++) {
+                            mg.loadVariable(String.format("arg%s", i));
+                        }
+                    });
+                });
 
-				obj.load();
-			}
+                obj.load();
+            }
 
-			// 返回生成的字节码
-			var cls = cg.toClass();
+            // 返回生成的字节码
+            var cls = cg.toClass();
 
-			return cls.getDeclaredMethod(methodName, argTypes);
+            return cls.getDeclaredMethod(methodName, argTypes);
 
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-	}
+        } catch (Throwable e) {
+            throw propagate(e);
+        }
+    }
 
-	/**
-	 * 
-	 * 找到实现了某个接口或继承了哪个类的所有类的类型
-	 * 
-	 * @param <T>
-	 * @param superType
-	 * @param archives
-	 * @return
-	 */
-	public static <T> Set<Class<? extends T>> getSubTypesOf(Class<T> superType, String... archives) {
+    /**
+     * 找到实现了某个接口或继承了哪个类的所有类的类型
+     *
+     * @param <T>
+     * @param superType
+     * @param archives
+     * @return
+     */
+    public static <T> Set<Class<? extends T>> getSubTypesOf(Class<T> superType, String... archives) {
 
-		var urls = ListUtil.mapMany(archives, (archive) -> {
-			return ClasspathHelper.forPackage(archive);
-		});
+        var urls = ListUtil.mapMany(archives, (archive) -> {
+            return ClasspathHelper.forPackage(archive);
+        });
 
-		// 创建一个Reflections实例，指定要扫描的包
-		Reflections reflections = new Reflections(
-				new ConfigurationBuilder().setUrls(urls).setScanners(Scanners.SubTypes));
+        // 创建一个Reflections实例，指定要扫描的包
+        Reflections reflections = new Reflections(
+                new ConfigurationBuilder().setUrls(urls).setScanners(Scanners.SubTypes));
 
-		return reflections.getSubTypesOf(superType);
-	}
+        return reflections.getSubTypesOf(superType);
+    }
 
-	public static <T> Set<Class<?>> getAnnotatedTypesOf(Class<? extends Annotation> annotation, String... archives) {
+    public static <T> Set<Class<?>> getAnnotatedTypesOf(Class<? extends Annotation> annotation, String... archives) {
 
-		var urls = ListUtil.mapMany(archives, (archive) -> {
-			return ClasspathHelper.forPackage(archive);
-		});
+        var urls = ListUtil.mapMany(archives, (archive) -> {
+            return ClasspathHelper.forPackage(archive);
+        });
 
-		// 创建一个Reflections实例，指定要扫描的包
-		Reflections reflections = new Reflections(
-				new ConfigurationBuilder().setUrls(urls).setScanners(Scanners.TypesAnnotated));
+        // 创建一个Reflections实例，指定要扫描的包
+        Reflections reflections = new Reflections(
+                new ConfigurationBuilder().setUrls(urls).setScanners(Scanners.TypesAnnotated));
 
-		return reflections.getTypesAnnotatedWith(annotation);
-	}
+        return reflections.getTypesAnnotatedWith(annotation);
+    }
 
 //	public static Class<?> getClass(String pattern) {
 //

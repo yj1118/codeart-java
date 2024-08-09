@@ -277,7 +277,7 @@ public final class DataAccess {
             try (var conn = DataSource.getConnection()) {
                 var access = new DataAccess(conn);
                 action.accept(access);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 throw propagate(e);
             }
         }
@@ -292,7 +292,7 @@ public final class DataAccess {
             try (var conn = DataSource.getConnection()) {
                 var access = new DataAccess(conn);
                 return action.apply(access);
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 throw propagate(e);
             }
         }

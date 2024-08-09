@@ -273,7 +273,7 @@ public class MethodGenerator implements AutoCloseable {
 
             }
 
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
         return this;
@@ -326,7 +326,7 @@ public class MethodGenerator implements AutoCloseable {
 
             _evalStack.pop(2); // 执行完毕后，目标和变量就被弹出了
 
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
         return this;
@@ -405,7 +405,7 @@ public class MethodGenerator implements AutoCloseable {
 
             _evalStack.exitFrame(); // 调用完毕，离开栈帧
 
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
         return this;
@@ -522,7 +522,7 @@ public class MethodGenerator implements AutoCloseable {
 
             }
 
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
         return this;

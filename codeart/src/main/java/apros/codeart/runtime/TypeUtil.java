@@ -172,7 +172,7 @@ public final class TypeUtil {
             if (!exists(className, classLoader))
                 return null;
             return classLoader.loadClass(className);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }

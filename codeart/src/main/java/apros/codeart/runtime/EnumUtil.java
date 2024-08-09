@@ -9,48 +9,46 @@ import apros.codeart.util.LazyIndexer;
 
 /**
  * ca的枚举规范:
- * 
+ * <p>
  * 1.值类型为byte
- * 
+ * <p>
  * public enum Status {
- * 
+ * <p>
  * NEW((byte)1), IN_PROGRESS((byte)2), COMPLETED((byte)3), CANCELLED((byte)4);
- * 
+ * <p>
  * private final byte value;
- * 
+ * <p>
  * private Status(byte value) { this.value = value; }
- * 
+ * <p>
  * public byte getValue() { return value; } }
  */
 public final class EnumUtil {
 
-	private EnumUtil() {
-	}
+    private EnumUtil() {
+    }
 
-	/**
-	 * 获取枚举的基类型，注意，枚举需要满足ca规范
-	 * 
-	 * 
-	 * 
-	 * @return
-	 */
-	public static Class<?> getUnderlyingType() {
-		return byte.class;
-	}
+    /**
+     * 获取枚举的基类型，注意，枚举需要满足ca规范
+     *
+     * @return
+     */
+    public static Class<?> getUnderlyingType() {
+        return byte.class;
+    }
 
-	private static Function<Class<?>, Method> _resolveGetValue = LazyIndexer.init((enumType) -> {
-		return MethodUtil.resolve(enumType, "getValue", null);
-	});
+    private static Function<Class<?>, Method> _resolveGetValue = LazyIndexer.init((enumType) -> {
+        return MethodUtil.resolve(enumType, "getValue", null);
+    });
 
-	public static Object getValue(Object enumValue) {
+    public static Object getValue(Object enumValue) {
 
-		try {
-			var getValeu = _resolveGetValue.apply(enumValue.getClass());
-			return getValeu.invoke(enumValue);
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-	}
+        try {
+            var getValeu = _resolveGetValue.apply(enumValue.getClass());
+            return getValeu.invoke(enumValue);
+        } catch (Throwable e) {
+            throw propagate(e);
+        }
+    }
 
 //	try
 //

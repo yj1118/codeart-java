@@ -57,13 +57,13 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
     private void setItems(AbstractList<DTObject> items) {
         _items = Util.createList(_isReadonly, items.size());
 
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             this._template = DTObject.obtain();
             return;
         }
 
         if (items.size() == 1) {
-            DTObject item = items.get(0);
+            DTObject item = items.getFirst();
             if (item.hasData())
                 addItem(item);
             this._template = item.clone();
@@ -71,7 +71,7 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
             for (var item : items) {
                 addItem(item);
             }
-            this._template = _items.get(0).clone();
+            this._template = _items.getFirst().clone();
         }
         this._template.forceClearData();
     }
@@ -307,6 +307,14 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
         return ListUtil.map(_items, (t) -> {
             return (T) t.getValue(StringUtil.empty(), defaultValue, throwError);
         });
+    }
+
+    public long[] getLongs() {
+        long[] values = new long[_items.size()];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = _items.get(i).getLong();
+        }
+        return values;
     }
 
     public int size() {

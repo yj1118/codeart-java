@@ -321,7 +321,7 @@ public final class ListUtil {
 
             var method = cls.getDeclaredMethod("getList");
             return method.invoke(null);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }

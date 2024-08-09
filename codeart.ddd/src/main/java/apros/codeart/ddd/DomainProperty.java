@@ -378,7 +378,7 @@ public class DomainProperty {
         try {
             Field field = reflectedType.getDeclaredField(String.format("%sProperty", propertyName));
             return field == null ? null : field.getAnnotations();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }

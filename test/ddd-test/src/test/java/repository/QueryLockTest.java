@@ -23,7 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * 我们提供对单元测试里实现的锁关系承诺
- *
  */
 public class QueryLockTest {
 
@@ -211,7 +210,7 @@ public class QueryLockTest {
     @Test
     void hold_share_hasData_concurrency() {
 
-        var concurrency = first_concurrency_second_hasData(QueryLevel.HOLD,QueryLevel.SHARE);
+        var concurrency = first_concurrency_second_hasData(QueryLevel.HOLD, QueryLevel.SHARE);
         assertTrue(concurrency);
 
     }
@@ -230,7 +229,7 @@ public class QueryLockTest {
      */
     @Test
     void share_share() {
-        var concurrency = first_concurrency_second_hasData(QueryLevel.SHARE,QueryLevel.SHARE);
+        var concurrency = first_concurrency_second_hasData(QueryLevel.SHARE, QueryLevel.SHARE);
         assertFalse(concurrency);
     }
 
@@ -238,7 +237,7 @@ public class QueryLockTest {
     void hold_hold_hasData_concurrency() {
 
         //不论是否有数据，hold之间都互斥
-        var concurrency = first_concurrency_second_hasData(QueryLevel.HOLD,QueryLevel.HOLD);
+        var concurrency = first_concurrency_second_hasData(QueryLevel.HOLD, QueryLevel.HOLD);
         assertTrue(concurrency);
 
     }
@@ -247,56 +246,55 @@ public class QueryLockTest {
     void hold_hold_noData_concurrency() {
 
         //不论是否有数据，hold之间都互斥
-        var concurrency = first_concurrency_second_noData(QueryLevel.HOLD,QueryLevel.HOLD);
+        var concurrency = first_concurrency_second_noData(QueryLevel.HOLD, QueryLevel.HOLD);
         assertTrue(concurrency);
     }
 
 
     /**
      * 第一个查询阻塞第二个查询的测试
+     *
      * @param first
      * @param second
      * @return
      */
-    private static boolean first_concurrency_second_hasData(QueryLevel first,QueryLevel second){
+    private static boolean first_concurrency_second_hasData(QueryLevel first, QueryLevel second) {
 
-        return first_concurrency_second(()->{
+        return first_concurrency_second(() -> {
             queryAdmin(first);
-        },()->{
+        }, () -> {
             queryAdmin(second);
         });
 
     }
 
 
-    private static boolean first_concurrency_second_noData(QueryLevel first,QueryLevel second){
-        return first_concurrency_second(()->{
+    private static boolean first_concurrency_second_noData(QueryLevel first, QueryLevel second) {
+        return first_concurrency_second(() -> {
             queryCommon(first);
-        },()->{
+        }, () -> {
             queryCommon(second);
         });
     }
-
 
 
     @Test
     void update_none_notConcurrency() {
 
         //不论是否有数据，hold之间都互斥
-        var concurrency = first_concurrency_second_noData(QueryLevel.HOLD,QueryLevel.HOLD);
+        var concurrency = first_concurrency_second_noData(QueryLevel.HOLD, QueryLevel.HOLD);
         assertTrue(concurrency);
     }
 
 
-
-
     /**
-     *  firstAction 会阻塞 secondAction
+     * firstAction 会阻塞 secondAction
+     *
      * @param firstAction
      * @param secondAction
      * @return
      */
-    private static boolean first_concurrency_second(Runnable firstAction, Runnable secondAction){
+    private static boolean first_concurrency_second(Runnable firstAction, Runnable secondAction) {
         WrapperBoolean concurrency = new WrapperBoolean(false);
 
         var signal = new LatchSignal<Boolean>();
@@ -305,11 +303,10 @@ public class QueryLockTest {
             DataContext.using(() -> {
                 firstAction.run();
 
-                try{
+                try {
                     signal.wait(1, TimeUnit.SECONDS);
                     concurrency.setValue(false);
-                }
-                catch (Exception ex){
+                } catch (Throwable ex) {
                     //由于会阻塞single，所以会超时
                     concurrency.setValue(true);
                 }
@@ -339,7 +336,8 @@ public class QueryLockTest {
 
 
     /**
-     *  secondAction 会阻塞 firstAction
+     * secondAction 会阻塞 firstAction
+     *
      * @param firstAction
      * @param secondAction
      * @return
@@ -348,7 +346,7 @@ public class QueryLockTest {
         return first_concurrency_second(secondAction, firstAction);
     }
 
-    private static void waitLimited(){
+    private static void waitLimited() {
         try {
             Thread.sleep(200);
         } catch (InterruptedException e) {
@@ -356,18 +354,19 @@ public class QueryLockTest {
         }
     }
 
-    private static void queryAdmin(QueryLevel level){
+    private static void queryAdmin(QueryLevel level) {
         IAuthPlatformRepository repository = Repository.create(IAuthPlatformRepository.class);
-        var obj = repository.findByEN("admin",level);
+        var obj = repository.findByEN("admin", level);
     }
 
     /**
-     *  注意，没有common数据
+     * 注意，没有common数据
+     *
      * @param level
      */
-    private static void queryCommon(QueryLevel level){
+    private static void queryCommon(QueryLevel level) {
         IAuthPlatformRepository repository = Repository.create(IAuthPlatformRepository.class);
-        var obj = repository.findByEN("common",level);
+        var obj = repository.findByEN("common", level);
     }
 
     public static Thread asyncRun(Runnable action) {

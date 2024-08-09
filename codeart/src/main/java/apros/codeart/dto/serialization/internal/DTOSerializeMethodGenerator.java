@@ -11,46 +11,46 @@ import apros.codeart.util.Guid;
  * 序列化类型的动态方法生成器（自动序列化）
  */
 final class DTOSerializeMethodGenerator {
-	private DTOSerializeMethodGenerator() {
-	}
+    private DTOSerializeMethodGenerator() {
+    }
 
-	/// <summary>
-	///
-	/// </summary>
-	/// <param name="properties"></param>
-	public static SerializeMethod generateMethod(TypeSerializationInfo typeInfo) {
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="properties"></param>
+    public static SerializeMethod generateMethod(TypeSerializationInfo typeInfo) {
 
-		String methodName = String.format("DTOSerialize_%s", Guid.compact());
+        String methodName = String.format("DTOSerialize_%s", Guid.compact());
 
-		try (var cg = ClassGenerator.define()) {
+        try (var cg = ClassGenerator.define()) {
 
-			try (var mg = cg.defineMethodPublicStatic(methodName, void.class, (args) -> {
-				args.add(SerializationArgs.InstanceName, typeInfo.getTargetClass());
-				args.add("writer", IDTOWriter.class);
-			})) {
-				writeMembers(mg, typeInfo);
-			}
+            try (var mg = cg.defineMethodPublicStatic(methodName, void.class, (args) -> {
+                args.add(SerializationArgs.InstanceName, typeInfo.getTargetClass());
+                args.add("writer", IDTOWriter.class);
+            })) {
+                writeMembers(mg, typeInfo);
+            }
 
-			// 返回生成的字节码
-			var cls = cg.toClass();
+            // 返回生成的字节码
+            var cls = cg.toClass();
 
-			var method = cls.getDeclaredMethod(methodName, typeInfo.getTargetClass(), IDTOWriter.class);
+            var method = cls.getDeclaredMethod(methodName, typeInfo.getTargetClass(), IDTOWriter.class);
 
-			return new SerializeMethod(method);
+            return new SerializeMethod(method);
 
-		} catch (Exception e) {
-			throw propagate(e);
-		}
+        } catch (Throwable e) {
+            throw propagate(e);
+        }
 
-	}
+    }
 
-	private static void writeMembers(MethodGenerator g, TypeSerializationInfo typeInfo) {
-		for (var member : typeInfo.getMemberInfos()) {
-			if (member.canRead()) {
-				member.generateSerializeIL(g);
-			}
+    private static void writeMembers(MethodGenerator g, TypeSerializationInfo typeInfo) {
+        for (var member : typeInfo.getMemberInfos()) {
+            if (member.canRead()) {
+                member.generateSerializeIL(g);
+            }
 
-		}
-	}
+        }
+    }
 
 }

@@ -111,7 +111,7 @@ public final class ConstructorParameterInfo {
             if (method == null)
                 return null;
             return method.invoke(null, data, level);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw Util.propagate(e);
         }
     }

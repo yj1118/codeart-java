@@ -27,7 +27,7 @@ public final class MethodUtil {
             var methodName = StringUtil.substr(fullMethodName, lastDot + 1);
             var cls = Class.forName(className);
             return cls.getMethod(methodName);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
     }
@@ -40,6 +40,7 @@ public final class MethodUtil {
 
     /**
      * 不区分方法大小写，我们实际写程序也不可能写两个名字大小写不同，但是字母相同的方法
+     *
      * @param objCls
      * @param methodName
      * @return
@@ -205,7 +206,7 @@ public final class MethodUtil {
 
             // 调用静态方法（因为是静态方法，所以传入 null 作为实例参数）
             return staticMethod.invoke(null);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }
@@ -216,7 +217,7 @@ public final class MethodUtil {
 
             Method method = objClas.getDeclaredMethod(methodName);
             return method.invoke(self, args);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }

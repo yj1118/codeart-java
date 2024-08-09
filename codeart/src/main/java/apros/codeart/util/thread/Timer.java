@@ -66,7 +66,7 @@ public final class Timer {
             _scheduler.scheduleWithFixedDelay(() -> {
                 try {
                     action.run();
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     Logger.fatal(e);
                 }
             }, initialDelay, _period, _unit);
@@ -74,7 +74,7 @@ public final class Timer {
             _scheduler.scheduleAtFixedRate(() -> {
                 try {
                     action.run();
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     Logger.fatal(e);
                 }
             }, initialDelay, _period, _unit);

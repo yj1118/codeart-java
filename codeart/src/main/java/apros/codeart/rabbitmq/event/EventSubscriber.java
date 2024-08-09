@@ -126,7 +126,7 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
                 });
             });
             elapsed = message.success();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Logger.fatal(ex);
             elapsed = message.failed(true); // true:提示RabbitMQ服务器重发消息给下一个订阅者，false:提示RabbitMQ服务器把消息从队列中移除
         }

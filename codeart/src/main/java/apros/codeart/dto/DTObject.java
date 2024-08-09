@@ -126,9 +126,16 @@ public class DTObject implements INullProxy, IDTOSchema {
         return this.getValues(String.class, findExp, null, throwError);
     }
 
-//	public Iterable<Long> getLongRefs(String findExp) {
-//		return this.getValues(Long.class, findExp);
-//	}
+    public long[] getLongs(String findExp) {
+        return getLongs(findExp, true);
+    }
+
+    public long[] getLongs(String findExp, boolean throwError) {
+        DTEList entity = find(DTEList.class, findExp, throwError);
+        if (entity == null)
+            return null;
+        return entity.getLongs();
+    }
 
     private Object extractValueRef(DTEntity entity) {
         switch (entity.getType()) {
@@ -262,6 +269,10 @@ public class DTObject implements INullProxy, IDTOSchema {
 
     public long getLong(String findExp) {
         return getLong(findExp, 0L, true);
+    }
+
+    public long getLong() {
+        return getLong(StringUtil.empty(), 0L, true);
     }
 
     public long getLong(String findExp, long defaultValue, boolean throwError) {

@@ -84,7 +84,7 @@ public final class ObjectMetaLoader {
             if (obj == null) {
                 throw new DomainDrivenException(Language.strings("apros.codeart.ddd", "NotFoundDomainObject", objectName));
             }
-            
+
         }
         return obj;
     }
@@ -184,7 +184,7 @@ public final class ObjectMetaLoader {
                 }
             }
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
 

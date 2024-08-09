@@ -134,7 +134,7 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 
     @SuppressWarnings("unchecked")
     public final void deleteRoot(IAggregateRoot obj) {
-        update((TRoot) obj);
+        delete((TRoot) obj);
     }
 
     public final void delete(TRoot obj) {
@@ -157,7 +157,7 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
         if (obj.isEmpty())
             return;
         TRoot root = (TRoot) obj;
-        if (root != null) {
+        if (!root.isEmpty()) {
             if (this.onPrePersist(obj, RepositoryAction.Delete)) {
                 persistDeleteRoot(root);
             }

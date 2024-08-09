@@ -29,7 +29,7 @@ public final class AppSession {
         try {
             initialize();
             action.run();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         } finally {
             dispose();
@@ -40,7 +40,7 @@ public final class AppSession {
         try {
             initialize();
             return action.get();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         } finally {
             dispose();
@@ -63,7 +63,7 @@ public final class AppSession {
         try {
             for (var method : _startHandles)
                 method.invoke(null);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
     }
@@ -72,7 +72,7 @@ public final class AppSession {
         try {
             for (var method : _endHandles)
                 method.invoke(null);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
     }

@@ -33,7 +33,7 @@ final class ConnectionManager implements AutoCloseable {
         }, (channel) -> {
             try {
                 channel.close();
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 throw propagate(e);
             }
         });
@@ -44,7 +44,7 @@ final class ConnectionManager implements AutoCloseable {
             var factory = new ConnectionFactory();
             _policy.init(factory);
             return factory.newConnection();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }
@@ -60,7 +60,7 @@ final class ConnectionManager implements AutoCloseable {
             // 这用于消费者，这有助于实现更加公平的负载均衡，因为它确保一个消费者在处理完当前消息并发送确认之前，不会接收到更多消息。
             channel.basicQos(_policy.prefetchCount());
             return channel;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }
@@ -74,7 +74,7 @@ final class ConnectionManager implements AutoCloseable {
         try {
             _channelPool.dispose();
             _conn.close();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }

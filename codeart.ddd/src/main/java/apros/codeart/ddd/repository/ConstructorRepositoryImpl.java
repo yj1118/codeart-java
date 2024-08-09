@@ -85,7 +85,7 @@ public class ConstructorRepositoryImpl {
             }
 
             return new ConstructorRepositoryImpl(target);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
     });

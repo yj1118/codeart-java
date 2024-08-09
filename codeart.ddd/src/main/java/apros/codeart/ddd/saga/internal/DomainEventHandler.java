@@ -6,14 +6,14 @@ import apros.codeart.log.Logger;
 
 public abstract class DomainEventHandler implements IEventHandler {
 
-	public void handle(String eventName, DTObject data) {
-		// 时间订阅器已经添加了appSession，所以这里不需要再加了
-		try {
-			handle(data);
-		} catch (Exception ex) {
-			Logger.fatal(ex);
-		}
-	}
+    public void handle(String eventName, DTObject data) {
+        // 时间订阅器已经添加了appSession，所以这里不需要再加了
+        try {
+            handle(data);
+        } catch (Throwable ex) {
+            Logger.fatal(ex);
+        }
+    }
 
-	protected abstract void handle(DTObject arg);
+    protected abstract void handle(DTObject arg);
 }

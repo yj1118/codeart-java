@@ -60,7 +60,7 @@ public class CommonTest {
             return (Collection) collection;
 
 
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
     }

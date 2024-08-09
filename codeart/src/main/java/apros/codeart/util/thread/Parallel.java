@@ -12,30 +12,30 @@ import java.util.function.Consumer;
 import com.google.common.collect.Iterables;
 
 public final class Parallel {
-	private Parallel() {
-	}
+    private Parallel() {
+    }
 
-	public static <T> void forEach(Iterable<T> sources, Consumer<T> handle) {
-		ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
-		List<Future<?>> futures = new ArrayList<>(Iterables.size(sources));
+    public static <T> void forEach(Iterable<T> sources, Consumer<T> handle) {
+        ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
+        List<Future<?>> futures = new ArrayList<>(Iterables.size(sources));
 
-		for (var source : sources) {
+        for (var source : sources) {
 
-			Future<?> future = executor.submit(() -> {
-				handle.accept(source);
-			});
-			futures.add(future);
-		}
+            Future<?> future = executor.submit(() -> {
+                handle.accept(source);
+            });
+            futures.add(future);
+        }
 
-		for (Future<?> future : futures) {
-			try {
-				future.get();
-			} catch (Exception e) {
-				throw propagate(e);
-			}
-		}
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            } catch (Throwable e) {
+                throw propagate(e);
+            }
+        }
 
-		executor.shutdown();
-	}
+        executor.shutdown();
+    }
 
 }

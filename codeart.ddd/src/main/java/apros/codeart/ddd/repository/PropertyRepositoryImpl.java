@@ -11,58 +11,58 @@ import apros.codeart.util.StringUtil;
 
 public class PropertyRepositoryImpl {
 
-	private boolean _lazy;
+    private boolean _lazy;
 
-	public boolean lazy() {
-		return _lazy;
-	}
+    public boolean lazy() {
+        return _lazy;
+    }
 
-	private IPropertyDataLoader _loader;
+    private IPropertyDataLoader _loader;
 
-	public IPropertyDataLoader loader() {
-		return _loader;
-	}
+    public IPropertyDataLoader loader() {
+        return _loader;
+    }
 
-	public PropertyRepositoryImpl(PropertyRepository ann, Class<?> objectType) {
-		_lazy = ann.lazy();
-		_loader = getLoader(objectType, ann.loadMethod());
-	}
+    public PropertyRepositoryImpl(PropertyRepository ann, Class<?> objectType) {
+        _lazy = ann.lazy();
+        _loader = getLoader(objectType, ann.loadMethod());
+    }
 
-	private PropertyRepositoryImpl() {
-		_lazy = false;
-		_loader = null;
-	}
+    private PropertyRepositoryImpl() {
+        _lazy = false;
+        _loader = null;
+    }
 
-	private IPropertyDataLoader getLoader(Class<?> objectType, String loadMethod) {
-		if (StringUtil.isNullOrEmpty(loadMethod))
-			return null;
-		var method = Repository.getMethodFromRepository(objectType, loadMethod);
-		if (method == null)
-			return null;
-		return (data, level) -> {
-			return loadData(method, data, level);
-		};
-	}
+    private IPropertyDataLoader getLoader(Class<?> objectType, String loadMethod) {
+        if (StringUtil.isNullOrEmpty(loadMethod))
+            return null;
+        var method = Repository.getMethodFromRepository(objectType, loadMethod);
+        if (method == null)
+            return null;
+        return (data, level) -> {
+            return loadData(method, data, level);
+        };
+    }
 
-	/**
-	 * 使用自定义方法加载参数数据
-	 * 
-	 * @param objectType
-	 * @param data
-	 * @param level
-	 * @return
-	 */
-	private static Object loadData(Method method, MapData data, QueryLevel level) {
-		try {
-			var args = new Object[2];
-			args[0] = data;
-			args[1] = level;
-			return method.invoke(null, args);
-		} catch (Exception e) {
-			throw propagate(e);
-		}
-	}
+    /**
+     * 使用自定义方法加载参数数据
+     *
+     * @param objectType
+     * @param data
+     * @param level
+     * @return
+     */
+    private static Object loadData(Method method, MapData data, QueryLevel level) {
+        try {
+            var args = new Object[2];
+            args[0] = data;
+            args[1] = level;
+            return method.invoke(null, args);
+        } catch (Throwable e) {
+            throw propagate(e);
+        }
+    }
 
-	public static final PropertyRepositoryImpl Default = new PropertyRepositoryImpl();
+    public static final PropertyRepositoryImpl Default = new PropertyRepositoryImpl();
 
 }

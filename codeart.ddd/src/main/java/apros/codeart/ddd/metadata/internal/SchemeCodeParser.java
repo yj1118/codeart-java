@@ -71,7 +71,7 @@ public final class SchemeCodeParser {
 
             return (Class<? extends IDomainObject>) cg.toClass();
 
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw propagate(e);
         }
     }
@@ -146,7 +146,7 @@ public final class SchemeCodeParser {
             });
         });
 
-		
+
         try (var fg = cg.defineMethodPublicStatic("empty", className)) {
             fg.loadStaticField(className, "EmptyInstance", className);
         }

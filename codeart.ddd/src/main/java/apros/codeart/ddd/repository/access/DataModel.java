@@ -111,7 +111,7 @@ final class DataModel {
 //		try {
 //			DomainObject.Initialize();
 //			_indexs = GetIndexs();
-//		} catch (Exception ex) {
+//		} catch (Throwable ex) {
 //			throw ex;
 //		}
 //	}

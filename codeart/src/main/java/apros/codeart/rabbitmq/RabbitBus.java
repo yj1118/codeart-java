@@ -59,7 +59,7 @@ public class RabbitBus implements AutoCloseable {
             } else {
                 this.channel().exchangeDeclare(exchange, type, false, true, null);
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
     }
@@ -76,7 +76,7 @@ public class RabbitBus implements AutoCloseable {
         queueDeclare(queue);
         try {
             this.channel().queueBind(queue, exchange, routingKey);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
     }
@@ -88,7 +88,7 @@ public class RabbitBus implements AutoCloseable {
             } else {
                 this.channel().queueDeclare(queue, false, false, true, null); // 最后一个true表示不持久化的消息，服务器端分发后就删除，适用于rpc模式
             }
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
     }
@@ -103,7 +103,7 @@ public class RabbitBus implements AutoCloseable {
         try {
             // 临时队列是由rabbit分配名称、只有自己可以看见、用后就删除的队列
             return this.channel().queueDeclare(Strings.EMPTY, false, true, true, null).getQueue();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
 
@@ -118,7 +118,7 @@ public class RabbitBus implements AutoCloseable {
     public void queueDelete(String queue) {
         try {
             this.channel().queueDelete(queue);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
     }
@@ -163,7 +163,7 @@ public class RabbitBus implements AutoCloseable {
                 var properties = propsBuilder.build();
                 channel.basicPublish(exchange, routingKey, properties, body);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new RabbitMQException(Language.strings("apros.codeart", "PublishMessageFailed", routingKey));
         }
     }
@@ -172,7 +172,7 @@ public class RabbitBus implements AutoCloseable {
         try {
             this.channel().basicPublish(exchange, routingKey, properties, body);
             this.channel().waitForConfirmsOrDie(20_000); // 等待20秒以确认消息被送达
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new RabbitMQException(Language.strings("apros.codeart", "PublishMessageFailed", routingKey));
         }
     }

@@ -148,7 +148,7 @@ final class DataTableRead {
 //
 //        try {
 //            return DomainCollection.class.getConstructor(Class.class, DomainProperty.class);
-//        } catch (Exception ex) {
+//        } catch (Throwable ex) {
 //            throw propagate(ex);
 //        }
 //    });
@@ -215,7 +215,7 @@ final class DataTableRead {
             constructor.setAccessible(true);
             var args = createArguments(constructorTip, data, level);
             return (DomainObject) constructor.newInstance(args);
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw propagate(ex);
         }
     }
