@@ -12,6 +12,7 @@ import apros.codeart.dto.IDTOReader;
 import apros.codeart.dto.IDTOWriter;
 import apros.codeart.runtime.MethodUtil;
 import apros.codeart.runtime.TypeUtil;
+import apros.codeart.util.PrimitiveUtil;
 import apros.codeart.util.ReaderWriterLockSlim;
 import apros.codeart.util.StringUtil;
 
@@ -67,9 +68,15 @@ final class SerializationMethodHelper {
                 if (type.isEnum()) {
                     method = MethodUtil.resolve(IDTOWriter.class, "writeEnum", new Class<?>[]{String.class, Enum.class});
                 } else {
+
+                    if (PrimitiveUtil.isWrapper(type)) {
+                        method = MethodUtil.resolve(IDTOWriter.class, "writeValue", _writeObjectArgs);
+                        break;
+                    }
+
                     String methodName = String.format("write%s", StringUtil.firstToUpper(type.getSimpleName()));
                     method = MethodUtil.resolve(IDTOWriter.class, methodName, new Class<?>[]{String.class, type});
-                    if ((method == null) && (!type.isPrimitive())) {
+                    if (((method == null) && (!type.isPrimitive()))) {
                         // 如果不是int、long等基础类型，而有可能是自定义类型，那么用以下代码得到方法
                         method = MethodUtil.resolve(IDTOWriter.class, "writeObject", _writeObjectArgs);
                     }
@@ -81,9 +88,15 @@ final class SerializationMethodHelper {
                 if (type.isEnum()) {
                     method = MethodUtil.resolve(IDTOReader.class, "readEnum", _stringArgs);
                 } else {
+
+                    if (PrimitiveUtil.isWrapper(type)) {
+                        method = MethodUtil.resolve(IDTOReader.class, "readValue", _stringArgs);
+                        break;
+                    }
+
                     String methodName = String.format("read%s", StringUtil.firstToUpper(type.getSimpleName()));
                     method = MethodUtil.resolve(IDTOReader.class, methodName, _stringArgs);
-                    if ((method == null) && (!type.isPrimitive())) {
+                    if (((method == null) && (!type.isPrimitive()))) {
                         // 如果不是int、long等基础类型，而有可能是自定义类型，那么用以下代码得到方法
                         // IDTOWriter.ReadObject<T>(string name);
                         method = MethodUtil.resolve(IDTOReader.class, "readObject",
@@ -234,6 +247,8 @@ final class SerializationMethodHelper {
         var prmIndex = SerializationMethodHelper.getParameterIndex(method, SerializationMethodType.Deserialize);
         boolean isReadObject = method.getName().equals("readObject");
 
+        boolean isReadValue = method.getName().equals("readValue");
+
         g.invoke(prmIndex, method.getName(), () -> {
 
             if (isReadObject) {
@@ -243,7 +258,7 @@ final class SerializationMethodHelper {
             g.load(dtoMemberName);
         });
 
-        if (isReadObject) {
+        if (isReadObject || isReadValue) {
             // 类型转换
             g.cast(valueType);
         }

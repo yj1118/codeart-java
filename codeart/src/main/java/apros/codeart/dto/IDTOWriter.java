@@ -5,37 +5,39 @@ import java.time.LocalDateTime;
 
 public interface IDTOWriter {
 
-	void writeByte(String name, byte value);
+    void writeByte(String name, byte value);
 
-	void writeShort(String name, short value);
+    void writeShort(String name, short value);
 
-	void writeInt(String name, int value);
+    void writeInt(String name, int value);
 
-	void writeLong(String name, long value);
+    void writeLong(String name, long value);
 
-	void writeFloat(String name, float value);
+    void writeFloat(String name, float value);
 
-	void writeDouble(String name, double value);
+    void writeDouble(String name, double value);
 
-	void writeChar(String name, char value);
+    void writeChar(String name, char value);
 
-	void writeBoolean(String name, boolean value);
+    void writeBoolean(String name, boolean value);
 
-	void writeLocalDateTime(String name, LocalDateTime value);
+    void writeLocalDateTime(String name, LocalDateTime value);
 
-	void writeInstant(String name, Instant value);
+    void writeInstant(String name, Instant value);
 
-	void writeString(String name, String value);
+    void writeString(String name, String value);
 
-	void writeObject(String name, Object value);
+    void writeObject(String name, Object value);
 
-	void writeElement(String name, Object element);
+    void writeValue(String name, Object value);
 
-	/// <summary>
-	/// 写入一个空数组
-	/// </summary>
-	/// <param name="name"></param>
-	void writeArray(String name);
+    void writeElement(String name, Object element);
+
+    /// <summary>
+    /// 写入一个空数组
+    /// </summary>
+    /// <param name="name"></param>
+    void writeArray(String name);
 
 //	<T extends Enum<T>> void writeEnum(String name, T enumValue);
 
