@@ -57,4 +57,9 @@ public class PostgreSqlAgent extends DatabaseAgent {
             return StringUtil.substr(field, 1, (field.length() - 2));
         return field;
     }
+
+    @Override
+    public IQueryPageCompiler getPageCompiler() {
+        return SqlQueryPageCompiler.INSTANCE;
+    }
 }

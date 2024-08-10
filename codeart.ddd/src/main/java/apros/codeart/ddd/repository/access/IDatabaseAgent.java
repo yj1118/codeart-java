@@ -46,6 +46,13 @@ public interface IDatabaseAgent {
      */
     <T extends IQueryBuilder> void registerQueryBuilder(Class<T> qbClass, IQueryBuilder builder);
 
+    /**
+     * 获得页面查询编译器
+     *
+     * @return
+     */
+    IQueryPageCompiler getPageCompiler();
+
 //    void init();
 //
 //    /**

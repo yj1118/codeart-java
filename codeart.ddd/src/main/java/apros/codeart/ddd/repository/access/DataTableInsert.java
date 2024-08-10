@@ -51,7 +51,7 @@ final class DataTableInsert {
     private MapData insertData(DomainObject root, DomainObject parent, DomainObject obj) {
         var data = getInsertData(root, parent, obj);
 
-        DataAccess.current().execute(this.sqlInsert(), data);
+        DataAccess.current().nativeExecute(this.sqlInsert(), data);
 
         return data;
     }
@@ -162,7 +162,7 @@ final class DataTableInsert {
         var builder = DataSource.getQueryBuilder(IncrementAssociatedQB.class);
         var sql = builder.build(new QueryDescription(_self));
         // 递增引用次数不需要复刻
-        DataAccess.current().execute(sql, data);
+        DataAccess.current().nativeExecute(sql, data);
     }
 
     public void insertMiddle(IDomainObject root, IDomainObject master, Iterable<?> slaves) {
@@ -186,7 +186,7 @@ final class DataTableInsert {
                 data.put(slaveIdName, slaveId);
                 data.put(GeneratedField.OrderIndexName, index);
 
-                DataAccess.current().execute(this.sqlInsert(), data);
+                DataAccess.current().nativeExecute(this.sqlInsert(), data);
                 index++;
             }
         } else {
@@ -203,7 +203,7 @@ final class DataTableInsert {
                 data.put(slaveIdName, slaveId);
                 data.put(GeneratedField.OrderIndexName, index);
 
-                DataAccess.current().execute(this.sqlInsert(), data);
+                DataAccess.current().nativeExecute(this.sqlInsert(), data);
                 index++;
             }
 
@@ -220,7 +220,7 @@ final class DataTableInsert {
                 data.put(rootIdName, rootId);
                 data.put(GeneratedField.PrimitiveValueName, value);
                 data.put(GeneratedField.OrderIndexName, index);
-                DataAccess.current().execute(this.sqlInsert(), data);
+                DataAccess.current().nativeExecute(this.sqlInsert(), data);
                 index++;
             }
         } else {
@@ -233,7 +233,7 @@ final class DataTableInsert {
                 data.put(masterIdName, masterId);
                 data.put(GeneratedField.PrimitiveValueName, value);
                 data.put(GeneratedField.OrderIndexName, index);
-                DataAccess.current().execute(this.sqlInsert(), data);
+                DataAccess.current().nativeExecute(this.sqlInsert(), data);
                 index++;
             }
         }

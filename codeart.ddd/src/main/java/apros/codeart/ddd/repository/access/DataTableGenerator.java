@@ -20,7 +20,7 @@ final class DataTableGenerator {
     private static void createTable(DataAccess access, DataTable table) {
         var builder = DataSource.getQueryBuilder(CreateTableQB.class);
         var sql = builder.build(new QueryDescription(table));
-        access.execute(sql);
+        access.nativeExecute(sql);
     }
 
     public static void generate(DataTable table) {
@@ -66,7 +66,7 @@ final class DataTableGenerator {
     private static void dropTable(DataAccess access, DataTable table) {
         var builder = DataSource.getQueryBuilder(DropTableQB.class);
         var sql = builder.build(new QueryDescription(table));
-        access.execute(sql);
+        access.nativeExecute(sql);
     }
 
     /// <summary>
@@ -92,7 +92,7 @@ final class DataTableGenerator {
             for (var table : _generated) {
                 var builder = DataSource.getQueryBuilder(ClearTableQB.class);
                 var sql = builder.build(new QueryDescription(table));
-                access.execute(sql);
+                access.nativeExecute(sql);
             }
         });
     }

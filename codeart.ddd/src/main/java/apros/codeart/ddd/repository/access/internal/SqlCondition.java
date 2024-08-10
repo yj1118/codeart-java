@@ -159,7 +159,7 @@ public final class SqlCondition {
 
             probeCode = probeCode.replace(placeholder, content);
 
-            String replaceStr = String.format("'__@%s'='__@%s' AND (%s)", paraName, paraName, content);
+            String replaceStr = String.format("'__@%s_any_%s'='__@%s_any_%s' AND (%s)", paraName, _anys.size(), paraName, _anys.size(), content);
 
             var index = matcher.start();
             int length = matcher.end() - index; // 计算匹配的字符串长度
@@ -167,9 +167,10 @@ public final class SqlCondition {
             code = StringUtil.insert(code, index + offset, replaceStr);
             code = StringUtil.remove(code, index + offset + replaceStr.length(), length);
 
-            SqlAny any = new SqlAny(paraName, replaceStr, content);
+            SqlAny any = new SqlAny(_anys.size(), paraName, replaceStr, content);
             _anys.add(any);
 
+            offset += replaceStr.length() - length; // 记录偏移量
         }
 
         _probeCode = probeCode;
@@ -183,7 +184,7 @@ public final class SqlCondition {
     }
 
     String process(String commandText, MapData param) {
-        if (this.isEmpty())
+        if (this.isEmpty() || param == null)
             return commandText;
 
         // 先处理any
@@ -194,7 +195,7 @@ public final class SqlCondition {
             if (param.containsKey(any.paramName()))
                 commandText = commandText.replace(any.placeholder(), any.content());
             else
-                commandText = commandText.replace(any.placeholder(), "0=0"); // 没有参数表示永远为真，这里不能替换为空文本，因为会出现where
+                commandText = commandText.replace(any.placeholder(), "1=1"); // 没有参数表示永远为真，这里不能替换为空文本，因为会出现where
             // 没有条件的BUG，所以为 where 0=0
         }
 

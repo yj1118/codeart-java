@@ -9,7 +9,9 @@ import java.util.function.Function;
 import apros.codeart.ddd.MapData;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.DataContext;
+import apros.codeart.ddd.repository.Page;
 import apros.codeart.ddd.repository.access.internal.QueryRunner;
+import apros.codeart.ddd.repository.access.internal.SqlNativeAssist;
 import apros.codeart.dto.DTObject;
 
 import static apros.codeart.runtime.Util.propagate;
@@ -31,12 +33,26 @@ public final class DataAccess {
             DataContext.getCurrent().openLock(level);
     }
 
+
+    //region execute
+
+    private static String getNativeSql(String sql, MapData param) {
+        var assist = SqlNativeAssist.create(sql);
+        return assist.parse(param);
+    }
+
+
     /**
      * 执行sql
      *
      * @param sql
      */
     public void execute(String sql) {
+        var nativeSql = getNativeSql(sql, null);
+        QueryRunner.execute(_conn, nativeSql);
+    }
+
+    public void nativeExecute(String sql) {
         QueryRunner.execute(_conn, sql);
     }
 
@@ -46,6 +62,11 @@ public final class DataAccess {
      * @param sql
      */
     public int execute(String sql, MapData param) {
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.execute(_conn, nativeSql, param);
+    }
+
+    public int nativeExecute(String sql, MapData param) {
         return QueryRunner.execute(_conn, sql, param);
     }
 
@@ -100,9 +121,14 @@ public final class DataAccess {
 
     //endregion
 
-    public Object queryScalar(String sql, MapData params, QueryLevel level) {
+    //endregion
+
+    //region queryScalar
+
+    public Object queryScalar(String sql, MapData param, QueryLevel level) {
         openDataContextLock(level);
-        return QueryRunner.queryScalar(_conn, sql, params, level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryScalar(_conn, nativeSql, param, level);
     }
 
     public Object queryScalar(String sql, MapData params) {
@@ -111,10 +137,31 @@ public final class DataAccess {
 
     public <T> T queryScalar(Class<T> valueType, String sql, MapData param, QueryLevel level) {
         openDataContextLock(level);
-        return QueryRunner.queryScalar(valueType, _conn, sql, param, level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryScalar(valueType, _conn, nativeSql, param, level);
     }
 
     public <T> T queryScalar(Class<T> valueType, String sql, MapData param) {
+        return queryScalar(valueType, sql, param, QueryLevel.NONE);
+    }
+
+
+    public Object nativeQueryScalar(String sql, MapData params, QueryLevel level) {
+        openDataContextLock(level);
+        return QueryRunner.queryScalar(_conn, sql, params, level);
+    }
+
+    public Object nativeQueryScalar(String sql, MapData params) {
+        return queryScalar(sql, params, QueryLevel.NONE);
+    }
+
+
+    public <T> T nativeQueryScalar(Class<T> valueType, String sql, MapData param, QueryLevel level) {
+        openDataContextLock(level);
+        return QueryRunner.queryScalar(valueType, _conn, sql, param, level);
+    }
+
+    public <T> T nativeQueryScalar(Class<T> valueType, String sql, MapData param) {
         return queryScalar(valueType, sql, param, QueryLevel.NONE);
     }
 
@@ -190,57 +237,128 @@ public final class DataAccess {
 
     //endregion
 
+    //endregion
 
-    public int queryScalarInt(String sql, MapData params, QueryLevel level) {
+    //region queryScalar(Value)
+
+    public int queryScalarInt(String sql, MapData param, QueryLevel level) {
+        openDataContextLock(level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryScalarInt(_conn, nativeSql, param, level);
+    }
+
+    public int nativeQueryScalarInt(String sql, MapData params, QueryLevel level) {
         openDataContextLock(level);
         return QueryRunner.queryScalarInt(_conn, sql, params, level);
     }
 
-    public long queryScalarLong(String sql, MapData params, QueryLevel level) {
+    public long queryScalarLong(String sql, MapData param, QueryLevel level) {
+        openDataContextLock(level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryScalarLong(_conn, nativeSql, param, level);
+    }
+
+    public long nativeQueryScalarLong(String sql, MapData params, QueryLevel level) {
         openDataContextLock(level);
         return QueryRunner.queryScalarLong(_conn, sql, params, level);
     }
 
     public long queryScalarLong(String sql, QueryLevel level) {
         openDataContextLock(level);
+        var nativeSql = getNativeSql(sql, null);
+        return QueryRunner.queryScalarLong(_conn, nativeSql, null, level);
+    }
+
+    public long nativeQueryScalarLong(String sql, QueryLevel level) {
+        openDataContextLock(level);
         return QueryRunner.queryScalarLong(_conn, sql, null, level);
     }
 
-    public long queryScalarLong(String sql) {
-        return queryScalarLong(sql, QueryLevel.NONE);
+    public long nativeQueryScalarLong(String sql) {
+        return nativeQueryScalarLong(sql, QueryLevel.NONE);
     }
 
-    public UUID queryScalarGuid(String sql, MapData params, QueryLevel level) {
+    public UUID queryScalarGuid(String sql, MapData param, QueryLevel level) {
         openDataContextLock(level);
-        return QueryRunner.queryScalarGuid(_conn, sql, params, level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryScalarGuid(_conn, nativeSql, param, level);
     }
 
-    public Iterable<Object> queryScalars(String sql, MapData params, QueryLevel level) {
+    public UUID nativeQueryScalarGuid(String sql, MapData param, QueryLevel level) {
         openDataContextLock(level);
-        return QueryRunner.queryScalars(_conn, sql, params, level);
+        return QueryRunner.queryScalarGuid(_conn, sql, param, level);
+    }
+
+    //endregion
+
+    //region queryScalars
+
+    public Iterable<Object> queryScalars(String sql, MapData param, QueryLevel level) {
+        openDataContextLock(level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryScalars(_conn, nativeSql, param, level);
     }
 
     public Iterable<Object> queryScalars(String sql, MapData params) {
         return queryScalars(sql, params, QueryLevel.NONE);
     }
 
-    public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, MapData params, QueryLevel level) {
+    public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, MapData param, QueryLevel level) {
         openDataContextLock(level);
-        return QueryRunner.queryScalars(elementType, _conn, sql, params, level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryScalars(elementType, _conn, nativeSql, param, level);
     }
 
     public <T> Iterable<T> queryScalars(Class<T> elementType, String sql, MapData params) {
         return queryScalars(elementType, sql, params, QueryLevel.NONE);
     }
 
-    public int[] queryScalarInts(String sql, MapData params, QueryLevel level) {
+
+    public Iterable<Object> nativeQueryScalars(String sql, MapData params, QueryLevel level) {
+        openDataContextLock(level);
+        return QueryRunner.queryScalars(_conn, sql, params, level);
+    }
+
+    public Iterable<Object> nativeQueryScalars(String sql, MapData params) {
+        return nativeQueryScalars(sql, params, QueryLevel.NONE);
+    }
+
+    public <T> Iterable<T> nativeQueryScalars(Class<T> elementType, String sql, MapData params, QueryLevel level) {
+        openDataContextLock(level);
+        return QueryRunner.queryScalars(elementType, _conn, sql, params, level);
+    }
+
+    public <T> Iterable<T> nativeQueryScalars(Class<T> elementType, String sql, MapData params) {
+        return queryScalars(elementType, sql, params, QueryLevel.NONE);
+    }
+
+
+    //endregion
+
+    //#region queryScalar(Values)
+
+    public int[] queryScalarInts(String sql, MapData param, QueryLevel level) {
+        openDataContextLock(level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryScalarInts(_conn, nativeSql, param, level);
+    }
+
+    public int[] nativeQueryScalarInts(String sql, MapData params, QueryLevel level) {
         openDataContextLock(level);
         return QueryRunner.queryScalarInts(_conn, sql, params, level);
     }
 
+    //endregion
+
     public DTObject queryDTO(String sql, MapData params, QueryLevel level) {
         openDataContextLock(level);
         return QueryRunner.queryDTO(_conn, sql, params, level);
+    }
+
+    public DTObject nativeQueryDTO(String sql, MapData param, QueryLevel level) {
+        openDataContextLock(level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryDTO(_conn, nativeSql, param, level);
     }
 
     public Iterable<DTObject> queryDTOs(String sql, MapData params, QueryLevel level) {
@@ -248,10 +366,23 @@ public final class DataAccess {
         return QueryRunner.queryDTOs(_conn, sql, params, level);
     }
 
+    public Iterable<DTObject> nativeQueryDTOs(String sql, MapData param, QueryLevel level) {
+        openDataContextLock(level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryDTOs(_conn, nativeSql, param, level);
+    }
+
     public MapData queryRow(String sql, MapData params, QueryLevel level) {
         openDataContextLock(level);
         return QueryRunner.queryRow(_conn, sql, params, level);
     }
+
+    public MapData nativeQueryRow(String sql, MapData param, QueryLevel level) {
+        openDataContextLock(level);
+        return QueryRunner.queryRow(_conn, sql, param, level);
+    }
+
+    //region queryRows
 
     public Iterable<MapData> queryRows(String sql, MapData params, QueryLevel level) {
         openDataContextLock(level);
@@ -261,6 +392,105 @@ public final class DataAccess {
     public Iterable<MapData> queryRows(String sql, MapData params) {
         return queryRows(sql, params, QueryLevel.NONE);
     }
+
+    public Iterable<MapData> nativeQueryRows(String sql, MapData param, QueryLevel level) {
+        openDataContextLock(level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryRows(_conn, nativeSql, param, level);
+    }
+
+    public Iterable<MapData> nativeQueryRows(String sql, MapData param) {
+        return queryRows(sql, param, QueryLevel.NONE);
+    }
+
+    //endregion
+
+    //region queryPage
+
+    public Page<DTObject> queryPage(QueryPageCode code, int pageIndex, int pageSize, MapData param) {
+
+        var compiler = DataSource.getAgent().getPageCompiler();
+        var pageSql = compiler.buildPage(code, pageIndex, pageSize);
+        var nativePageSql = getNativeSql(pageSql, param);
+        var rows = QueryRunner.queryDTOs(_conn, nativePageSql, param, QueryLevel.NONE);
+
+        var countSql = compiler.buildCount(code);
+        var nativeCountSql = getNativeSql(countSql, param);
+        var count = QueryRunner.queryScalarInt(_conn, nativeCountSql, param, QueryLevel.NONE);
+
+        return new Page<>(pageIndex, pageSize, rows, count);
+    }
+
+    public Page<DTObject> nativeQueryPage(QueryPageCode code, int pageIndex, int pageSize, MapData param) {
+
+        var compiler = DataSource.getAgent().getPageCompiler();
+        var pageSql = compiler.buildPage(code, pageIndex, pageSize);
+        var rows = QueryRunner.queryDTOs(_conn, pageSql, param, QueryLevel.NONE);
+
+        var countSql = compiler.buildPage(code, pageIndex, pageSize);
+        var count = QueryRunner.queryScalarInt(_conn, countSql, param, QueryLevel.NONE);
+
+        return new Page<>(pageIndex, pageSize, rows, count);
+    }
+
+    //region queryPage的适配模式
+
+    public QueryPageAdaptation queryPage(int pageIndex, int pageSize, MapData param) {
+        return new QueryPageAdaptation(this, pageIndex, pageSize, param);
+    }
+
+    public static class QueryPageAdaptation {
+
+        private Page<DTObject> _value;
+
+        public Page<DTObject> value() {
+            return _value;
+        }
+
+        private final DataAccess _access;
+        private final int _pageIndex;
+        private final int _pageSize;
+        private final MapData _param;
+
+        private boolean _matched = false;
+
+        public QueryPageAdaptation(DataAccess access, int pageIndex, int pageSize, MapData param) {
+            _access = access;
+            _pageIndex = pageIndex;
+            _pageSize = pageSize;
+            _param = param;
+        }
+
+        public QueryPageAdaptation postgreSql(QueryPageCode code) {
+            return exec(DatabaseType.PostgreSql, code);
+        }
+
+        public QueryPageAdaptation sqlserver(QueryPageCode code) {
+            return exec(DatabaseType.SqlServer, code);
+        }
+
+        public QueryPageAdaptation mysql(QueryPageCode code) {
+            return exec(DatabaseType.MySql, code);
+        }
+
+        public QueryPageAdaptation oracle(QueryPageCode code) {
+            return exec(DatabaseType.Oracle, code);
+        }
+
+        private QueryPageAdaptation exec(DatabaseType dbType, QueryPageCode code) {
+            if (_matched) return this;
+            if (DataSource.getDatabaseType() == dbType) {
+                _value = _access.queryPage(code, _pageIndex, _pageSize, _param);
+                _matched = true;
+            }
+            return this;
+        }
+    }
+
+    //endregion
+
+
+    //endregion
 
     public static DataAccess current() {
         if (!DataContext.existCurrent())

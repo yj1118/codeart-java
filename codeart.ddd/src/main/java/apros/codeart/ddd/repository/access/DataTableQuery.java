@@ -200,7 +200,7 @@ final class DataTableQuery {
         var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
 
         return DataAccess.using((access) -> {
-            return access.queryScalarInt(sql, param, level);
+            return access.nativeQueryScalarInt(sql, param, level);
         });
     }
 
@@ -282,7 +282,7 @@ final class DataTableQuery {
         var sql = query.build(description);
 
         return DataAccess.using((access) -> {
-            return access.queryRow(sql, param, level);
+            return access.nativeQueryRow(sql, param, level);
         });
     }
 
@@ -294,7 +294,7 @@ final class DataTableQuery {
         var qb = DataSource.getQueryBuilder(qbType);
         var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
         return DataAccess.using((access) -> {
-            return access.queryRows(sql, param, level);
+            return access.nativeQueryRows(sql, param, level);
         });
     }
 
@@ -419,7 +419,7 @@ final class DataTableQuery {
         var sql = qb.build(QueryDescription.createBy(param, expression, level, _self));
 
         var data = DataAccess.using((access) -> {
-            return access.queryRow(sql, param, level);
+            return access.nativeQueryRow(sql, param, level);
         });
         return _self.createObject(objectType, data, level);
     }
@@ -529,7 +529,7 @@ final class DataTableQuery {
         var qb = DataSource.getQueryBuilder(GetAssociatedQB.class);
         var sql = qb.build(new QueryDescription(_self));
 
-        return DataAccess.current().queryScalarInt(sql, data, QueryLevel.NONE);
+        return DataAccess.current().nativeQueryScalarInt(sql, data, QueryLevel.NONE);
     }
 
 //	#endregion

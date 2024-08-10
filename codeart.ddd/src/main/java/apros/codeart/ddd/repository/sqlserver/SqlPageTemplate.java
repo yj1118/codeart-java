@@ -45,14 +45,14 @@ public class SqlPageTemplate {
 
     private String _select = StringUtil.empty();
 
-    public void select(String format, Object... args) {
-        _select = StringUtil.format(format, args);
+    public void select(String sql) {
+        _select = sql;
     }
 
     private String _from = StringUtil.empty();
 
-    public void from(String format, Object... args) {
-        _from = StringUtil.format(format, args);
+    public void from(String sql) {
+        _from = sql;
     }
 
     private final StringBuilder _condition = new StringBuilder();

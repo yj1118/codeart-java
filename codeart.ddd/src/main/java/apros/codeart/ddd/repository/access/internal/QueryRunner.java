@@ -271,7 +271,9 @@ public final class QueryRunner {
 
     private static PreparedStatement getStatement(Connection conn, String sql, MapData param) throws SQLException {
         var adapter = _getAdapter.apply(sql);
-        PreparedStatement pstmt = conn.prepareStatement(adapter.sql());
+        PreparedStatement pstmt = conn.prepareStatement(adapter.sql(),
+                ResultSet.TYPE_SCROLL_INSENSITIVE,
+                ResultSet.CONCUR_READ_ONLY);
         adapter.fillParams(pstmt, param);
         return pstmt;
     }

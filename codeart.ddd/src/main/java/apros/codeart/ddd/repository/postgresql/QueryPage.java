@@ -31,7 +31,7 @@ class QueryPage extends QueryPageQB {
 
             return sql;
         });
-    });;
+    });
 
     @Override
     public String build(QueryDescription description) {
@@ -43,11 +43,11 @@ class QueryPage extends QueryPageQB {
         var template = _getTemplate.apply(target).apply(definition);
         var param = description.param();
 
-        var pageIndex = (int)param.get("pageIndex");
-        var pageSize = (int)param.get("pageSize");
+        var pageIndex = (int) param.get("pageIndex");
+        var pageSize = (int) param.get("pageSize");
 
-        var sql = template.getCode(pageIndex,pageSize);
-        return definition.process(sql,description.param());
+        var sql = template.getCode(pageIndex, pageSize);
+        return definition.process(sql, description.param());
     }
 
     public final static QueryPage Instance = new QueryPage();

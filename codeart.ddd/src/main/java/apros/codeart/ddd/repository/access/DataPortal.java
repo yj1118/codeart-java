@@ -85,8 +85,8 @@ public final class DataPortal {
 
             var builder = DataSource.getQueryBuilder(GetIncrIdQB.class);
             var sql = builder.build(new QueryDescription(table));
-            
-            return conn.access().queryScalarLong(sql);
+
+            return conn.access().nativeQueryScalarLong(sql);
         });
     }
 

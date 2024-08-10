@@ -635,7 +635,7 @@ final class DataTableRead {
         var sql = qb.build(description);
 
         return DataAccess.using((access) -> {
-            return access.queryScalar(sql, param);
+            return access.nativeQueryScalar(sql, param);
         });
     }
 
@@ -659,7 +659,7 @@ final class DataTableRead {
         }
 
         return DataAccess.using((access) -> {
-            return access.queryRows(sql, param);
+            return access.nativeQueryRows(sql, param);
         });
     }
 
@@ -682,7 +682,7 @@ final class DataTableRead {
         }
 
         return DataAccess.using((access) -> {
-            return access.queryRows(sql, param);
+            return access.nativeQueryRows(sql, param);
         });
     }
 
@@ -692,7 +692,7 @@ final class DataTableRead {
         return _getScalarById.apply(table).apply(propertyName);
     }
 
-    private static Function<DataTable, Function<String, String>> _getScalarById = LazyIndexer.init((table) -> {
+    private static final Function<DataTable, Function<String, String>> _getScalarById = LazyIndexer.init((table) -> {
         return LazyIndexer.init((propertyName) -> {
             String expression = null;
 
