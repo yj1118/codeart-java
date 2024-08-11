@@ -123,7 +123,7 @@ public final class SqlCondition {
 
             var newExp = StringUtil.trim(matcher.group(2));
             var para = newExp;
-            newExp = String.format("%s in (@%s)", field, para);
+            newExp = String.format("%s IN (@%s)", field, para);
 
             SqlIn sin = new SqlIn(field, para, newExp);
             _ins.add(sin);
@@ -217,35 +217,6 @@ public final class SqlCondition {
             commandText = processIn(commandText, param);
         }
 
-
-//        for (var sin : _ins) {
-//            var name = sin.paramName();
-//            var values = TypeUtil.as(param.get(name), Iterable.class);
-//            param.remove(name);
-//
-//            if (ListUtil.exists(values)) {
-//                var code = new StringBuilder();
-//                int index = 0;
-//                StringUtil.appendFormat(code, "%s in (", sin.field());
-//                for (var value : values) {
-//                    var valueName = String.format("%s%s", name, index);
-//                    param.put(valueName, value);
-//                    StringUtil.appendFormat(code, "@%s,", valueName);
-//                    index++;
-//                }
-//                if (code.length() > 1)
-//                    StringUtil.removeLast(code);
-//                code.append(")");
-//
-//                var temp = new SqlCondition(commandText);
-//
-//                commandText = commandText.replace(sin.placeholder(), code.toString());
-//            } else {
-//                commandText = commandText.replace(sin.placeholder(), "0=1"); // 在in语句中，如果 id in
-//                // ()，没有任何匹配的数值条件，那么就是无匹配结果，所以0=1
-//            }
-//        }
-
         return commandText;
     }
 
@@ -283,12 +254,12 @@ public final class SqlCondition {
 
     //String regex = "\\s*(@\\w+)\\{([^{}]*)\\}";
 
-    private static final Pattern _likeRegex = Pattern.compile("([^\\s{]+?)\\s+like([ %]+?@[%\\d\\w0-9]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern _likeRegex = Pattern.compile("([^\\s{]+?)\\s+like([ %]+?@[%\\w0-9]+)", Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern _inRegex = Pattern.compile("([^\\s]+)\\s+IN\\s+\\(?\\s*@([^\\s\\)]+)\\s*\\)?",
+    private static final Pattern _inRegex = Pattern.compile("(\\S+)\\s+IN\\s+\\(?\\s*@([^\\s)]+)\\s*\\)?",
             Pattern.CASE_INSENSITIVE);
 
-    private static final Pattern _anyRegex = Pattern.compile("@([^\\{ ]+)\\{([^\\}]+)\\}", Pattern.CASE_INSENSITIVE);
+    private static final Pattern _anyRegex = Pattern.compile("@([^{ ]+)\\{([^}]+)}", Pattern.CASE_INSENSITIVE);
 
     public static final SqlCondition Empty = new SqlCondition(StringUtil.empty());
 

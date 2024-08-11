@@ -79,6 +79,12 @@ public class SqlDefinition {
 
     private String _order;
 
+    private String _orderHint;
+
+    public String orderHint() {
+        return _orderHint;
+    }
+
     /**
      * 排序
      *
@@ -278,9 +284,11 @@ public class SqlDefinition {
 
                 if (isTop(exp))
                     define._top = exp;
-                else if (isOrder(exp))
-                    define._order = exp;
-                else if (isSelect(exp))
+                else if (isOrder(exp)) {
+                    var hint = getOrderHint(exp);
+                    define._orderHint = hint;
+                    define._order = StringUtil.isNullOrEmpty(hint) ? StringUtil.empty() : String.format("ORDER BY %s", hint);
+                } else if (isSelect(exp))
                     define._selectFields = getFields(exp);
                 else if (isKey(exp))
                     define._key = getKey(exp);
@@ -301,10 +309,10 @@ public class SqlDefinition {
     private static SqlColumns getColumns(SqlDefinition define) {
         var selectFields = getSelectFields(define);
         var condition = define.condition().isEmpty() ? StringUtil.empty()
-                : String.format("where %s", define.condition().probeCode());
+                : String.format("WHERE %s", define.condition().probeCode());
         var order = define.order();
 
-        var mockSql = String.format("select %s from tempTable %s %s", selectFields,
+        var mockSql = String.format("SELECT %s FROM tempTable %s %s", selectFields,
                 condition,
                 order);
         return SqlParser.parse(mockSql);
@@ -381,6 +389,10 @@ public class SqlDefinition {
 
     private static boolean isOrder(String expression) {
         return StringUtil.startsWithIgnoreCase(expression, "order by");
+    }
+
+    private static String getOrderHint(String expression) {
+        return expression.substring("order by ".length());
     }
 
     private static final int _innerLength = "inner ".length();

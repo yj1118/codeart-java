@@ -6,9 +6,8 @@ import apros.codeart.ddd.repository.access.QueryObjectQB;
 import apros.codeart.ddd.repository.access.internal.SqlDefinition;
 import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.ddd.repository.db.DBUtil;
-import apros.codeart.ddd.repository.sqlserver.ExpressionHelper;
+import apros.codeart.ddd.repository.db.ExpressionHelper;
 import apros.codeart.util.SafeAccess;
-import apros.codeart.util.StringUtil;
 
 @SafeAccess
 class QueryObject extends QueryObjectQB {
@@ -19,19 +18,18 @@ class QueryObject extends QueryObjectQB {
     protected String buildImpl(DataTable target, SqlDefinition definition, QueryLevel level) {
 
         // 由于sqlserver的cte写法不支持写实际的表名称，所以要转义
-        String tableName = target.name()+"CTE";
+        String tableName = target.name() + "CTE";
 
-        String objectSql = ExpressionHelper.getObjectSql(target,level, definition);
+        String objectSql = ExpressionHelper.getObjectSql(target, level, definition, LockSql.INSTANCE);
 
-        var bottomSql = String.format("select distinct %s %s from %s %s",definition.top(),
+        var bottomSql = String.format("select distinct %s %s from %s %s", definition.top(),
                 definition.getFieldsSql(),
                 SqlStatement.qualifier(tableName),
                 definition.order());
 
-        bottomSql = DBUtil.addQualifier(ExpressionHelper.mapToCCJSqlParser(bottomSql,null),target,tableName);
-        bottomSql = ExpressionHelper.mapToSQLServer(bottomSql,null);
+        bottomSql = DBUtil.format(bottomSql, target, tableName, QueryLevel.NONE);
 
-        return String.format("%s%s%s",objectSql,System.lineSeparator(),bottomSql);
+        return String.format("%s%s%s", objectSql, System.lineSeparator(), bottomSql);
     }
 
     public static final QueryObject Instance = new QueryObject();

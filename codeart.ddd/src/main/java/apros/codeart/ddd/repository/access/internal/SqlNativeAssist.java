@@ -27,7 +27,5 @@ public class SqlNativeAssist {
         return _create.apply(sql);
     }
 
-    private static final Function<String, SqlNativeAssist> _create = LazyIndexer.init((sql) -> {
-        return new SqlNativeAssist(sql);
-    });
+    private static final Function<String, SqlNativeAssist> _create = LazyIndexer.init(SqlNativeAssist::new);
 }

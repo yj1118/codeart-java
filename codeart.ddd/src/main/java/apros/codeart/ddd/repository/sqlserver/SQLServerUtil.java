@@ -1,14 +1,17 @@
 package apros.codeart.ddd.repository.sqlserver;
 
+import apros.codeart.ddd.QueryLevel;
+import apros.codeart.ddd.repository.access.DataTable;
 import apros.codeart.ddd.repository.access.DbType;
+import apros.codeart.ddd.repository.db.DBUtil;
 import apros.codeart.i18n.Language;
 
-public final class Util {
+public final class SQLServerUtil {
 
-	private Util() {
-	}
+    private SQLServerUtil() {
+    }
 
-	public static String getSqlDbTypeString(DbType dbType) {
+    public static String getSqlDbTypeString(DbType dbType) {
         return switch (dbType) {
             case DbType.AnsiString -> "varchar";
             case DbType.Byte -> "tinyint";
@@ -26,6 +29,7 @@ public final class Util {
                     Language.strings("apros.codeart.ddd", "UnsupportedFieldType", dbType.toString()));
         };
     }
+    
 
 //	public static SqlDbType etSqlDbType(DbType dbType) {
 //		return _getSqlDbType(dbType);

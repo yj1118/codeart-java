@@ -7,26 +7,27 @@ import apros.codeart.ddd.repository.access.QueryCountQB;
 import apros.codeart.ddd.repository.access.internal.SqlDefinition;
 import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.ddd.repository.db.DBUtil;
+import apros.codeart.ddd.repository.db.ExpressionHelper;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess
 class QueryCount extends QueryCountQB {
 
-	private QueryCount() {
-	}
+    private QueryCount() {
+    }
 
-	protected String buildImpl(DataTable target, SqlDefinition definition, QueryLevel level) {
+    protected String buildImpl(DataTable target, SqlDefinition definition, QueryLevel level) {
 
-		String objectSql = ExpressionHelper.getObjectSql(target,level, definition);
+        String objectSql = ExpressionHelper.getObjectSql(target, level, definition, LockSql.INSTANCE);
 
-		var bottomSql = String.format("select count(DISTINCT %s) from %s",EntityObject.IdPropertyName,
-				SqlStatement.qualifier(target.name()));
+        var bottomSql = String.format("select count(DISTINCT %s) from %s", EntityObject.IdPropertyName,
+                SqlStatement.qualifier(target.name()));
 
-		bottomSql = DBUtil.addQualifier(bottomSql,target);
+        bottomSql = DBUtil.format(bottomSql, target, QueryLevel.NONE);
 
-		return String.format("%s%s%s",objectSql,System.lineSeparator(),bottomSql);
-	}
+        return String.format("%s%s%s", objectSql, System.lineSeparator(), bottomSql);
+    }
 
-	public static final QueryCount Instance = new QueryCount();
+    public static final QueryCount Instance = new QueryCount();
 
 }

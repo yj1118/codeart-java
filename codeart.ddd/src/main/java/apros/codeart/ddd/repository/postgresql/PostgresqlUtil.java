@@ -3,9 +3,9 @@ package apros.codeart.ddd.repository.postgresql;
 import apros.codeart.ddd.repository.access.DbType;
 import apros.codeart.i18n.Language;
 
-public final class Util {
+public final class PostgresqlUtil {
 
-    private Util() {
+    private PostgresqlUtil() {
     }
 
     public static String getSqlDbTypeString(DbType dbType) {

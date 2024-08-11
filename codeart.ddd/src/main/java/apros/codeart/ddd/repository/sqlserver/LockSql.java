@@ -4,37 +4,17 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import apros.codeart.ddd.QueryLevel;
+import apros.codeart.ddd.repository.db.ILockSql;
 import apros.codeart.i18n.Language;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.StringUtil;
 
-final class LockSql {
+final class LockSql implements ILockSql {
 
     private LockSql() {
     }
 
-    public static String get(String sql, QueryLevel level) {
-        if (level == null)
-            return sql;
-        return _getLevelSql.apply(sql).apply(level);
-    }
-
-    private final static Pattern _reg = Pattern.compile(".+from[ ](.+?)(where|inner|left)", Pattern.CASE_INSENSITIVE);
-
-    private static Function<String, Function<QueryLevel, String>> _getLevelSql = LazyIndexer.init((sql) -> {
-        return LazyIndexer.init((level) -> {
-
-            var math = _reg.matcher(sql);
-            if (!math.find())
-                throw new IllegalStateException(Language.strings("apros.codeart.ddd", "FailedParseLock"));
-            var tableName = math.group(1);
-            var index = math.start(1);
-
-            return StringUtil.insert(sql, index + tableName.length(), get(level));
-        });
-    });
-
-    public static String get(QueryLevel level) {
+    public String get(QueryLevel level) {
         switch (level.code()) {
             case QueryLevel.ShareCode:
                 return " with(holdlock) ";
@@ -46,5 +26,26 @@ final class LockSql {
                 return " with(nolock) "; // None和Mirror 都是无锁模式
         }
     }
+
+    public static final LockSql INSTANCE = new LockSql();
+
+
+    /**
+     * JSqlParser 可以识别 WITH (NOLOCK)锁提示，但是无法识别其他的锁提示，因此用这个占位，然后恢复真正的锁代码
+     */
+    private static final String placeHolder = " WITH (NOLOCK) ";
+
+    public static String mapToCCJSqlParser(String sql, String lockCode) {
+        if (!StringUtil.isNullOrEmpty(lockCode))
+            sql = sql.replace(lockCode, placeHolder);
+        return sql;
+    }
+
+    public static String mapToSQLServer(String sql, String lockCode) {
+        if (!StringUtil.isNullOrEmpty(lockCode))
+            sql = sql.replace(placeHolder, lockCode);
+        return sql;
+    }
+
 
 }

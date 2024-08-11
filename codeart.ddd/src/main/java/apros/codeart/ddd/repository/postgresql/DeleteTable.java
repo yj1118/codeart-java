@@ -5,7 +5,6 @@ import apros.codeart.ddd.repository.access.*;
 import apros.codeart.util.SafeAccess;
 import apros.codeart.util.StringUtil;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 
 @SafeAccess
@@ -80,9 +79,9 @@ public class DeleteTable extends DeleteTableQB {
         if (middle.isPrimitiveValue()) return null;
 
         var rootId = GeneratedField.RootIdName;
-        var rootIdType = Util.getSqlDbTypeString(middle.root().idField().dbType());
+        var rootIdType = PostgresqlUtil.getSqlDbTypeString(middle.root().idField().dbType());
         var slaveId = GeneratedField.SlaveIdName;
-        var slaveIdType = Util.getSqlDbTypeString(middle.slave().idField().dbType());
+        var slaveIdType = PostgresqlUtil.getSqlDbTypeString(middle.slave().idField().dbType());
 
 
         if (middle.root().equals(middle.master())) {
@@ -119,7 +118,7 @@ public class DeleteTable extends DeleteTableQB {
             return sql.toString();
         } else {
             var masterId = GeneratedField.MasterIdName;
-            var masterIdType = Util.getSqlDbTypeString(middle.master().idField().dbType());
+            var masterIdType = PostgresqlUtil.getSqlDbTypeString(middle.master().idField().dbType());
 
             StringBuilder sql = new StringBuilder();
             StringUtil.appendFormat(sql, "CREATE OR REPLACE PROCEDURE DELETE_%s(%s %s, %s %s, %s %s)", middle.name(),

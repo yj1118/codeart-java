@@ -59,6 +59,11 @@ public class PostgreSqlAgent extends DatabaseAgent {
     }
 
     @Override
+    public ISqlFormat getSqlFormat() {
+        return SqlFormat.INSTANCE;
+    }
+
+    @Override
     public IQueryPageCompiler getPageCompiler() {
         return SqlQueryPageCompiler.INSTANCE;
     }

@@ -2,6 +2,7 @@ package apros.codeart.ddd.repository.sqlserver;
 
 import apros.codeart.ddd.repository.access.*;
 import apros.codeart.ddd.repository.db.*;
+import apros.codeart.ddd.repository.sqlserver.SqlFormat;
 import apros.codeart.util.StringUtil;
 
 public class SQLServerAgent extends DatabaseAgent {
@@ -57,6 +58,11 @@ public class SQLServerAgent extends DatabaseAgent {
         if (field.startsWith("\""))
             return StringUtil.substr(field, 1, (field.length() - 2));
         return field;
+    }
+
+    @Override
+    public ISqlFormat getSqlFormat() {
+        return SqlFormat.INSTANCE;
     }
 
     @Override

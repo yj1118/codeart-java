@@ -3,14 +3,10 @@ package apros.codeart.ddd.repository.postgresql;
 import apros.codeart.ddd.repository.access.*;
 import apros.codeart.ddd.repository.access.internal.AccessUtil;
 import apros.codeart.ddd.repository.db.DBUtil;
-import apros.codeart.ddd.repository.postgresql.Util;
 import apros.codeart.ddd.validation.TimePrecisions;
-import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.SafeAccess;
 import apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
-
-import java.util.function.Function;
 
 @SafeAccess
 class CreateTable extends CreateTableQB {
@@ -92,7 +88,7 @@ class CreateTable extends CreateTableQB {
                         (allowNull ? StringUtil.empty() : "NOT NULL"));
             }
             default:
-                return String.format("\"%s\" %s %s,", field.name(), Util.getSqlDbTypeString(field.dbType()),
+                return String.format("\"%s\" %s %s,", field.name(), PostgresqlUtil.getSqlDbTypeString(field.dbType()),
                         (allowNull ? StringUtil.empty() : "NOT NULL"));
         }
     }

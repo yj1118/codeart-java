@@ -6,8 +6,8 @@ import apros.codeart.ddd.repository.access.QueryObjectQB;
 import apros.codeart.ddd.repository.access.internal.SqlDefinition;
 import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.ddd.repository.db.DBUtil;
+import apros.codeart.ddd.repository.db.ExpressionHelper;
 import apros.codeart.util.SafeAccess;
-import apros.codeart.util.StringUtil;
 
 @SafeAccess
 class QueryObject extends QueryObjectQB {
@@ -18,16 +18,16 @@ class QueryObject extends QueryObjectQB {
     @Override
     protected String buildImpl(DataTable target, SqlDefinition definition, QueryLevel level) {
 
-        String objectSql = ExpressionHelper.getObjectSql(target,level, definition);
+        String objectSql = ExpressionHelper.getObjectSql(target, level, definition, LockSql.INSTANCE);
 
-        var bottomSql = String.format("select distinct %s %s from %s %s",definition.top(),
+        var bottomSql = String.format("select distinct %s %s from %s %s", definition.top(),
                 definition.getFieldsSql(),
                 SqlStatement.qualifier(target.name()),
                 definition.order());
 
-        bottomSql = DBUtil.addQualifier(bottomSql,target);
+        bottomSql = DBUtil.format(bottomSql, target, QueryLevel.NONE);
 
-        return String.format("%s%s%s",objectSql,System.lineSeparator(),bottomSql);
+        return String.format("%s%s%s", objectSql, System.lineSeparator(), bottomSql);
     }
 
     public static final QueryObject Instance = new QueryObject();

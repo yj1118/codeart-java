@@ -30,6 +30,9 @@ public interface IDatabaseAgent {
      */
     String unQualifier(String field);
 
+    ISqlFormat getSqlFormat();
+
+
     /**
      * 获得查询器的实现
      *

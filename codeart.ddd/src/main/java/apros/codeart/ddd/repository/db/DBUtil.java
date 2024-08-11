@@ -1,5 +1,7 @@
 package apros.codeart.ddd.repository.db;
 
+import apros.codeart.ddd.QueryLevel;
+import apros.codeart.ddd.repository.access.DataSource;
 import apros.codeart.ddd.repository.access.DataTable;
 import apros.codeart.ddd.repository.access.DbType;
 import apros.codeart.ddd.repository.access.internal.SqlStatement;
@@ -19,8 +21,8 @@ public final class DBUtil {
     }
 
 
-    public static String addQualifier(String sql, DataTable table) {
-        return addQualifier(sql, table, null);
+    public static String format(String sql, DataTable table, QueryLevel level) {
+        return format(sql, table, null, level);
     }
 
     /**
@@ -29,82 +31,8 @@ public final class DBUtil {
      * @param sql
      * @return
      */
-    public static String addQualifier(String sql, DataTable table, String tableAlias) {
-        boolean containsShare = sql.contains(" FOR SHARE");
-        String tableName = StringUtil.isNullOrEmpty(tableAlias) ? table.name() : tableAlias;
-
-        try {
-
-            if (containsShare) {
-                sql = sql.replace(" FOR SHARE", " FOR UPDATE");
-            }
-
-            Statement statement = CCJSqlParserUtil.parse(sql);
-
-            if (statement instanceof Select) {
-                Select select = (Select) statement;
-                SelectBody selectBody = select.getSelectBody();
-
-                ExpressionDeParser expressionDeParser = new ExpressionDeParser() {
-                    @Override
-                    public void visit(net.sf.jsqlparser.schema.Column column) {
-                        String columnName = column.getColumnName();
-
-                        if (!columnName.startsWith("\"")) {
-                            if (columnName.contains("_")) {
-                                var temp = columnName.split("_");
-                                var target = table;
-                                StringBuilder tn = new StringBuilder();
-                                String fn = null;
-                                for (var i = 0; i < temp.length; i++) {
-                                    var name = temp[i];
-                                    if (i == temp.length - 1) {
-                                        var field = target.getField(name, true);
-                                        fn = field.name();
-                                    } else {
-                                        target = target.findChild(name);
-                                        StringUtil.appendFormat(tn, "%s_", target.memberField().name());
-                                    }
-                                }
-                                StringUtil.removeLast(tn);
-                                String cn = String.format("%s.%s", SqlStatement.qualifier(tn.toString()), SqlStatement.qualifier(fn));
-                                column.setColumnName(cn);
-                            } else {
-                                var field = table.getField(columnName, true);
-                                if (column.getTable() == null) {
-                                    if (field != null) columnName = field.name();
-                                    String cn = String.format("%s.%s", SqlStatement.qualifier(tableName), SqlStatement.qualifier(columnName));
-                                    column.setColumnName(cn);
-                                } else {
-                                    if (field != null) columnName = field.name();
-                                    column.setColumnName(SqlStatement.qualifier(columnName));
-                                }
-                            }
-                        }
-
-                        super.visit(column);
-                    }
-                };
-
-                StringBuilder buffer = new StringBuilder();
-                SelectDeParser deparser = new SelectDeParser(expressionDeParser, buffer);
-                expressionDeParser.setSelectVisitor(deparser);
-                expressionDeParser.setBuffer(buffer);
-
-                selectBody.accept(deparser);
-
-                sql = buffer.toString();
-            }
-
-            if (containsShare) {
-                sql = sql.replace(" FOR UPDATE", " FOR SHARE");
-            }
-
-            return sql;
-
-        } catch (JSQLParserException e) {
-            throw propagate(e);
-        }
+    public static String format(String sql, DataTable table, String tableAlias, QueryLevel level) {
+        return DataSource.getAgent().getSqlFormat().format(sql, table, tableAlias, level);
     }
 
     public static boolean needInc(DataTable table) {

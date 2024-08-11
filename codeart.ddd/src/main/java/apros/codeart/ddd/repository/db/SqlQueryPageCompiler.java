@@ -1,5 +1,6 @@
 package apros.codeart.ddd.repository.db;
 
+import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.access.IQueryPageCompiler;
 import apros.codeart.ddd.repository.access.QueryPageCode;
 import apros.codeart.util.LazyIndexer;
@@ -25,7 +26,7 @@ public class SqlQueryPageCompiler implements IQueryPageCompiler {
 
         int start = pageIndex * pageSize; // 数据的开始位置，为从第几条（start+1）记录开始，
         int end = start + count; // 数据的结束位置
-        return StringUtil.format(result.otherPageCode(), start, count, end);
+        return StringUtil.format(result.otherPageCode(), start, end);
     }
 
     @Override
@@ -56,40 +57,45 @@ public class SqlQueryPageCompiler implements IQueryPageCompiler {
     private static String getPageTableSql(QueryPageCode code) {
         String tableSql = code.tableSql();
 
+        String coreSql = String.format("%s%s%s", String.format("SELECT %s,row_number() over(ORDER BY %s) as __ind FROM", code.selectSql(), code.orderSql()),
+                System.lineSeparator(),
+                tableSql);
+
+        if (code.table() != null) {
+            //如果指定了table信息，那么就根据table的元数据格式化下sql
+            coreSql = DBUtil.format(coreSql, code.table(), QueryLevel.NONE);
+        }
+
+
         StringBuilder sb = new StringBuilder();
         StringUtil.appendFormat(sb, "WITH PageTableCTE AS (");
         StringUtil.appendLine(sb);
-        StringUtil.appendLine(sb, String.format("SELECT %s,row_number() over(ORDER BY %s) as __ind FROM", code.selectSql(), code.orderSql()));
-        StringUtil.appendLine(sb, tableSql);
+        StringUtil.appendLine(sb, coreSql);
+        StringUtil.appendLine(sb, "LIMIT @data_end");
         StringUtil.append(sb, ")");
 
         return sb.toString();
     }
 
     private static String getFirstPageCT(QueryPageCode code) {
-        return "SELECT * FROM PageTableCTE ORDER BY __ind asc LIMIT @data_length";
+        return "SELECT * FROM PageTableCTE ORDER BY __ind asc";
     }
 
     private static String getPageCT(QueryPageCode code) {
-        String temp = String.format(
-                "SELECT * from PageTableCTE %s LIMIT @data_end",
-                code.orderSql());
-
-        return String.format("SELECT %s from (%s) as a where a.__ind > @data_start and a.__ind <= @data_end",
-                code.selectSql(), temp);
+        return "SELECT * FROM PageTableCTE where __ind > @data_start and __ind <= @data_end ORDER BY __ind asc";
     }
 
     private static String getFirstPageCode(String tableSql, QueryPageCode code) {
+        tableSql = tableSql.replaceAll("@data_end", "{0}");// 替换成格式化参数
         var bottomSql = getFirstPageCT(code);
-        bottomSql = bottomSql.replaceAll("@data_length", "{0}");// 替换成格式化参数
         return String.format("%s%s%s", tableSql, System.lineSeparator(), bottomSql);
     }
 
     private static String getOtherPageCode(String tableSql, QueryPageCode code) {
+        tableSql = tableSql.replaceAll("@data_end", "{1}");// 替换成格式化参数
         var bottomSql = getPageCT(code);
         bottomSql = bottomSql.replaceAll("@data_start", "{0}");// 替换成格式化参数
-        bottomSql = bottomSql.replaceAll("@data_length", "{1}");// 替换成格式化参数
-        bottomSql = bottomSql.replaceAll("@data_end", "{2}");// 替换成格式化参数
+        bottomSql = bottomSql.replaceAll("@data_end", "{1}");// 替换成格式化参数
 
         return String.format("%s%s%s", tableSql, System.lineSeparator(), bottomSql);
     }
