@@ -7,6 +7,8 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -413,11 +415,33 @@ final class QueryFilter {
                     break;
                 }
                 case Types.TIMESTAMP: {
+
+                    String columnTypeName = rsmd.getColumnTypeName(i);
+
+                    if ("timestamptz".equalsIgnoreCase(columnTypeName) ||                   //Postgresql
+                            "timestamp with time zone".equalsIgnoreCase(columnTypeName) ||  // Oracle
+                            "datetimeoffset".equalsIgnoreCase(columnTypeName)) {            // SQL Server
+                        var value = rs.getObject(i, OffsetDateTime.class);
+                        if (rs.wasNull())
+                            break;
+                        String name = rsmd.getColumnName(i);
+                        dto.setZonedDateTime(name, value.toZonedDateTime());
+                        break;
+                    }
+
                     var value = rs.getObject(i, LocalDateTime.class);
                     if (rs.wasNull())
                         break;
                     String name = rsmd.getColumnName(i);
                     dto.setLocalDateTime(name, value);
+                    break;
+                }
+                case Types.TIMESTAMP_WITH_TIMEZONE: {
+                    var value = rs.getObject(i, OffsetDateTime.class);
+                    if (rs.wasNull())
+                        break;
+                    String name = rsmd.getColumnName(i);
+                    dto.setZonedDateTime(name, value.toZonedDateTime());
                     break;
                 }
                 default: {
