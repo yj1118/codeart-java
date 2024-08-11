@@ -1086,6 +1086,22 @@ public class DTObject implements INullProxy, IDTOSchema {
         return DTObject.readonly(message);
     }
 
+    public static <T> DTObject readonly(String rowSchemaCode, Iterable<T> objs) {
+        var result = DTObject.editable();
+
+        if (objs == null) {
+            result.setValue("dataCount", 0);
+            result.push("rows");
+        } else {
+            result.setValue("dataCount", Iterables.size(objs));
+            result.push("rows", objs, (obj) ->
+            {
+                return DTObject.readonly(rowSchemaCode, obj);
+            });
+        }
+        return result.asReadonly();
+    }
+
     public static DTObject editable(String schemaCode, Object target) {
         return createImpl(schemaCode, target, false);
     }
@@ -1097,6 +1113,22 @@ public class DTObject implements INullProxy, IDTOSchema {
     public static DTObject editable(byte[] bytes) {
         String message = new String(bytes, StandardCharsets.UTF_8);
         return DTObject.editable(message);
+    }
+
+    public static <T> DTObject editable(String rowSchemaCode, Iterable<T> objs) {
+        var result = DTObject.editable();
+        if (objs == null) {
+            result.setValue("dataCount", 0);
+            result.push("rows");
+        } else {
+            result.setValue("dataCount", Iterables.size(objs));
+            result.push("rows", objs, (obj) ->
+            {
+                return DTObject.editable(rowSchemaCode, obj);
+            });
+        }
+
+        return result;
     }
 
     /**
