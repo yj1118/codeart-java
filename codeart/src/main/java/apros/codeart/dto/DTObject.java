@@ -1205,7 +1205,9 @@ public class DTObject implements INullProxy, IDTOSchema {
                 if (se != null)
                     se.load(te);
                 else {
-                    this._root.addMember((DTEntity) te.clone());
+                    var t = (DTEntity) te.clone();
+                    t.setName(name);    //防止名称大小写不同，这里要设置名称
+                    this._root.addMember(t);
                 }
             }
         }
