@@ -726,10 +726,10 @@ public class MethodGenerator implements AutoCloseable {
                 // 用于加载数组中的引用类型元素。
                 _visitor.visitInsn(Opcodes.AALOAD);
             } else {
-                var code = Util.getLoadCode(elementType);
+                var code = Util.getLoadArrayElementCode(elementType);
                 _visitor.visitInsn(code);
 
-                throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
+//                throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
             }
 
         } else {

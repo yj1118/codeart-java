@@ -206,7 +206,7 @@ final class SerializationMethodHelper {
         });
     }
 
-    public static void writeElement(MethodGenerator g, String dtoMemberName, Runnable loadValue) {
+    public static void writeElement(MethodGenerator g, String dtoMemberName, Runnable loadValue, Class<?> elementType) {
 
 //      var method =  typeof(IDTOWriter).ResolveMethod("writeElement",
 //                                                      new Type[] { elementType },
@@ -215,10 +215,20 @@ final class SerializationMethodHelper {
 //                                                      MethodParameter.CreateGeneric(elementType));
         var prmIndex = SerializationArgs.WriterIndex;
 
-        g.invoke(prmIndex, "writeElement", () -> {
-            g.load(dtoMemberName);
-            loadValue.run();
-        });
+        if (elementType.isPrimitive()) {
+            String methodName = String.format("writeElement%s", StringUtil.firstToUpper(elementType.getSimpleName()));
+            g.invoke(prmIndex, methodName, () -> {
+                g.load(dtoMemberName);
+                loadValue.run();
+            });
+        } else {
+            g.invoke(prmIndex, "writeElement", () -> {
+                g.load(dtoMemberName);
+                loadValue.run();
+            });
+        }
+
+
     }
 
     public static void writeArray(MethodGenerator g, String dtoMemberName) {
@@ -298,11 +308,21 @@ final class SerializationMethodHelper {
 
     public static void readElement(MethodGenerator g, String dtoMemberName, IVariable index, Class<?> elementType) {
         var prmIndex = SerializationArgs.ReaderIndex;
-        g.invoke(prmIndex, "readElement", () -> {
-            g.load(dtoMemberName);
-            g.load(index);
-            g.load(elementType);
-        });
+
+        if (elementType.isPrimitive()) {
+            String methodName = String.format("readElement%s", StringUtil.firstToUpper(elementType.getSimpleName()));
+            g.invoke(prmIndex, methodName, () -> {
+                g.load(dtoMemberName);
+                g.load(index);
+            });
+        } else {
+            g.invoke(prmIndex, "readElement", () -> {
+                g.load(dtoMemberName);
+                g.load(index);
+                g.load(elementType);
+            });
+        }
+
     }
 
 }

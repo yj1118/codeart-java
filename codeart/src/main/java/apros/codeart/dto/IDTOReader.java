@@ -49,4 +49,31 @@ public interface IDTOReader {
     Object readElement(String name, int index, Class<?> elementType);
 
     Object readObject(Class<?> objectType, String name);
+
+
+    boolean readElementBoolean(String name, int index);
+
+    /**
+     * 从流中读取一个字节
+     *
+     * @param name
+     * @return
+     */
+    byte readElementByte(String name, int index);
+
+    short readElementShort(String name, int index);
+
+    int readElementInt(String name, int index);
+
+    long readElementLong(String name, int index);
+
+    float readElementFloat(String name, int index);
+
+    double readElementDouble(String name, int index);
+
+    /// <summary>
+    /// 从流中读取一个非空的字符
+    /// </summary>
+    /// <returns></returns>
+    char readElementChar(String name, int index);
 }

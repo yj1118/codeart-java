@@ -207,6 +207,10 @@ public class DTObject implements INullProxy, IDTOSchema {
         return entity == null ? defaultValue : entity.getBoolean();
     }
 
+    public boolean getBoolean() {
+        return getBoolean(StringUtil.empty(), false, true);
+    }
+
     public byte getByte(String findExp, byte defaultValue) {
         return getByte(findExp, defaultValue, false);
     }
@@ -218,6 +222,10 @@ public class DTObject implements INullProxy, IDTOSchema {
     private byte getByte(String findExp, byte defaultValue, boolean throwError) {
         DTEValue entity = find(DTEValue.class, findExp, throwError);
         return entity == null ? defaultValue : entity.getByte();
+    }
+
+    public byte getByte() {
+        return getByte(StringUtil.empty(), (byte) 0, true);
     }
 
     public char getChar(String findExp, char defaultValue) {
@@ -233,6 +241,11 @@ public class DTObject implements INullProxy, IDTOSchema {
         return entity == null ? defaultValue : entity.getChar();
     }
 
+    public char getChar() {
+        return getChar(StringUtil.empty(), StringUtil.charEmpty(), true);
+    }
+
+
     public short getShort(String findExp, short defaultValue) {
         return getShort(findExp, defaultValue, false);
     }
@@ -244,6 +257,10 @@ public class DTObject implements INullProxy, IDTOSchema {
     private short getShort(String findExp, short defaultValue, boolean throwError) {
         DTEValue entity = find(DTEValue.class, findExp, throwError);
         return entity == null ? defaultValue : entity.getShort();
+    }
+
+    public short getShort() {
+        return getShort(StringUtil.empty(), (short) 0, true);
     }
 
     public int getInt(String findExp, int defaultValue) {
@@ -293,6 +310,10 @@ public class DTObject implements INullProxy, IDTOSchema {
         return entity == null ? defaultValue : entity.getFloat();
     }
 
+    public float getFloat() {
+        return getFloat(StringUtil.empty(), 0F, true);
+    }
+
     public double getDouble(String findExp, double defaultValue) {
         return getDouble(findExp, defaultValue, false);
     }
@@ -304,6 +325,10 @@ public class DTObject implements INullProxy, IDTOSchema {
     public double getDouble(String findExp, double defaultValue, boolean throwError) {
         DTEValue entity = find(DTEValue.class, findExp, throwError);
         return entity == null ? defaultValue : entity.getDouble();
+    }
+
+    public double getDouble() {
+        return getDouble(StringUtil.empty(), 0D, true);
     }
 
     public String getString() {
@@ -366,8 +391,16 @@ public class DTObject implements INullProxy, IDTOSchema {
         setValue(findExp, Byte.toString(value), false);
     }
 
+    public void setByte(byte value) {
+        setValue(StringUtil.empty(), Byte.toString(value), false);
+    }
+
     public void setShort(String findExp, short value) {
         setValue(findExp, Short.toString(value), false);
+    }
+
+    public void setShort(short value) {
+        setValue(StringUtil.empty(), Short.toString(value), false);
     }
 
     public void setInt(int value) {
@@ -382,20 +415,40 @@ public class DTObject implements INullProxy, IDTOSchema {
         setValue(findExp, Long.toString(value), false);
     }
 
+    public void setLong(long value) {
+        setValue(StringUtil.empty(), Long.toString(value), false);
+    }
+
     public void setFloat(String findExp, float value) {
         setValue(findExp, Float.toString(value), false);
+    }
+
+    public void setFloat(float value) {
+        setValue(StringUtil.empty(), Float.toString(value), false);
     }
 
     public void setDouble(String findExp, double value) {
         setValue(findExp, Double.toString(value), false);
     }
 
+    public void setDouble(double value) {
+        setValue(StringUtil.empty(), Double.toString(value), false);
+    }
+
     public void setBoolean(String findExp, boolean value) {
         setValue(findExp, Boolean.toString(value), false);
     }
 
+    public void setBoolean(boolean value) {
+        setValue(StringUtil.empty(), Boolean.toString(value), false);
+    }
+
     public void setChar(String findExp, char value) {
         setValue(findExp, Character.toString(value), false);
+    }
+
+    public void setChar(char value) {
+        setValue(StringUtil.empty(), Character.toString(value), false);
     }
 
     public void setString(String findExp, String value) {
@@ -735,13 +788,141 @@ public class DTObject implements INullProxy, IDTOSchema {
      * @param member
      */
     public void push(String findExp, DTObject member) {
-        validateReadOnly();
-
-        DTEList entity = getOrCreateList(findExp);
         if (member == null)
             return;
 
+        validateReadOnly();
+
+        DTEList entity = getOrCreateList(findExp);
         entity.push(member);
+    }
+
+    public void pushByte(String findExp, byte value) {
+        DTObject member = DTObject.editable();
+        member.setByte(value);
+        push(findExp, member);
+    }
+
+    public void pushBytes(String findExp, byte[] values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            DTObject member = DTObject.editable();
+            member.setByte(value);
+            entity.push(member);
+        }
+    }
+
+    public void pushShort(String findExp, short value) {
+        DTObject member = DTObject.editable();
+        member.setShort(value);
+        push(findExp, member);
+    }
+
+    public void pushShorts(String findExp, short[] values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            DTObject member = DTObject.editable();
+            member.setShort(value);
+            entity.push(member);
+        }
+    }
+
+    public void pushInt(String findExp, int value) {
+        DTObject member = DTObject.editable();
+        member.setInt(value);
+        push(findExp, member);
+    }
+
+    public void pushInts(String findExp, int[] values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            DTObject member = DTObject.editable();
+            member.setInt(value);
+            entity.push(member);
+        }
+    }
+
+    public void pushLong(String findExp, long value) {
+        DTObject member = DTObject.editable();
+        member.setLong(value);
+        push(findExp, member);
+    }
+
+    public void pushLongs(String findExp, long[] values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            DTObject member = DTObject.editable();
+            member.setLong(value);
+            entity.push(member);
+        }
+    }
+
+    public void pushFloat(String findExp, float value) {
+        DTObject member = DTObject.editable();
+        member.setFloat(value);
+        push(findExp, member);
+    }
+
+    public void pushFloats(String findExp, float[] values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            DTObject member = DTObject.editable();
+            member.setFloat(value);
+            entity.push(member);
+        }
+    }
+
+    public void pushDouble(String findExp, double value) {
+        DTObject member = DTObject.editable();
+        member.setDouble(value);
+        push(findExp, member);
+    }
+
+    public void pushDoubles(String findExp, double[] values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            DTObject member = DTObject.editable();
+            member.setDouble(value);
+            entity.push(member);
+        }
+    }
+
+    public void pushChar(String findExp, char value) {
+        DTObject member = DTObject.editable();
+        member.setChar(value);
+        push(findExp, member);
+    }
+
+    public void pushChars(String findExp, char[] values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            DTObject member = DTObject.editable();
+            member.setChar(value);
+            entity.push(member);
+        }
+    }
+
+    public void pushBoolean(String findExp, boolean value) {
+        DTObject member = DTObject.editable();
+        member.setBoolean(value);
+        push(findExp, member);
+    }
+
+    public void pushBooleans(String findExp, boolean[] values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            DTObject member = DTObject.editable();
+            member.setBoolean(value);
+            entity.push(member);
+        }
     }
 
     /**

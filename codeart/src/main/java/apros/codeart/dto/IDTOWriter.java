@@ -33,6 +33,22 @@ public interface IDTOWriter {
 
     void writeElement(String name, Object element);
 
+    void writeElementByte(String name, byte value);
+
+    void writeElementShort(String name, short value);
+
+    void writeElementInt(String name, int value);
+
+    void writeElementLong(String name, long value);
+
+    void writeElementFloat(String name, float value);
+
+    void writeElementDouble(String name, double value);
+
+    void writeElementChar(String name, char value);
+
+    void writeElementBoolean(String name, boolean value);
+
     /// <summary>
     /// 写入一个空数组
     /// </summary>

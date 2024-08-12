@@ -60,7 +60,7 @@ abstract class DTOReader implements IDTOReader {
     public Object readValue(String name) {
         return _dto.getValue(name);
     }
-	
+
     /**
      * 读取数组长度
      */
@@ -76,4 +76,59 @@ abstract class DTOReader implements IDTOReader {
 //	int index);
 
     public abstract Object readObject(Class<?> objectType, String name);
+
+    private DTObject getElement(String name, int index) {
+        return _dto.getElement(name, index, true);
+    }
+
+
+    @Override
+    public boolean readElementBoolean(String name, int index) {
+        var e = getElement(name, index);
+        return e.getBoolean();
+    }
+
+
+    @Override
+    public byte readElementByte(String name, int index) {
+        var e = getElement(name, index);
+        return e.getByte();
+    }
+
+    @Override
+    public short readElementShort(String name, int index) {
+        var e = getElement(name, index);
+        return e.getShort();
+    }
+
+    @Override
+    public int readElementInt(String name, int index) {
+        var e = getElement(name, index);
+        return e.getInt();
+    }
+
+    @Override
+    public long readElementLong(String name, int index) {
+        var e = getElement(name, index);
+        return e.getLong();
+    }
+
+    @Override
+    public float readElementFloat(String name, int index) {
+        var e = getElement(name, index);
+        return e.getFloat();
+    }
+
+    @Override
+    public double readElementDouble(String name, int index) {
+        var e = getElement(name, index);
+        return e.getDouble();
+    }
+
+    @Override
+    public char readElementChar(String name, int index) {
+        var e = getElement(name, index);
+        return e.getChar();
+    }
+
 }
