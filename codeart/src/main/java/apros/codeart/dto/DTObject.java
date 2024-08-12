@@ -882,6 +882,19 @@ public class DTObject implements INullProxy, IDTOSchema {
         member.setDouble(value);
         push(findExp, member);
     }
+    
+    public <T> void pushObjects(String findExp, String rowSchemaCode, Iterable<T> objs) {
+        var data = DTObject.editable(rowSchemaCode, objs);
+        this.pushObjects(findExp, data.getList("rows"));
+    }
+
+    public void pushObjects(String findExp, Iterable<DTObject> values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            entity.push(value);
+        }
+    }
 
     public void pushDoubles(String findExp, double[] values) {
         validateReadOnly();

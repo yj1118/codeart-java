@@ -112,6 +112,8 @@ final class DataTableDelete {
 
     private void deleteMiddles(DomainObject obj) {
         var middles = RootIsSlaveIndex.get(_self);
+        if (middles == null) return;
+        ;
         for (var middle : middles) {
             middle.deleteMiddleByRootSlave(obj);
         }

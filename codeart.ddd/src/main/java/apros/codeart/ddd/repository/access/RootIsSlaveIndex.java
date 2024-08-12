@@ -27,7 +27,7 @@ class RootIsSlaveIndex {
 
     public static Iterable<DataTable> get(DataTable slave) {
         if (!slave.isAggregateRoot())
-            return ListUtil.empty();
+            return null;
         return _records.getValues(slave.name());
     }
 
