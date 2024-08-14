@@ -393,4 +393,9 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
     public IDTOSchema getChildSchema(String name) {
         return _template.getChildSchema(name);
     }
+
+    @Override
+    public Iterable<String> getSchemaMembers() {
+        return null;
+    }
 }

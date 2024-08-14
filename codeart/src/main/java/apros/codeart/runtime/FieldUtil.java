@@ -28,7 +28,7 @@ public final class FieldUtil {
      * <p>
      * 但如果只是使用Field对象来获取字段的信息（例如字段的名称、类型等），那么通常不会存在线程安全问题。
      */
-    private static Function<Class<?>, ArrayList<Field>> _getFields = LazyIndexer.init((cls) -> {
+    private static final Function<Class<?>, ArrayList<Field>> _getFields = LazyIndexer.init((cls) -> {
 
         ArrayList<Field> fields = new ArrayList<Field>();
 

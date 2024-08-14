@@ -18,13 +18,13 @@ public class ObjectMeta {
         return _category;
     }
 
-    private String _name;
+    private final String _name;
 
     public String name() {
         return _name;
     }
 
-    private Class<?> _objectType;
+    private final Class<?> _objectType;
 
     /**
      * 类型定义对应的实例类型（也就是真正需要创建的、实际存在内存中的对象类型）
@@ -44,7 +44,7 @@ public class ObjectMeta {
         return _properties;
     }
 
-    private boolean existProperty(String propertyName) {
+    public boolean existProperty(String propertyName) {
         return ListUtil.find(_properties, (p) -> p.name().equalsIgnoreCase(propertyName)) != null;
     }
 

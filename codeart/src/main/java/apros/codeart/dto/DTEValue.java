@@ -279,4 +279,9 @@ public class DTEValue extends DTEntity {
         // 返回空，表示无限制
         return DTObject.Empty;
     }
+
+    @Override
+    public Iterable<String> getSchemaMembers() {
+        return null;
+    }
 }

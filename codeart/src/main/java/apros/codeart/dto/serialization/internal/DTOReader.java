@@ -67,7 +67,7 @@ abstract class DTOReader implements IDTOReader {
     public int readLength(String name) {
         var dtoList = _dto.getList(name, false);
         if (dtoList == null)
-            return 0;
+            return -1; //-1表示没有数据
         return dtoList.size();
     }
 

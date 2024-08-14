@@ -17,4 +17,6 @@ public interface IDTOSchema {
      * @return
      */
     IDTOSchema getChildSchema(String name);
+
+    Iterable<String> getSchemaMembers();
 }

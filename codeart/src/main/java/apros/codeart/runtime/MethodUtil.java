@@ -93,6 +93,11 @@ public final class MethodUtil {
         return null;
     }
 
+    @Memoized
+    public static Method resolve(Class<?> objCls, String methodName) {
+        return resolve(objCls, methodName, null);
+    }
+
     /**
      * 忽略返回值得到方法
      *

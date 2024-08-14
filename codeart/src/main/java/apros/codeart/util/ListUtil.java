@@ -117,6 +117,14 @@ public final class ListUtil {
         return list;
     }
 
+    public static ArrayList<Long> asList(long[] source) {
+        Long[] longObjects = Arrays.stream(source)
+                .boxed() // box the primitive long to Long
+                .toArray(Long[]::new);
+        
+        return asList(longObjects);
+    }
+
     public static <T> ArrayList<T> asList(T[] source) {
         ArrayList<T> list = new ArrayList<T>(source.length);
         for (T item : source) {
@@ -252,13 +260,15 @@ public final class ListUtil {
         }
     }
 
-    /// <summary>
-    /// 将集合<paramref name="source"/>转变成为<paramref name="target"/>，需要增加哪些元素和需要删除哪些元素
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="source"></param>
-    /// <param name="target"></param>
-    /// <returns></returns>
+
+    /**
+     * 将集合 source 转变成为 target，需要增加哪些元素和需要删除哪些元素
+     *
+     * @param source
+     * @param target
+     * @param <T>
+     * @return
+     */
     public static <T> TransformResult<T, T> transform(Iterable<T> source, Iterable<T> target) {
         return transform(source, target, (s, t) -> {
             return s.equals(t);

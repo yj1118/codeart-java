@@ -5,6 +5,7 @@ import static apros.codeart.runtime.Util.propagate;
 import java.util.function.Function;
 
 import apros.codeart.dto.IDTOSchema;
+import apros.codeart.runtime.MethodUtil;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.StringUtil;
 import com.google.common.collect.Iterables;
@@ -29,63 +30,115 @@ public final class DTOMapper {
     }
 
     private static final Function<String, IDTOSchema> _getSchema = LazyIndexer.init((schemaCode) -> {
-        if (StringUtil.isNullOrEmpty(schemaCode)) return DTObject.Empty;
+        if (StringUtil.isNullOrEmpty(schemaCode)) return DTObject.empty();
         return DTObject.readonly(schemaCode);
     });
 
-    public static DTObject toDTO(DomainObject target, String schemaCode, Function<DomainObject, Iterable<String>> getPropertes) {
+    public static <T> DTObject toDTO(DomainObject target, String schemaCode) {
         var schema = _getSchema.apply(schemaCode);
-        return toDTO(target, schema, getPropertes, (p) -> p);
-    }
-
-    public static <T> DTObject toDTO(DomainObject target, String schemaCode, Function<DomainObject, Iterable<T>> getPropertyNames,
-                                     Function<T, String> getPropertyName) {
-        var schema = _getSchema.apply(schemaCode);
-        return toDTO(target, schema, getPropertyNames, getPropertyName);
+        return toDTO(target, schema);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> DTObject toDTO(DomainObject target, IDTOSchema schema, Function<DomainObject, Iterable<T>> getPropertyNames,
-                                     Function<T, String> getPropertyName) {
-        var properties = getPropertyNames.apply(target);
+    public static <T> DTObject toDTO(DomainObject target, IDTOSchema schema) {
+        try {
+            var members = schema.getSchemaMembers();
+            if (members == null) return DTObject.empty();
 
-        var data = DTObject.Empty;
-        for (var property : properties) {
-            var propertyName = getPropertyName.apply(property);
-            var memberName = schema.matchChildSchema(propertyName);
+            var data = DTObject.Empty;
+            for (var memberName : members) {
 
-            if (!StringUtil.isNullOrEmpty(memberName)) {
-                if (data.isEmpty()) data = DTObject.editable();
-            } else
-                continue;
+                if (!StringUtil.isNullOrEmpty(memberName)) {
+                    if (data.isEmpty()) data = DTObject.editable();
+                } else
+                    continue;
 
-            var value = target.getValue(propertyName);
-            var obj = TypeUtil.as(value, DomainObject.class);
-            if (obj != null) {
-                var childSchema = schema.getChildSchema(propertyName);
-                value = toDTO(obj, childSchema, getPropertyNames, getPropertyName); // 对象
-                data.setValue(memberName, value);
-                continue;
+                Object value = null;
+
+                if (target.meta().existProperty(memberName)) {
+                    //从领域属性中加载数据
+                    value = target.getValue(memberName);
+                } else {
+                    // 领域属性没有定义，那么就找方法，看是否有对应的无参方法
+                    var method = MethodUtil.resolve(target.meta().objectType(), memberName);
+                    if (method == null) continue;
+                    value = method.invoke(target);
+                }
+
+
+                var obj = TypeUtil.as(value, DomainObject.class);
+                if (obj != null) {
+                    var childSchema = schema.getChildSchema(memberName);
+                    value = toDTO(obj, childSchema); // 对象
+                    data.setValue(memberName, value);
+                    continue;
+                }
+
+                var list = TypeUtil.as(value, Iterable.class);
+                if (list != null) {
+                    // 集合
+                    var childSchema = schema.getChildSchema(memberName);
+                    data.push(memberName, list, (item) -> {
+                        var o = TypeUtil.as(item, DomainObject.class);
+                        if (o != null)
+                            return toDTO(o, childSchema); // 对象
+
+                        return DTObject.value(item);
+                    });
+                    continue;
+                }
+
+                data.setValue(memberName, value); // 值
+
             }
-
-            var list = TypeUtil.as(value, Iterable.class);
-            if (list != null) {
-                // 集合
-                var childSchema = schema.getChildSchema(propertyName);
-                data.push(propertyName, list, (item) -> {
-                    var o = TypeUtil.as(item, DomainObject.class);
-                    if (o != null)
-                        return toDTO(o, childSchema, getPropertyNames, getPropertyName); // 对象
-
-                    return DTObject.value(item);
-                });
-                continue;
-            }
-
-            data.setValue(memberName, value); // 值
+            return data;
+        } catch (Throwable ex) {
+            throw propagate(ex);
         }
-        return data;
     }
+
+//    @SuppressWarnings("unchecked")
+//    public static <T> DTObject toDTO(DomainObject target, IDTOSchema schema, Function<DomainObject, Iterable<T>> getPropertyNames,
+//                                     Function<T, String> getPropertyName) {
+//        var properties = getPropertyNames.apply(target);
+//
+//        var data = DTObject.Empty;
+//        for (var property : properties) {
+//            var propertyName = getPropertyName.apply(property);
+//            var memberName = schema.matchChildSchema(propertyName);
+//
+//            if (!StringUtil.isNullOrEmpty(memberName)) {
+//                if (data.isEmpty()) data = DTObject.editable();
+//            } else
+//                continue;
+//
+//            var value = target.getValue(propertyName);
+//            var obj = TypeUtil.as(value, DomainObject.class);
+//            if (obj != null) {
+//                var childSchema = schema.getChildSchema(propertyName);
+//                value = toDTO(obj, childSchema, getPropertyNames, getPropertyName); // 对象
+//                data.setValue(memberName, value);
+//                continue;
+//            }
+//
+//            var list = TypeUtil.as(value, Iterable.class);
+//            if (list != null) {
+//                // 集合
+//                var childSchema = schema.getChildSchema(propertyName);
+//                data.push(propertyName, list, (item) -> {
+//                    var o = TypeUtil.as(item, DomainObject.class);
+//                    if (o != null)
+//                        return toDTO(o, childSchema, getPropertyNames, getPropertyName); // 对象
+//
+//                    return DTObject.value(item);
+//                });
+//                continue;
+//            }
+//
+//            data.setValue(memberName, value); // 值
+//        }
+//        return data;
+//    }
 
     /**
      * 从dto中加载数据

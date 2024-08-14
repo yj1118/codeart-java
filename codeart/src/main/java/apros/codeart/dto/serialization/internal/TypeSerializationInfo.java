@@ -3,11 +3,8 @@ package apros.codeart.dto.serialization.internal;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
-import java.util.Comparator;
 
 import apros.codeart.dto.serialization.DTOParameter;
 import com.google.common.base.Preconditions;
@@ -31,7 +28,7 @@ public abstract class TypeSerializationInfo {
         return _classAnn;
     }
 
-    private Class<?> _targetClass;
+    private final Class<?> _targetClass;
 
     /**
      * 被序列化的类型
@@ -133,16 +130,18 @@ public abstract class TypeSerializationInfo {
         return DTODeserializeMethodGenerator.generateMethod(this);
     }
 
-    public DTObject serialize(Object instance) {
-        var dto = DTObject.editable();
-
+    public DTObject serialize(String schemaCode, Object instance) {
+        
         var serializable = TypeUtil.as(instance, IDTOSerializable.class);
         if (serializable != null) {
-            serializable.serialize(dto, StringUtil.empty()); // string.Empty意味着 序列化的内容会完全替换dto
+            return serializable.getData(schemaCode);
+//            serializable.serialize(dto, StringUtil.empty()); // string.Empty意味着 序列化的内容会完全替换dto
         } else {
+            var dto = DTObject.editable();
             serialize(instance, dto);
+            return dto;
         }
-        return dto;
+
     }
 
     /**

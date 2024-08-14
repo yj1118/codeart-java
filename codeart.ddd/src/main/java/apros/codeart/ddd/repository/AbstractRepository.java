@@ -55,11 +55,11 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 
         DataContext.using(() -> {
             registerRollbackAdd(obj);
-            StatusEvent.execute(StatusEventType.PreAdd, obj);
-            obj.onPreAdd();
+//            StatusEvent.execute(StatusEventType.PreAdd, obj);
+//            obj.onPreAdd();
             registerAdded(obj);
-            obj.onAdded();
-            StatusEvent.execute(StatusEventType.Added, obj);
+//            obj.onAdded();
+//            StatusEvent.execute(StatusEventType.Added, obj);
         });
     }
 
@@ -99,11 +99,11 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 
         DataContext.using(() -> {
             registerRollbackUpdate(obj);
-            StatusEvent.execute(StatusEventType.PreUpdate, obj);
-            obj.onPreUpdate();
+//            StatusEvent.execute(StatusEventType.PreUpdate, obj);
+//            obj.onPreUpdate();
             registerUpdated(obj);
-            obj.onUpdated();
-            StatusEvent.execute(StatusEventType.Updated, obj);
+//            obj.onUpdated();
+//            StatusEvent.execute(StatusEventType.Updated, obj);
         });
     }
 
@@ -143,11 +143,11 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
 
         DataContext.using(() -> {
             registerRollbackDelete(obj);
-            StatusEvent.execute(StatusEventType.PreDelete, obj);
-            obj.onPreDelete();
+//            StatusEvent.execute(StatusEventType.PreDelete, obj);
+//            obj.onPreDelete();
             registerDeleted(obj);
-            obj.onDeleted();
-            StatusEvent.execute(StatusEventType.Deleted, obj);
+//            obj.onDeleted();
+//            StatusEvent.execute(StatusEventType.Deleted, obj);
         });
     }
 

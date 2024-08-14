@@ -14,12 +14,13 @@ import apros.codeart.echo.rpc.RPCServer;
 import apros.codeart.i18n.Language;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;
+import apros.codeart.util.StringUtil;
 
 public final class Forker {
     private Forker() {
     }
 
-    private static Function<String, Master> _findMaster = LazyIndexer.init((objTypeName) -> {
+    private static final Function<String, Master> _findMaster = LazyIndexer.init((objTypeName) -> {
         return ListUtil.find(CQRSConfig.masters(), (m) -> {
             return m.name().equalsIgnoreCase(objTypeName);
         });
@@ -47,18 +48,70 @@ public final class Forker {
         return findMaster(objTypeName, false) != null;
     }
 
+    private static final Function<String, DTObject> _getSchema = LazyIndexer.init((objTypeName) -> {
+        return getSchema(objTypeName, null);
+    });
+
+    /**
+     * 得到要远程输出的架构
+     *
+     * @param objectTypeName
+     * @return
+     */
+    private static DTObject getSchema(String objectTypeName, Function<String, Boolean> filter) {
+        var master = findMaster(objectTypeName, true);
+
+        var schema = DTObject.editable();
+        var meta = ObjectMetaLoader.get(objectTypeName);
+
+        for (var member : master.members()) {
+
+            if (filter != null && filter.apply(member) == false) continue;
+
+            var prop = meta.findProperty(member);
+            var monoMeta = prop.monoMeta();
+
+            if (monoMeta == null) {
+
+                if (prop.isCollection()) {
+                    schema.push(member);
+                    continue;
+                }
+
+                schema.setString(member, StringUtil.empty());
+                continue;
+            } else {
+
+                var nextSchema = getSchema(monoMeta.name(), null);
+
+                if (prop.isCollection()) {
+                    schema.push(member, nextSchema);
+                    continue;
+                }
+
+                schema.setObject(member, nextSchema);
+                continue;
+            }
+
+        }
+
+        return schema;
+    }
+
+
     public static void notifyAdd(IAggregateRoot root) {
         if (!isEnabled(root))
             return;
 
-        var data = DTOMapper.toDTO((DomainObject) root, null, (obj) -> {
-            var master = findMaster(obj, true);
-            return master.members();
-        });
-
         var objectType = root.getClass();
+        var typeName = objectType.getSimpleName();
+        var schema = _getSchema.apply(typeName);
+
+        var data = DTOMapper.toDTO((DomainObject) root, schema);
+
+
         var content = DTObject.editable();
-        content.setString("typeName", objectType.getSimpleName());
+        content.setString("typeName", typeName);
         content.combineObject("data", data);
 
         var messageName = ActionName.objectAdded(objectType);
@@ -70,21 +123,15 @@ public final class Forker {
         if (!isEnabled(root))
             return;
 
-        var data = DTOMapper.toDTO((DomainObject) root, null, (obj) -> {
-            var master = findMaster(obj, true);
-            if (obj == root) {
-                // 只收集更改了的属性
-                return ListUtil.filter(master.members(), (member) -> {
-                    return obj.isPropertyChanged(member);
-                });
-            }
-
-            return master.members();
-        });
-
         var objectType = root.getClass();
+        var typeName = objectType.getSimpleName();
+        var obj = (DomainObject) root;
+        var schema = getSchema(typeName, obj::isPropertyChanged);
+
+        var data = DTOMapper.toDTO((DomainObject) root, schema);
+        
         var content = DTObject.editable();
-        content.setString("typeName", objectType.getSimpleName());
+        content.setString("typeName", typeName);
         content.combineObject("data", data);
 
         var messageName = ActionName.objectUpdated(objectType);

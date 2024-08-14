@@ -281,7 +281,7 @@ public final class DTEObject extends DTEntity {
 
         outputName.accept(code, name);
 
-        if (code.length() > 0)
+        if (!code.isEmpty())
             code.append(":");
 
         if (this.isSingleValue()) {
@@ -361,5 +361,11 @@ public final class DTEObject extends DTEntity {
     @Override
     public IDTOSchema getChildSchema(String name) {
         return this.find(name);
+    }
+
+    @Override
+    public Iterable<String> getSchemaMembers() {
+        if (_members == null) return null;
+        return ListUtil.map(_members, DTEntity::getName);
     }
 }

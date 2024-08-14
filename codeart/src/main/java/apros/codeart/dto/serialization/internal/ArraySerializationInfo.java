@@ -84,16 +84,14 @@ class ArraySerializationInfo extends MemberSerializationInfo {
 
             g.when(() -> {
                 g.load(length);
-                g.load(0);
+                g.loadM1();
                 return LogicOperator.AreEqual;
             }, () -> {
 //数量小于1
-//array = new array[];
+//array = null;
 
                 g.assign(array, () -> {
-                    g.newArray(_elementType, () -> {
-                        g.load(length);
-                    });
+                    g.loadNull();
                 });
             }, () -> {
 

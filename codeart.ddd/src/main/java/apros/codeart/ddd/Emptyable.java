@@ -48,13 +48,12 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, IDTO
     /**
      * 将自身的内容序列化到 {@code owner} 中
      */
-    @Override
-    public void serialize(DTObject owner, String name) {
-        if (this.isEmpty())
-            return;
-        owner.setValue(name, this.getValue());
-    }
-
+//    @Override
+//    public void serialize(DTObject owner, String name) {
+//        if (this.isEmpty())
+//            return;
+//        owner.setValue(name, this.getValue());
+//    }
     @Override
     public DTObject getData(String schemaCode) {
         if (this.isEmpty())

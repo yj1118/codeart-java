@@ -129,6 +129,11 @@ public class MethodGenerator implements AutoCloseable {
         _evalStack.push(int.class);
     }
 
+    public void loadM1() {
+        _visitor.visitInsn(Opcodes.ICONST_M1);
+        _evalStack.push(int.class);
+    }
+
     public void load(float value) {
         _visitor.visitLdcInsn(value);
         _evalStack.push(float.class);

@@ -302,23 +302,49 @@ public class DataContext implements IDataContext {
         if (action.expired())
             return;
 
-        action.target().loadState();
+        var target = action.target();
+
+        target.loadState();
         this.validateAction(action);
 
         var repository = action.repository();
         switch (action.type()) {
-            case ScheduledActionType.Create:
-                repository.persistAdd(action.target());
-                action.target().markClean();
-                break;
-            case ScheduledActionType.Update:
-                repository.persistUpdate(action.target());
-                action.target().markClean();
-                break;
-            case ScheduledActionType.Delete:
-                repository.persistDelete(action.target());
-                action.target().markDirty();
-                break;
+            case ScheduledActionType.Create: {
+                StatusEvent.execute(StatusEventType.PreAdd, target);
+                target.onPreAdd();
+
+                repository.persistAdd(target);
+
+                target.onAdded();
+                StatusEvent.execute(StatusEventType.Added, target);
+
+                target.markClean();
+            }
+            break;
+            case ScheduledActionType.Update: {
+                StatusEvent.execute(StatusEventType.PreUpdate, target);
+                target.onPreUpdate();
+
+                repository.persistUpdate(target);
+
+                target.onUpdated();
+                StatusEvent.execute(StatusEventType.Updated, target);
+
+                target.markClean();
+            }
+            break;
+            case ScheduledActionType.Delete: {
+                StatusEvent.execute(StatusEventType.PreDelete, target);
+                target.onPreDelete();
+
+                repository.persistDelete(target);
+
+                target.onDeleted();
+                StatusEvent.execute(StatusEventType.Deleted, target);
+
+                target.markDirty();
+            }
+            break;
         }
 
         action.markExpired();
@@ -502,9 +528,14 @@ public class DataContext implements IDataContext {
         // 执行行为队列之前，我们会对镜像进行锁定
         lockMirrors();
         if (hasActions()) {
-            for (ScheduledAction action : _actions) {
+            // 要用下标的形式来遍历，因为在执行action的时候，可能action会被增加，所以是动态的
+            for (var i = 0; i < _actions.size(); i++) {
+                var action = _actions.get(i);
                 this.executeAction(action);
             }
+//            for (ScheduledAction action : _actions) {
+//                this.executeAction(action);
+//            }
         }
     }
 

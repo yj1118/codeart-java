@@ -18,7 +18,7 @@ import apros.codeart.util.StringUtil;
 
 public class ValueMeta {
 
-    private boolean _isCollection;
+    private final boolean _isCollection;
 
     public boolean isCollection() {
         return _isCollection;
@@ -83,7 +83,7 @@ public class ValueMeta {
     }
 
     private static final Function<Class<?>, Object> _detectDefaultValue = LazyIndexer.init((valueType) -> {
-        
+
         if (ObjectMeta.isDomainObject(valueType)) {
             return DomainObject.getEmpty(valueType);
         }

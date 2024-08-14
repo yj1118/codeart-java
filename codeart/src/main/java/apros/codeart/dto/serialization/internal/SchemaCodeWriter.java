@@ -7,15 +7,15 @@ import apros.codeart.util.Common;
 
 class SchemaCodeWriter extends DTOWriter {
 
-	/// <summary>
-	/// 架构代码
-	/// </summary>
-	private SchemaCodes _schemaCodes;
+    /// <summary>
+    /// 架构代码
+    /// </summary>
+    private final SchemaCodes _schemaCodes;
 
-	public SchemaCodeWriter(DTObject dto, SchemaCodes schemaCodes) {
-		super(dto);
-		_schemaCodes = schemaCodes;
-	}
+    public SchemaCodeWriter(DTObject dto, SchemaCodes schemaCodes) {
+        super(dto);
+        _schemaCodes = schemaCodes;
+    }
 
 //	public override
 //
@@ -47,18 +47,21 @@ class SchemaCodeWriter extends DTOWriter {
 //	    }
 //	}
 
-	@Override
-	public void writeObject(String name, Object value) {
-		if (Common.isNull(value))
-			return; // 为isNull的成员不输出
-		// 是否自定义
-		var serializable = TypeUtil.as(value, IDTOSerializable.class);
-		if (serializable != null) {
-			serializable.serialize(_dto, name);
-			return;
-		}
-		String schemaCode = _schemaCodes.getSchemaCode(name, () -> value.getClass());
-		var dtoValue = DTObjectMapper.load(schemaCode, value);
-		_dto.setObject(name, dtoValue);
-	}
+    @Override
+    public void writeObject(String name, Object value) {
+        if (Common.isNull(value))
+            return; // 为isNull的成员不输出
+
+        String schemaCode = _schemaCodes.getSchemaCode(name, value::getClass);
+
+        // 是否自定义
+        var serializable = TypeUtil.as(value, IDTOSerializable.class);
+        if (serializable != null) {
+            var dtoValue = serializable.getData(schemaCode);
+            _dto.setObject(name, dtoValue);
+        } else {
+            var dtoValue = DTObjectMapper.load(schemaCode, value);
+            _dto.setObject(name, dtoValue);
+        }
+    }
 }

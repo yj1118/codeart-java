@@ -7,11 +7,11 @@ import apros.codeart.util.Common;
 
 class MarkupWriter extends DTOWriter {
 
-	public MarkupWriter(DTObject dto) {
-		super(dto);
-	}
+    public MarkupWriter(DTObject dto) {
+        super(dto);
+    }
 
-	// public override
+    // public override
 //
 //	void WriteElement<T>(
 //	string name, bool elementIsPrimitive,
@@ -27,18 +27,20 @@ class MarkupWriter extends DTOWriter {
 //
 //	}
 
-	@Override
-	public void writeObject(String name, Object value) {
-		if (Common.isNull(value))
-			return; // 为isNull的成员不输出, 这里有可能要升级是否为null的算法,todo
-		// 是否自定义
-		var serializable = TypeUtil.as(value, IDTOSerializable.class);
-		if (serializable != null) {
-			serializable.serialize(_dto, name);
-			return;
-		}
+    @Override
+    public void writeObject(String name, Object value) {
+        if (Common.isNull(value))
+            return; // 为isNull的成员不输出, 这里有可能要升级是否为null的算法,todo
+        // 是否自定义
+        var serializable = TypeUtil.as(value, IDTOSerializable.class);
+        if (serializable != null) {
+            var obj = serializable.getData(null); //加载全部
+            _dto.setObject(name, obj);
+//			serializable.serialize(_dto, name);
+            return;
+        }
 
-		var obj = DTObjectMapper.load(value);
-		_dto.setObject(name, obj);
-	}
+        var obj = DTObjectMapper.load(value);
+        _dto.setObject(name, obj);
+    }
 }

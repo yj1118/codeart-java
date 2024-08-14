@@ -47,6 +47,15 @@ public class PropertyMeta {
         return _value.monotype();
     }
 
+    /**
+     * 单体类型的领域元数据描述，对于int/string等基元类型是没有该描述的
+     *
+     * @return
+     */
+    public ObjectMeta monoMeta() {
+        return _value.monoMeta();
+    }
+
     public boolean isCollection() {
         return _value.isCollection();
     }
@@ -134,7 +143,7 @@ public class PropertyMeta {
     public IPropertyDataLoader dataLoader() {
         return _dataLoader;
     }
-    
+
     private final String _fullName;
 
     public String fullName() {

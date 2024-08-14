@@ -451,6 +451,10 @@ public class DTObject implements INullProxy, IDTOSchema {
         setValue(StringUtil.empty(), Character.toString(value), false);
     }
 
+    public void setString(String value) {
+        setValue(StringUtil.empty(), value, true);
+    }
+
     public void setString(String findExp, String value) {
         setValue(findExp, value, true);
     }
@@ -546,6 +550,15 @@ public class DTObject implements INullProxy, IDTOSchema {
         setValueRef(StringUtil.empty(), value, valueCodeIsString);
     }
 
+    public void pushStrings(String findExp, String[] values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            DTObject member = DTObject.editable();
+            member.setString(value);
+            entity.push(member);
+        }
+    }
 
     public void pushStrings(String findExp, Iterable<String> values) {
         pushValues(findExp, values);
@@ -570,7 +583,7 @@ public class DTObject implements INullProxy, IDTOSchema {
      * @param obj
      */
     public void setObject(String findExp, DTObject obj) {
-        if (obj == null)
+        if (obj == null || obj.isEmpty())
             return;
         validateReadOnly();
 
@@ -882,7 +895,7 @@ public class DTObject implements INullProxy, IDTOSchema {
         member.setDouble(value);
         push(findExp, member);
     }
-    
+
     public <T> void pushObjects(String findExp, String rowSchemaCode, Iterable<T> objs) {
         var data = DTObject.editable(rowSchemaCode, objs);
         this.pushObjects(findExp, data.getList("rows"));
@@ -1561,5 +1574,10 @@ public class DTObject implements INullProxy, IDTOSchema {
     public IDTOSchema getChildSchema(String name) {
         if (this.isEmpty()) return DTObject.Empty;
         return find(name, true);
+    }
+
+    @Override
+    public Iterable<String> getSchemaMembers() {
+        return this._root.getSchemaMembers();
     }
 }

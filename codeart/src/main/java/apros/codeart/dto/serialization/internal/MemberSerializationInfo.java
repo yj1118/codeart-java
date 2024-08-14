@@ -9,6 +9,8 @@ import apros.codeart.runtime.FieldUtil;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.StringUtil;
 
+import static apros.codeart.i18n.Language.strings;
+
 public class MemberSerializationInfo {
 //	#region 静态构造
 
@@ -26,7 +28,7 @@ public class MemberSerializationInfo {
         }
 
         if (TypeUtil.is(targetClass, Map.class)) {
-            throw new IllegalStateException("暂时不支持键值对的dto序列化操作"); // todo
+            throw new IllegalStateException(strings("apros.codeart", "DTONotSupportedKeyValue"));
         }
 
         return null;
