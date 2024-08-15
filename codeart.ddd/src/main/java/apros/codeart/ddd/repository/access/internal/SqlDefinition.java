@@ -155,7 +155,7 @@ public class SqlDefinition {
             return "*";
         else {
             // where涉及到的字段内置到GetObjectSql中，所以不必考虑
-            ArrayList<String> temp = new ArrayList<String>();
+            ArrayList<String> temp = new ArrayList<>();
             ListUtil.addRange(temp, this.columns().select());
             ListUtil.addRange(temp, this.columns().order());
 

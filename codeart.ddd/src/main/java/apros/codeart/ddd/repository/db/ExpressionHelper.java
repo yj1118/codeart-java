@@ -49,7 +49,7 @@ public final class ExpressionHelper {
      * @param exp
      * @return
      */
-    private static String getSelectFieldsSql(DataTable chainRoot, SqlDefinition exp) {
+    public static String getSelectFieldsSql(DataTable chainRoot, SqlDefinition exp) {
         StringBuilder sql = new StringBuilder();
         sql.append(getChainRootSelectFieldsSql(chainRoot, exp).trim());
 
@@ -191,7 +191,8 @@ public final class ExpressionHelper {
         var chain = current.getChainPath(chainRoot);
         String masterTableName = StringUtil.isNullOrEmpty(masterChain) ? master.name() : masterChain;
 
-        StringUtil.appendLine(sql);
+        if (!sql.isEmpty())
+            StringUtil.appendLine(sql);
 
         if (current.isMultiple()) {
             var middle = current.middle();

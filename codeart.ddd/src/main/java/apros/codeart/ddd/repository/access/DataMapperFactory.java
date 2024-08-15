@@ -4,8 +4,6 @@ import java.util.function.Function;
 
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.IRepositoryBase;
-import apros.codeart.ddd.metadata.ObjectMeta;
-import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.Repository;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.SafeAccessImpl;
@@ -27,7 +25,7 @@ public final class DataMapperFactory {
         var mapper = getByRepository(objectType);
         if (mapper != null)
             return mapper;
-        return DataMapperImpl.Instance;
+        return DataMapperDefault.Instance;
     });
 
     /**

@@ -23,8 +23,8 @@ class QueryPage extends QueryPageQB {
     private static final Function<DataTable, Function<SqlDefinition, QueryPageCode>> _getCode = LazyIndexer.init((table) -> {
         return LazyIndexer.init((definition) -> {
             String tableSql = ExpressionHelper.getTableSql(table, QueryLevel.NONE, definition, LockSql.INSTANCE);
-
-            String selectSql = definition.getFieldsSql();
+            
+            String selectSql = ExpressionHelper.getSelectFieldsSql(table, definition);
             String orderSql = definition.orderHint();
 
             if (StringUtil.isNullOrEmpty(orderSql)) {
