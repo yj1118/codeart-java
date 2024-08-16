@@ -45,16 +45,19 @@ final class DataTableLoader {
      * @param domainType
      * @return
      */
-    private static DataTable createRoot(Class<? extends IAggregateRoot> domainType) {
+    public static DataTable createRoot(Class<? extends IAggregateRoot> domainType) {
+
+        if (_roots.containsKey(domainType)) return _roots.get(domainType);
 
         String tableName = domainType.getSimpleName();
 
         var table = tryCreate(tableName, null, null, () -> {
             var objectFields = DataTableUtil.getObjectFields(domainType);
-            return new DataTable(domainType, DataTableType.AggregateRoot, tableName, objectFields, null, null, null);
+            var root = new DataTable(domainType, DataTableType.AggregateRoot, tableName, objectFields, null, null, null);
+            _roots.put(domainType, root);  //这里就要加入到 _roots里，因为tryCreate之后的逻辑会建立子表，子表操作具有循环性
+            return root;
         });
 
-        _roots.put(domainType, table);
 
         return table;
     }
@@ -200,11 +203,24 @@ final class DataTableLoader {
                                                 Class<?> objectType) {
         var tableName = objectType.getSimpleName();
 
-        return tryCreate(tableName, root, memberField, () -> {
-            var objectFields = DataTableUtil.getObjectFields((Class<? extends IAggregateRoot>) objectType);
-            return new DataTable(objectType, DataTableType.AggregateRoot, tableName, objectFields, root, master,
-                    memberField);
-        });
+        if (master.isAggregateRoot()) {
+            // 当master是根的时候，他之下的引用关系其实只根这个master的实际根表有关，跟之前的引用已经没有关系了
+            // 比如：permission.scope.parent    scope是根,parent只与scope有关，跟permission无关了
+            var _root = master.isRoot() ? master : createRoot((Class<? extends IAggregateRoot>) master.objectType()); //得到master对应的不含任何外部引用根表信息
+            return tryCreate(tableName, _root, memberField, () -> {
+                var objectFields = DataTableUtil.getObjectFields((Class<? extends IAggregateRoot>) objectType);
+                return new DataTable(objectType, DataTableType.AggregateRoot, tableName, objectFields, _root, _root,
+                        memberField);
+            });
+
+        } else {
+            return tryCreate(tableName, root, memberField, () -> {
+                var objectFields = DataTableUtil.getObjectFields((Class<? extends IAggregateRoot>) objectType);
+                return new DataTable(objectType, DataTableType.AggregateRoot, tableName, objectFields, root, master,
+                        memberField);
+            });
+        }
+
     }
 
     public static DataTable createAggregateRootList(DataTable root, DataTable master, IDataField memberField,

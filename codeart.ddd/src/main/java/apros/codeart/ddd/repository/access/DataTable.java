@@ -82,7 +82,8 @@ public class DataTable {
     }
 
     /**
-     * 该表是否为根表
+     * 该表是否为领域根对象的表（注意，是领域根对象的表，不代表是root表，因为有可能别的对象引用了该对象，使其成为一个引用链上的一个环节）
+     * 可以通过 isRoot()方法判断是否为root表
      *
      * @return
      */
@@ -106,7 +107,7 @@ public class DataTable {
         return _chainRoot;
     }
 
-    private DataTable _root;
+    private final DataTable _root;
 
     /**
      * 所属根表（领域根）
@@ -117,7 +118,7 @@ public class DataTable {
         return _root;
     }
 
-    private DataTable _master;
+    private final DataTable _master;
 
     /**
      * 所属主表
@@ -126,6 +127,15 @@ public class DataTable {
      */
     public DataTable master() {
         return _master;
+    }
+
+    /**
+     * 是否为没有任何引用的根表
+     *
+     * @return
+     */
+    public boolean isRoot() {
+        return _master == null;
     }
 
     private DataTable _middle;
@@ -204,7 +214,7 @@ public class DataTable {
         return _elementType;
     }
 
-    private ObjectChain _chain;
+    private final ObjectChain _chain;
 
     /**
      * 该表的引用链
@@ -313,11 +323,6 @@ public class DataTable {
             master = master.master();
         }
         return null;
-    }
-
-    static DataTable createRoot(Class<?> objectType, DataTableType type, String name,
-                                Iterable<IDataField> objectFields) {
-        return new DataTable(objectType, type, name, objectFields, null, null, null);
     }
 
     private void initObjectType(Class<?> objectType, PropertyMeta tip) {
@@ -573,7 +578,7 @@ public class DataTable {
 
         _fields = getFields(objectFields);
         _objectFields = objectFields;
-        
+
         initObjectType(objectType, memberField == null ? null : memberField.tip());
 
         this._chain = this.memberField() == null ? ObjectChain.Empty : new ObjectChain(this.memberField());
