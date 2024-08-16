@@ -11,10 +11,7 @@ import java.time.ZonedDateTime;
 import java.util.Map;
 
 import apros.codeart.dto.serialization.IDTOValue;
-import com.google.common.primitives.Doubles;
-import com.google.common.primitives.Floats;
-import com.google.common.primitives.Ints;
-import com.google.common.primitives.Longs;
+import com.google.common.primitives.*;
 
 import apros.codeart.pooling.util.StringPool;
 import apros.codeart.runtime.FieldUtil;
@@ -290,7 +287,7 @@ public class JSON {
     public static Object getValueByString(String code) {
         var value = JSON.readString(code);
         // 注意，在没有显示指名用什么类型的日期时，默认给出的时间是Instant类型，表示一个UTC时间点，可以转换为任意别的时间
-        var time = JSON.parseInstant(value);
+        var time = JSON.getInstant(value);
         if (time != null)
             return time;
         return value;
@@ -329,7 +326,44 @@ public class JSON {
         return code;
     }
 
-    public static Instant parseInstant(String code) {
+    public static Byte getByteRef(String code) {
+        return Byte.parseByte(code);
+    }
+
+    public static Long getLongRef(String code) {
+        return Longs.tryParse(code);
+    }
+
+    public static Integer getIntRef(String code) {
+        return Ints.tryParse(code);
+    }
+
+    public static Boolean getBooleanRef(String code) {
+        if ("true".equalsIgnoreCase(code)) {
+            return true;
+        } else if ("false".equalsIgnoreCase(code)) {
+            return false;
+        }
+        return null;
+    }
+
+    public static Float getFloatRef(String code) {
+        return Floats.tryParse(code);
+    }
+
+    public static Double getDoubleRef(String code) {
+        return Doubles.tryParse(code);
+    }
+
+    public static Short getShortRef(String code) {
+        return Short.parseShort(code);
+    }
+
+    public static Character getCharRef(String code) {
+        return code.charAt(0);
+    }
+
+    public static Instant getInstant(String code) {
         if (ISO8601.is(code)) {
             return Instant.parse(code);
         }

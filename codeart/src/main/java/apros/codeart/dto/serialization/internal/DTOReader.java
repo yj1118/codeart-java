@@ -61,6 +61,44 @@ abstract class DTOReader implements IDTOReader {
         return _dto.getValue(name);
     }
 
+    public Boolean readBooleanRef(String name) {
+        return _dto.getBooleanRef(name);
+    }
+
+    /**
+     * 从流中读取一个字节
+     *
+     * @param name
+     * @return
+     */
+    public Byte readByteRef(String name) {
+        return _dto.getByteRef(name);
+    }
+
+    public Short readShortRef(String name) {
+        return _dto.getShortRef(name);
+    }
+
+    public Integer readIntRef(String name) {
+        return _dto.getIntRef(name);
+    }
+
+    public Long readLongRef(String name) {
+        return _dto.getLongRef(name);
+    }
+
+    public Float readFloatRef(String name) {
+        return _dto.getFloatRef(name);
+    }
+
+    public Double readDoubleRef(String name) {
+        return _dto.getDoubleRef(name);
+    }
+    
+    public Character readCharRef(String name) {
+        return _dto.getCharRef(name);
+    }
+
     /**
      * 读取数组长度
      */

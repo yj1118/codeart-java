@@ -78,39 +78,67 @@ public class DTObject implements INullProxy, IDTOSchema {
 //	#region 值
 
     public Byte getByteRef(String findExp) {
-        return (Byte) this.getValue(findExp);
+        return this.getValue(findExp, null, true, DTEValue::getByteRef);
     }
 
     public Byte getByteRef(String findExp, Byte defaultValue) {
-        return (Byte) this.getValue(findExp, defaultValue);
+        return this.getValue(findExp, defaultValue, false, DTEValue::getByteRef);
+    }
+
+    public Short getShortRef(String findExp) {
+        return this.getValue(findExp, null, true, DTEValue::getShortRef);
     }
 
     public Short getShortRef(String findExp, Short defaultValue) {
-        return (Short) this.getValue(findExp, defaultValue);
+        return this.getValue(findExp, defaultValue, false, DTEValue::getShortRef);
     }
 
     public Integer getIntRef(String findExp) {
-        return (Integer) this.getValue(findExp);
+        return this.getValue(findExp, null, true, DTEValue::getIntRef);
     }
 
     public Integer getIntRef(String findExp, Integer defaultValue) {
-        return (Integer) this.getValue(findExp, defaultValue);
+        return this.getValue(findExp, defaultValue, false, DTEValue::getIntRef);
     }
 
     public Long getLongRef(String findExp) {
-        return (Long) this.getValue(findExp);
+        return this.getValue(findExp, null, true, DTEValue::getLongRef);
     }
 
     public Long getLongRef(String findExp, Long defaultValue) {
-        return (Long) this.getValue(findExp, defaultValue);
+        return this.getValue(findExp, defaultValue, false, DTEValue::getLongRef);
+    }
+
+    public Float getFloatRef(String findExp) {
+        return this.getValue(findExp, null, true, DTEValue::getFloatRef);
+    }
+
+    public Float getFloatRef(String findExp, Float defaultValue) {
+        return this.getValue(findExp, defaultValue, false, DTEValue::getFloatRef);
+    }
+
+    public Double getDoubleRef(String findExp) {
+        return this.getValue(findExp, null, true, DTEValue::getDoubleRef);
+    }
+
+    public Double getDoubleRef(String findExp, Double defaultValue) {
+        return this.getValue(findExp, defaultValue, false, DTEValue::getDoubleRef);
     }
 
     public Boolean getBooleanRef(String findExp) {
-        return (Boolean) getValue(findExp, false, true);
+        return this.getValue(findExp, null, true, DTEValue::getBooleanRef);
     }
 
     public Boolean getBooleanRef(String findExp, boolean defaultValue) {
-        return (Boolean) getValue(findExp, defaultValue, false);
+        return this.getValue(findExp, defaultValue, false, DTEValue::getBooleanRef);
+    }
+
+    public Character getCharRef(String findExp) {
+        return this.getValue(findExp, null, true, DTEValue::getCharRef);
+    }
+
+    public Character getCharRef(String findExp, Character defaultValue) {
+        return this.getValue(findExp, defaultValue, false, DTEValue::getCharRef);
     }
 
     public Iterable<String> getStrings(String findExp) {
@@ -179,6 +207,15 @@ public class DTObject implements INullProxy, IDTOSchema {
         return value == null ? defaultValue : value;
     }
 
+    <T> T getValue(String findExp, T defaultValue, boolean throwError, Function<DTEValue, T> extractValue) {
+        DTEntity entity = find(findExp, throwError);
+        if (entity == null) return null;
+
+        var ev = as(entity, DTEValue.class);
+        if (ev == null) return null;
+        return extractValue.apply(ev);
+    }
+
     public DTObject getObject(String findExp) {
         return getObject(findExp, null, true);
     }
@@ -244,7 +281,6 @@ public class DTObject implements INullProxy, IDTOSchema {
     public char getChar() {
         return getChar(StringUtil.empty(), StringUtil.charEmpty(), true);
     }
-
 
     public short getShort(String findExp, short defaultValue) {
         return getShort(findExp, defaultValue, false);

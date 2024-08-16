@@ -90,7 +90,7 @@ final class SerializationMethodHelper {
                 } else {
 
                     if (PrimitiveUtil.isWrapper(type)) {
-                        method = MethodUtil.resolve(IDTOReader.class, "readValue", _stringArgs);
+                        method = MethodUtil.resolve(IDTOReader.class, String.format("read%sRef", StringUtil.firstToUpper(type.getSimpleName())), _stringArgs);
                         break;
                     }
 

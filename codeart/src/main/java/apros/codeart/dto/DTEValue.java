@@ -36,6 +36,62 @@ public class DTEValue extends DTEntity {
         return _value;
     }
 
+    Long getLongRef() {
+        if (_value == null) {
+            _value = JSON.getLongRef(_valueCode);
+        }
+        return (Long) _value;
+    }
+
+    Integer getIntRef() {
+        if (_value == null) {
+            _value = JSON.getIntRef(_valueCode);
+        }
+        return (Integer) _value;
+    }
+
+    Boolean getBooleanRef() {
+        if (_value == null) {
+            _value = JSON.getBooleanRef(_valueCode);
+        }
+        return (Boolean) _value;
+    }
+
+    Byte getByteRef() {
+        if (_value == null) {
+            _value = JSON.getByteRef(_valueCode);
+        }
+        return (Byte) _value;
+    }
+
+    Short getShortRef() {
+        if (_value == null) {
+            _value = JSON.getShortRef(_valueCode);
+        }
+        return (Short) _value;
+    }
+
+    Float getFloatRef() {
+        if (_value == null) {
+            _value = JSON.getFloatRef(_valueCode);
+        }
+        return (Float) _value;
+    }
+
+    Double getDoubleRef() {
+        if (_value == null) {
+            _value = JSON.getDoubleRef(_valueCode);
+        }
+        return (Double) _value;
+    }
+
+    Character getCharRef() {
+        if (_value == null) {
+            _value = JSON.getCharRef(_valueCode);
+        }
+        return (Character) _value;
+    }
+
     /**
      * 经过测试发现,xx.parse的运行的速度小于拆箱(xx)_value操作；
      * <p>

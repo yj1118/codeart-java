@@ -38,6 +38,34 @@ public interface IDTOReader {
 
     Object readValue(String name);
 
+
+    Boolean readBooleanRef(String name);
+
+    /**
+     * 从流中读取一个字节
+     *
+     * @param name
+     * @return
+     */
+    Byte readByteRef(String name);
+
+    Short readShortRef(String name);
+
+    Integer readIntRef(String name);
+
+    Long readLongRef(String name);
+
+    Float readFloatRef(String name);
+
+    Double readDoubleRef(String name);
+
+    /// <summary>
+    /// 从流中读取一个非空的字符
+    /// </summary>
+    /// <returns></returns>
+    Character readCharRef(String name);
+
+
     /**
      * 读取数组长度
      *
@@ -49,7 +77,6 @@ public interface IDTOReader {
     Object readElement(String name, int index, Class<?> elementType);
 
     Object readObject(Class<?> objectType, String name);
-
 
     boolean readElementBoolean(String name, int index);
 
