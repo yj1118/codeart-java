@@ -12,7 +12,7 @@ import apros.codeart.util.ListUtil;
 
 public class ObjectMeta {
 
-    private DomainObjectCategory _category;
+    private final DomainObjectCategory _category;
 
     public DomainObjectCategory category() {
         return _category;

@@ -65,7 +65,7 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
 
         var error = result.getString("error", null);
 
-        if (StringUtil.isNullOrEmpty(error)) {
+        if (!StringUtil.isNullOrEmpty(error)) {
             throw new RabbitMQException(error);
         }
 

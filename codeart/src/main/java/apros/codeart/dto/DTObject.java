@@ -1081,8 +1081,7 @@ public class DTObject implements INullProxy, IDTOSchema {
      */
     public void each(String findExp, BiConsumer<String, Object> action) {
         var eo = TypeUtil.as(_root.find(findExp), DTEObject.class);
-        if (eo == null)
-            throw new IllegalStateException(strings("apros.codeart", "TypeMismatch"));
+        if (eo == null) return;
 
         for (var member : eo.getMembers()) {
             var name = member.getName();
