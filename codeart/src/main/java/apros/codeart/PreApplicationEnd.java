@@ -12,5 +12,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface PreApplicationEnd {
 
-    String value() default "invoke";
+    String method() default "invoke";
+
+    RunPriority priority() default RunPriority.User;
 }

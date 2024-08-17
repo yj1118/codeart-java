@@ -11,5 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface PostApplicationStart {
-    String value() default "invoke";
+    String method() default "invoke";
+
+    RunPriority priority() default RunPriority.User;
 }

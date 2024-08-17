@@ -272,6 +272,47 @@ public class DomainProperty {
         return register(name, true, elementType, declaringType, getDefaultValue);
     }
 
+
+    //region 包装方法，主要是为了给动态生成类用，程序员也可以调用
+
+    public static DomainProperty registerByte(String name, Class<?> declaringType) {
+        return register(name, byte.class, declaringType);
+    }
+
+    public static DomainProperty registerShort(String name, Class<?> declaringType) {
+        return register(name, short.class, declaringType);
+    }
+
+    public static DomainProperty registerInt(String name, Class<?> declaringType) {
+        return register(name, int.class, declaringType);
+    }
+
+    public static DomainProperty registerLong(String name, Class<?> declaringType) {
+        return register(name, long.class, declaringType);
+    }
+
+    public static DomainProperty registerFloat(String name, Class<?> declaringType) {
+        return register(name, float.class, declaringType);
+    }
+
+    public static DomainProperty registerDouble(String name, Class<?> declaringType) {
+        return register(name, double.class, declaringType);
+    }
+
+    public static DomainProperty registerBoolean(String name, Class<?> declaringType) {
+        return register(name, boolean.class, declaringType);
+    }
+
+    public static DomainProperty registerString(String name, Class<?> declaringType) {
+        return register(name, String.class, declaringType);
+    }
+
+    public static DomainProperty registerChar(String name, Class<?> declaringType) {
+        return register(name, char.class, declaringType);
+    }
+
+    //endregion
+
 //
 //	#
 //	region 注册动态属性
@@ -377,7 +418,7 @@ public class DomainProperty {
     private static Annotation[] getAnnotationsByStaticProperty(Class<?> reflectedType, String propertyName) {
         try {
             Field field = reflectedType.getDeclaredField(String.format("%sProperty", propertyName));
-            return field == null ? null : field.getAnnotations();
+            return field == null ? null : field.getDeclaredAnnotations();
         } catch (Throwable e) {
             throw propagate(e);
         }

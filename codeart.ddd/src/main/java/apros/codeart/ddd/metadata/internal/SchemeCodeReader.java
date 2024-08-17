@@ -1,57 +1,58 @@
 package apros.codeart.ddd.metadata.internal;
 
+import apros.codeart.ddd.PropertyValidatorImpl;
 import apros.codeart.ddd.metadata.ObjectMeta;
 import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.dto.DTObject;
 
 public final class SchemeCodeReader {
-	private SchemeCodeReader() {
-	}
+    private SchemeCodeReader() {
+    }
 
-	/**
-	 * 
-	 * 目前仅读取了 {@meta} 的关于持久化方面所必须的信息，以后可以再包含更多的内容
-	 * 
-	 * @param <T>
-	 * @param meta
-	 * @param getPropertyNames
-	 * @param getPropertyName
-	 * @return
-	 */
-	public static <T> DTObject read(ObjectMeta meta, Iterable<String> propertyNames) {
+    /**
+     * 目前仅读取了 {@meta} 的关于持久化方面所必须的信息，以后可以再包含更多的内容
+     *
+     * @param <T>
+     * @param meta
+     * @param getPropertyNames
+     * @param getPropertyName
+     * @return
+     */
+    public static <T> DTObject read(ObjectMeta meta, Iterable<String> propertyNames) {
 
-		var data = DTObject.editable();
-		data.setString("name", meta.name());
-		data.setByte("category", meta.category().value());
+        var data = DTObject.editable();
+        data.setString("name", meta.name());
+        data.setByte("category", meta.category().value());
 
-		for (var propertyName : propertyNames) {
-			var tip = meta.findProperty(propertyName);
-			var tipData = mapProperty(tip);
+        for (var propertyName : propertyNames) {
+            var tip = meta.findProperty(propertyName);
+            var tipData = mapProperty(tip);
 
-			data.push("pros", tipData);
-		}
+            data.push("props", tipData);
+        }
 
-		return data;
-	}
+        return data;
+    }
 
-	private static DTObject mapProperty(PropertyMeta tip) {
-		var data = DTObject.editable();
-		data.setString("name", tip.name());
-		data.setByte("category", tip.category().value());
-		data.setString("monotype", tip.monotype().getSimpleName());
-		data.setBoolean("lazy", tip.lazy());
+    private static DTObject mapProperty(PropertyMeta tip) {
+        var data = DTObject.editable();
+        data.setString("name", tip.name());
+        data.setByte("category", tip.category().value());
+        data.setString("monotype", tip.monotype().getSimpleName());
+        data.setBoolean("lazy", tip.lazy());
 
-		for (var validator : tip.validators()) {
-			var val = DTObject.editable();
-			val.setString("name", validator.getClass().getSimpleName());
-			var valData = validator.getData();
-			if (valData != null && !valData.isEmpty()) {
-				val.combineObject("data", valData);
-			}
-			data.push("vals", val);
-		}
+        for (var validator : tip.validators()) {
+            var val = DTObject.editable();
+            var annTypeName = PropertyValidatorImpl.getAnnotationName(validator);
+            val.setString("name", annTypeName);
+            var valData = validator.getData();
+            if (valData != null && !valData.isEmpty()) {
+                val.combineObject("data", valData);
+            }
+            data.push("vals", val);
+        }
 
-		return data;
-	}
+        return data;
+    }
 
 }

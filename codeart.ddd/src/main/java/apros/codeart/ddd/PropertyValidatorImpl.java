@@ -81,6 +81,17 @@ public abstract class PropertyValidatorImpl implements IPropertyValidator {
     }
 
     /**
+     * 通过验证器获得对应得注解得类名
+     *
+     * @param validator
+     * @return
+     */
+    public static String getAnnotationName(IPropertyValidator validator) {
+        var simpleName = validator.getClass().getSimpleName();
+        return simpleName.substring(0, simpleName.length() - "Validator".length());
+    }
+
+    /**
      * 获取通过 {@PropertyValidator} 标签定义得验证器
      *
      * @param anns

@@ -15,7 +15,7 @@ import org.objectweb.asm.Type;
 import apros.codeart.util.Guid;
 
 public final class ClassGenerator implements AutoCloseable {
-    private ClassWriter _cw;
+    private final ClassWriter _cw;
 
     private boolean _closed = false;
     private final String _className;
@@ -24,17 +24,24 @@ public final class ClassGenerator implements AutoCloseable {
         return _className;
     }
 
-    private Class<?> _superClass;
+    private final Class<?> _superClass;
 
     public Class<?> superClass() {
         return _superClass;
     }
 
+    private final String _superClassName;
+
+    public String getSuperClassName() {
+        return _superClassName;
+    }
+
     private ClassGenerator(int access, String className, Class<?> superClass) {
         _cw = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-        String superClassName = Type.getInternalName(superClass);
+        _superClass = superClass;
+        _superClassName = Type.getInternalName(superClass);
 //		String.format("com/apros/codeart/runtime/%s", className)
-        _cw.visit(Opcodes.V1_8, access, className, null, superClassName, null);
+        _cw.visit(Opcodes.V1_8, access, className, null, _superClassName, null);
         _className = className;
     }
 
@@ -128,7 +135,7 @@ public final class ClassGenerator implements AutoCloseable {
 
     public MethodGenerator defineMethod(final int access, final String name, final String returnClassName) {
 
-        String descriptor = String.format("()%s", returnClassName);
+        String descriptor = String.format("()L%s;", returnClassName);
         MethodVisitor visitor = _cw.visitMethod(access, name, descriptor, null, null);
 
         return new MethodGenerator(this, visitor, access, new ClassWrapper(returnClassName), ListUtil.empty());
@@ -237,7 +244,7 @@ public final class ClassGenerator implements AutoCloseable {
     // 自定义类加载器
     private static class ClassLoaderImpl extends ClassLoader {
 
-        private byte[] _classData;
+        private final byte[] _classData;
 
         public ClassLoaderImpl(byte[] classData) {
             _classData = classData;

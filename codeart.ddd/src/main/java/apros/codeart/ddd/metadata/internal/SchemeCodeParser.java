@@ -17,6 +17,8 @@ import apros.codeart.ddd.repository.PropertyRepository;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
+import apros.codeart.util.PrimitiveUtil;
+import apros.codeart.util.StringUtil;
 
 public final class SchemeCodeParser {
 
@@ -48,14 +50,8 @@ public final class SchemeCodeParser {
 
             // 静态构造的方法
             // staticConstructorMethod
-            try (var scm = cg.definePublicConstructor()) {
+            try (var scm = cg.defineStaticConstructor()) {
                 generateEmpty(className, cg, scm);
-
-                // var declaringType = Class.forName("User");
-                scm.declare(Class.class, "declaringType");
-                scm.assign("declaringType", () -> {
-                    scm.classForName(className);
-                });
 
                 // 生成领域属性
                 var props = scheme.getObjects("props", false);
@@ -68,6 +64,8 @@ public final class SchemeCodeParser {
 
                 }
             }
+
+            cg.save();
 
             return (Class<? extends IDomainObject>) cg.toClass();
 
@@ -88,10 +86,7 @@ public final class SchemeCodeParser {
 
             g.invokeSuper(); // 执行super();
             // 执行 this.onConstructed();
-            g.invoke(() -> {
-                g.loadThis();
-            }, "onConstructed", null);
-
+            g.invokeThis("onConstructed", null, void.class);
         }
 
 // 		示例代码：
@@ -111,9 +106,7 @@ public final class SchemeCodeParser {
                 g.loadVariable("isEmpty");
             }); // 执行super(isEmpty);
             // 执行 this.onConstructed();
-            g.invoke(() -> {
-                g.loadThis();
-            }, "onConstructed", null);
+            g.invokeThis("onConstructed", null, void.class);
         }
 
 // 		示例代码：
@@ -165,11 +158,12 @@ public final class SchemeCodeParser {
         try {
 
             var propertyName = property.getString("name");
+            var propertyFieldName = String.format("%sProperty", propertyName);
             var category = DomainPropertyCategory.valueOf(property.getByte("category"));
             var monotype = property.getString("monotype");
             var lazy = property.getBoolean("lazy");
 
-            try (var fg = cg.defineStaticFinalField(propertyName, DomainProperty.class)) {
+            try (var fg = cg.defineStaticFinalField(propertyFieldName, DomainProperty.class)) {
                 // 为领域属性打上标签
                 if (lazy) {
                     fg.addAnnotation(PropertyRepository.class, (ag) -> {
@@ -181,13 +175,15 @@ public final class SchemeCodeParser {
 
             switch (category) {
                 case DomainPropertyCategory.Primitive: {
-                    var valueType = Class.forName(monotype);
-                    scm.assignStaticField(propertyName, DomainProperty.class, () -> {
-                        scm.invokeStatic(DomainProperty.class, "register", () -> {
+                    scm.assignStaticField(propertyFieldName, DomainProperty.class, () -> {
+                        //不知道为什么，无法正常加载类似long.class的类型信息，所以用方法来加载了
+                        String methodName = String.format("register%s", StringUtil.firstToUpper(monotype));
+
+                        scm.invokeStatic(DomainProperty.class, methodName, () -> {
                             scm.load(propertyName);
-                            scm.load(valueType);
-                            scm.loadVariable("declaringType");
+                            scm.loadClass(cg.getClassName());
                         });
+
                     });
 
                     // public static final DomainProperty TimeProperty =
@@ -200,7 +196,7 @@ public final class SchemeCodeParser {
                         scm.invokeStatic(DomainProperty.class, "registerCollection", () -> {
                             scm.load(propertyName);
                             scm.load(elementType);
-                            scm.loadVariable("declaringType");
+                            scm.loadClass(cg.getClassName());
                         });
                     });
 
@@ -216,8 +212,8 @@ public final class SchemeCodeParser {
                     scm.assignStaticField(propertyName, DomainProperty.class, () -> {
                         scm.invokeStatic(DomainProperty.class, "register", () -> {
                             scm.load(propertyName);
-                            scm.classForName(valueTypeName);
-                            scm.loadVariable("declaringType");
+                            scm.loadClass(valueTypeName);
+                            scm.loadClass(cg.getClassName());
                         });
                     });
                 }
@@ -229,8 +225,8 @@ public final class SchemeCodeParser {
                     scm.assignStaticField(propertyName, DomainProperty.class, () -> {
                         scm.invokeStatic(DomainProperty.class, "registerCollection", () -> {
                             scm.load(propertyName);
-                            scm.classForName(elementTypeName);
-                            scm.loadVariable("declaringType");
+                            scm.loadClass(elementTypeName);
+                            scm.loadClass(cg.getClassName());
                         });
                     });
                 }
@@ -253,7 +249,7 @@ public final class SchemeCodeParser {
         for (DTObject val : vals) {
             var name = val.getString("name");
 
-            var valType = TypeUtil.getClass(name);
+            var valType = TypeUtil.getClass(String.format("apros.codeart.ddd.validation.%s", name));
             if (valType == null)
                 continue; // 没有找到验证器类型，证明是远程端自己定义的，不必理会
 

@@ -26,34 +26,35 @@ public final class ConsoleLauncher {
     }
 
     public static void start(IAppInstaller installer) {
+        try {
+            System.out.println(Language.strings("apros.codeart.ddd", "StartServiceHost"));
 
-        System.out.println(Language.strings("apros.codeart.ddd", "StartServiceHost"));
+            RPCEvents.serverOpened.add(new ServerOpenedObserver());
+            RPCEvents.serverError.add(new ServerErrorObserver());
+            RPCEvents.serverClosed.add(new ServerClosedObserver());
 
-        RPCEvents.serverOpened.add(new ServerOpenedObserver());
-        RPCEvents.serverError.add(new ServerErrorObserver());
-        RPCEvents.serverClosed.add(new ServerClosedObserver());
+            App.init(installer);
 
-        App.init(installer);
+            // 对于inited事件，给予数据上下文环境，方便用户使用数据资源
+            DataContext.using(App::inited);
 
-        // 对于inited事件，给予数据上下文环境，方便用户使用数据资源
-        DataContext.using(() -> {
-            App.inited();
-        });
+            // 所有初始化工作完毕后，开通服务
+            RPCServer.open();
 
-        // 所有初始化工作完毕后，开通服务
-        RPCServer.open();
+            System.out.println(Language.strings("apros.codeart.ddd", "CloseServiceHost"));
 
-        System.out.println(Language.strings("apros.codeart.ddd", "CloseServiceHost"));
+            readLine();
 
-        readLine();
+            System.out.println(Language.strings("apros.codeart.ddd", "CloseingServiceHost"));
 
-        System.out.println(Language.strings("apros.codeart.ddd", "CloseingServiceHost"));
+            App.dispose();
 
-        App.dispose();
+            App.disposed();
 
-        App.disposed();
-
-        System.out.println(Language.strings("apros.codeart.ddd", "ClosedServiceHost"));
+            System.out.println(Language.strings("apros.codeart.ddd", "ClosedServiceHost"));
+        } catch (Throwable e) {
+            e.printStackTrace();
+        }
     }
 
     private static void readLine() {

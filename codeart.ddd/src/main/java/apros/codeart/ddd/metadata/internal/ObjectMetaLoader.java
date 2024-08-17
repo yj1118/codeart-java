@@ -29,7 +29,7 @@ public final class ObjectMetaLoader {
 
     private static ObjectMeta create(Class<?> domainType) {
 
-        var types = TypeUtil.getInheriteds(domainType);
+        var types = TypeUtil.getInherits(domainType);
 
         // 先要初始化基类的
         for (var type : types) {
@@ -144,8 +144,9 @@ public final class ObjectMetaLoader {
     private static Field firstStaticField(Class<?> type) {
         Field[] fields = type.getDeclaredFields(); // 注意，这个方法只会获得类自身的字段定义，不会包含父级
 
+        //EmptyInstance 是动态类的空示例保留名称，外部不能用
         for (Field field : fields) {
-            if (FieldUtil.isStatic(field))
+            if (FieldUtil.isStatic(field) && !field.getName().equalsIgnoreCase("EmptyInstance"))
                 return field;
         }
         return null;
@@ -161,7 +162,7 @@ public final class ObjectMetaLoader {
     private static void staticConstructor(Class<?> objectType) {
         try {
             // 我们需要从基类开始，依次调用
-            var types = TypeUtil.getInheriteds(objectType);
+            var types = TypeUtil.getInherits(objectType);
 
             for (var type : types) {
                 if (!isMetadatable(type))

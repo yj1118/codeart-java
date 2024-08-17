@@ -2,8 +2,9 @@ package apros.codeart.echo.event;
 
 import apros.codeart.App;
 import apros.codeart.PreApplicationStart;
+import apros.codeart.RunPriority;
 
-@PreApplicationStart("initialize")
+@PreApplicationStart(method = "initialize", priority = RunPriority.High)
 public class PreStart {
     public static void initialize() {
         App.setup("echo.event");

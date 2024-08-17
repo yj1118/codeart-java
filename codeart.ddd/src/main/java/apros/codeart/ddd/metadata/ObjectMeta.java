@@ -116,7 +116,7 @@ public class ObjectMeta {
      */
     public void merge() {
         // 将基类的属性合并到子类
-        var types = TypeUtil.getInheriteds(this.objectType());
+        var types = TypeUtil.getInherits(this.objectType());
 
         for (var type : types) {
             if (!ObjectMetaLoader.isMetadatable(type))

@@ -116,8 +116,8 @@ public final class TypeUtil {
      * @param type
      * @return
      */
-    public static Iterable<Class<?>> getInheriteds(Class<?> type) {
-        return _getInheriteds.apply(type);
+    public static Iterable<Class<?>> getInherits(Class<?> type) {
+        return _getInherits.apply(type);
     }
 
     /**
@@ -127,18 +127,18 @@ public final class TypeUtil {
      * @return
      */
     public static int getDepth(Class<?> type) {
-        return Iterables.size(getInheriteds(type));
+        return Iterables.size(getInherits(type));
     }
 
-    private static Function<Class<?>, Iterable<Class<?>>> _getInheriteds = LazyIndexer.init((objectType) -> {
-        ArrayDeque<Class<?>> inheriteds = new ArrayDeque<>();
+    private static final Function<Class<?>, Iterable<Class<?>>> _getInherits = LazyIndexer.init((objectType) -> {
+        ArrayDeque<Class<?>> inherits = new ArrayDeque<>();
 
         var type = objectType;
         while (type.getSuperclass() != null) {
-            inheriteds.push(type.getSuperclass());
+            inherits.push(type.getSuperclass());
             type = type.getSuperclass();
         }
-        return inheriteds;
+        return inherits;
     });
 
     public static <A extends Annotation> boolean isDefined(Class<?> type, Class<A> annType) {

@@ -5,7 +5,7 @@ import static apros.codeart.runtime.Util.propagate;
 
 import apros.codeart.runtime.MethodUtil;
 
-public record ActionItem(Class<?> type, String methodName) {
+public record ActionItem(Class<?> type, String methodName, RunPriority priority) {
 
     public void run() {
 

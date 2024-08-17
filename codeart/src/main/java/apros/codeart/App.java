@@ -49,7 +49,7 @@ public final class App {
     }
 
     private static void process_pre_start() {
-        
+
         runActions(PreApplicationStart.class);
     }
 
@@ -94,8 +94,13 @@ public final class App {
     private static void runActions(Class<? extends Annotation> annType) {
         var items = ListUtil.map(Activator.getAnnotatedTypesOf(annType, _archives), (type) -> {
             var ann = type.getAnnotation(annType);
-            String methodName = (String) MethodUtil.invoke(annType, "value", ann);
-            return new ActionItem(type, methodName);
+            String methodName = (String) MethodUtil.invoke(annType, "method", ann);
+            RunPriority priority = (RunPriority) MethodUtil.invoke(annType, "priority", ann);
+            return new ActionItem(type, methodName, priority);
+        });
+
+        items.sort((t1, t2) -> {
+            return t2.priority().getValue() - t1.priority().getValue();
         });
 
         for (var item : items) {

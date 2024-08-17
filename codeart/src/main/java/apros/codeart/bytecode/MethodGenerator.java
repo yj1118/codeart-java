@@ -27,7 +27,7 @@ import apros.codeart.util.TriConsumer;
 
 public class MethodGenerator implements AutoCloseable {
 
-    private boolean _isStatic;
+    private final boolean _isStatic;
 
     public boolean isStatic() {
         return _isStatic;
@@ -41,7 +41,7 @@ public class MethodGenerator implements AutoCloseable {
         return _visitor;
     }
 
-    private ClassWrapper _returnClass;
+    private final ClassWrapper _returnClass;
 
     /**
      * 局部变量的集合,该集合存放了所有声明过的局部变量
@@ -90,6 +90,7 @@ public class MethodGenerator implements AutoCloseable {
         if (_isStatic)
             throw new IllegalArgumentException(strings("apros.codeart", "CannotInvokeStatic"));
         _visitor.visitVarInsn(Opcodes.ALOAD, 0);
+        _evalStack.push(_owner.getClassName());
     }
 
     /**
@@ -343,6 +344,9 @@ public class MethodGenerator implements AutoCloseable {
 
         _visitor.visitFieldInsn(Opcodes.PUTSTATIC, _owner.getClassName(), fieldName,
                 String.format("L%s;", fieldTypeName));
+
+        _evalStack.pop();
+
         return this;
     }
 
@@ -350,8 +354,10 @@ public class MethodGenerator implements AutoCloseable {
 
         loadValue.run();
 
+        String fieldTypeName = DynamicUtil.getInternalName(fieldType);
+
         _visitor.visitFieldInsn(Opcodes.PUTSTATIC, _owner.getClassName(), fieldName,
-                DynamicUtil.getInternalName(fieldType));
+                String.format("L%s;", fieldTypeName));
 
         _evalStack.pop();
 
@@ -404,7 +410,7 @@ public class MethodGenerator implements AutoCloseable {
 
             var descriptor = DynamicUtil.getConstructorDescriptor(argClasses);
 
-            var superTypeName = DynamicUtil.getInternalName(_owner.superClass());
+            var superTypeName = _owner.getSuperClassName();
 
             _visitor.visitMethodInsn(Opcodes.INVOKESPECIAL, superTypeName, "<init>", descriptor, false);
 
@@ -482,6 +488,49 @@ public class MethodGenerator implements AutoCloseable {
 
     public MethodGenerator invoke(Runnable loadTarget, String methodName, Runnable loadParameters) {
         return invoke(loadTarget, methodName, loadParameters, false);
+    }
+
+    /**
+     * this.xxx
+     *
+     * @param methodName
+     * @param loadParameters
+     * @param returnType
+     * @return
+     */
+    public MethodGenerator invokeThis(String methodName, Runnable loadParameters, Class<?> returnType) {
+
+        try {
+
+            _evalStack.enterFrame(); // 新建立栈帧
+
+            this.loadThis();
+
+            // 加载参数
+            if (loadParameters != null)
+                loadParameters.run();
+
+            var argClasses = getArgClasses(1); // 栈顶第一个值是this，不作为参数，所以偏移量为1
+
+            var isInterface = false;
+            var opcode = Opcodes.INVOKEVIRTUAL;
+
+            var descriptor = DynamicUtil.getMethodDescriptor(returnType, argClasses);
+            var owner = _owner.getClassName();
+
+            _visitor.visitMethodInsn(opcode, owner, methodName, descriptor, isInterface);
+
+            _evalStack.exitFrame(); // 调用完毕，离开栈帧
+
+            if (returnType != void.class) {
+                _evalStack.push(returnType); // 返回值会给与父级栈
+                this.pop();
+            }
+
+        } catch (Throwable ex) {
+            throw propagate(ex);
+        }
+        return this;
     }
 
     /**
@@ -1183,6 +1232,31 @@ public class MethodGenerator implements AutoCloseable {
         _visitor.visitLdcInsn(className);
         _visitor.visitMethodInsn(Opcodes.INVOKESTATIC, "java/lang/Class", "forName",
                 "(Ljava/lang/String;)Ljava/lang/Class;", false);
+        _evalStack.push(Class.class);
+    }
+
+    /**
+     * 例如：User.class   long.class
+     *
+     * @param className
+     */
+    public void loadClass(String className) {
+        switch (className) {
+            case "long": {
+                //感觉其实没用
+                _visitor.visitLdcInsn(Type.LONG_TYPE);
+                break;
+            }
+            case "String": {
+                //感觉其实没用
+                _visitor.visitLdcInsn(Type.getType("Ljava/lang/String;"));
+                break;
+            }
+            default: {
+                _visitor.visitLdcInsn(Type.getType(String.format("L%s;", className)));
+            }
+        }
+        _evalStack.push(Class.class);
     }
 
     public void close() {
