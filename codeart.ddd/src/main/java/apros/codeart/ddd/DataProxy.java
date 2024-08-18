@@ -2,6 +2,7 @@ package apros.codeart.ddd;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Supplier;
 
 import apros.codeart.runtime.TypeUtil;
@@ -22,7 +23,7 @@ public abstract class DataProxy implements IDataProxy {
     private Map<String, Object> _oldData;
 
     public DataProxy() {
-        _data = new HashMap<String, Object>();
+        _data = new TreeMap<String, Object>(String.CASE_INSENSITIVE_ORDER);
 
         if (this.isTrackPropertyChange())
             _oldData = new HashMap<String, Object>();
@@ -52,7 +53,7 @@ public abstract class DataProxy implements IDataProxy {
         var value = _data.get(propertyName);
         if (value == null) {
             value = this.loadData(propertyName);
-            if (value == null) value =  defaultValue.get();
+            if (value == null) value = defaultValue.get();
             _data.put(propertyName, value);
         }
         return value;

@@ -32,18 +32,18 @@ class RemoteObjectUpdated {
 
             var data = content.getObject("data");
 
-            var repoitory = Repository.create(typeName);
+            var repository = Repository.create(typeName);
 
             var id = data.getValue("id");
 
-            var obj = (DynamicRoot) repoitory.findRoot(id, QueryLevel.SINGLE);
+            var obj = (DynamicRoot) repository.findRoot(id, QueryLevel.SINGLE);
 
             if (obj.isEmpty()) return;
 
             // 加载数据，并标记为已改变
             obj.load(data, true);
 
-            repoitory.updateRoot(obj);
+            repository.updateRoot(obj);
 
         }
     }

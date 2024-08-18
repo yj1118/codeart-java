@@ -343,7 +343,7 @@ public class DataContext implements IDataContext {
                 target.onDeleted();
                 StatusEvent.execute(StatusEventType.Deleted, target);
 
-                Forker.notifyUpdate(target);
+                Forker.notifyDelete(target);
 
                 target.markDirty();
             }
