@@ -31,10 +31,8 @@ class RemoteObjectDeleted {
 
             var repoitory = Repository.create(typeName);
 
-            DataContext.using(() -> {
-                var obj = repoitory.findRoot(id, QueryLevel.SINGLE);
-                repoitory.deleteRoot(obj);
-            });
+            var obj = repoitory.findRoot(id, QueryLevel.SINGLE);
+            repoitory.deleteRoot(obj);
 
         }
     }

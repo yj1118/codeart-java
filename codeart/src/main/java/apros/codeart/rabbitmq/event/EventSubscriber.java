@@ -28,7 +28,7 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
 
     private String _eventName;
     private String _group;
-    private String _queue;
+    private final String _queue;
 
     private IPoolItem _busItem;
 
@@ -40,9 +40,11 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
         return _group;
     }
 
-    public EventSubscriber(IConsumerCluster cluster, String queue) {
+    public EventSubscriber(IConsumerCluster cluster, String eventName, String group) {
         super(cluster);
-        _queue = queue;
+        _eventName = eventName;
+        _group = group;
+        _queue = EventConfig.getQueue(eventName, group);
         _busItem = RabbitBus.borrow(EventConfig.SubscriberPolicy);
     }
 

@@ -71,6 +71,7 @@ final class DomainHost {
         EventHost.dispose();
         Forker.dispose();
         Brancher.dispose();
+        MessageHost.dispose();
     }
 
     /**

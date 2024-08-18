@@ -32,16 +32,13 @@ class RemoteObjectUpdated {
 
             var repoitory = Repository.create(typeName);
 
-            DataContext.using(() -> {
+            var id = data.getValue("id");
 
-                var id = data.getValue("id");
+            var obj = (AggregateRoot) repoitory.findRoot(id, QueryLevel.SINGLE);
+            // 加载数据，并标记为已改变
+            obj.load(data, true);
 
-                var obj = (AggregateRoot) repoitory.findRoot(id, QueryLevel.SINGLE);
-                // 加载数据，并标记为已改变
-                obj.load(data, true);
-
-                repoitory.updateRoot(obj);
-            });
+            repoitory.updateRoot(obj);
 
         }
     }

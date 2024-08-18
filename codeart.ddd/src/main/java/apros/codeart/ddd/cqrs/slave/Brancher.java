@@ -6,6 +6,7 @@ import apros.codeart.ddd.metadata.SchemeCode;
 import apros.codeart.ddd.metadata.internal.MetadataLoader;
 import apros.codeart.dto.DTObject;
 import apros.codeart.echo.rpc.RPCClient;
+import apros.codeart.i18n.Language;
 
 public final class Brancher {
     private Brancher() {
@@ -24,6 +25,7 @@ public final class Brancher {
             var scheme = getRemoteObjectMeta(slave.name());
             var dynamicType = SchemeCode.parse(scheme);
             MetadataLoader.register(dynamicType);
+            System.out.println("Loaded object meta: " + slave.name());
         }
     }
 

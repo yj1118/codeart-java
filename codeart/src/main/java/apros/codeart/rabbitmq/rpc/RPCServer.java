@@ -2,6 +2,7 @@ package apros.codeart.rabbitmq.rpc;
 
 import java.time.Duration;
 
+import apros.codeart.rabbitmq.Policy;
 import apros.codeart.util.SafeAccess;
 import org.apache.logging.log4j.util.Strings;
 
@@ -28,17 +29,23 @@ class RPCServer extends Consumer implements AutoCloseable {
 
     private IPoolItem _item;
 
-    public RPCServer(RPCServerCluster cluster, String queue, IRPCHandler handler) {
+    private final Policy _policy;
+
+    public RPCServer(RPCServerCluster cluster, String queue, IRPCHandler handler, Policy policy) {
         super(cluster);
         _queue = queue;
         _handler = handler;
+        _policy = policy;
     }
 
     @Override
     public void open() {
         if (_item != null)
             return;
-        _item = RabbitBus.borrow(RPCConfig.ServerPolicy);
+        // 注意，原本policy是RPCConfig.ServerPolicy，这是一个不持久化消息的服务端策略
+        // 但是，我们在一些情况下有可能rpc客户端先发送请求，服务端后启动后响应（比如：各个服务启动时，需要向依赖服务请求领域对象元数据，由于不能确保服务按顺序启动，所以需要client请求后持续等待，服务端启动后再发送数据）
+        // 这时候就需要rpc的队列持久化了，所以这里接收的是外部设置的策略
+        _item = RabbitBus.borrow(_policy);
         RabbitBus bus = _item.getItem();
         bus.queueDeclare(_queue);
         bus.consume(_queue, this);

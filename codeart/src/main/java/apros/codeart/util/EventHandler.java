@@ -28,11 +28,11 @@ public class EventHandler<T> {
         _observers.remove(observer);
     }
 
-    public void raise(Object sender, Supplier<T> getArags) {
+    public void raise(Object sender, Supplier<T> getArgs) {
         if (this.isEmpty())
             return;
 
-        var args = getArags.get();
+        var args = getArgs.get();
         for (var observer : _observers) {
             observer.handle(sender, args);
         }

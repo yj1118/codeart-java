@@ -512,7 +512,7 @@ public class DataContext implements IDataContext {
 
     public EventHandler<DataContextEventArgs> committed() {
         if (_committed == null)
-            _committed = new EventHandler<DataContextEventArgs>();
+            _committed = new EventHandler<>();
         return _committed;
     }
 

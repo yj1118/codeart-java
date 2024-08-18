@@ -1,19 +1,22 @@
 package apros.codeart.ddd.message.internal;
 
-import java.util.List;
-
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.access.DataAccess;
 import apros.codeart.ddd.repository.access.DataSource;
 import apros.codeart.ddd.repository.access.DatabaseType;
+import apros.codeart.ddd.saga.internal.EventLog;
 import apros.codeart.util.ListUtil;
+import apros.codeart.util.thread.Timer;
 
-public final class AtomicOperation {
-    private AtomicOperation() {
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+public final class MessageFilter {
+    private MessageFilter() {
     }
 
     public static void init() {
-        // 此处要初始化领域消息表
+        // 此处要初始化消息过滤表
         var sql = getInitSql();
         DataContext.newScope((conn) -> {
             conn.access().nativeExecute(sql);
@@ -24,8 +27,9 @@ public final class AtomicOperation {
         switch (DataSource.getDatabaseType()) {
             case DatabaseType.PostgreSql: {
                 return """
-                        CREATE TABLE IF NOT EXISTS "CA_DomainMessage" (
-                               "Id" UUID PRIMARY KEY
+                        CREATE TABLE IF NOT EXISTS "CA_DomainMessageFilter" (
+                               "Id" UUID PRIMARY KEY,
+                               "CreateTime" timestamp(0) DEFAULT CURRENT_TIMESTAMP NOT NULL
                            );
                         """;
             }
@@ -40,11 +44,12 @@ public final class AtomicOperation {
             case DatabaseType.SqlServer: {
 
                 return """
-                        if ISNULL(object_id(N'[dbo].[CA_DomainMessage]'),'') = 0
+                        if ISNULL(object_id(N'[dbo].[CA_DomainMessageFilter]'),'') = 0
                         begin
-                        	CREATE TABLE [dbo].[CA_DomainMessage](
+                        	CREATE TABLE [dbo].[CA_DomainMessageFilter](
                         	[Id] [uniqueidentifier] NOT NULL,
-                         CONSTRAINT [PK_CA_DomainMessage] PRIMARY KEY CLUSTERED
+                        	[CreateTime] DATETIME DEFAULT GETDATE() NOT NULL,
+                         CONSTRAINT [PK_CA_DomainMessageFilter] PRIMARY KEY CLUSTERED
                         (
                         	[Id] ASC
                         )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
@@ -54,6 +59,39 @@ public final class AtomicOperation {
             }
         }
         return null;
+    }
+
+    public static boolean exist(String msgId) {
+        // 注意，写入文件前，先要写入数据库数据
+        return DataContext.using((conn) -> {
+            // 跟主程序同一个事务，确保两者都被同时提交
+            return exist(conn.access(), msgId);
+        });
+    }
+
+    private static boolean exist(DataAccess access, String msgId) {
+        int count = 0;
+        switch (DataSource.getDatabaseType()) {
+            case DatabaseType.PostgreSql:
+            case DatabaseType.MySql:
+            case DatabaseType.Oracle: {
+                count = access.nativeQueryScalar(int.class, """
+                        SELECT CASE WHEN EXISTS (
+                            SELECT 1 FROM "CA_DomainMessage" WHERE "Id" = '%s'
+                        ) THEN 1 ELSE 0 END AS IdExists;
+                        """.formatted(msgId), null);
+                break;
+            }
+            case DatabaseType.SqlServer: {
+                count = access.nativeQueryScalar(int.class, """
+                        SELECT CASE WHEN EXISTS (
+                            SELECT 1 FROM "CA_DomainMessage" WHERE [Id] = '%s'
+                        ) THEN 1 ELSE 0 END AS IdExists;
+                        """.formatted(msgId), null);
+                break;
+            }
+        }
+        return count > 0;
     }
 
     public static void insert(String msgId) {
@@ -68,7 +106,7 @@ public final class AtomicOperation {
         switch (DataSource.getDatabaseType()) {
             case DatabaseType.PostgreSql: {
                 access.nativeExecute("""
-                        INSERT INTO "CA_DomainMessage"
+                        INSERT INTO "CA_DomainMessageFilter"
                                   ("Id")
                             VALUES
                                   ('%s');
@@ -86,7 +124,7 @@ public final class AtomicOperation {
             case DatabaseType.SqlServer: {
 
                 access.nativeExecute("""
-                        INSERT INTO [dbo].[CA_DomainMessage]
+                        INSERT INTO [dbo].[CA_DomainMessageFilter]
                                   ([Id])
                             VALUES
                                   ('%s');
@@ -97,19 +135,19 @@ public final class AtomicOperation {
         }
     }
 
-    public static void delete(String msgId) {
+    public static void deleteExpired() {
         // 删除文件后，删除数据库数据
         DataContext.newScope((conn) -> {
-            delete(conn.access(), msgId);
+            deleteExpired(conn.access());
         });
     }
 
-    private static void delete(DataAccess access, String msgId) {
+    private static void deleteExpired(DataAccess access) {
         switch (DataSource.getDatabaseType()) {
             case DatabaseType.PostgreSql: {
-                access.nativeExecute(String.format("""
-                        DELETE FROM "CA_DomainMessage" WHERE "Id"='%s';
-                        """, msgId));
+                access.nativeExecute("""
+                        DELETE FROM "CA_DomainMessageFilter" WHERE "CreateTime" < NOW() - INTERVAL '10 days';
+                        """);
 
                 break;
             }
@@ -123,44 +161,31 @@ public final class AtomicOperation {
             }
             case DatabaseType.SqlServer: {
 
-                access.nativeExecute(String.format("DELETE FROM [dbo].[CA_DomainMessage] WHERE [Id]='%s';", msgId));
-
+                access.nativeExecute("DELETE FROM [dbo].[CA_DomainMessageFilter] WHERE CreateTime < DATEADD(DAY, -10, GETDATE());");
                 break;
             }
         }
     }
 
-    public static List<String> findInterrupteds() {
-        // 注意，要从数据库里读取，只有数据库里的是必须要发送的，而不是文件里存储的
-        var ids = DataContext.using((conn) -> {
-            return findInterrupteds(conn.access());
-        });
-        return ListUtil.asList(ids);
+
+    public static void inited() {
+        start(); //开始监控过期
     }
 
-    private static Iterable<String> findInterrupteds(DataAccess access) {
-        switch (DataSource.getDatabaseType()) {
-            case DatabaseType.PostgreSql: {
-                return access.nativeQueryScalars(String.class, """
-                        SELECT "Id" FROM "CA_DomainMessage";
-                        """, null);
+    public static void dispose() {
+        end();
+    }
 
-            }
-            case DatabaseType.MySql: {
-                // todo
-                return null;
-            }
-            case DatabaseType.Oracle: {
-                // todo
-                return null;
-            }
-            case DatabaseType.SqlServer: {
+    private static final Timer _scheduler = new Timer(1, TimeUnit.DAYS);
 
-                return access.nativeQueryScalars(String.class, "SELECT [Id] FROM [dbo].[CA_DomainMessage];", null);
+    private static void start() {
+        _scheduler.immediate(() -> {
+            deleteExpired();
+        });
+    }
 
-            }
-        }
-        return null;
+    private static void end() {
+        _scheduler.stop();
     }
 
 }

@@ -1,13 +1,12 @@
-package apros.codeart.gate.service;
+package apros.codeart.echo.event;
 
 import apros.codeart.App;
 import apros.codeart.PreApplicationStart;
 import apros.codeart.RunPriority;
 
 @PreApplicationStart(method = "initialize", priority = RunPriority.Framework_Low)
-public class PreStart {
+public class PreStartLow {
     public static void initialize() {
-        
-        App.setup("service");
+        EventPortal.startUp();
     }
 }

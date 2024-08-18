@@ -11,10 +11,22 @@ public enum RunPriority {
     /// </summary>
     User((byte) 1),
 
+    High((byte) 2),
+
+    /// <summary>
+    /// 框架内部的使用的优先级
+    /// </summary>
+    Framework_Low((byte) 3),
+
+    /// <summary>
+    /// 框架内部的使用的优先级
+    /// </summary>
+    Framework_Medium((byte) 4),
+
     /// <summary>
     /// 高优先级
     /// </summary>
-    High((byte) 2);
+    Framework_High((byte) 5);
 
     private final byte value;
 

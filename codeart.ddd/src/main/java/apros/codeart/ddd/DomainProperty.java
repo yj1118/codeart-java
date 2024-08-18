@@ -418,7 +418,7 @@ public class DomainProperty {
     private static Annotation[] getAnnotationsByStaticProperty(Class<?> reflectedType, String propertyName) {
         try {
             Field field = reflectedType.getDeclaredField(String.format("%sProperty", propertyName));
-            return field == null ? null : field.getDeclaredAnnotations();
+            return field == null ? null : field.getAnnotations();
         } catch (Throwable e) {
             throw propagate(e);
         }

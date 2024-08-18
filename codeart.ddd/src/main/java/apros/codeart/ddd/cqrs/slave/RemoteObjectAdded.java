@@ -38,12 +38,8 @@ class RemoteObjectAdded {
             var obj = constructObject(domainType);
             obj.load(data);
 
-            var repoitory = Repository.create(typeName);
-
-            DataContext.using(() -> {
-                repoitory.addRoot(obj);
-            });
-
+            var repository = Repository.create(typeName);
+            repository.addRoot(obj);
         }
     }
 

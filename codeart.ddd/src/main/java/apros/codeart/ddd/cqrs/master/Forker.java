@@ -12,6 +12,7 @@ import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
 import apros.codeart.echo.rpc.RPCServer;
 import apros.codeart.i18n.Language;
+import apros.codeart.rabbitmq.rpc.RPCConfig;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
@@ -129,7 +130,7 @@ public final class Forker {
         var schema = getSchema(typeName, obj::isPropertyChanged);
 
         var data = DTOMapper.toDTO((DomainObject) root, schema);
-        
+
         var content = DTObject.editable();
         content.setString("typeName", typeName);
         content.combineObject("data", data);
@@ -163,7 +164,9 @@ public final class Forker {
         for (var master : masters) {
             // 虽然可以直接用名称，但是需要通过get验证下
             var objectType = ObjectMetaLoader.get(master.name()).objectType();
-            RPCServer.register(ActionName.getObjectMeta(objectType), GetObjectMeta.Instance);
+            // 注意，提供内部元数据服务的用的是持久队列
+            // 这样就算master端后启动，slave先启动，slave也可以获得元数据
+            RPCServer.register(ActionName.getObjectMeta(objectType), GetObjectMeta.Instance, RPCConfig.ServerPersistent);
         }
     }
 
