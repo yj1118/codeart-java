@@ -4,6 +4,7 @@ import static apros.codeart.runtime.Util.propagate;
 
 import apros.codeart.ddd.AggregateRoot;
 import apros.codeart.ddd.cqrs.ActionName;
+import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.ConstructorRepositoryImpl;
@@ -43,13 +44,13 @@ class RemoteObjectAdded {
         }
     }
 
-    private static AggregateRoot constructObject(Class<?> objectType) {
+    private static DynamicRoot constructObject(Class<?> objectType) {
 
         try {
             var constructorTip = ConstructorRepositoryImpl.getTip(objectType, true);
             var constructor = constructorTip.constructor();
             // 远程对象在本地的映射，仓储构造函数一定是无参的
-            return (AggregateRoot) constructor.newInstance(ListUtil.emptyObjects());
+            return (DynamicRoot) constructor.newInstance(ListUtil.emptyObjects());
         } catch (Throwable ex) {
             throw propagate(ex);
         }

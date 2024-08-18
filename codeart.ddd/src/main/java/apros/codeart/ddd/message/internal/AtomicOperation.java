@@ -6,6 +6,7 @@ import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.access.DataAccess;
 import apros.codeart.ddd.repository.access.DataSource;
 import apros.codeart.ddd.repository.access.DatabaseType;
+import apros.codeart.util.Guid;
 import apros.codeart.util.ListUtil;
 
 public final class AtomicOperation {
@@ -25,7 +26,7 @@ public final class AtomicOperation {
             case DatabaseType.PostgreSql: {
                 return """
                         CREATE TABLE IF NOT EXISTS "CA_DomainMessage" (
-                               "Id" UUID PRIMARY KEY
+                               "Id" CHAR(32) PRIMARY KEY
                            );
                         """;
             }
@@ -43,7 +44,7 @@ public final class AtomicOperation {
                         if ISNULL(object_id(N'[dbo].[CA_DomainMessage]'),'') = 0
                         begin
                         	CREATE TABLE [dbo].[CA_DomainMessage](
-                        	[Id] [uniqueidentifier] NOT NULL,
+                        	[Id] [char(32)] NOT NULL,
                          CONSTRAINT [PK_CA_DomainMessage] PRIMARY KEY CLUSTERED
                         (
                         	[Id] ASC

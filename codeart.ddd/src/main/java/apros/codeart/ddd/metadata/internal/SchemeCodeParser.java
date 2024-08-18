@@ -5,6 +5,7 @@ import static apros.codeart.runtime.Util.propagate;
 import apros.codeart.bytecode.ClassGenerator;
 import apros.codeart.bytecode.FieldGenerator;
 import apros.codeart.bytecode.MethodGenerator;
+import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.IDomainObject;
 import apros.codeart.ddd.dynamic.DynamicEntity;
@@ -65,9 +66,10 @@ public final class SchemeCodeParser {
                 }
             }
 
-            cg.save();
+            //cg.save();
 
-            return (Class<? extends IDomainObject>) cg.toClass();
+            // 使用自定义类加载器加载生成的类
+            return (Class<? extends IDomainObject>) cg.toClass(DomainObject.class.getClassLoader());
 
         } catch (Throwable e) {
             throw propagate(e);

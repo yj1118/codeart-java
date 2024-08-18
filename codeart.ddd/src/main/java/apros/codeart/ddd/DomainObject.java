@@ -761,7 +761,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         return _getEmpty.apply(objectType);
     }
 
-    private static Function<Class<?>, DomainObject> _getEmpty = LazyIndexer.init((objectType) -> {
+    private static final Function<Class<?>, DomainObject> _getEmpty = LazyIndexer.init((objectType) -> {
 
         var empty = MethodUtil.invoke(objectType, "empty");
         if (empty == null)

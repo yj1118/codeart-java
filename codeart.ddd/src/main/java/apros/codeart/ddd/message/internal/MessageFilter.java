@@ -28,7 +28,7 @@ public final class MessageFilter {
             case DatabaseType.PostgreSql: {
                 return """
                         CREATE TABLE IF NOT EXISTS "CA_DomainMessageFilter" (
-                               "Id" UUID PRIMARY KEY,
+                               "Id" CHAR(32) PRIMARY KEY,
                                "CreateTime" timestamp(0) DEFAULT CURRENT_TIMESTAMP NOT NULL
                            );
                         """;
@@ -47,7 +47,7 @@ public final class MessageFilter {
                         if ISNULL(object_id(N'[dbo].[CA_DomainMessageFilter]'),'') = 0
                         begin
                         	CREATE TABLE [dbo].[CA_DomainMessageFilter](
-                        	[Id] [uniqueidentifier] NOT NULL,
+                        	[Id] [char(32)] NOT NULL,
                         	[CreateTime] DATETIME DEFAULT GETDATE() NOT NULL,
                          CONSTRAINT [PK_CA_DomainMessageFilter] PRIMARY KEY CLUSTERED
                         (
@@ -66,7 +66,7 @@ public final class MessageFilter {
         return DataContext.using((conn) -> {
             // 跟主程序同一个事务，确保两者都被同时提交
             return exist(conn.access(), msgId);
-        });
+        }, true); //注意，要进入事务保护，所以打开立即模式
     }
 
     private static boolean exist(DataAccess access, String msgId) {
@@ -77,7 +77,7 @@ public final class MessageFilter {
             case DatabaseType.Oracle: {
                 count = access.nativeQueryScalar(int.class, """
                         SELECT CASE WHEN EXISTS (
-                            SELECT 1 FROM "CA_DomainMessage" WHERE "Id" = '%s'
+                            SELECT 1 FROM "CA_DomainMessageFilter" WHERE "Id" = '%s'
                         ) THEN 1 ELSE 0 END AS IdExists;
                         """.formatted(msgId), null);
                 break;
@@ -85,7 +85,7 @@ public final class MessageFilter {
             case DatabaseType.SqlServer: {
                 count = access.nativeQueryScalar(int.class, """
                         SELECT CASE WHEN EXISTS (
-                            SELECT 1 FROM "CA_DomainMessage" WHERE [Id] = '%s'
+                            SELECT 1 FROM "CA_DomainMessageFilter" WHERE [Id] = '%s'
                         ) THEN 1 ELSE 0 END AS IdExists;
                         """.formatted(msgId), null);
                 break;

@@ -32,6 +32,9 @@ class RemoteObjectDeleted {
             var repoitory = Repository.create(typeName);
 
             var obj = repoitory.findRoot(id, QueryLevel.SINGLE);
+
+            if (obj.isEmpty()) return;
+
             repoitory.deleteRoot(obj);
 
         }

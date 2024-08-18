@@ -1,12 +1,15 @@
 package apros.codeart.rabbitmq.event;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 import apros.codeart.echo.event.IEventHandler;
 import apros.codeart.echo.event.ISubscriber;
 import apros.codeart.rabbitmq.IConsumerCluster;
+import apros.codeart.util.SafeAccessImpl;
 
-class EventSubscriberClusterTemp implements IConsumerCluster, ISubscriber {
+class EventSubscriberClusterTemp implements IConsumerCluster, ISubscriber, IEventSubscriberCluster {
 
     private final EventSubscriber _subscriber;
 
@@ -25,9 +28,21 @@ class EventSubscriberClusterTemp implements IConsumerCluster, ISubscriber {
         _subscriber.stop();
     }
 
+    private final ArrayList<IEventHandler> _handlers = new ArrayList<IEventHandler>();
+
+    public List<IEventHandler> handlers() {
+        return _handlers;
+    }
+
     @Override
     public void addHandler(IEventHandler handler) {
-        _subscriber.addHandler(handler);
+        SafeAccessImpl.checkUp(handler);
+
+        synchronized (_handlers) {
+            if (!_handlers.contains(handler)) {
+                _handlers.add(handler);
+            }
+        }
     }
 
     @Override

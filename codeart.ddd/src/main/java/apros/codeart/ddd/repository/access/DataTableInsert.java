@@ -68,7 +68,6 @@ final class DataTableInsert {
      * @param objData
      */
     private void onDataInserted(DomainObject root, DomainObject obj, MapData objData) {
-
         //更新数据代理
         obj.dataProxy(new DataProxyImpl(objData, _self, false));
 

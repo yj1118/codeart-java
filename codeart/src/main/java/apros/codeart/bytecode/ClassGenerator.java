@@ -222,14 +222,18 @@ public final class ClassGenerator implements AutoCloseable {
         return _cw.toByteArray();
     }
 
-    public Class<?> toClass() {
+    public Class<?> toClass(ClassLoader parent) {
         try {
             byte[] bytes = this.toBytes();
-            ClassLoaderImpl classLoader = new ClassLoaderImpl(bytes);
+            ClassLoaderImpl classLoader = parent == null ? new ClassLoaderImpl(bytes) : new ClassLoaderImpl(parent, bytes);
             return classLoader.loadClass(_className);
         } catch (Throwable e) {
             throw propagate(e);
         }
+    }
+
+    public Class<?> toClass() {
+        return toClass(null);
     }
 
     @Override
@@ -247,6 +251,18 @@ public final class ClassGenerator implements AutoCloseable {
         private final byte[] _classData;
 
         public ClassLoaderImpl(byte[] classData) {
+            _classData = classData;
+        }
+
+        /**
+         * 以直接在自定义类加载器中指定 parent 加载器作为父加载器。这样生成的类会使用与 parent加载器下的类有相同的类加载器，
+         * 从而确保类加载器的一致性。
+         *
+         * @param parent
+         * @param classData
+         */
+        public ClassLoaderImpl(ClassLoader parent, byte[] classData) {
+            super(parent);
             _classData = classData;
         }
 

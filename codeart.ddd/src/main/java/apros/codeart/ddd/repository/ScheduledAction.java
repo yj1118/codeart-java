@@ -5,7 +5,7 @@ import apros.codeart.ddd.ValidationResult;
 
 class ScheduledAction {
 
-    private IAggregateRoot _target;
+    private final IAggregateRoot _target;
 
     public IAggregateRoot target() {
         return _target;

@@ -2,6 +2,7 @@ package apros.codeart.rabbitmq.event;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.List;
 
 import apros.codeart.context.AppSession;
 import apros.codeart.echo.event.IEventHandler;
@@ -26,8 +27,8 @@ import apros.codeart.util.thread.Parallel;
  */
 class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
 
-    private String _eventName;
-    private String _group;
+    private final String _eventName;
+    private final String _group;
     private final String _queue;
 
     private IPoolItem _busItem;
@@ -40,8 +41,11 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
         return _group;
     }
 
-    public EventSubscriber(IConsumerCluster cluster, String eventName, String group) {
+    private IEventSubscriberCluster _owner = null;
+
+    public EventSubscriber(IEventSubscriberCluster cluster, String eventName, String group) {
         super(cluster);
+        _owner = cluster;
         _eventName = eventName;
         _group = group;
         _queue = EventConfig.getQueue(eventName, group);
@@ -80,17 +84,8 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
         _busItem.close(); // 删除队列后，清理资源
     }
 
-    private ArrayList<IEventHandler> _handlers = new ArrayList<IEventHandler>();
-
-    public void addHandler(IEventHandler handler) {
-        SafeAccessImpl.checkUp(handler);
-
-        synchronized (_handlers) {
-            if (!_handlers.contains(handler)) {
-                _handlers.add(handler);
-
-            }
-        }
+    private List<IEventHandler> handlers() {
+        return _owner.handlers();
     }
 
     @Override
@@ -103,12 +98,17 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
         this.close();
     }
 
+    @Override
+    public void addHandler(IEventHandler handler) {
+        _owner.addHandler(handler);
+    }
+
     /**
      * 请自行保证事件的幂等性
      */
     @Override
     protected Duration processMessage(RabbitBus sender, Message message) {
-        if (_handlers.isEmpty())
+        if (this.handlers().isEmpty())
             return Duration.ZERO;
 
         // 以下代码段反映的是这样一个逻辑：
@@ -121,7 +121,7 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
         var language = arg.getString("__lang");
         try {
 
-            Parallel.forEach(_handlers, (handler) -> {
+            Parallel.forEach(this.handlers(), (handler) -> {
                 AppSession.using(() -> {
                     AppSession.setLanguage(language);
                     handler.handle(_eventName, arg);

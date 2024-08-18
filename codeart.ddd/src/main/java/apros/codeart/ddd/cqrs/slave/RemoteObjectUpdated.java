@@ -3,6 +3,7 @@ package apros.codeart.ddd.cqrs.slave;
 import apros.codeart.ddd.AggregateRoot;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.cqrs.ActionName;
+import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.Repository;
@@ -28,13 +29,17 @@ class RemoteObjectUpdated {
         protected void handle(DTObject content) {
 
             var typeName = content.getString("typeName");
+
             var data = content.getObject("data");
 
             var repoitory = Repository.create(typeName);
 
             var id = data.getValue("id");
 
-            var obj = (AggregateRoot) repoitory.findRoot(id, QueryLevel.SINGLE);
+            var obj = (DynamicRoot) repoitory.findRoot(id, QueryLevel.SINGLE);
+
+            if (obj.isEmpty()) return;
+
             // 加载数据，并标记为已改变
             obj.load(data, true);
 

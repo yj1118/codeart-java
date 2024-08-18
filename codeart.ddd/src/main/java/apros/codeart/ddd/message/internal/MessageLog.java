@@ -1,6 +1,7 @@
 package apros.codeart.ddd.message.internal;
 
 import java.util.List;
+import java.util.UUID;
 
 import apros.codeart.ddd.message.MessageEntry;
 import apros.codeart.ddd.message.MessageLogFactory;

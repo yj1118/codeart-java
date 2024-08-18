@@ -10,7 +10,7 @@ public final class Guid {
     public static final UUID Empty = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     /**
-     * 获得不带分隔符的guid
+     * 获得不带分隔符的guid,32个字符串的长度
      *
      * @return
      */

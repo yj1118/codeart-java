@@ -3,13 +3,18 @@ package apros.codeart.rabbitmq.event;
 import apros.codeart.echo.event.IEventHandler;
 import apros.codeart.echo.event.ISubscriber;
 import apros.codeart.rabbitmq.ConsumerCluster;
+import apros.codeart.util.SafeAccessImpl;
 
-class EventSubscriberCluster extends ConsumerCluster<EventSubscriber> implements ISubscriber {
+import java.util.ArrayList;
+import java.util.List;
+
+class EventSubscriberCluster extends ConsumerCluster<EventSubscriber> implements ISubscriber, IEventSubscriberCluster {
+
 
     public EventSubscriberCluster(String eventName, String group) {
         super(EventConfig.SubscriberPolicy, EventConfig.getServerConfig(eventName),
                 EventConfig.getQueue(eventName, group), (cluster) -> {
-                    return new EventSubscriber(cluster, eventName, group);
+                    return new EventSubscriber((IEventSubscriberCluster) cluster, eventName, group);
                 });
     }
 
@@ -26,11 +31,21 @@ class EventSubscriberCluster extends ConsumerCluster<EventSubscriber> implements
             item.stop();
     }
 
+    private final ArrayList<IEventHandler> _handlers = new ArrayList<IEventHandler>();
+
+    public List<IEventHandler> handlers() {
+        return _handlers;
+    }
+
     @Override
     public void addHandler(IEventHandler handler) {
-        var items = this.consumers();
-        for (var item : items)
-            item.addHandler(handler);
+        SafeAccessImpl.checkUp(handler);
+
+        synchronized (_handlers) {
+            if (!_handlers.contains(handler)) {
+                _handlers.add(handler);
+            }
+        }
     }
 
     @Override

@@ -225,17 +225,14 @@ public class DataContext implements IDataContext {
             case ScheduledActionType.Create:
                 action.target().onAddPreCommit();
                 statusEventExecute(StatusEventType.AddPreCommit, action.target());
-                Forker.notifyAdd(action.target());
                 break;
             case ScheduledActionType.Update:
                 action.target().onUpdatePreCommit();
                 statusEventExecute(StatusEventType.UpdatePreCommit, action.target());
-                Forker.notifyUpdate(action.target());
                 break;
             case ScheduledActionType.Delete:
                 action.target().onDeletePreCommit();
                 statusEventExecute(StatusEventType.DeletePreCommit, action.target());
-                Forker.notifyDelete(action.target());
                 break;
         }
     }
@@ -318,6 +315,8 @@ public class DataContext implements IDataContext {
                 target.onAdded();
                 StatusEvent.execute(StatusEventType.Added, target);
 
+                Forker.notifyAdd(target);
+
                 target.markClean();
             }
             break;
@@ -330,6 +329,8 @@ public class DataContext implements IDataContext {
                 target.onUpdated();
                 StatusEvent.execute(StatusEventType.Updated, target);
 
+                Forker.notifyUpdate(target);
+
                 target.markClean();
             }
             break;
@@ -341,6 +342,8 @@ public class DataContext implements IDataContext {
 
                 target.onDeleted();
                 StatusEvent.execute(StatusEventType.Deleted, target);
+
+                Forker.notifyUpdate(target);
 
                 target.markDirty();
             }
@@ -501,9 +504,14 @@ public class DataContext implements IDataContext {
                 clear();
             }
         } catch (Throwable ex) {
-            // 注意，由于提交失败了，所以这里_transactionCount要恢复+1
-            // 这样外部就知道是处在提交事务中失败的
-            _transactionCount++;
+            if (!_conn.isCommitted()) {
+                // 如果conn没有实际提交，那么这里就可以恢复和回滚
+
+                // 注意，由于提交失败了，所以这里_transactionCount要恢复+1
+                // 这样外部就知道是处在提交事务中失败的
+                _transactionCount++;
+            }
+
             throw ex;
         }
     }
@@ -573,6 +581,8 @@ public class DataContext implements IDataContext {
 
     public void rollback() {
         try {
+
+            _conn.rollback();
             if (_rollbacks != null) {
                 _rollbacks.execute(this);
                 raiseRolledBack(this);
@@ -675,7 +685,7 @@ public class DataContext implements IDataContext {
     public static void using(Runnable action, boolean timely) {
         using((access) -> {
             action.run();
-        }, timely);
+        });
     }
 
     public static void using(Consumer<DataConnection> action) {

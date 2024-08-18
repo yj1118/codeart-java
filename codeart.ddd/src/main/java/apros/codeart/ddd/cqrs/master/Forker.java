@@ -131,6 +131,10 @@ public final class Forker {
 
         var data = DTOMapper.toDTO((DomainObject) root, schema);
 
+        if (data.isEmpty()) return;
+
+        data.setValue("id", root.getIdentity());
+
         var content = DTObject.editable();
         content.setString("typeName", typeName);
         content.combineObject("data", data);
@@ -150,7 +154,7 @@ public final class Forker {
         content.setString("typeName", objectType.getSimpleName());
         content.setValue("id", id);
 
-        var messageName = ActionName.objectUpdated(objectType);
+        var messageName = ActionName.objectDeleted(objectType);
         DomainMessage.send(messageName, content);
     }
 

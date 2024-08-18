@@ -93,7 +93,7 @@ final class DataTableUpdate {
      * @param obj
      */
     private void onDataUpdated(DomainObject root, DomainObject obj) {
-        obj.markClean(); // 修改之后，就干净了
+//        obj.markClean(); // 修改之后，就干净了(这里不要执行，留给外部DataContext里判断何时执行)
 
         var id = DataTableUtil.getObjectId(obj);
 

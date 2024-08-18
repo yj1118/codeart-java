@@ -14,134 +14,136 @@ import apros.codeart.util.EventHandler;
 @FrameworkDomain
 public class DynamicRoot extends DynamicEntity implements IAggregateRoot {
 
-	private AggregateRootEventManager _eventManager;
+    private final AggregateRootEventManager _eventManager;
 
-	public DynamicRoot(boolean isEmpty) {
-		super(isEmpty);
-		this.onConstructed();
-	}
+    public DynamicRoot(boolean isEmpty) {
+        super(isEmpty);
+        _eventManager = new AggregateRootEventManager(this);
+        this.onConstructed();
+    }
 
-	@ConstructorRepository
-	public DynamicRoot() {
-		super();
-		this.onConstructed();
-	}
+    @ConstructorRepository
+    public DynamicRoot() {
+        super();
+        _eventManager = new AggregateRootEventManager(this);
+        this.onConstructed();
+    }
 
-	private String _uniqueKey;
+    private String _uniqueKey;
 
-	public String uniqueKey() {
-		if (_uniqueKey == null) {
-			_uniqueKey = UniqueKeyCalculator.getUniqueKey(this);
-		}
-		return _uniqueKey;
-	}
+    public String uniqueKey() {
+        if (_uniqueKey == null) {
+            _uniqueKey = UniqueKeyCalculator.getUniqueKey(this);
+        }
+        return _uniqueKey;
+    }
 
-	/**
-	 * 仓储操作回滚事件
-	 */
-	public EventHandler<RepositoryRollbackEventArgs> rollback() {
-		return _eventManager.rollback();
-	}
+    /**
+     * 仓储操作回滚事件
+     */
+    public EventHandler<RepositoryRollbackEventArgs> rollback() {
+        return _eventManager.rollback();
+    }
 
-	public void onRollback(Object sender, RepositoryRollbackEventArgs e) {
-		_eventManager.onRollback(sender, e);
-	}
+    public void onRollback(Object sender, RepositoryRollbackEventArgs e) {
+        _eventManager.onRollback(sender, e);
+    }
 
-	public EventHandler<RepositoryEventArgs> preAdd() {
-		return _eventManager.preAdd();
-	}
+    public EventHandler<RepositoryEventArgs> preAdd() {
+        return _eventManager.preAdd();
+    }
 
-	public void onPreAdd() {
-		_eventManager.onPreAdd();
-	}
+    public void onPreAdd() {
+        _eventManager.onPreAdd();
+    }
 
-	public EventHandler<RepositoryEventArgs> added() {
-		return _eventManager.added();
-	}
+    public EventHandler<RepositoryEventArgs> added() {
+        return _eventManager.added();
+    }
 
-	public void onAdded() {
-		_eventManager.onAdded();
-	}
+    public void onAdded() {
+        _eventManager.onAdded();
+    }
 
-	public EventHandler<RepositoryEventArgs> addPreCommit() {
-		return _eventManager.addPreCommit();
-	}
+    public EventHandler<RepositoryEventArgs> addPreCommit() {
+        return _eventManager.addPreCommit();
+    }
 
-	public void onAddPreCommit() {
-		_eventManager.onAddPreCommit();
-	}
+    public void onAddPreCommit() {
+        _eventManager.onAddPreCommit();
+    }
 
-	public EventHandler<RepositoryEventArgs> addCommitted() {
-		return _eventManager.addCommitted();
-	}
+    public EventHandler<RepositoryEventArgs> addCommitted() {
+        return _eventManager.addCommitted();
+    }
 
-	public void onAddCommitted() {
-		_eventManager.onAddCommitted();
-	}
+    public void onAddCommitted() {
+        _eventManager.onAddCommitted();
+    }
 
-	public EventHandler<RepositoryEventArgs> preUpdate() {
-		return _eventManager.preUpdate();
-	}
+    public EventHandler<RepositoryEventArgs> preUpdate() {
+        return _eventManager.preUpdate();
+    }
 
-	public void onPreUpdate() {
-		_eventManager.onPreUpdate();
-	}
+    public void onPreUpdate() {
+        _eventManager.onPreUpdate();
+    }
 
-	public EventHandler<RepositoryEventArgs> updated() {
-		return _eventManager.updated();
-	}
+    public EventHandler<RepositoryEventArgs> updated() {
+        return _eventManager.updated();
+    }
 
-	public void onUpdated() {
-		_eventManager.onUpdated();
-	}
+    public void onUpdated() {
+        _eventManager.onUpdated();
+    }
 
-	public EventHandler<RepositoryEventArgs> updatePreCommit() {
-		return _eventManager.updatePreCommit();
-	}
+    public EventHandler<RepositoryEventArgs> updatePreCommit() {
+        return _eventManager.updatePreCommit();
+    }
 
-	public void onUpdatePreCommit() {
-		_eventManager.onUpdatePreCommit();
-	}
+    public void onUpdatePreCommit() {
+        _eventManager.onUpdatePreCommit();
+    }
 
-	public EventHandler<RepositoryEventArgs> updateCommitted() {
-		return _eventManager.updateCommitted();
-	}
+    public EventHandler<RepositoryEventArgs> updateCommitted() {
+        return _eventManager.updateCommitted();
+    }
 
-	public void onUpdateCommitted() {
-		_eventManager.onUpdateCommitted();
-	}
+    public void onUpdateCommitted() {
+        _eventManager.onUpdateCommitted();
+    }
 
-	public EventHandler<RepositoryEventArgs> preDelete() {
-		return _eventManager.preDelete();
-	}
+    public EventHandler<RepositoryEventArgs> preDelete() {
+        return _eventManager.preDelete();
+    }
 
-	public void onPreDelete() {
-		_eventManager.onPreDelete();
-	}
+    public void onPreDelete() {
+        _eventManager.onPreDelete();
+    }
 
-	public EventHandler<RepositoryEventArgs> deleted() {
-		return _eventManager.deleted();
-	}
+    public EventHandler<RepositoryEventArgs> deleted() {
+        return _eventManager.deleted();
+    }
 
-	public void onDeleted() {
-		_eventManager.onDeleted();
-	}
+    public void onDeleted() {
+        _eventManager.onDeleted();
+    }
 
-	public EventHandler<RepositoryEventArgs> deletePreCommit() {
-		return _eventManager.deletePreCommit();
-	}
+    public EventHandler<RepositoryEventArgs> deletePreCommit() {
+        return _eventManager.deletePreCommit();
+    }
 
-	public void onDeletePreCommit() {
-		_eventManager.onDeletePreCommit();
-	}
+    public void onDeletePreCommit() {
+        _eventManager.onDeletePreCommit();
+    }
 
-	public EventHandler<RepositoryEventArgs> deleteCommitted() {
-		return _eventManager.deleteCommitted();
-	}
+    public EventHandler<RepositoryEventArgs> deleteCommitted() {
+        return _eventManager.deleteCommitted();
+    }
 
-	public void onDeleteCommitted() {
-		_eventManager.onDeleteCommitted();
-	}
+    public void onDeleteCommitted() {
+        _eventManager.onDeleteCommitted();
+    }
 
 //	public Iterable<(
 //
