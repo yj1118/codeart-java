@@ -2,6 +2,7 @@ package apros.codeart.ddd.cqrs.slave;
 
 import apros.codeart.ddd.cqrs.ActionName;
 import apros.codeart.ddd.cqrs.CQRSConfig;
+import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.metadata.SchemeCode;
 import apros.codeart.ddd.metadata.internal.MetadataLoader;
 import apros.codeart.dto.DTObject;
@@ -35,6 +36,26 @@ public final class Brancher {
         return RPCClient.invoke(methodName, (arg) -> {
             arg.setString("name", name);
         });
+    }
+
+    /**
+     * 主动获取远程对象，获取后对象会被持久化在本地
+     *
+     * @param name 类型名称
+     * @param id
+     * @return
+     */
+    public static DynamicRoot getRemoteObject(String name, Object id) {
+
+        var methodName = ActionName.getObject(name);
+        var data = RPCClient.invoke(methodName, (arg) -> {
+            arg.setString("name", name);
+            arg.setValue("id", id);
+        });
+
+        if (data.isEmpty()) return DynamicRoot.empty();
+
+        return RemoteObjectAdded.addRoot(name, data);
     }
 
     private static void subscribeEvents() {

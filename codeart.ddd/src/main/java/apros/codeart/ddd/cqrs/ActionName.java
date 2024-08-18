@@ -23,20 +23,24 @@ public final class ActionName {
         return _getObjectMeta.apply(typeName);
     }
 
-    private static Function<String, String> _getObjectMeta = LazyIndexer.init((String typeName) -> {
+    private static final Function<String, String> _getObjectMeta = LazyIndexer.init((String typeName) -> {
         return String.format("d:cqrs-getMeta-%s", typeName.toLowerCase());
     });
 
-//	public static String getObject(Class<?> type) {
-//		return _getObject.apply(type);
-//	}
-//
-//	/// <summary>
-//	/// 获取对象
-//	/// </summary>
-//	private static Function<Class<?>, String> _getObject = LazyIndexer.init((type) -> {
-//		return String.format("d:get{0}", type.getSimpleName());
-//	});
+    public static String getObject(Class<?> type) {
+        return _getObject.apply(type.getSimpleName());
+    }
+
+    public static String getObject(String typeName) {
+        return _getObject.apply(typeName);
+    }
+    
+    /// <summary>
+    /// 获取对象
+    /// </summary>
+    private static final Function<String, String> _getObject = LazyIndexer.init((String typeName) -> {
+        return String.format("d:cqrs-get-%s", typeName.toLowerCase());
+    });
 
     public static String objectAdded(String typeName) {
         return _getObjectAdded.apply(typeName);

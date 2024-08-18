@@ -230,16 +230,12 @@ public class DomainProperty {
      * @param name
      * @param propertyTypeName
      * @param declaringType
-     * @param defaultValue
      * @return
      */
-    public static DomainProperty register(String name, String propertyTypeName, Class<?> declaringType,
-                                          Object defaultValue) {
+    public static DomainProperty register(String name, String propertyTypeName, Class<?> declaringType) {
 
         var propertyType = ObjectMetaLoader.get(propertyTypeName).objectType();
-        return register(name, false, propertyType, declaringType, (obj, pro) -> {
-            return defaultValue;
-        });
+        return register(name, false, propertyType, declaringType, null);
     }
 
     /**

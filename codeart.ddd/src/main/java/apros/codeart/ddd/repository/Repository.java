@@ -6,6 +6,8 @@ import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.IRepositoryBase;
 import apros.codeart.ddd.QueryLevel;
+import apros.codeart.ddd.cqrs.slave.Brancher;
+import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.dynamic.IDynamicRepository;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.i18n.Language;
@@ -110,4 +112,17 @@ public final class Repository {
 
     // #endregion
 
+    public static DynamicRoot findRemote(String typeName, Object id) {
+        return findRemote(typeName, id, QueryLevel.NONE);
+    }
+
+    public static DynamicRoot findRemote(String typeName, Object id, QueryLevel level) {
+        var repository = Repository.create(typeName);
+        var obj = (DynamicRoot) repository.findRoot(id, level);
+
+        if (obj.isEmpty()) {
+            obj = Brancher.getRemoteObject(typeName, id);
+        }
+        return obj;
+    }
 }

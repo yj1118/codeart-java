@@ -161,4 +161,10 @@ public class DynamicRoot extends DynamicEntity implements IAggregateRoot {
 //			    return new DynamicRoot(type, true);
 //			}
 
+    private static final DynamicRoot EmptyInstance = new DynamicRoot(true);
+
+    public static DynamicRoot empty() {
+        return EmptyInstance;
+    }
+
 }

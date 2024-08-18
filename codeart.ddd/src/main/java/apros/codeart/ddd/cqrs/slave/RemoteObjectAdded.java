@@ -11,6 +11,7 @@ import apros.codeart.ddd.repository.ConstructorRepositoryImpl;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.Repository;
 import apros.codeart.dto.DTObject;
+import apros.codeart.echo.rpc.RPCClient;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.SafeAccess;
 
@@ -34,14 +35,22 @@ class RemoteObjectAdded {
 
             var typeName = content.getString("typeName");
             var data = content.getObject("data");
-            var domainType = ObjectMetaLoader.get(typeName).objectType();
-
-            var obj = constructObject(domainType);
-            obj.load(data);
-
-            var repository = Repository.create(typeName);
-            repository.addRoot(obj);
+            addRoot(typeName, data);
         }
+    }
+
+
+    public static DynamicRoot addRoot(String typeName, DTObject data) {
+
+        var domainType = ObjectMetaLoader.get(typeName).objectType();
+
+        var obj = constructObject(domainType);
+        obj.load(data);
+
+        var repository = Repository.create(typeName);
+        repository.addRoot(obj);
+
+        return obj;
     }
 
     private static DynamicRoot constructObject(Class<?> objectType) {

@@ -4,11 +4,14 @@ import java.util.function.Function;
 
 import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.IAggregateRoot;
+import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.cqrs.ActionName;
 import apros.codeart.ddd.cqrs.CQRSConfig;
 import apros.codeart.ddd.internal.DTOMapper;
 import apros.codeart.ddd.message.DomainMessage;
+import apros.codeart.ddd.metadata.ObjectMeta;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
+import apros.codeart.ddd.repository.Repository;
 import apros.codeart.dto.DTObject;
 import apros.codeart.echo.rpc.RPCServer;
 import apros.codeart.i18n.Language;
@@ -117,7 +120,16 @@ public final class Forker {
 
         var messageName = ActionName.objectAdded(objectType);
         DomainMessage.send(messageName, content);
+    }
 
+    @SuppressWarnings("unchecked")
+    public static DTObject getObjectData(String typeName, Object id) {
+
+        var meta = ObjectMetaLoader.get(typeName);
+
+        var root = Repository.find((Class<? extends IAggregateRoot>) meta.objectType(), id, QueryLevel.NONE);
+        var schema = _getSchema.apply(typeName);
+        return DTOMapper.toDTO((DomainObject) root, schema);
     }
 
     public static void notifyUpdate(IAggregateRoot root) {
@@ -171,6 +183,9 @@ public final class Forker {
             // 注意，提供内部元数据服务的用的是持久队列
             // 这样就算master端后启动，slave先启动，slave也可以获得元数据
             RPCServer.register(ActionName.getObjectMeta(objectType), GetObjectMeta.Instance, RPCConfig.ServerPersistent);
+
+            // 考虑到后台程序有可能在启动的时候加载远程对象，所以也配置成RPCConfig.ServerPersistent
+            RPCServer.register(ActionName.getObject(objectType), GetObject.Instance, RPCConfig.ServerPersistent);
         }
     }
 
