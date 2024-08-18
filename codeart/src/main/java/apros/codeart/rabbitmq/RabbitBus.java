@@ -54,7 +54,7 @@ public class RabbitBus implements AutoCloseable {
     public void exchangeDeclare(String exchange, String type) {
 
         try {
-            if (this.policy().persistentMessages()) {
+            if (this.policy().persistentQueue()) {
                 this.channel().exchangeDeclare(exchange, type, true, false, null);
             } else {
                 this.channel().exchangeDeclare(exchange, type, false, true, null);
@@ -83,7 +83,7 @@ public class RabbitBus implements AutoCloseable {
 
     public void queueDeclare(String queue) {
         try {
-            if (this.policy().persistentMessages()) {
+            if (this.policy().persistentQueue()) {
                 this.channel().queueDeclare(queue, true, false, false, null);
             } else {
                 this.channel().queueDeclare(queue, false, false, true, null); // 最后一个true表示不持久化的消息，服务器端分发后就删除，适用于rpc模式
@@ -150,7 +150,7 @@ public class RabbitBus implements AutoCloseable {
 
             var channel = this.channel();
 
-            if (this.policy().persistentMessages()) {
+            if (this.policy().persistentMessage()) {
                 propsBuilder.deliveryMode(2); // 设置为持久化消息
                 var properties = propsBuilder.build();
 

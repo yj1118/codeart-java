@@ -37,11 +37,13 @@ public final class RPCConfig {
         // rpc不需要那么高的可靠性，所以不需要发布者确认，也不需要消息持久化
         // 每一个server处理1条消息，处理完后再执行下一条消息
         // 但是可以建立多个server来提高吞吐量，共同承担处理消息的任务
-        ServerTransient = new Policy(ConnConfig, 1, false, false);
-        ServerPersistent = new Policy(ConnConfig, 1, false, true);
+        ServerTransient = new Policy(ConnConfig, 1, false, false, false);
+
+        // 注意，对于rpc服务，就算队列持久化化，消息不需要持久化，因为rpc传递的数据不需要长期保存，请求期间使用就可以了
+        ServerPersistent = new Policy(ConnConfig, 1, false, true, false);
 
         // 客户端是临时队列消费，也一样
-        ClientPolicy = new Policy(ConnConfig, 1, false, false);
+        ClientPolicy = new Policy(ConnConfig, 1, false, false, false);
     }
 
     /**

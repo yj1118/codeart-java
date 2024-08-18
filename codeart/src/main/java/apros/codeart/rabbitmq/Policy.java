@@ -49,16 +49,33 @@ public final class Policy {
         return _publisherConfirms;
     }
 
-    private final boolean _persistentMessages;
+    private final boolean _persistentQueue;
 
     /**
-     * 是否持久化消息，如果为true，消息会被写入到日志，只有当消费者确认消费了该消息后，才会从日志中清除
-     * 持久化的消息是可以恢复的，就算服务器宕机了也可以保证消息依然能正确的送达 所以在需要严谨的、消息必须送达的情况下需要开启该模式。
+     * 队列是否持久化：
+     * 持久化队列在 RabbitMQ 服务器重启后会继续存在，即使服务器重启，队列本身不会丢失。
+     * <p>
+     * 但是如果消息非持久化：这些消息只会保存在内存中，而不会写入磁盘。
      *
      * @return
      */
-    public boolean persistentMessages() {
-        return _persistentMessages;
+    public boolean persistentQueue() {
+        return _persistentQueue;
+    }
+
+    private final boolean _persistentMessage;
+
+    /**
+     * 是否持久化消息：
+     * 持久化消息会被写入磁盘，以确保在 RabbitMQ 服务重启后，消息不会丢失。
+     * <p>
+     * 但是注意：队列持久化与消息持久化是独立的：即使队列是持久化的，如果消息没有被标记为持久化，
+     * 该消息在 RabbitMQ 重启后依然会丢失。同样地，非持久化队列即使消息标记为持久化，消息也不会被保存。
+     *
+     * @return
+     */
+    public boolean persistentMessage() {
+        return _persistentMessage;
     }
 
     private final String _connectionString;
@@ -67,11 +84,12 @@ public final class Policy {
         return _connectionString;
     }
 
-    public Policy(MQConnConfig connConfig, int prefetchCount, boolean publisherConfirms, boolean persistentMessages) {
+    public Policy(MQConnConfig connConfig, int prefetchCount, boolean publisherConfirms, Boolean persistentQueue, boolean persistentMessage) {
         _connConfig = connConfig;
         _prefetchCount = prefetchCount;
         _publisherConfirms = publisherConfirms;
-        _persistentMessages = persistentMessages;
+        _persistentQueue = persistentQueue;
+        _persistentMessage = persistentMessage;
         _connectionString = getConnectionString();
     }
 
@@ -88,10 +106,15 @@ public final class Policy {
         } else
             code.append("publisherConfirms=false;");
 
-        if (this.persistentMessages()) {
-            code.append("persistentMessages=true;");
+        if (this.persistentQueue()) {
+            code.append("persistentQueue=true;");
         } else
-            code.append("persistentMessages=false;");
+            code.append("persistentQueue=false;");
+
+        if (this.persistentMessage()) {
+            code.append("persistentMessage=true;");
+        } else
+            code.append("persistentMessage=false;");
 
         return code.toString();
     }
