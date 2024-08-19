@@ -35,6 +35,7 @@ public final class DTOMapper {
     });
 
     public static <T> DTObject toDTO(DomainObject target, String schemaCode) {
+        if (target.isEmpty()) return DTObject.empty();
         var schema = _getSchema.apply(schemaCode);
         return toDTO(target, schema);
     }
