@@ -153,9 +153,9 @@ public final class Activator {
 
                 obj.load();
             }
-
+            
             // 返回生成的字节码
-            var cls = cg.toClass();
+            var cls = cg.toClass(Activator.class.getClassLoader());
 
             return cls.getDeclaredMethod(methodName, argTypes);
 

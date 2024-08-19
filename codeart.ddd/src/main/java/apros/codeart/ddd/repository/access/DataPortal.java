@@ -33,6 +33,11 @@ public final class DataPortal {
         return model.querySingle(id, level);
     }
 
+    public static <T extends IDomainObject> T querySingle(Class<T> objectType, String expression, QueryLevel level) {
+        var model = DataModelLoader.get(objectType);
+        return model.querySingle(expression, null, level);
+    }
+
     // 基于对象表达式的查询
 
     public static <T extends IDomainObject> T querySingle(Class<T> objectType, String expression,

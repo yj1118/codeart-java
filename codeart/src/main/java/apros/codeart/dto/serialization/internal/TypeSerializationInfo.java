@@ -131,7 +131,7 @@ public abstract class TypeSerializationInfo {
     }
 
     public DTObject serialize(String schemaCode, Object instance) {
-        
+
         var serializable = TypeUtil.as(instance, IDTOSerializable.class);
         if (serializable != null) {
             return serializable.getData(schemaCode);
@@ -230,12 +230,18 @@ public abstract class TypeSerializationInfo {
 
     }
 
+    /**
+     * names 是因为可以用DTOParameter来转义名称，这样就有多个名称
+     *
+     * @param names
+     * @param type
+     */
     private static record ParameterInfo(Iterable<String> names, Class<?> type) {
 
         public Object getValue(DTObject dto) {
             for (var name : names) {
                 if (dto.exist(name)) {
-                    return dto.getValue(name);
+                    return dto.getValue(name, type);
                 }
             }
             throw new IllegalStateException(strings("apros.codeart", "UnknownException"));

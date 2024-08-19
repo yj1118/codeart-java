@@ -60,13 +60,16 @@ public abstract class SqlFormatBase implements ISqlFormat {
                                 column.setColumnName(cn);
                             } else {
                                 var field = table.getField(columnName, true);
-                                if (column.getTable() == null) {
-                                    if (field != null) columnName = field.name();
-                                    String cn = String.format("%s.%s", SqlStatement.qualifier(tableName), SqlStatement.qualifier(columnName));
-                                    column.setColumnName(cn);
-                                } else {
-                                    if (field != null) columnName = field.name();
-                                    column.setColumnName(SqlStatement.qualifier(columnName));
+                                if (field != null) { //这是最后加了一个如果字段不属于表，那么就有可能是条件，比如： enable=true，这个true就是条件，而不是列名
+                                    columnName = field.name();
+                                    if (column.getTable() == null) {
+//                                        if (field != null) columnName = field.name();
+                                        String cn = String.format("%s.%s", SqlStatement.qualifier(tableName), SqlStatement.qualifier(columnName));
+                                        column.setColumnName(cn);
+                                    } else {
+//                                        if (field != null) columnName = field.name();
+                                        column.setColumnName(SqlStatement.qualifier(columnName));
+                                    }
                                 }
                             }
                         }

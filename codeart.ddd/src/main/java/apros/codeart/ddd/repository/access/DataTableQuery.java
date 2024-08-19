@@ -275,7 +275,8 @@ final class DataTableQuery {
     private MapData executeQueryEntry(IQueryBuilder query, String expression, QueryLevel level,
                                       Consumer<MapData> fillArg) {
         var param = new MapData();
-        fillArg.accept(param);
+        if (fillArg != null)
+            fillArg.accept(param);
 
         // 编译表达式获取执行文本
         var description = QueryDescription.createBy(param, expression, level, _self);

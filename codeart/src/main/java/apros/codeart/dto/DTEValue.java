@@ -36,6 +36,19 @@ public class DTEValue extends DTEntity {
         return _value;
     }
 
+    public Object getValueRef(Class<?> type) {
+        if (type == long.class || type == Long.class) return this.getLongRef();
+        if (type == int.class || type == Integer.class) return this.getIntRef();
+        if (type == boolean.class || type == Boolean.class) return this.getBooleanRef();
+        if (type == byte.class || type == Byte.class) return this.getByteRef();
+        if (type == short.class || type == Short.class) return this.getShortRef();
+        if (type == float.class || type == Float.class) return this.getFloatRef();
+        if (type == double.class || type == Double.class) return this.getDoubleRef();
+        if (type == char.class || type == Character.class) return this.getCharRef();
+        if (type == String.class) return this.getString();
+        return this.getValueRef();
+    }
+
     Long getLongRef() {
         if (_value == null) {
             _value = JSON.getLongRef(_valueCode);

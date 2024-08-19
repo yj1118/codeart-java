@@ -207,6 +207,20 @@ public class DTObject implements INullProxy, IDTOSchema {
         return value == null ? defaultValue : value;
     }
 
+    public Object getValue(String findExp, Class<?> type) {
+        return getValue(findExp, type, true);
+    }
+
+    public Object getValue(String findExp, Class<?> type, boolean throwError) {
+        DTEntity entity = find(findExp, throwError);
+        if (entity == null) return null;
+
+        var ev = as(entity, DTEValue.class);
+        if (ev == null) return null;
+
+        return ev.getValueRef(type);
+    }
+
     <T> T getValue(String findExp, T defaultValue, boolean throwError, Function<DTEValue, T> extractValue) {
         DTEntity entity = find(findExp, throwError);
         if (entity == null) return null;
