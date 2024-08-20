@@ -294,8 +294,8 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
         insertItem(index, item);
     }
 
-    public List<DTObject> getObjects() {
-        return Collections.unmodifiableList(_items);
+    public DTObjects getObjects() {
+        return new DTObjects(_items);
     }
 
     public DTObject getElement(int index) {

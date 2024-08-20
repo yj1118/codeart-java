@@ -121,7 +121,7 @@ public final class ListUtil {
         Long[] longObjects = Arrays.stream(source)
                 .boxed() // box the primitive long to Long
                 .toArray(Long[]::new);
-        
+
         return asList(longObjects);
     }
 
@@ -244,6 +244,23 @@ public final class ListUtil {
     }
 
     /**
+     * 是否有重复项
+     *
+     * @param list
+     * @return
+     */
+    public static <T> boolean hasDuplicates(Iterable<T> list, Function<T, Object> selector) {
+        Set<Object> set = new HashSet<>();
+        for (T item : list) {
+            var value = selector.apply(item);
+            if (!set.add(value)) {
+                return true; // 有重复
+            }
+        }
+        return false; // 无重复
+    }
+
+    /**
      * 让集合高效的设置元素，防止2次遍历
      *
      * @param <T>
@@ -260,6 +277,14 @@ public final class ListUtil {
         }
     }
 
+    public static <T, E> List<E> flatMap(Iterable<T> list, Function<T, Iterable<E>> getCollection) {
+        var r = new ArrayList<E>();
+        for (T item : list) {
+            var children = getCollection.apply(item);
+            addRange(r, children);
+        }
+        return r;
+    }
 
     /**
      * 将集合 source 转变成为 target，需要增加哪些元素和需要删除哪些元素

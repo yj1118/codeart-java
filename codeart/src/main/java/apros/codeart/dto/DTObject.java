@@ -826,11 +826,15 @@ public class DTObject implements INullProxy, IDTOSchema {
         }
     }
 
-    public List<DTObject> getList(String findExp) {
+    public DTObjects getList() {
+        return getList(StringUtil.empty(), true);
+    }
+
+    public DTObjects getList(String findExp) {
         return getList(findExp, true);
     }
 
-    public List<DTObject> getList(String findExp, boolean throwError) {
+    public DTObjects getList(String findExp, boolean throwError) {
         DTEList entity = find(DTEList.class, findExp, throwError);
         if (entity == null)
             return null;

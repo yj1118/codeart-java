@@ -128,11 +128,8 @@ public final class PrimitiveUtil {
      * @return
      */
     public static boolean is(Class<?> valueType) {
-
-        if (valueType.isPrimitive() || valueType.equals(String.class) || valueType.equals(LocalDateTime.class)
-                || valueType.equals(ZonedDateTime.class) || valueType.equals(UUID.class))
-            return true;
-        return false;
+        return valueType.isPrimitive() || valueType.equals(String.class) || valueType.equals(LocalDateTime.class)
+                || valueType.equals(ZonedDateTime.class) || valueType.equals(UUID.class);
     }
 
     /**

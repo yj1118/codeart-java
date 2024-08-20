@@ -2,6 +2,8 @@ package apros.codeart.ddd;
 
 import static apros.codeart.i18n.Language.strings;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -126,7 +128,6 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 //	#region 状态
 
     private StateMachine _machine = new StateMachine();
-
 
     /**
      * 是否为脏对象
@@ -596,7 +597,11 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
      * @return
      */
     public Object getOldValue(DomainProperty property) {
-        return this.dataProxy().loadOld(property.name());
+        return this.getOldValue(property.name());
+    }
+
+    public Object getOldValue(String propertyName) {
+        return this.dataProxy().loadOld(propertyName);
     }
 
     /**
@@ -639,43 +644,35 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         });
     }
 
-    public final EventHandler<DomainPropertyChangedEventArgs> propertyChanged = new EventHandler<DomainPropertyChangedEventArgs>();
+    public final EventHandler<DomainPropertyChangedEventArgs> propertyChanged = new EventHandler<>();
 
-    // 该方法似乎没什么用，所以不提供了，todo
-//	/// <summary>
-//	/// 得到被更改了的领域属性的信息
-//	/// </summary>
-//	public IEnumerable<(
-//	DomainProperty Property, object newValue,
-//	object oldValue)>
-//
-//	GetChangedProperties()
-//    {
-//        var properties = DomainProperty.GetProperties(this.ObjectType);
-//        List<(DomainProperty Property, object newValue, object oldValue)> items = new List<(DomainProperty Property, object newValue, object oldValue)>();
-//        foreach (var property in properties)
-//        {
-//            if (this.IsPropertyChanged(property))
-//            {
-//                var newValue = this.GetValue(property);
-//                var oldValue = this.GetOldValue(property);
-//                items.Add((property, newValue, oldValue));
-//            }
-//        }
-//        return items;
-//    }
+    /**
+     * 得到被更改了的领域属性的信息
+     */
+    public List<DomainPropertyChangedEventArgs> getChangedProperties() {
+        var properties = this.meta().properties();
+        ArrayList<DomainPropertyChangedEventArgs> items = new ArrayList<>();
+        for (var property : properties) {
+            var propertyName = property.name();
+            if (this.isPropertyChanged(propertyName)) {
+                var newValue = this.getValue(propertyName);
+                var oldValue = this.getOldValue(propertyName);
+                items.add(new DomainPropertyChangedEventArgs(propertyName, newValue, oldValue));
+            }
+        }
+        return items;
+    }
 
 //	#endregion
-//
-//	#
-//
+
+
 //	region 构造
 
     private EventHandler<DomainObjectConstructedEventArgs> _constructed;
 
     public EventHandler<DomainObjectConstructedEventArgs> constructed() {
         if (_constructed == null)
-            _constructed = new EventHandler<DomainObjectConstructedEventArgs>();
+            _constructed = new EventHandler<>();
         return _constructed;
     }
 
@@ -749,7 +746,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
                     Language.strings("apros.codeart.ddd", "EmptyReadOnly", this.getClass().getName()));
     }
 
-//	region 辅助方法
+    //region 辅助方法
 
     /**
      * 获取领域类型定义的空对象

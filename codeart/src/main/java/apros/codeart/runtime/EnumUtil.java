@@ -36,7 +36,7 @@ public final class EnumUtil {
         return byte.class;
     }
 
-    private static Function<Class<?>, Method> _resolveGetValue = LazyIndexer.init((enumType) -> {
+    private static final Function<Class<?>, Method> _resolveGetValue = LazyIndexer.init((enumType) -> {
         return MethodUtil.resolve(enumType, "getValue", null);
     });
 

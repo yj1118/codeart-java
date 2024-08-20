@@ -11,7 +11,7 @@ public final class PostgresqlUtil {
     public static String getSqlDbTypeString(DbType dbType) {
         return switch (dbType) {
             case DbType.AnsiString, DbType.String -> "varchar";
-            case DbType.Byte, DbType.Int16 -> "smallint";
+            case DbType.Byte, DbType.Int16 -> "smallint"; // postgresql里没有8位存储，至少存16位
             case DbType.Boolean -> "boolean";
             case DbType.LocalDateTime -> "timestamp";
             case DbType.ZonedDateTime -> "timestamptz";
