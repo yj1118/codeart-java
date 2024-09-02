@@ -14,6 +14,7 @@ import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.access.DataSource;
 import apros.codeart.ddd.repository.access.DatabaseType;
+import apros.codeart.runtime.EnumUtil;
 import apros.codeart.util.HashUtil;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Iterables;
@@ -214,6 +215,11 @@ public final class QueryRunner {
                 for (var i = 0; i < _positions.length; i++) {
                     var name = _positions[i];
                     var value = param.get(name);
+
+                    if (value instanceof Enum) {
+                        value = (byte) EnumUtil.getValue(value);
+                    }
+
                     var index = i + 1; // sql里的参数是从1开始算的
                     statement.setObject(index, value);
                 }
