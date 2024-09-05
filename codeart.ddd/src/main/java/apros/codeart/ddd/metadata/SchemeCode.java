@@ -7,28 +7,27 @@ import apros.codeart.dto.DTObject;
 import apros.codeart.util.ListUtil;
 
 public final class SchemeCode {
-	private SchemeCode() {
-	}
+    private SchemeCode() {
+    }
 
-	/**
-	 * 
-	 * 获得完整得架构码
-	 * 
-	 * @param meta
-	 * @return
-	 */
-	public static DTObject get(ObjectMeta meta) {
-		var propertyNames = ListUtil.map(meta.properties(), (p) -> p.name());
-		return get(meta, propertyNames);
-	}
+    /**
+     * 获得完整得架构码
+     *
+     * @param meta
+     * @return
+     */
+    public static DTObject get(ObjectMeta meta) {
+        var propertyNames = ListUtil.map(meta.properties(), PropertyMeta::name);
+        return get(meta, propertyNames);
+    }
 
-	public static DTObject get(ObjectMeta meta, Iterable<String> propertyNames) {
-		return SchemeCodeReader.read(meta, propertyNames);
-	}
+    public static DTObject get(ObjectMeta meta, Iterable<String> propertyNames) {
+        return SchemeCodeReader.read(meta, propertyNames);
+    }
 
-	public static Class<? extends IDomainObject> parse(DTObject scheme) {
-		return SchemeCodeParser.generate(scheme);
-	}
+    public static Class<? extends IDomainObject> parse(DTObject scheme) {
+        return SchemeCodeParser.generate(scheme);
+    }
 
 //	public static String get(ObjectMeta meta) {
 //

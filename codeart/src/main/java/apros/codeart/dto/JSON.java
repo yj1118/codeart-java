@@ -9,8 +9,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.UUID;
 
 import apros.codeart.dto.serialization.IDTOValue;
+import apros.codeart.runtime.EnumUtil;
 import com.google.common.primitives.*;
 
 import apros.codeart.pooling.util.StringPool;
@@ -43,7 +45,7 @@ public class JSON {
 
         var valueClass = value.getClass();
 
-        if (valueClass == String.class) {
+        if (valueClass == String.class || valueClass == UUID.class) {
             writeString(sb, value.toString());
             return;
         }
@@ -64,8 +66,7 @@ public class JSON {
         }
 
         if (valueClass.isEnum()) {
-            Enum<?> e = (Enum<?>) value;
-            int ordinalValue = e.ordinal();
+            var ordinalValue = EnumUtil.getValue(value);
             sb.append(ordinalValue);
             return;
         }

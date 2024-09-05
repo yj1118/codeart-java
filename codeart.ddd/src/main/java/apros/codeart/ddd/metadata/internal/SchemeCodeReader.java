@@ -1,6 +1,7 @@
 package apros.codeart.ddd.metadata.internal;
 
 import apros.codeart.ddd.PropertyValidatorImpl;
+import apros.codeart.ddd.metadata.MetadataScheme;
 import apros.codeart.ddd.metadata.ObjectMeta;
 import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.dto.DTObject;
@@ -14,45 +15,30 @@ public final class SchemeCodeReader {
      *
      * @param <T>
      * @param meta
-     * @param getPropertyNames
-     * @param getPropertyName
      * @return
      */
-    public static <T> DTObject read(ObjectMeta meta, Iterable<String> propertyNames) {
+    public static DTObject read(ObjectMeta meta, Iterable<String> propertyNames) {
 
-        var data = DTObject.editable();
-        data.setString("name", meta.name());
-        data.setByte("category", meta.category().value());
+        var scheme = new MetadataScheme(meta.name(), meta.category());
 
         for (var propertyName : propertyNames) {
             var tip = meta.findProperty(propertyName);
-            var tipData = mapProperty(tip);
-
-            data.push("props", tipData);
+            addProperty(scheme, tip);
         }
 
-        return data;
+        return scheme.getData();
     }
 
-    private static DTObject mapProperty(PropertyMeta tip) {
-        var data = DTObject.editable();
-        data.setString("name", tip.name());
-        data.setByte("category", tip.category().value());
-        data.setString("monotype", tip.monotype().getSimpleName());
-        data.setBoolean("lazy", tip.lazy());
+    private static void addProperty(MetadataScheme scheme, PropertyMeta tip) {
 
-        for (var validator : tip.validators()) {
-            var val = DTObject.editable();
-            var annTypeName = PropertyValidatorImpl.getAnnotationName(validator);
-            val.setString("name", annTypeName);
-            var valData = validator.getData();
-            if (valData != null && !valData.isEmpty()) {
-                val.combineObject("data", valData);
+        scheme.addProperty(tip.name(), tip.category(), tip.monotype().getSimpleName(), tip.lazy(), (property) -> {
+            for (var validator : tip.validators()) {
+                var annTypeName = PropertyValidatorImpl.getAnnotationName(validator);
+                var valData = validator.getData();
+                property.addValidator(annTypeName, valData);
             }
-            data.push("vals", val);
-        }
+        });
 
-        return data;
     }
 
 }

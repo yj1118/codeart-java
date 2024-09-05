@@ -4,6 +4,8 @@ import java.lang.reflect.Field;
 
 import apros.codeart.bytecode.LogicOperator;
 import apros.codeart.bytecode.MethodGenerator;
+import apros.codeart.dto.DTObject;
+import apros.codeart.dto.DTObjects;
 import apros.codeart.runtime.FieldUtil;
 
 /**
@@ -18,11 +20,16 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
     }
 
     private Class<?> getElementType(Field field) {
-        var atas = FieldUtil.getActualTypeArguments(field);
-        if (atas.length == 0)
+
+        if (field.getType().equals(DTObjects.class)) {
+            return DTObject.class;
+        }
+
+        var args = FieldUtil.getActualTypeArguments(field);
+        if (args.length == 0)
             return Object.class;
 
-        return atas[0]; // 将第0个泛型参数作为集合的成员类型
+        return args[0]; // 将第0个泛型参数作为集合的成员类型
     }
 
     public CollectionSerializationInfo(Field field, DTOMemberImpl memberAnn) {

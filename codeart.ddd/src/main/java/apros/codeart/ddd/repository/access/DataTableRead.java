@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import apros.codeart.ddd.*;
+import apros.codeart.runtime.EnumUtil;
 import apros.codeart.util.TimeUtil;
 import com.google.common.collect.Iterables;
 
@@ -366,6 +367,8 @@ final class DataTableRead {
             if (value.getClass() == String.class) {
                 return UUID.fromString(value.toString());
             }
+        } else if (exceptType.isEnum()) {
+            return EnumUtil.fromValue(exceptType, value);
         } else if (exceptType == LocalDateTime.class || exceptType == EmptyableDateTime.class) {
             var time = (Timestamp) value;
             return time.toLocalDateTime();

@@ -25,6 +25,8 @@ final class DTODeserializeMethodGenerator {
                 readMembers(mg, typeInfo);
             }
 
+            //cg.save();
+
             // 返回生成的字节码
             var cls = cg.toClass();
 

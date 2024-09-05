@@ -396,6 +396,6 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
 
     @Override
     public Iterable<String> getSchemaMembers() {
-        return null;
+        return _template.getSchemaMembers();
     }
 }

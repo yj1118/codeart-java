@@ -26,6 +26,10 @@ public class DTObjects implements Iterable<DTObject> {
         _list = items;
     }
 
+    public void add(DTObject item) {
+        _list.add(item);
+    }
+
     public DTObject get(int index) {
         return _list.get(index);
     }
@@ -119,6 +123,12 @@ public class DTObjects implements Iterable<DTObject> {
         });
 
     }
+
+    public static DTObjects readonly(String code) {
+        var obj = DTObject.readonly(String.format("{rows:\"%s\"}", code));
+        return obj.getList("rows");
+    }
+
 
     public final static DTObjects Empty = new DTObjects(new ArrayList<>(0));
 

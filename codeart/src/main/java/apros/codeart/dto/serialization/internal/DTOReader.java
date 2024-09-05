@@ -79,7 +79,7 @@ abstract class DTOReader implements IDTOReader {
         return _dto.getShortRef(name);
     }
 
-    public Integer readIntRef(String name) {
+    public Integer readIntegerRef(String name) {
         return _dto.getIntRef(name);
     }
 
@@ -94,7 +94,7 @@ abstract class DTOReader implements IDTOReader {
     public Double readDoubleRef(String name) {
         return _dto.getDoubleRef(name);
     }
-    
+
     public Character readCharRef(String name) {
         return _dto.getCharRef(name);
     }

@@ -51,7 +51,7 @@ public interface IDTOReader {
 
     Short readShortRef(String name);
 
-    Integer readIntRef(String name);
+    Integer readIntegerRef(String name);
 
     Long readLongRef(String name);
 

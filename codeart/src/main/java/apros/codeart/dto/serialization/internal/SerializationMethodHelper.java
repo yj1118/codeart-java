@@ -321,6 +321,7 @@ final class SerializationMethodHelper {
                 g.load(index);
                 g.load(elementType);
             });
+            g.cast(elementType);
         }
 
     }

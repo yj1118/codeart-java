@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import apros.codeart.dto.serialization.DTOParameter;
+import apros.codeart.runtime.EnumUtil;
 import com.google.common.base.Preconditions;
 
 import apros.codeart.dto.DTObject;
@@ -179,6 +180,10 @@ public abstract class TypeSerializationInfo {
             if (PrimitiveUtil.is(type)) {
                 var value = prm.getValue(dto);
                 args[i] = value;
+            } else if (type.isEnum()) {
+                var value = prm.getValue(dto);
+                var enumValue = EnumUtil.fromValue(type, value);  //将基元值，转为枚举值
+                args[i] = enumValue;
             } else {
                 var obj = prm.getObject(dto);
                 var value = obj.save(type);
