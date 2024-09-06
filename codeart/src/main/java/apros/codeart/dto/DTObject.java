@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -396,6 +397,11 @@ public class DTObject implements INullProxy, IDTOSchema {
     public String getString(String findExp, String defaultValue, boolean throwError) {
         DTEValue entity = find(DTEValue.class, findExp, throwError);
         return entity == null ? defaultValue : entity.getString();
+    }
+
+    public UUID getUUID(String findExp) {
+        String uuid = getString(findExp);
+        return UUID.fromString(uuid);
     }
 
     public LocalDateTime getLocalDateTime(String findExp, LocalDateTime defaultValue) {
