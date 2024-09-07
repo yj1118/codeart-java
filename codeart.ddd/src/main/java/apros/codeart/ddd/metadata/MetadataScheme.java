@@ -25,6 +25,14 @@ public class MetadataScheme {
         _data.push("props", ps.getData());
     }
 
+//    public void addStringProperty(String propertyName,
+//                                  boolean lazy, Consumer<MetadataPropertyScheme> set) {
+//
+//        this.addProperty(propertyName, DomainPropertyCategory.Primitive, "String", lazy, (ps) -> {
+//
+//        });
+//    }
+
     public DTObject getData() {
         return _data;
     }

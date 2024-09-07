@@ -37,6 +37,7 @@ public class DTEValue extends DTEntity {
     }
 
     public Object getValueRef(Class<?> type) {
+        if (type == UUID.class) return this.getUUID();
         if (type == long.class || type == Long.class) return this.getLongRef();
         if (type == int.class || type == Integer.class) return this.getIntRef();
         if (type == boolean.class || type == Boolean.class) return this.getBooleanRef();
@@ -183,7 +184,7 @@ public class DTEValue extends DTEntity {
         return _valueCode.charAt(0);
     }
 
-    public UUID getGuid() {
+    public UUID getUUID() {
         if (_value != null)
             return (UUID) _value;
         return UUID.fromString(_valueCode);
@@ -204,7 +205,7 @@ public class DTEValue extends DTEntity {
      * 基类型和字符串都是通过该方法赋值的
      *
      * @param valueCode
-     * @param valueIsString
+     * @param valueCodeIsString
      */
     public void setValueCode(String valueCode, boolean valueCodeIsString) {
         _valueCode = valueCode;
