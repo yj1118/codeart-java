@@ -125,7 +125,7 @@ public class DTObjects implements Iterable<DTObject> {
     }
 
     public static DTObjects readonly(String code) {
-        var obj = DTObject.readonly(String.format("{rows:\"%s\"}", code));
+        var obj = DTObject.readonly(String.format("{rows:%s}", code));
         return obj.getList("rows");
     }
 
