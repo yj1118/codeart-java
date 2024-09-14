@@ -24,7 +24,7 @@ public class ValueMeta {
         return _isCollection;
     }
 
-    private Class<?> _monotype;
+    private final Class<?> _monotype;
 
     /**
      * 单体类型，这个类型的意思是，当类型为集合时，是成员element的类型，当不是集合时，那就是单体自身的类型
@@ -42,7 +42,7 @@ public class ValueMeta {
         return _monotype;
     }
 
-    private ObjectMeta _monoMeta;
+    private final ObjectMeta _monoMeta;
 
     /**
      * 单体类型的领域元数据描述，对于int/string等基元类型是没有该描述的

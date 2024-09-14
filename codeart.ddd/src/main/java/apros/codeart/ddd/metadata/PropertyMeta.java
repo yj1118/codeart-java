@@ -48,6 +48,13 @@ public class PropertyMeta {
     }
 
     /**
+     * 属性值的类型
+     */
+    public Class<?> type() {
+        return _value.getType();
+    }
+
+    /**
      * 单体类型的领域元数据描述，对于int/string等基元类型是没有该描述的
      *
      * @return

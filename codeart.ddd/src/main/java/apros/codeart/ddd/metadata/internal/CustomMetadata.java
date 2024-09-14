@@ -1,18 +1,12 @@
 package apros.codeart.ddd.metadata.internal;
 
 import apros.codeart.App;
-import apros.codeart.ddd.DomainObject;
-import apros.codeart.ddd.IDomainObject;
-import apros.codeart.ddd.cqrs.CQRSConfig;
 import apros.codeart.ddd.metadata.IMetadataSchemeFactory;
 import apros.codeart.ddd.metadata.SchemeCode;
 import apros.codeart.runtime.Activator;
-import apros.codeart.util.SafeAccessImpl;
 
-import java.util.ArrayList;
-
-public final class MetadataSchemeFactory {
-    private MetadataSchemeFactory() {
+public final class CustomMetadata {
+    private CustomMetadata() {
     }
 
     public static void initialize() {
@@ -23,7 +17,7 @@ public final class MetadataSchemeFactory {
             for (var scheme : schemes) {
                 var dynamicType = SchemeCode.parse(scheme);
                 MetadataLoader.register(dynamicType);
-                System.out.println("Loaded object meta: " + dynamicType.getSimpleName());
+                System.out.println("Loaded scheme object meta: " + dynamicType.getSimpleName());
             }
         }
     }

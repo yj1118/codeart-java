@@ -274,6 +274,13 @@ public final class StringUtil {
         return start.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
+    /**
+     * 忽略大小写的完整匹配
+     *
+     * @param list
+     * @param target
+     * @return
+     */
     public static boolean containsIgnoreCase(Iterable<String> list, String target) {
         for (String element : list) {
             if (element.equalsIgnoreCase(target)) {

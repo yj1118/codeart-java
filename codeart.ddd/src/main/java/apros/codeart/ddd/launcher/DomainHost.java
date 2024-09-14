@@ -6,7 +6,7 @@ import apros.codeart.ddd.cqrs.master.Forker;
 import apros.codeart.ddd.cqrs.slave.Brancher;
 import apros.codeart.ddd.message.internal.MessageHost;
 import apros.codeart.ddd.metadata.internal.MetadataLoader;
-import apros.codeart.ddd.metadata.internal.MetadataSchemeFactory;
+import apros.codeart.ddd.metadata.internal.CustomMetadata;
 import apros.codeart.ddd.repository.access.DataModelLoader;
 import apros.codeart.ddd.repository.access.DataPortal;
 import apros.codeart.ddd.saga.internal.EventHost;
@@ -44,7 +44,7 @@ final class DomainHost {
         Brancher.initialize();
 
         // 初始化自定义的元数据（用于动态生成领域类型）
-        MetadataSchemeFactory.initialize();
+        CustomMetadata.initialize();
 
         var domainTypes = MetadataLoader.load();
 

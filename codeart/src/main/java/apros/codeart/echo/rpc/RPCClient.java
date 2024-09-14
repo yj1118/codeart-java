@@ -20,6 +20,10 @@ public class RPCClient {
         });
     }
 
+    public static DTObject invoke(String method) {
+        return invoke(method, DTObject.editable());
+    }
+
 //	 #region 获取客户端实例
 
     private static final Pool<IClient> _pool = new Pool<IClient>(IClient.class, new PoolConfig(10, 500, 60), (isTempItem) -> {

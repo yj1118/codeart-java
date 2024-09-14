@@ -26,7 +26,7 @@ public final class Brancher {
             var scheme = getRemoteObjectMeta(slave.name());
             var dynamicType = SchemeCode.parse(scheme);
             MetadataLoader.register(dynamicType);
-            System.out.println("Loaded object meta: " + slave.name());
+            System.out.println("Loaded remote object meta: " + slave.name());
         }
     }
 

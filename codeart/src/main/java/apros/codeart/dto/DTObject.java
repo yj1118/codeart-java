@@ -671,7 +671,7 @@ public class DTObject implements INullProxy, IDTOSchema {
 
         validateReadOnly();
 
-        if (obj == null || obj.isEmpty())
+        if (obj == null || obj.isEmpty(false))  //成员为空，不算空，这样 {}也可以被传输
             return;
 
         if (obj.isReadOnly()) {
@@ -1598,7 +1598,12 @@ public class DTObject implements INullProxy, IDTOSchema {
     }
 
     public boolean isEmpty() {
-        return _root.isEmpty() || this.getBoolean("__empty", false);
+        return isEmpty(true);
+    }
+
+    public boolean isEmpty(boolean confirmNoMembers) {
+        if (confirmNoMembers && _root.isEmpty()) return true;   //如果没有成员，那也认为是空
+        return this.getBoolean("__empty", false);
     }
 
     public boolean isNull() {

@@ -36,7 +36,6 @@ final class SqlParser {
     private static final Function<String, SqlColumns> _getColumns = LazyIndexer.init((sql) -> {
 
         try {
-
             Statement statement = CCJSqlParserUtil.parse(sql);
 
             if (statement instanceof Select) {
@@ -97,6 +96,10 @@ final class SqlParser {
 
     private static Iterable<String> getWhere(PlainSelect plainSelect, String sql) {
 
+        if (!sql.toLowerCase().contains(" where ")) {
+            return ListUtil.empty();
+        }
+
         Expression where = plainSelect.getWhere();
 
         List<String> columnNames = new ArrayList<>();
@@ -119,6 +122,11 @@ final class SqlParser {
     }
 
     private static Iterable<String> getOrder(PlainSelect plainSelect, String sql) {
+
+        if (!sql.toLowerCase().contains(" order ")) {
+            return ListUtil.empty();
+        }
+
         List<OrderByElement> orderByElements = plainSelect.getOrderByElements();
         if (orderByElements == null)
             return new ArrayList<String>(0);
