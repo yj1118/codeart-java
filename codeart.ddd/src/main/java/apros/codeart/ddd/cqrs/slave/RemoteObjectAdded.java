@@ -4,12 +4,13 @@ import static apros.codeart.runtime.Util.propagate;
 
 import apros.codeart.ddd.AggregateRoot;
 import apros.codeart.ddd.cqrs.ActionName;
-import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.ConstructorRepositoryImpl;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.Repository;
+import apros.codeart.ddd.virtual.VirtualRoot;
+import apros.codeart.ddd.virtual.internal.VirtualRepository;
 import apros.codeart.dto.DTObject;
 import apros.codeart.echo.rpc.RPCClient;
 import apros.codeart.util.ListUtil;
@@ -35,35 +36,10 @@ class RemoteObjectAdded {
 
             var typeName = content.getString("typeName");
             var data = content.getObject("data");
-            addRoot(typeName, data);
+            VirtualRepository.addRoot(typeName, data);
         }
     }
 
-
-    public static DynamicRoot addRoot(String typeName, DTObject data) {
-
-        var domainType = ObjectMetaLoader.get(typeName).objectType();
-
-        var obj = constructObject(domainType);
-        obj.load(data);
-
-        var repository = Repository.create(typeName);
-        repository.addRoot(obj);
-
-        return obj;
-    }
-
-    private static DynamicRoot constructObject(Class<?> objectType) {
-
-        try {
-            var constructorTip = ConstructorRepositoryImpl.getTip(objectType, true);
-            var constructor = constructorTip.constructor();
-            // 远程对象在本地的映射，仓储构造函数一定是无参的
-            return (DynamicRoot) constructor.newInstance(ListUtil.emptyObjects());
-        } catch (Throwable ex) {
-            throw propagate(ex);
-        }
-    }
 
     private static final RemoteObjectAddedHandler handler = new RemoteObjectAddedHandler();
 

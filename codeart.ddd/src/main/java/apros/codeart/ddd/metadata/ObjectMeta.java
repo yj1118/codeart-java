@@ -3,8 +3,8 @@ package apros.codeart.ddd.metadata;
 import java.util.ArrayDeque;
 
 import apros.codeart.ddd.*;
-import apros.codeart.ddd.dynamic.IDynamicObject;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
+import apros.codeart.ddd.virtual.IVirtualObject;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
@@ -145,7 +145,7 @@ public class ObjectMeta {
     final static Class<?> AggregateRootType = IAggregateRoot.class;
     final static Class<?> EntityObjectType = IEntityObject.class;
     final static Class<?> DomainObjectType = IDomainObject.class;
-    final static Class<?> DynamicObjectType = IDynamicObject.class;
+    final static Class<?> VirtualObjectType = IVirtualObject.class;
 
     public static boolean isDomainObject(Class<?> type) {
         return DomainObjectType.isAssignableFrom(type);
@@ -163,12 +163,12 @@ public class ObjectMeta {
         return EntityObjectType.isAssignableFrom(type);
     }
 
-    public static boolean isDynamicObject(Class<?> type) {
-        return DynamicObjectType.isAssignableFrom(type);
+    public static boolean isVirtualObject(Class<?> type) {
+        return VirtualObjectType.isAssignableFrom(type);
     }
 
     public static boolean isFrameworkDomainType(Class<?> objectType) {
-        if (isDynamicObject(objectType))
+        if (isVirtualObject(objectType))
             return true;
 
         // 因为框架提供的基类没有标记ObjectRepositoryAttribute

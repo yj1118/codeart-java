@@ -5,6 +5,7 @@ import apros.codeart.ddd.cqrs.ActionName;
 import apros.codeart.ddd.message.DomainMessage;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.Repository;
+import apros.codeart.ddd.virtual.internal.VirtualRepository;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.SafeAccess;
 
@@ -29,13 +30,7 @@ class RemoteObjectDeleted {
             var typeName = content.getString("typeName");
             var id = content.getValue("id");
 
-            var repoitory = Repository.create(typeName);
-
-            var obj = repoitory.findRoot(id, QueryLevel.SINGLE);
-
-            if (obj.isEmpty()) return;
-
-            repoitory.deleteRoot(obj);
+            VirtualRepository.deleteRoot(typeName, id);
 
         }
     }

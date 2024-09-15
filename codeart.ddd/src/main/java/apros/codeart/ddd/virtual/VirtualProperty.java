@@ -1,4 +1,4 @@
-//package apros.codeart.ddd.dynamic;
+//package apros.codeart.ddd.virtual;
 //
 //import apros.codeart.ddd.DomainDrivenException;
 //import apros.codeart.ddd.DomainProperty;

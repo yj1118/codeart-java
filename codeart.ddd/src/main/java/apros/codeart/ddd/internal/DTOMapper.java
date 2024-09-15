@@ -4,6 +4,7 @@ import static apros.codeart.runtime.Util.propagate;
 
 import java.util.function.Function;
 
+import apros.codeart.ddd.virtual.IVirtualObject;
 import apros.codeart.dto.IDTOSchema;
 import apros.codeart.runtime.MethodUtil;
 import apros.codeart.util.LazyIndexer;
@@ -13,7 +14,6 @@ import com.google.common.collect.Iterables;
 import apros.codeart.ddd.DomainCollection;
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.DomainObject;
-import apros.codeart.ddd.dynamic.IDynamicObject;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
@@ -237,7 +237,7 @@ public final class DTOMapper {
 
         try {
 
-            if (IDynamicObject.class.isAssignableFrom(objectType))
+            if (IVirtualObject.class.isAssignableFrom(objectType))
                 return (DomainObject) Activator.createInstance(objectType);
 
             var constructorTip = ConstructorRepositoryImpl.getTip(objectType, false);

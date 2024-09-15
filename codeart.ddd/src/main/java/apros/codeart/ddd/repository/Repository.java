@@ -7,9 +7,11 @@ import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.IRepositoryBase;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.cqrs.slave.Brancher;
-import apros.codeart.ddd.dynamic.DynamicRoot;
-import apros.codeart.ddd.dynamic.IDynamicRepository;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
+import apros.codeart.ddd.virtual.IVirtualRepository;
+import apros.codeart.ddd.virtual.VirtualRoot;
+import apros.codeart.ddd.virtual.internal.VirtualRepository;
+import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.MethodUtil;
 import apros.codeart.util.StringUtil;
@@ -49,7 +51,6 @@ public final class Repository {
     /**
      * 根据对象名称获得对应的仓储
      *
-     * @param <T>
      * @param rootTypeName
      * @return
      */
@@ -59,13 +60,13 @@ public final class Repository {
     }
 
     /**
-     * 获得动态类型得仓储
+     * 获得虚拟类型的仓储
      *
-     * @param dynamicTypeName
+     * @param virtualTypeName
      * @return
      */
-    public static IDynamicRepository createDynamic(String dynamicTypeName) {
-        return (IDynamicRepository) create(dynamicTypeName);
+    public static IVirtualRepository createVirtual(String virtualTypeName) {
+        return (IVirtualRepository) create(virtualTypeName);
     }
 
     /**
@@ -112,17 +113,34 @@ public final class Repository {
 
     // #endregion
 
-    public static DynamicRoot findRemote(String typeName, Object id) {
+    public static VirtualRoot findRemote(String typeName, Object id) {
         return findRemote(typeName, id, QueryLevel.NONE);
     }
 
-    public static DynamicRoot findRemote(String typeName, Object id, QueryLevel level) {
-        var repository = Repository.create(typeName);
-        var obj = (DynamicRoot) repository.findRoot(id, level);
+    public static VirtualRoot findRemote(String typeName, Object id, QueryLevel level) {
+        var obj = findVirtualRoot(typeName, id, level);
 
         if (obj.isEmpty()) {
             obj = Brancher.getRemoteObject(typeName, id);
         }
         return obj;
     }
+
+    public static VirtualRoot findVirtualRoot(String typeName, Object id, QueryLevel level) {
+        var repository = Repository.create(typeName);
+        return (VirtualRoot) repository.findRoot(id, level);
+    }
+
+    public static VirtualRoot addVirtualRoot(String typeName, DTObject data) {
+        return VirtualRepository.addRoot(typeName, data);
+    }
+
+    public static VirtualRoot updataVirtualRoot(String typeName, DTObject data) {
+        return VirtualRepository.updateRoot(typeName, data);
+    }
+
+    public static void deleteVirtualRoot(String typeName, Object id) {
+        VirtualRepository.deleteRoot(typeName, id);
+    }
+
 }

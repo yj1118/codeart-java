@@ -1,16 +1,13 @@
-package apros.codeart.ddd.dynamic;
+package apros.codeart.ddd.virtual;
 
 import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.FrameworkDomain;
 import apros.codeart.ddd.MergeDomain;
-import apros.codeart.ddd.internal.DTOMapper;
-import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.ConstructorRepository;
-import apros.codeart.dto.DTObject;
 
 @MergeDomain
 @FrameworkDomain
-public class DynamicObject extends DomainObject implements IDynamicObject {
+public class VirtualObject extends DomainObject implements IVirtualObject {
 
     private final boolean _isEmpty;
 
@@ -18,13 +15,13 @@ public class DynamicObject extends DomainObject implements IDynamicObject {
         return _isEmpty;
     }
 
-    public DynamicObject(boolean isEmpty) {
+    public VirtualObject(boolean isEmpty) {
         _isEmpty = isEmpty;
         this.onConstructed();
     }
 
     @ConstructorRepository
-    public DynamicObject() {
+    public VirtualObject() {
         _isEmpty = false;
         this.onConstructed();
     }

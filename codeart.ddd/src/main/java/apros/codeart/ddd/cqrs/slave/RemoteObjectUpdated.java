@@ -1,12 +1,8 @@
 package apros.codeart.ddd.cqrs.slave;
 
-import apros.codeart.ddd.AggregateRoot;
-import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.cqrs.ActionName;
-import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.message.DomainMessage;
-import apros.codeart.ddd.repository.DataContext;
-import apros.codeart.ddd.repository.Repository;
+import apros.codeart.ddd.virtual.internal.VirtualRepository;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.SafeAccess;
 
@@ -29,22 +25,9 @@ class RemoteObjectUpdated {
         protected void handle(DTObject content) {
 
             var typeName = content.getString("typeName");
-
             var data = content.getObject("data");
 
-            var repository = Repository.create(typeName);
-
-            var id = data.getValue("id");
-
-            var obj = (DynamicRoot) repository.findRoot(id, QueryLevel.SINGLE);
-
-            if (obj.isEmpty()) return;
-
-            // 加载数据，并标记为已改变
-            obj.load(data, true);
-
-            repository.updateRoot(obj);
-
+            VirtualRepository.updateRoot(typeName, data);
         }
     }
 

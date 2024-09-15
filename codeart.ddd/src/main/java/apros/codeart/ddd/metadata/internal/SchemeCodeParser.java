@@ -8,13 +8,13 @@ import apros.codeart.bytecode.MethodGenerator;
 import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.IDomainObject;
-import apros.codeart.ddd.dynamic.DynamicEntity;
-import apros.codeart.ddd.dynamic.DynamicObject;
-import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.metadata.DomainObjectCategory;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.repository.ConstructorRepository;
 import apros.codeart.ddd.repository.PropertyRepository;
+import apros.codeart.ddd.virtual.VirtualEntity;
+import apros.codeart.ddd.virtual.VirtualObject;
+import apros.codeart.ddd.virtual.VirtualRoot;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
@@ -122,11 +122,11 @@ public final class SchemeCodeParser {
     private static Class<?> getDomainClass(DomainObjectCategory category) {
         switch (category) {
             case DomainObjectCategory.AggregateRoot:
-                return DynamicRoot.class;
+                return VirtualRoot.class;
             case DomainObjectCategory.EntityObject:
-                return DynamicEntity.class;
+                return VirtualEntity.class;
             case DomainObjectCategory.ValueObject:
-                return DynamicObject.class;
+                return VirtualObject.class;
         }
         throw new IllegalArgumentException(Language.strings("apros.codeart.ddd", "NoDomainClass", category.value()));
     }

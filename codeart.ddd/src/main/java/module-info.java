@@ -13,7 +13,7 @@ module apros.codeart.ddd {
     exports apros.codeart.ddd.repository;
     exports apros.codeart.ddd.repository.access;
     exports apros.codeart.ddd.metadata;
-    exports apros.codeart.ddd.dynamic;
+    exports apros.codeart.ddd.virtual;
     exports apros.codeart.ddd.message;
     exports apros.codeart.ddd.launcher;
     exports apros.codeart.ddd.service;
@@ -22,4 +22,5 @@ module apros.codeart.ddd {
     opens apros.codeart.ddd.validation;
     exports apros.codeart.ddd.metadata.internal;
     opens apros.codeart.ddd.metadata.internal;
+    exports apros.codeart.ddd.virtual.internal;
 }

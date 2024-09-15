@@ -1,4 +1,4 @@
-package apros.codeart.ddd.dynamic;
+package apros.codeart.ddd.virtual;
 
 import apros.codeart.ddd.FrameworkDomain;
 import apros.codeart.ddd.IAggregateRoot;
@@ -12,18 +12,18 @@ import apros.codeart.util.EventHandler;
 
 @MergeDomain
 @FrameworkDomain
-public class DynamicRoot extends DynamicEntity implements IAggregateRoot {
+public class VirtualRoot extends VirtualEntity implements IAggregateRoot {
 
     private final AggregateRootEventManager _eventManager;
 
-    public DynamicRoot(boolean isEmpty) {
+    public VirtualRoot(boolean isEmpty) {
         super(isEmpty);
         _eventManager = new AggregateRootEventManager(this);
         this.onConstructed();
     }
 
     @ConstructorRepository
-    public DynamicRoot() {
+    public VirtualRoot() {
         super();
         _eventManager = new AggregateRootEventManager(this);
         this.onConstructed();
@@ -161,9 +161,9 @@ public class DynamicRoot extends DynamicEntity implements IAggregateRoot {
 //			    return new DynamicRoot(type, true);
 //			}
 
-    private static final DynamicRoot EmptyInstance = new DynamicRoot(true);
+    private static final VirtualRoot EmptyInstance = new VirtualRoot(true);
 
-    public static DynamicRoot empty() {
+    public static VirtualRoot empty() {
         return EmptyInstance;
     }
 

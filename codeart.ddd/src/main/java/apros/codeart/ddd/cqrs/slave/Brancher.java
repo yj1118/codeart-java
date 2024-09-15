@@ -2,12 +2,12 @@ package apros.codeart.ddd.cqrs.slave;
 
 import apros.codeart.ddd.cqrs.ActionName;
 import apros.codeart.ddd.cqrs.CQRSConfig;
-import apros.codeart.ddd.dynamic.DynamicRoot;
 import apros.codeart.ddd.metadata.SchemeCode;
 import apros.codeart.ddd.metadata.internal.MetadataLoader;
+import apros.codeart.ddd.virtual.VirtualRoot;
+import apros.codeart.ddd.virtual.internal.VirtualRepository;
 import apros.codeart.dto.DTObject;
 import apros.codeart.echo.rpc.RPCClient;
-import apros.codeart.i18n.Language;
 
 public final class Brancher {
     private Brancher() {
@@ -45,7 +45,7 @@ public final class Brancher {
      * @param id
      * @return
      */
-    public static DynamicRoot getRemoteObject(String name, Object id) {
+    public static VirtualRoot getRemoteObject(String name, Object id) {
 
         var methodName = ActionName.getObject(name);
         var data = RPCClient.invoke(methodName, (arg) -> {
@@ -53,9 +53,9 @@ public final class Brancher {
             arg.setValue("id", id);
         });
 
-        if (data.isEmpty()) return DynamicRoot.empty();
+        if (data.isEmpty()) return VirtualRoot.empty();
 
-        return RemoteObjectAdded.addRoot(name, data);
+        return VirtualRepository.addRoot(name, data);
     }
 
     private static void subscribeEvents() {

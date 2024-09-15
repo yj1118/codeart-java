@@ -6,8 +6,8 @@ import java.util.function.Function;
 
 import apros.codeart.ddd.DomainDrivenException;
 import apros.codeart.ddd.IRepositoryBase;
-import apros.codeart.ddd.dynamic.IDynamicObject;
-import apros.codeart.ddd.repository.access.SqlDynamicRepository;
+import apros.codeart.ddd.virtual.SqlVirtualRepository;
+import apros.codeart.ddd.virtual.IVirtualObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.LazyIndexer;
@@ -125,9 +125,9 @@ class RepositoryFactory {
                 return repository;
         }
 
-        // 都找不到，那么就判断是否为动态类型，如果是，则返回动态类型的通用仓储
-        if (IDynamicObject.class.isAssignableFrom(objectType))
-            return new SqlDynamicRepository(objectType.getSimpleName());
+        // 都找不到，那么就判断是否为虚拟类型，如果是，则返回动态类型的通用仓储
+        if (IVirtualObject.class.isAssignableFrom(objectType))
+            return new SqlVirtualRepository(objectType.getSimpleName());
 
         throw new DomainDrivenException(
                 Language.strings("apros.codeart.ddd", "NotFoundRepository", objectType.getName()));
