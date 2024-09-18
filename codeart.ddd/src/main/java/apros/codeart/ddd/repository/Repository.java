@@ -60,16 +60,6 @@ public final class Repository {
     }
 
     /**
-     * 获得虚拟类型的仓储
-     *
-     * @param virtualTypeName
-     * @return
-     */
-    public static IVirtualRepository createVirtual(String virtualTypeName) {
-        return (IVirtualRepository) create(virtualTypeName);
-    }
-
-    /**
      * 得到对象类型对应的仓储上定义的方法
      *
      * @param objectType
@@ -132,15 +122,15 @@ public final class Repository {
     }
 
     public static VirtualRoot addVirtualRoot(String typeName, DTObject data) {
-        return VirtualRepository.addRoot(typeName, data);
+        return VirtualRepository.add(typeName, data);
     }
 
     public static VirtualRoot updataVirtualRoot(String typeName, DTObject data) {
-        return VirtualRepository.updateRoot(typeName, data);
+        return VirtualRepository.update(typeName, data);
     }
 
     public static void deleteVirtualRoot(String typeName, Object id) {
-        VirtualRepository.deleteRoot(typeName, id);
+        VirtualRepository.delete(typeName, id);
     }
 
 }

@@ -27,7 +27,7 @@ class RemoteObjectUpdated {
             var typeName = content.getString("typeName");
             var data = content.getObject("data");
 
-            VirtualRepository.updateRoot(typeName, data);
+            VirtualRepository.update(typeName, data);
         }
     }
 

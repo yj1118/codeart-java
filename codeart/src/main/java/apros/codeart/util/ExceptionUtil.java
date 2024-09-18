@@ -27,10 +27,9 @@ public final class ExceptionUtil {
     }
 
     public static String fullMessage(Exception ex) {
-        return StringPool.using((code) -> {
-            fillMessage(ex, code);
-        });
-
+        StringBuilder code = new StringBuilder();
+        fillMessage(ex, code);
+        return code.toString();
     }
 
     private static void fillMessage(Exception ex, StringBuilder code) {
@@ -58,12 +57,11 @@ public final class ExceptionUtil {
      * @return
      */
     public static String full(Exception ex) {
-
-        return StringPool.using((code) -> {
-            fillMessage(ex, code);
-            StringUtil.appendLine(code);
-            code.append(fullStackTrace(ex));
-        });
+        StringBuilder code = new StringBuilder();
+        fillMessage(ex, code);
+        StringUtil.appendLine(code);
+        code.append(fullStackTrace(ex));
+        return code.toString();
     }
 
 }

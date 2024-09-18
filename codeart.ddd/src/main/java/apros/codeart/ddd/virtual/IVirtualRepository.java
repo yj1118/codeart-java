@@ -2,6 +2,8 @@ package apros.codeart.ddd.virtual;
 
 import apros.codeart.ddd.IRepositoryBase;
 import apros.codeart.ddd.QueryLevel;
+import apros.codeart.ddd.repository.Page;
+import apros.codeart.dto.DTObject;
 
 public interface IVirtualRepository extends IRepositoryBase {
 
@@ -13,4 +15,5 @@ public interface IVirtualRepository extends IRepositoryBase {
      * @return
      */
     VirtualRoot find(Object id, QueryLevel level);
+    
 }

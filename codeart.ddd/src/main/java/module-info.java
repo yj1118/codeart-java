@@ -20,7 +20,7 @@ module apros.codeart.ddd {
 
     opens apros.codeart.ddd;
     opens apros.codeart.ddd.validation;
-    exports apros.codeart.ddd.metadata.internal;
+//    exports apros.codeart.ddd.metadata.internal;
     opens apros.codeart.ddd.metadata.internal;
-    exports apros.codeart.ddd.virtual.internal;
+//    exports apros.codeart.ddd.virtual.internal;
 }

@@ -1,6 +1,9 @@
 package apros.codeart.ddd;
 
 import apros.codeart.TestSupport;
+import apros.codeart.ddd.repository.Page;
+import apros.codeart.ddd.virtual.VirtualRoot;
+import apros.codeart.dto.DTObject;
 
 public interface IRepositoryBase {
     /**
@@ -44,5 +47,13 @@ public interface IRepositoryBase {
      */
     @TestSupport
     void clearUp();
+
+
+    //#region 动态查询的支持
+
+    DTObject findPage(int pageIndex, int pageSize, DTObject config);
+
+    //#endregion
+
 
 }

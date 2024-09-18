@@ -55,7 +55,7 @@ public final class Brancher {
 
         if (data.isEmpty()) return VirtualRoot.empty();
 
-        return VirtualRepository.addRoot(name, data);
+        return VirtualRepository.add(name, data);
     }
 
     private static void subscribeEvents() {

@@ -4,13 +4,12 @@ package apros.codeart.ddd.virtual.internal;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.ConstructorRepositoryImpl;
+import apros.codeart.ddd.repository.Page;
 import apros.codeart.ddd.repository.Repository;
-import apros.codeart.ddd.repository.access.SqlRepository;
-import apros.codeart.ddd.virtual.IVirtualRepository;
+import apros.codeart.ddd.repository.access.DataPortal;
 import apros.codeart.ddd.virtual.VirtualRoot;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.ListUtil;
-import apros.codeart.util.SafeAccess;
 
 import static apros.codeart.runtime.Util.propagate;
 
@@ -19,7 +18,7 @@ public class VirtualRepository {
     private VirtualRepository() {
     }
 
-    public static VirtualRoot addRoot(String typeName, DTObject data) {
+    public static VirtualRoot add(String typeName, DTObject data) {
 
         var virtualType = ObjectMetaLoader.get(typeName).objectType();
 
@@ -45,8 +44,7 @@ public class VirtualRepository {
         }
     }
 
-    public static VirtualRoot updateRoot(String typeName, DTObject data) {
-
+    public static VirtualRoot update(String typeName, DTObject data) {
 
         var id = data.getValue("id");
 
@@ -64,7 +62,7 @@ public class VirtualRepository {
         return obj;
     }
 
-    public static void deleteRoot(String typeName, Object id) {
+    public static void delete(String typeName, Object id) {
         var repository = Repository.create(typeName);
 
         var obj = repository.findRoot(id, QueryLevel.SINGLE);
@@ -73,5 +71,4 @@ public class VirtualRepository {
 
         repository.deleteRoot(obj);
     }
-
 }

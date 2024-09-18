@@ -775,14 +775,14 @@ public class DTObject implements INullProxy, IDTOSchema {
         return _root.getMembers();
     }
 
-    public Iterable<DTObject> getObjects(String findExp, boolean throwError) {
+    public DTObjects getObjects(String findExp, boolean throwError) {
         DTEList entity = find(DTEList.class, findExp, throwError);
         if (entity == null)
             return null;
         return entity.getObjects();
     }
 
-    public Iterable<DTObject> getObjects(String findExp) {
+    public DTObjects getObjects(String findExp) {
         return getObjects(findExp, true);
     }
 
