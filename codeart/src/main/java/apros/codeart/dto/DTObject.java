@@ -1281,6 +1281,9 @@ public class DTObject implements INullProxy, IDTOSchema {
     }
 
     public DTObject asEditable() {
+
+        if (this.isEmpty()) return DTObject.createImpl("{}", false);
+
         if (!_isReadonly)
             return this;
         _isReadonly = false;
