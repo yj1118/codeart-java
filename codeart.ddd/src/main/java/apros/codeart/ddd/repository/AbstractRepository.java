@@ -229,7 +229,6 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
      *               }
      * @return
      */
-    @SuppressWarnings("unchecked")
     public DTObject findPage(int pageIndex, int pageSize, DTObject config) {
 
         var e = Expression.create(config);
@@ -314,14 +313,14 @@ public abstract class AbstractRepository<TRoot extends IAggregateRoot> extends P
          * @return
          */
         public static Expression create(DTObject config) {
-
-            var rowSchemaCode = config.getString("rowSchemaCode");
-
+            
             ArrayList<CriteriaField> criteriaFields = new ArrayList<>();
             StringBuilder statement = new StringBuilder();
             fillCriteria(statement, config.getObjects("criteria", false), criteriaFields);
             fillOrder(statement, config.getObject("order", null));
             fillInner(statement, config.getStrings("inner", null));
+
+            var rowSchemaCode = config.getString("rowSchemaCode");
 
             return new Expression(rowSchemaCode, statement.toString(), criteriaFields);
         }
