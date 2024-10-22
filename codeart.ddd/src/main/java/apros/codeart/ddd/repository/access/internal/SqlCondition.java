@@ -234,7 +234,7 @@ public final class SqlCondition {
                 int index = 0;
                 StringUtil.appendFormat(code, "%s IN (", sin.field());
                 for (var value : values) {
-                    var valueName = String.format("%s%s", name, index);
+                    var valueName = String.format("__%s%s", name, index);
                     param.put(valueName, value);
                     StringUtil.appendFormat(code, "@%s,", valueName);
                     index++;
@@ -267,7 +267,6 @@ public final class SqlCondition {
         ArrayList<SqlIn> ins = new ArrayList<>();
 
         Matcher matcher = _inRegex.matcher(commandText);
-        int offset = 0;
         while (matcher.find()) {
             var g = matcher.group(0);
             int length = g.length();
@@ -276,6 +275,9 @@ public final class SqlCondition {
 
             var newExp = StringUtil.trim(matcher.group(2));
             var para = newExp;
+
+            if (para.contains(",") || para.startsWith("__")) continue;  //"__" 代表是框架生成的参数，不用再处理
+
             newExp = String.format("%s IN (@%s)", field, para);
 
             SqlIn sin = new SqlIn(field, para, newExp);
