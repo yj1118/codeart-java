@@ -6,7 +6,7 @@ import apros.codeart.ddd.saga.DomainEvent;
 import apros.codeart.ddd.saga.internal.EventLog;
 import apros.codeart.ddd.saga.internal.EventUtil;
 import apros.codeart.ddd.saga.internal.RaisedQueue;
-import apros.codeart.ddd.saga.internal.trigger.EventTrigger;
+import apros.codeart.ddd.saga.EventTrigger;
 import apros.codeart.dto.DTObject;
 import apros.codeart.echo.event.EventPortal;
 import apros.codeart.log.Logger;
@@ -32,18 +32,17 @@ public final class EventProtector {
             while (true) {
                 // 触发回溯序列事件
                 var entry = queue.next();
-                if (entry != null) {
-                    trace.start(entry);
-                    if (entry.local() != null) {
-                        reverseLocalEvent(entry.local(), entry.log());
-                    } else {
-                        reverseRemoteEvent(entry.name(), entry.index(), queue);
-                    }
+                if (entry == null) break;
 
-                    EventLog.writeReversed(entry);
-                    trace.end(entry);
+                trace.start(entry);
+                if (entry.local() != null) {
+                    reverseLocalEvent(entry.local(), entry.log());
+                } else {
+                    reverseRemoteEvent(entry.name(), entry.index(), queue);
                 }
-                break;
+
+                EventLog.writeReversed(queueId, entry);
+                trace.end(entry);
             }
 
             EventLog.writeReverseEnd(queueId); // 指示恢复管理器事件队列的操作已经全部完成
@@ -85,7 +84,7 @@ public final class EventProtector {
 
             var queueIds = EventLog.findInterrupteds();
 
-            if (queueIds == null || queueIds.size() == 0)
+            if (queueIds == null || queueIds.isEmpty())
                 return;
 
             queueIds.parallelStream().forEach(queueId -> {

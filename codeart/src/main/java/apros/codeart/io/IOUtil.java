@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -90,7 +91,7 @@ public final class IOUtil {
             Path path = Paths.get(dir);
 
             if (!Files.exists(path)) { // 检查路径是否存在
-                Files.createDirectory(path); // 创建文件夹
+                Files.createDirectories(path); // 创建文件夹
             }
         } catch (IOException e) {
             throw propagate(e);
@@ -104,6 +105,17 @@ public final class IOUtil {
      */
     public static String getCurrentDirectory() {
         return System.getProperty("user.dir");
+    }
+
+    /**
+     * 获得日志目录
+     *
+     * @param folder 在日子目录里建立的子目录
+     * @return
+     */
+    public static String getLogDirectory(String folder) {
+        var log = IOUtil.combine(getCurrentDirectory(), "log");
+        return IOUtil.combine(log, folder).toAbsolutePath().toString();
     }
 
     public static Path combine(Path folder, String... paths) {

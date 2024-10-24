@@ -7,8 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -23,68 +23,68 @@ import apros.codeart.ddd.saga.SAGAConfig;
 import apros.codeart.dto.DTObject;
 import apros.codeart.io.IOUtil;
 import apros.codeart.util.Guid;
+import apros.codeart.util.SafeAccess;
 import apros.codeart.util.StringUtil;
 import apros.codeart.util.TimeUtil;
 
+@SafeAccess
 final class FileEventLogger implements IEventLog {
 
-    private String _folder;
 
-    private void init(String queueId) {
-        if (_folder == null) {
-            _folder = getQueueFolder(queueId);
-        }
-    }
-
-    FileEventLogger() {
+    private FileEventLogger() {
     }
 
     @Override
     public String newId() {
-        var day = TimeUtil.format(Instant.now(), "yyyyMMdd");
-        return String.format(day, Guid.compact());
+        var day = TimeUtil.format(LocalDateTime.now(), "yyyyMMdd");
+        return String.format("%s%s", day, Guid.compact());
     }
 
     @Override
     public void writeRaiseStart(String queueId) {
-        init(queueId);
-        IOUtil.createDirectory(_folder);
+        var folder = getQueueFolder(queueId);
+        IOUtil.createDirectory(folder);
     }
 
     @Override
     public void writeRaise(String queueId, String eventName, int entryIndex) {
-        var fileName = getEventFileName(_folder, entryIndex, eventName);
+        var folder = getQueueFolder(queueId);
+        var fileName = getEventFileName(folder, entryIndex, eventName);
         IOUtil.atomicNewFile(fileName);
     }
 
     @Override
     public void writeRaiseLog(String queueId, String eventName, int entryIndex, DTObject log) {
-        var fileName = getEventLogFileName(_folder, entryIndex, eventName);
+        var folder = getQueueFolder(queueId);
+        var fileName = getEventLogFileName(folder, entryIndex, eventName);
         IOUtil.atomicWrite(fileName, log.getCode());
     }
 
     @Override
     public void writeRaiseEnd(String queueId) {
-        var fileName = getEndFileName(_folder);
+        var folder = getQueueFolder(queueId);
+        var fileName = getEndFileName(folder);
         IOUtil.atomicNewFile(fileName);
     }
 
     @Override
     public void writeReverseStart(String queueId) {
-        init(queueId);
+        // 什么都不用做
     }
 
     @Override
     public List<RaisedEntry> findRaised(String queueId) {
         var items = new ArrayList<RaisedEntry>();
 
-        IOUtil.search(_folder, "*.{e}", (file) -> {
+        var folder = getQueueFolder(queueId);
+
+        IOUtil.search(folder, "*.{e}", (file) -> {
             var name = file.getFileName().toString();
-            var temp = name.split(".");
+            var temp = name.split("\\.");
             var index = Integer.parseInt(temp[0]);
             var eventName = temp[1];
 
-            var logFileName = getEventLogFileName(_folder, index, eventName);
+            var logFileName = getEventLogFileName(folder, index, eventName);
             var logCode = IOUtil.readString(logFileName);
             DTObject log = logCode == null ? DTObject.Empty : DTObject.readonly(logCode);
             items.add(new RaisedEntry(index, eventName, log));
@@ -94,18 +94,19 @@ final class FileEventLogger implements IEventLog {
     }
 
     @Override
-    public void writeReversed(RaisedEntry entry) {
+    public void writeReversed(String queueId, RaisedEntry entry) {
+        var folder = getQueueFolder(queueId);
         // 删除回溯文件，就表示回溯完毕了
-        var eventFile = getEventFileName(_folder, entry.index(), entry.name());
+        var eventFile = getEventFileName(folder, entry.index(), entry.name());
         IOUtil.delete(eventFile);
-        var logFile = getEventLogFileName(_folder, entry.index(), entry.name());
+        var logFile = getEventLogFileName(folder, entry.index(), entry.name());
         IOUtil.delete(logFile);
     }
 
     @Override
     public void writeReverseEnd(String queueId) {
-        init(queueId);
-        IOUtil.delete(_folder);
+        var folder = getQueueFolder(queueId);
+        IOUtil.delete(folder);
     }
 
     /**
@@ -234,21 +235,25 @@ final class FileEventLogger implements IEventLog {
         }
     }
 
+    private static String getDay(String queueId) {
+        return StringUtil.substr(queueId, 0, 8);
+    }
+
     private static String getQueueFolder(String queueId) {
         // 前8位是创建的日期，以日期建立子目录
-        return IOUtil.combine(_rootFolder, StringUtil.substr(queueId, 0, 8), queueId).toAbsolutePath().toString();
+        return String.format("%s\\%s\\%s", _rootFolder, getDay(queueId), queueId);
     }
 
     private static String getEventFileName(String folder, int index, String eventName) {
-        return IOUtil.combine(folder, String.format("%02d.%s.e", index, eventName)).toAbsolutePath().toString();
+        return String.format("%s\\%02d.%s.e", folder, index, eventName);
     }
 
     private static String getEventLogFileName(String folder, int index, String eventName) {
-        return IOUtil.combine(folder, String.format("%02d.%s.l", index, eventName)).toAbsolutePath().toString();
+        return String.format("%s\\%02d.%s.l", folder, index, eventName);
     }
 
     private static String getEndFileName(String folder) {
-        return IOUtil.combine(folder, "end").toAbsolutePath().toString();
+        return String.format("%s\\end", folder);
     }
 
     private static final String _rootFolder;
@@ -256,12 +261,14 @@ final class FileEventLogger implements IEventLog {
     static {
         String folder = SAGAConfig.section().getString("@log.folder", null);
 
-        _rootFolder = folder == null
-                ? IOUtil.combine(IOUtil.getCurrentDirectory(), "domain-event-log").toAbsolutePath().toString()
+        _rootFolder = StringUtil.isNullOrEmpty(folder)
+                ? IOUtil.getLogDirectory("domain-event-log")
                 : folder;
 
         IOUtil.createDirectory(_rootFolder);
 
     }
+
+    public static final FileEventLogger INSTANCE = new FileEventLogger();
 
 }

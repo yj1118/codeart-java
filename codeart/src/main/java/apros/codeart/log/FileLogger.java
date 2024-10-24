@@ -1,5 +1,6 @@
 package apros.codeart.log;
 
+import apros.codeart.io.IOUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -25,7 +26,7 @@ class FileLogger {
 
         var logConfig = AppConfig.section("log");
 
-        var fileName = logConfig == null ? "logs/app.log" :
+        var fileName = logConfig == null ? String.format("%s/app.log", IOUtil.getLogDirectory("app")) :
                 logConfig.getString("fileName", "logs/app.log"); // 默认是当前目录下的logs里的app.log文件
 
         ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();

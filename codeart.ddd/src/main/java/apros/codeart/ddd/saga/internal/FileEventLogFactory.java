@@ -6,18 +6,18 @@ import apros.codeart.util.SafeAccess;
 
 @SafeAccess
 public final class FileEventLogFactory implements IEventLogFactory {
-	private FileEventLogFactory() {
-	}
+    private FileEventLogFactory() {
+    }
 
-	public static final IEventLogFactory Instance = new FileEventLogFactory();
+    public static final IEventLogFactory Instance = new FileEventLogFactory();
 
-	@Override
-	public IEventLog create() {
-		return new FileEventLogger();
-	}
+    @Override
+    public IEventLog create() {
+        return FileEventLogger.INSTANCE;
+    }
 
-	@Override
-	public void init() {
-		// 基于文件系统的日志不需要初始化
-	}
+    @Override
+    public void init() {
+        // 基于文件系统的日志不需要初始化
+    }
 }

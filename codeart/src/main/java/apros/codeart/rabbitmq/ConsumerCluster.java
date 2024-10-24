@@ -66,6 +66,7 @@ public abstract class ConsumerCluster<T extends IConsumer> implements IConsumerC
     }
 
     public void open() {
+        if (!this._consumers.isEmpty()) return;
         this.increase();
     }
 

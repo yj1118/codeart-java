@@ -45,7 +45,7 @@ public class Pool<T> implements AutoCloseable {
     /**
      * 当前使用的向量池在矩阵里的序号
      */
-    private AtomicInteger _pointer = new AtomicInteger(-1);
+    private final AtomicInteger _pointer = new AtomicInteger(-1);
 
     private int next() {
         return _pointer.updateAndGet(current -> (current + 1) % _matrix.vectorCount());

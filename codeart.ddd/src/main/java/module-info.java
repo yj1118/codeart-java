@@ -18,9 +18,12 @@ module apros.codeart.ddd {
     exports apros.codeart.ddd.launcher;
     exports apros.codeart.ddd.service;
 
+    exports apros.codeart.ddd.saga;
+
     opens apros.codeart.ddd;
     opens apros.codeart.ddd.validation;
 //    exports apros.codeart.ddd.metadata.internal;
     opens apros.codeart.ddd.metadata.internal;
+    exports apros.codeart.ddd.saga.internal.trigger;
 //    exports apros.codeart.ddd.virtual.internal;
 }

@@ -23,12 +23,25 @@ public final class EventPortal {
     }
 
     /**
+     * 预订阅事件，当执行startUp方法时，会让订阅生效，这主要是为了在程序初始化期间订阅时，不要立即执行接收到的队列消息
+     *
      * @param eventName
      * @param handler
      * @param cluster   是否需要集群支持
      */
-    public static void subscribe(String eventName, IEventHandler handler, boolean cluster) {
+    public static void scheduleSubscription(String eventName, IEventHandler handler, boolean cluster) {
         subscribe(eventName, handler, cluster, false);
+    }
+
+    /**
+     * 立即订阅远程事件
+     *
+     * @param eventName
+     * @param handler
+     * @param cluster
+     */
+    public static void subscribe(String eventName, IEventHandler handler, boolean cluster) {
+        subscribe(eventName, handler, cluster, true);
     }
 
     /**
@@ -38,7 +51,7 @@ public final class EventPortal {
      * @param handler
      * @param startUp   false:不立即启动订阅器，由全局方法StartUp统一调度，适用于程序初始化期间挂载订阅,true:立即启动订阅器
      */
-    public static void subscribe(String eventName, IEventHandler handler, boolean cluster, boolean startUp) {
+    private static void subscribe(String eventName, IEventHandler handler, boolean cluster, boolean startUp) {
         var subscriber = createSubscriber(eventName, cluster);
         subscriber.addHandler(handler);
         if (startUp)

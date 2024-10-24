@@ -1,14 +1,14 @@
-package apros.codeart.ddd.saga.internal.trigger;
+package apros.codeart.ddd.saga;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import apros.codeart.ddd.repository.DataContext;
-import apros.codeart.ddd.saga.DomainEvent;
-import apros.codeart.ddd.saga.RemoteEventFailedException;
 import apros.codeart.ddd.saga.internal.EventLog;
 import apros.codeart.ddd.saga.internal.EventUtil;
 import apros.codeart.ddd.saga.internal.protector.EventProtector;
+import apros.codeart.ddd.saga.internal.trigger.EventQueue;
+import apros.codeart.ddd.saga.internal.trigger.ReceiveResultEventHandler;
 import apros.codeart.dto.DTObject;
 import apros.codeart.echo.event.EventPortal;
 import apros.codeart.util.concurrent.ISignal;
@@ -52,21 +52,20 @@ public final class EventTrigger {
         while (true) {
             // 触发队列事件
             var entry = queue.next(args);
+            if (entry == null) break;
+
             var entryIndex = queue.entryIndex();
 
-            if (entry != null) {
-                String eventName = entry.name();
-                ctx.direct(eventName, entryIndex); // 将事件上下文重定向到新的事件上
-                EventLog.writeRaise(ctx.id(), ctx.eventName(), entryIndex); // 一定要确保日志先被正确的写入，否则会有BUG
-                args = queue.getArgs(args, ctx);
-                if (entry.local() != null) {
-                    // 本地事件，直接执行
-                    args = raiseLocalEvent(entry.local(), args, ctx);
-                } else {
-                    args = raiseRemoteEvent(args, ctx);
-                }
+            String eventName = entry.name();
+            ctx.direct(eventName, entryIndex); // 将事件上下文重定向到新的事件上
+            EventLog.writeRaise(ctx.id(), ctx.eventName(), entryIndex); // 一定要确保日志先被正确得写入，否则会有BUG
+//          args = queue.getArgs(args, ctx);  应该没有必要这一步
+            if (entry.local() != null) {
+                // 本地事件，直接执行
+                args = raiseLocalEvent(entry.local(), args, ctx);
+            } else {
+                args = raiseRemoteEvent(args, ctx);
             }
-            break;
         }
 
         EventLog.writeRaiseEnd(queue.id()); // 指示恢复管理器事件队列的操作已经全部完成
@@ -99,7 +98,7 @@ public final class EventTrigger {
 
         try {
             // 等待远程调用的结果
-            var output = signal.wait(10, TimeUnit.SECONDS);
+            var output = signal.wait(300, TimeUnit.SECONDS);
 
             var error = output.getString("error", null);
 
@@ -107,7 +106,7 @@ public final class EventTrigger {
                 throw new RemoteEventFailedException(error);
             }
 
-            return output.getObject("args");
+            return output.getObject("args", DTObject.empty());
 
         } catch (Throwable ex) {
             throw ex;
@@ -146,7 +145,7 @@ public final class EventTrigger {
             signal.set(e);
     }
 
-    private static ConcurrentHashMap<String, ISignal<DTObject>> _signals = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, ISignal<DTObject>> _signals = new ConcurrentHashMap<>();
 
     private static ISignal<DTObject> createSignal(String eventId) {
         LatchSignal<DTObject> signal = new LatchSignal<>();

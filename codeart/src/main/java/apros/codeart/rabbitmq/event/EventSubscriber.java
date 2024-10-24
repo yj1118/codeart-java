@@ -80,8 +80,8 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
     @Override
     public void remove() {
         RabbitBus bus = _busItem.getItem();
+        _busItem.close();  //注意，要在删除队列之前关闭消费者，否则删除队列再删除订阅者，由于订阅会取消，队列已经没了就会报错
         bus.queueDelete(_queue); // 这个是真正删除的操作，主要用于一些临时队列
-        _busItem.close(); // 删除队列后，清理资源
     }
 
     private List<IEventHandler> handlers() {
