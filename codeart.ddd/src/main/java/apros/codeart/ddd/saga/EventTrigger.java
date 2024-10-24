@@ -44,7 +44,7 @@ public final class EventTrigger {
      */
     public static DTObject raise(EventQueue queue) {
         var input = queue.input();
-        DTObject args = input.asEditable();
+        DTObject args = input.toEditable();
         EventContext ctx = new EventContext(queue.id(), input);
 
         EventLog.writeRaiseStart(queue.id());
@@ -52,14 +52,19 @@ public final class EventTrigger {
         while (true) {
             // 触发队列事件
             var entry = queue.next(args);
-            if (entry == null) break;
+            if (entry == null) {
+                args = queue.transformResult(args, ctx);  //转换一次结果,就将此结果返回给外部作为事件执行完毕后的结果
+                break;
+            }
 
             var entryIndex = queue.entryIndex();
 
             String eventName = entry.name();
             ctx.direct(eventName, entryIndex); // 将事件上下文重定向到新的事件上
             EventLog.writeRaise(ctx.id(), ctx.eventName(), entryIndex); // 一定要确保日志先被正确得写入，否则会有BUG
-//          args = queue.getArgs(args, ctx);  应该没有必要这一步
+
+            args = queue.transformResult(args, ctx);
+
             if (entry.local() != null) {
                 // 本地事件，直接执行
                 args = raiseLocalEvent(entry.local(), args, ctx);

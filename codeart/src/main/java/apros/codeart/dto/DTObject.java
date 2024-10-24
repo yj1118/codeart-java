@@ -1291,6 +1291,18 @@ public class DTObject implements INullProxy, IDTOSchema {
         return this;
     }
 
+    /**
+     * 以克隆的形式创建可写对象
+     *
+     * @return
+     */
+    public DTObject toEditable() {
+
+        if (this.isEmpty()) return DTObject.createImpl("{}", false);
+
+        return this.clone(false);
+    }
+
     private static DTObject createImpl(String code, boolean readonly) {
         var root = EntityDeserializer.deserialize(code, readonly);
         return obtain(root, readonly);

@@ -122,7 +122,7 @@ public class EventQueue {
         _entries = getEntries(source, input);
     }
 
-//    public DTObject getArgs(DTObject args, EventContext ctx) {
-//        return this.source().getArgs(args, ctx);
-//    }
+    public DTObject transformResult(DTObject result, EventContext ctx) {
+        return this.source().transformResult(result, ctx);
+    }
 }

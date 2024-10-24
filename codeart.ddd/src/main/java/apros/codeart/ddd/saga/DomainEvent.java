@@ -38,7 +38,16 @@ public abstract class DomainEvent implements IDomainEvent {
         return ListUtil.empty();
     }
 
-//    public abstract DTObject getArgs(DTObject args, EventContext ctx);
+    /**
+     * 对于事件执行的结果进行转换，传递给下一个事件或者作为全部事件执行结束后的返回结果
+     *
+     * @param args
+     * @param ctx
+     * @return
+     */
+    public DTObject transformResult(DTObject result, EventContext ctx) {
+        return result;
+    }
 
 //	#endregion
 
