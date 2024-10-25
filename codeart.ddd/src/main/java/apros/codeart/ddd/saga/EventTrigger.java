@@ -71,6 +71,8 @@ public final class EventTrigger {
             } else {
                 args = raiseRemoteEvent(args, ctx);
             }
+
+            if (ctx.isPropagationStopped()) break;
         }
 
         EventLog.writeRaiseEnd(queue.id()); // 指示恢复管理器事件队列的操作已经全部完成

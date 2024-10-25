@@ -48,11 +48,30 @@ public final class EventContext {
      *
      * @param action
      */
-    public void write(Consumer<DTObject> action) {
+    private void write(Consumer<DTObject> action) {
         if (_log == null)
             _log = DTObject.editable();
         action.accept(_log);
     }
+
+    public void setLog(String name, long value) {
+        this.write((log) -> {
+            log.setLong(name, value);
+        });
+    }
+
+    public void setLog(String name, int value) {
+        this.write((log) -> {
+            log.setInt(name, value);
+        });
+    }
+
+    public void setLog(String name, String value) {
+        this.write((log) -> {
+            log.setString(name, value);
+        });
+    }
+
 
     private String _eventId;
 
@@ -96,4 +115,19 @@ public final class EventContext {
         if (_log != null)
             EventLog.writeRaiseLog(_id, _eventName, _index, _log);
     }
+
+    private boolean _isPropagationStopped;
+
+    public boolean isPropagationStopped() {
+        return _isPropagationStopped;
+    }
+
+    /**
+     * 提前阻止事件执行
+     */
+    public void stopPropagation() {
+        _isPropagationStopped = true;
+    }
+
+
 }
