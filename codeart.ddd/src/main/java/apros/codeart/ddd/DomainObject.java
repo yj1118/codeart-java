@@ -552,11 +552,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
      */
     @SuppressWarnings("unchecked")
     public <T> T getValue(DomainProperty property, Class<T> valueType) {
-        var value = getValue(property);
-        if (value == null) {
-            throw new BusinessException(strings("apros.codeart.ddd", "DomainCanNotNull", property.name()));
-        }
-        return (T) value;
+        return getValue(property.name(), valueType);
     }
 
     /**
@@ -588,6 +584,15 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
 
     public Object getValue(String propertyName) {
         return this.dataProxy().load(propertyName, () -> this.getPropertyDefaultValue(propertyName));
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getValue(String propertyName, Class<T> valueType) {
+        var value = getValue(propertyName);
+        if (value == null) {
+            throw new BusinessException(strings("apros.codeart.ddd", "DomainCanNotNull", propertyName));
+        }
+        return (T) value;
     }
 
     /**
