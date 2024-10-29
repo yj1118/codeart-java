@@ -361,6 +361,8 @@ public final class DataAccess {
         return QueryRunner.queryDTO(_conn, nativeSql, param, level);
     }
 
+    //region queryDTOs
+
     public Iterable<DTObject> queryDTOs(String sql, MapData params, QueryLevel level) {
         openDataContextLock(level);
         return QueryRunner.queryDTOs(_conn, sql, params, level);
@@ -371,6 +373,62 @@ public final class DataAccess {
         var nativeSql = getNativeSql(sql, param);
         return QueryRunner.queryDTOs(_conn, nativeSql, param, level);
     }
+
+    //region queryDTOs 的适配模式
+
+    public QueryDTOsAdaptation queryDTOs(MapData param, QueryLevel level) {
+        return new QueryDTOsAdaptation(this, param, level);
+    }
+
+    public static class QueryDTOsAdaptation {
+
+        private Iterable<DTObject> _value;
+
+        public Iterable<DTObject> value() {
+            return _value;
+        }
+
+        private final DataAccess _access;
+        private final MapData _param;
+        private final QueryLevel _level;
+
+        private boolean _matched = false;
+
+        public QueryDTOsAdaptation(DataAccess access, MapData param, QueryLevel level) {
+            _access = access;
+            _param = param;
+            _level = level;
+        }
+
+        public QueryDTOsAdaptation postgreSql(String sql) {
+            return exec(DatabaseType.PostgreSql, sql);
+        }
+
+        public QueryDTOsAdaptation sqlserver(String sql) {
+            return exec(DatabaseType.SqlServer, sql);
+        }
+
+        public QueryDTOsAdaptation mysql(String sql) {
+            return exec(DatabaseType.MySql, sql);
+        }
+
+        public QueryDTOsAdaptation oracle(String sql) {
+            return exec(DatabaseType.Oracle, sql);
+        }
+
+        private QueryDTOsAdaptation exec(DatabaseType dbType, String sql) {
+            if (_matched) return this;
+            if (DataSource.getDatabaseType() == dbType) {
+                _value = _access.queryDTOs(sql, _param, _level);
+                _matched = true;
+            }
+            return this;
+        }
+    }
+
+    //endregion
+
+    //endregion
 
     public MapData queryRow(String sql, MapData params, QueryLevel level) {
         openDataContextLock(level);
@@ -401,6 +459,57 @@ public final class DataAccess {
 
     public Iterable<MapData> nativeQueryRows(String sql, MapData param) {
         return queryRows(sql, param, QueryLevel.NONE);
+    }
+
+
+    //region queryRows 的适配模式
+
+    public QueryRowsAdaptation queryRows(MapData param) {
+        return new QueryRowsAdaptation(this, param);
+    }
+
+    public static class QueryRowsAdaptation {
+
+        private Iterable<MapData> _value;
+
+        public Iterable<MapData> value() {
+            return _value;
+        }
+
+        private final DataAccess _access;
+        private final MapData _param;
+
+        private boolean _matched = false;
+
+        public QueryRowsAdaptation(DataAccess access, MapData param) {
+            _access = access;
+            _param = param;
+        }
+
+        public QueryRowsAdaptation postgreSql(String sql) {
+            return exec(DatabaseType.PostgreSql, sql);
+        }
+
+        public QueryRowsAdaptation sqlserver(String sql) {
+            return exec(DatabaseType.SqlServer, sql);
+        }
+
+        public QueryRowsAdaptation mysql(String sql) {
+            return exec(DatabaseType.MySql, sql);
+        }
+
+        public QueryRowsAdaptation oracle(String sql) {
+            return exec(DatabaseType.Oracle, sql);
+        }
+
+        private QueryRowsAdaptation exec(DatabaseType dbType, String sql) {
+            if (_matched) return this;
+            if (DataSource.getDatabaseType() == dbType) {
+                _value = _access.queryRows(sql, _param);
+                _matched = true;
+            }
+            return this;
+        }
     }
 
     //endregion
