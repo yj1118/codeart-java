@@ -146,6 +146,7 @@ public class DataTable {
      * @return
      */
     public DataTable middle() {
+        if (_middle == null && this.type() == DataTableType.Middle) return this;
         return _middle;
     }
 

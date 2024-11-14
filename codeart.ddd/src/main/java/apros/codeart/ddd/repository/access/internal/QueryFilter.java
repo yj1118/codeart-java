@@ -151,9 +151,37 @@ final class QueryFilter {
                 _result = ListUtil.emptyInts();
             else {
                 _result = new int[length];
-                int index = 1;
+                int index = 0;
                 while (rs.next()) {
-                    _result[index] = rs.getInt(0);
+                    _result[index] = rs.getInt(1);
+                    index++;
+                }
+            }
+        }
+    }
+
+    public static class ScalarLongs implements IQueryFilter {
+
+        private long[] _result;
+
+        public long[] result() {
+            return _result;
+        }
+
+        public ScalarLongs() {
+        }
+
+        @Override
+        public void extract(ResultSet rs) throws SQLException {
+            int length = getCount(rs);
+
+            if (length == 0)
+                _result = ListUtil.emptyLongs();
+            else {
+                _result = new long[length];
+                int index = 0;
+                while (rs.next()) {
+                    _result[index] = rs.getLong(1);  //注意，传出的集合是从1开始读取数据
                     index++;
                 }
             }

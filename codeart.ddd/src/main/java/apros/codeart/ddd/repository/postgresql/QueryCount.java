@@ -20,12 +20,12 @@ class QueryCount extends QueryCountQB {
 
         String objectSql = ExpressionHelper.getObjectSql(target, level, definition, LockSql.INSTANCE);
 
-        var bottomSql = String.format("select count(DISTINCT %s) from %s", EntityObject.IdPropertyName,
-                SqlStatement.qualifier(target.name()));
+//        var bottomSql = String.format("select count(DISTINCT %s) from %s", EntityObject.IdPropertyName,
+//                SqlStatement.qualifier(target.name()));
 
-        bottomSql = DBUtil.format(bottomSql, target, QueryLevel.NONE);
+//        bottomSql = DBUtil.format(bottomSql, target, QueryLevel.NONE);
 
-        return String.format("%s%s%s", objectSql, System.lineSeparator(), bottomSql);
+        return String.format("select count(*) from %s", objectSql);
     }
 
     public static final QueryCount Instance = new QueryCount();

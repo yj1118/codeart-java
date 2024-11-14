@@ -7,6 +7,7 @@ import apros.codeart.ddd.repository.access.QueryDescription;
 import apros.codeart.ddd.repository.access.QueryPageCode;
 import apros.codeart.ddd.repository.access.QueryPageQB;
 import apros.codeart.ddd.repository.access.internal.SqlDefinition;
+import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.ddd.repository.db.ExpressionHelper;
 import apros.codeart.ddd.repository.db.SqlQueryPageCompiler;
 import apros.codeart.util.LazyIndexer;
@@ -23,8 +24,7 @@ class QueryPage extends QueryPageQB {
     private static final Function<DataTable, Function<SqlDefinition, QueryPageCode>> _getCode = LazyIndexer.init((table) -> {
         return LazyIndexer.init((definition) -> {
             String tableSql = ExpressionHelper.getTableSql(table, QueryLevel.NONE, definition, LockSql.INSTANCE);
-            
-            String selectSql = ExpressionHelper.getSelectFieldsSql(table, definition);
+
             String orderSql = definition.orderHint();
 
             if (StringUtil.isNullOrEmpty(orderSql)) {
@@ -35,7 +35,8 @@ class QueryPage extends QueryPageQB {
                 if (!ListUtil.contains(order, (t) -> t.equalsIgnoreCase(EntityObject.IdPropertyName)))
                     orderSql = String.format("%s,%s ASC", orderSql, EntityObject.IdPropertyName);
             }
-
+            var keyField = String.format("%s.%s", SqlStatement.qualifier(table.name()), SqlStatement.qualifier(table.idField().name()));
+            String selectSql = String.format("DISTINCT ON (%s) %s", keyField, ExpressionHelper.getSelectFieldsSql(table, definition));
             var code = new QueryPageCode(selectSql, tableSql, orderSql);
             code.bind(table);
             return code;

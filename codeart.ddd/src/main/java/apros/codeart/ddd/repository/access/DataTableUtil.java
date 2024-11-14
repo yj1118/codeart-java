@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import apros.codeart.ddd.*;
+import apros.codeart.ddd.virtual.VirtualRoot;
 import com.google.common.collect.Iterables;
 
 import apros.codeart.ddd.metadata.PropertyMeta;
@@ -131,7 +132,7 @@ final class DataTableUtil {
 
         var dto = TypeUtil.as(obj, DTObject.class); // 测试时经常会用dto模拟对象
         if (dto != null)
-            return dto.getValue("Id");
+            return dto.getValue(EntityObject.IdPropertyName);
 
         throw new IllegalStateException(strings("apros.codeart.ddd", "UnableGetId", obj.getClass().getSimpleName()));
     }

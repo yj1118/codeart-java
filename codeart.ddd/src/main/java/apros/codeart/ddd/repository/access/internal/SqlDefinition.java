@@ -174,11 +174,13 @@ public class SqlDefinition {
         }
     }
 
-    /// <summary>
-    /// 对象链是否包括在inner表达式中,对象链的格式是 a_b_c
-    /// </summary>
-    /// <param name="ObjectChain"></param>
-    /// <returns></returns>
+
+    /**
+     * 对象链是否包括在inner表达式中,对象链的格式是 a_b_c
+     *
+     * @param objectChain
+     * @return
+     */
     public boolean containsInner(String objectChain) {
         if (_inners.isEmpty())
             return false;
@@ -203,6 +205,14 @@ public class SqlDefinition {
         return containsChain(this.columns().select(), objectChainOffset)
                 || containsChain(this.columns().where(), objectChainOffset)
                 || containsChain(this.columns().order(), objectChainOffset);
+    }
+
+    public boolean containsSelectChain(String objectChain) {
+        if (this.isEmpty())
+            return false;
+
+        var objectChainOffset = _getObjectChainOffset.apply(objectChain);
+        return containsChain(this.columns().select(), objectChainOffset);
     }
 
     private static final Function<String, String> _getObjectChainOffset = LazyIndexer.init((objectChain) -> {

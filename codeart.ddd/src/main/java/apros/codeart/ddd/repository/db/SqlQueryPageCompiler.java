@@ -3,6 +3,7 @@ package apros.codeart.ddd.repository.db;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.access.IQueryPageCompiler;
 import apros.codeart.ddd.repository.access.QueryPageCode;
+import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.SafeAccess;
 import apros.codeart.util.StringUtil;
@@ -13,9 +14,12 @@ import java.util.function.Function;
 @SafeAccess
 public class SqlQueryPageCompiler implements IQueryPageCompiler {
 
-    public static final IQueryPageCompiler INSTANCE = new SqlQueryPageCompiler();
+    public static final IQueryPageCompiler INSTANCE = new SqlQueryPageCompiler(SqlQueryPageCompiler::getPageTableSql_PostgreSQL);
 
-    private SqlQueryPageCompiler() {
+    private Function<QueryPageCode, String> _getPageTableSql;
+
+    private SqlQueryPageCompiler(Function<QueryPageCode, String> getPageTableSql) {
+        _getPageTableSql = getPageTableSql;
     }
 
     @Override
@@ -38,26 +42,62 @@ public class SqlQueryPageCompiler implements IQueryPageCompiler {
 
     }
 
-    private static final Function<QueryPageCode, CompileResult> _getPageResult = LazyIndexer.init((code) -> {
-        var tableSql = getPageTableSql(code);
+    private final Function<QueryPageCode, CompileResult> _getPageResult = LazyIndexer.init((code) -> {
+        var tableSql = _getPageTableSql.apply(code);
 
-        var firstPageCode = getFirstPageCode(tableSql, code);
-        var otherPageCode = getOtherPageCode(tableSql, code);
+        var firstPageCode = getFirstPageCode(tableSql);
+        var otherPageCode = getOtherPageCode(tableSql);
 
         return new CompileResult(firstPageCode, otherPageCode);
     });
 
-    private static final Function<QueryPageCode, String> _getPageCount = LazyIndexer.init((code) -> {
-        var tableSql = getPageTableSql(code);
+    private final Function<QueryPageCode, String> _getPageCount = LazyIndexer.init((code) -> {
+        var tableSql = _getPageTableSql.apply(code);
         var bottomSql = "SELECT COUNT(*) FROM PageTableCTE";
         return String.format("%s%s%s", tableSql, System.lineSeparator(), bottomSql);
     });
 
+//    private static String getFirstPageCT(QueryPageCode code) {
+//        return "SELECT * FROM PageTableCTE ORDER BY __ind asc";
+//    }
 
-    private static String getPageTableSql(QueryPageCode code) {
+//    private static String getPageCT(String tableSql) {
+//        //return "SELECT * FROM PageTableCTE where __ind > @data_start and __ind <= @data_end ORDER BY __ind asc";
+//        return String.format("SELECT * FROM %s where __ind > @data_start and __ind <= @data_end ORDER BY __ind asc", tableSql);
+//    }
+
+    private static String getFirstPageCode(String tableSql) {
+        //tableSql = tableSql.replaceAll("@data_end", "{0}");// 替换成格式化参数
+//        var bottomSql = getFirstPageCT(code);
+//        return String.format("%s%s%s", tableSql, System.lineSeparator(), bottomSql);
+        return String.format("SELECT * FROM %s where __ind <= {0} ORDER BY __ind asc", tableSql);
+    }
+
+    private static String getOtherPageCode(String tableSql) {
+        //tableSql = tableSql.replaceAll("@data_end", "{1}");// 替换成格式化参数
+//        var bottomSql = getPageCT(tableSql);
+//        bottomSql = bottomSql.replaceAll("@data_start", "{0}");// 替换成格式化参数
+//        bottomSql = bottomSql.replaceAll("@data_end", "{1}");// 替换成格式化参数
+//
+//        return String.format("%s%s%s", tableSql, System.lineSeparator(), bottomSql);
+
+        return String.format("SELECT * FROM %s where __ind > {0} and __ind <= {1} ORDER BY __ind asc", tableSql);
+    }
+
+    //region 模板代码
+
+
+    /**
+     * 目前只有 PostgreSQL支持 DISTINCT ON
+     *
+     * @param code
+     * @return
+     */
+    private static String getPageTableSql_PostgreSQL(QueryPageCode code) {
         String tableSql = code.tableSql();
 
-        String coreSql = String.format("%s%s%s", String.format("SELECT %s,row_number() over(ORDER BY %s) as __ind FROM", code.selectSql(), code.orderSql()),
+        String coreSql = String.format("%s%s%s", String.format("SELECT %s,DENSE_RANK() over(ORDER BY %s) as __ind FROM",
+                        code.selectSql(), code.orderSql()),
                 System.lineSeparator(),
                 tableSql);
 
@@ -66,40 +106,19 @@ public class SqlQueryPageCompiler implements IQueryPageCompiler {
             coreSql = DBUtil.format(coreSql, code.table(), QueryLevel.NONE);
         }
 
-
         StringBuilder sb = new StringBuilder();
-        StringUtil.appendFormat(sb, "WITH PageTableCTE AS (");
+        StringUtil.append(sb, "(");
         StringUtil.appendLine(sb);
         StringUtil.appendLine(sb, coreSql);
-        StringUtil.appendLine(sb, "LIMIT @data_end");
-        StringUtil.append(sb, ")");
+        StringUtil.appendFormat(sb, ") AS PageTableCTE");
+
+//        StringBuilder sb = new StringBuilder();
+//        StringUtil.appendFormat(sb, "WITH PageTableCTE AS (");
+//        StringUtil.appendLine(sb);
+//        StringUtil.appendLine(sb, coreSql);
+////        StringUtil.appendLine(sb, "LIMIT @data_end");
+//        StringUtil.append(sb, ")");
 
         return sb.toString();
     }
-
-    private static String getFirstPageCT(QueryPageCode code) {
-        return "SELECT * FROM PageTableCTE ORDER BY __ind asc";
-    }
-
-    private static String getPageCT(QueryPageCode code) {
-        return "SELECT * FROM PageTableCTE where __ind > @data_start and __ind <= @data_end ORDER BY __ind asc";
-    }
-
-    private static String getFirstPageCode(String tableSql, QueryPageCode code) {
-        tableSql = tableSql.replaceAll("@data_end", "{0}");// 替换成格式化参数
-        var bottomSql = getFirstPageCT(code);
-        return String.format("%s%s%s", tableSql, System.lineSeparator(), bottomSql);
-    }
-
-    private static String getOtherPageCode(String tableSql, QueryPageCode code) {
-        tableSql = tableSql.replaceAll("@data_end", "{1}");// 替换成格式化参数
-        var bottomSql = getPageCT(code);
-        bottomSql = bottomSql.replaceAll("@data_start", "{0}");// 替换成格式化参数
-        bottomSql = bottomSql.replaceAll("@data_end", "{1}");// 替换成格式化参数
-
-        return String.format("%s%s%s", tableSql, System.lineSeparator(), bottomSql);
-    }
-
-    //region 模板代码
-
 }

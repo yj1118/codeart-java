@@ -36,6 +36,7 @@ public class JSON {
         var dtoValue = as(value, IDTOValue.class);
         if (dtoValue != null) {
             dtoValue.writeValue(sb);
+            return;
         }
 
         if (Common.isNull(value)) {

@@ -24,7 +24,6 @@ class QueryPage extends QueryPageQB {
         return LazyIndexer.init((definition) -> {
             String tableSql = ExpressionHelper.getTableSql(table, QueryLevel.NONE, definition, LockSql.INSTANCE);
 
-            String selectSql = definition.getFieldsSql();
             String orderSql = definition.orderHint();
 
             if (StringUtil.isNullOrEmpty(orderSql)) {
@@ -35,7 +34,8 @@ class QueryPage extends QueryPageQB {
                 if (!ListUtil.contains(order, (t) -> t.equalsIgnoreCase(EntityObject.IdPropertyName)))
                     orderSql = String.format("%s,%s ASC", orderSql, EntityObject.IdPropertyName);
             }
-
+            //var keyField = String.format("%s.%s", SqlStatement.qualifier(table.name()), SqlStatement.qualifier(table.idField().name()));
+            String selectSql = String.format("DISTINCT %s", definition.getFieldsSql());
             var code = new QueryPageCode(selectSql, tableSql, orderSql);
             code.bind(table);
             return code;

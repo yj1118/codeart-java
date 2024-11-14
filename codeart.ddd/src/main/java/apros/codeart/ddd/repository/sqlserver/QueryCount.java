@@ -21,7 +21,7 @@ class QueryCount extends QueryCountQB {
 
         String objectSql = ExpressionHelper.getObjectSql(target, level, definition, LockSql.INSTANCE);
 
-        var bottomSql = String.format("select count(DISTINCT %s) from %s", EntityObject.IdPropertyName,
+        var bottomSql = String.format("select count(%s) from %s", EntityObject.IdPropertyName,
                 SqlStatement.qualifier(tableName));
 
         bottomSql = DBUtil.format(bottomSql, target, tableName, QueryLevel.NONE);

@@ -29,9 +29,7 @@ public final class TestLauncher {
         App.init(installer);
 
         // 给予数据上下文环境
-        DataContext.using(() -> {
-            App.inited();
-        });
+        DataContext.using(App::inited);
     }
 
     public static void stop() {

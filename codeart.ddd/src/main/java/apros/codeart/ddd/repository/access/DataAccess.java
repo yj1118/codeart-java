@@ -278,6 +278,61 @@ public final class DataAccess {
         return nativeQueryScalarLong(sql, QueryLevel.NONE);
     }
 
+    //region queryLong 的适配模式
+
+    public QueryLongAdaptation queryLong(MapData param, QueryLevel level) {
+        return new QueryLongAdaptation(this, param, level);
+    }
+
+    public static class QueryLongAdaptation {
+
+        private long _value;
+
+        public long value() {
+            return _value;
+        }
+
+        private final DataAccess _access;
+        private final MapData _param;
+        private final QueryLevel _level;
+
+        private boolean _matched = false;
+
+        public QueryLongAdaptation(DataAccess access, MapData param, QueryLevel level) {
+            _access = access;
+            _param = param;
+            _level = level;
+        }
+
+        public QueryLongAdaptation postgreSql(String sql) {
+            return exec(DatabaseType.PostgreSql, sql);
+        }
+
+        public QueryLongAdaptation sqlserver(String sql) {
+            return exec(DatabaseType.SqlServer, sql);
+        }
+
+        public QueryLongAdaptation mysql(String sql) {
+            return exec(DatabaseType.MySql, sql);
+        }
+
+        public QueryLongAdaptation oracle(String sql) {
+            return exec(DatabaseType.Oracle, sql);
+        }
+
+        private QueryLongAdaptation exec(DatabaseType dbType, String sql) {
+            if (_matched) return this;
+            if (DataSource.getDatabaseType() == dbType) {
+                _value = _access.queryScalarLong(sql, _param, _level);
+                _matched = true;
+            }
+            return this;
+        }
+    }
+
+    //endregion
+
+
     public UUID queryScalarGuid(String sql, MapData param, QueryLevel level) {
         openDataContextLock(level);
         var nativeSql = getNativeSql(sql, param);
@@ -335,17 +390,32 @@ public final class DataAccess {
 
     //endregion
 
-    //#region queryScalar(Values)
+    //#region queryInts
 
-    public int[] queryScalarInts(String sql, MapData param, QueryLevel level) {
+    public int[] queryInts(String sql, MapData param, QueryLevel level) {
         openDataContextLock(level);
         var nativeSql = getNativeSql(sql, param);
         return QueryRunner.queryScalarInts(_conn, nativeSql, param, level);
     }
 
-    public int[] nativeQueryScalarInts(String sql, MapData params, QueryLevel level) {
+    public int[] nativeQueryInts(String sql, MapData params, QueryLevel level) {
         openDataContextLock(level);
         return QueryRunner.queryScalarInts(_conn, sql, params, level);
+    }
+
+    //endregion
+
+    //#region queryLongs
+
+    public long[] queryLongs(String sql, MapData param, QueryLevel level) {
+        openDataContextLock(level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryScalarLongs(_conn, nativeSql, param, level);
+    }
+
+    public long[] nativeQueryLongs(String sql, MapData params, QueryLevel level) {
+        openDataContextLock(level);
+        return QueryRunner.queryScalarLongs(_conn, sql, params, level);
     }
 
     //endregion
@@ -373,6 +443,60 @@ public final class DataAccess {
         var nativeSql = getNativeSql(sql, param);
         return QueryRunner.queryDTOs(_conn, nativeSql, param, level);
     }
+
+    //region queryLongs 的适配模式
+
+    public QueryLongsAdaptation queryLongs(MapData param, QueryLevel level) {
+        return new QueryLongsAdaptation(this, param, level);
+    }
+
+    public static class QueryLongsAdaptation {
+
+        private long[] _value;
+
+        public long[] value() {
+            return _value;
+        }
+
+        private final DataAccess _access;
+        private final MapData _param;
+        private final QueryLevel _level;
+
+        private boolean _matched = false;
+
+        public QueryLongsAdaptation(DataAccess access, MapData param, QueryLevel level) {
+            _access = access;
+            _param = param;
+            _level = level;
+        }
+
+        public QueryLongsAdaptation postgreSql(String sql) {
+            return exec(DatabaseType.PostgreSql, sql);
+        }
+
+        public QueryLongsAdaptation sqlserver(String sql) {
+            return exec(DatabaseType.SqlServer, sql);
+        }
+
+        public QueryLongsAdaptation mysql(String sql) {
+            return exec(DatabaseType.MySql, sql);
+        }
+
+        public QueryLongsAdaptation oracle(String sql) {
+            return exec(DatabaseType.Oracle, sql);
+        }
+
+        private QueryLongsAdaptation exec(DatabaseType dbType, String sql) {
+            if (_matched) return this;
+            if (DataSource.getDatabaseType() == dbType) {
+                _value = _access.queryLongs(sql, _param, _level);
+                _matched = true;
+            }
+            return this;
+        }
+    }
+
+    //endregion
 
     //region queryDTOs 的适配模式
 
@@ -464,8 +588,8 @@ public final class DataAccess {
 
     //region queryRows 的适配模式
 
-    public QueryRowsAdaptation queryRows(MapData param) {
-        return new QueryRowsAdaptation(this, param);
+    public QueryRowsAdaptation queryRows(MapData param, QueryLevel level) {
+        return new QueryRowsAdaptation(this, param, level);
     }
 
     public static class QueryRowsAdaptation {
@@ -478,12 +602,14 @@ public final class DataAccess {
 
         private final DataAccess _access;
         private final MapData _param;
+        private final QueryLevel _level;
 
         private boolean _matched = false;
 
-        public QueryRowsAdaptation(DataAccess access, MapData param) {
+        public QueryRowsAdaptation(DataAccess access, MapData param, QueryLevel level) {
             _access = access;
             _param = param;
+            _level = level;
         }
 
         public QueryRowsAdaptation postgreSql(String sql) {
@@ -505,7 +631,7 @@ public final class DataAccess {
         private QueryRowsAdaptation exec(DatabaseType dbType, String sql) {
             if (_matched) return this;
             if (DataSource.getDatabaseType() == dbType) {
-                _value = _access.queryRows(sql, _param);
+                _value = _access.queryRows(sql, _param, _level);
                 _matched = true;
             }
             return this;

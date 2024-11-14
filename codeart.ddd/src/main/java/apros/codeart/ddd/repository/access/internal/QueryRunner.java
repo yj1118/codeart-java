@@ -115,6 +115,12 @@ public final class QueryRunner {
         return filter.result();
     }
 
+    public static long[] queryScalarLongs(Connection conn, String sql, MapData param, QueryLevel level) {
+        var filter = new QueryFilter.ScalarLongs();
+        query(conn, sql, param, filter, level);
+        return filter.result();
+    }
+
     public static DTObject queryDTO(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.DTO();
         query(conn, sql, param, filter, level);
@@ -271,7 +277,7 @@ public final class QueryRunner {
 
     }
 
-    private static Function<String, QueryAdapter> _getAdapter = LazyIndexer.init((sql) -> {
+    private static final Function<String, QueryAdapter> _getAdapter = LazyIndexer.init((sql) -> {
         return QueryAdapter.parse(sql);
     });
 

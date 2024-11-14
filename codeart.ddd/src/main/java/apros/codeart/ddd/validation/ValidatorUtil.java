@@ -80,13 +80,13 @@ public final class ValidatorUtil {
     /// <param name="property"></param>
     public static <T extends IAggregateRoot> void checkPropertyRepeated(T obj, DomainProperty property, ValidationResult result) {
         if (isPropertyRepeated(obj, property)) {
-            var code = _getProppertyRepeatedErrorCode.apply(property);
+            var code = _getPropertyRepeatedErrorCode.apply(property);
             String value = obj.getPropertyValue(property).toString();
             result.append(code, Language.strings("apros.codeart.ddd", "PropertyValueRepeated", property.call(), value));
         }
     }
 
-    private static final Function<DomainProperty, String> _getProppertyRepeatedErrorCode = LazyIndexer.init(((property) ->
+    private static final Function<DomainProperty, String> _getPropertyRepeatedErrorCode = LazyIndexer.init(((property) ->
     {
         return String.format("%s.%sRepeated", property.declaringType().getSimpleName(), property.name());
     }));

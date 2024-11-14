@@ -1,10 +1,9 @@
 package apros.codeart.ddd.virtual;
 
-import apros.codeart.ddd.FrameworkDomain;
-import apros.codeart.ddd.IAggregateRoot;
-import apros.codeart.ddd.MergeDomain;
-import apros.codeart.ddd.UniqueKeyCalculator;
+import apros.codeart.ddd.*;
 import apros.codeart.ddd.internal.AggregateRootEventManager;
+import apros.codeart.ddd.metadata.internal.MetadataLoader;
+import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.ConstructorRepository;
 import apros.codeart.ddd.repository.RepositoryEventArgs;
 import apros.codeart.ddd.repository.RepositoryRollbackEventArgs;
@@ -161,10 +160,11 @@ public class VirtualRoot extends VirtualEntity implements IAggregateRoot {
 //			    return new DynamicRoot(type, true);
 //			}
 
-    private static final VirtualRoot EmptyInstance = new VirtualRoot(true);
+//    private static final VirtualRoot EmptyInstance = new VirtualRoot(true);
 
-    public static VirtualRoot empty() {
-        return EmptyInstance;
+    public static VirtualRoot empty(String virtualObjectName) {
+        var meta = ObjectMetaLoader.get(virtualObjectName);
+        return (VirtualRoot) DomainObject.getEmpty(meta.objectType());
     }
 
 }

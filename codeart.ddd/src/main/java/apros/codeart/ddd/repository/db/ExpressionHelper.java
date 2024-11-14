@@ -1,12 +1,11 @@
 package apros.codeart.ddd.repository.db;
 
+import apros.codeart.ddd.EntityObject;
 import apros.codeart.ddd.QueryLevel;
-import apros.codeart.ddd.repository.access.DataTable;
-import apros.codeart.ddd.repository.access.DataTableType;
-import apros.codeart.ddd.repository.access.GeneratedField;
-import apros.codeart.ddd.repository.access.TempDataTableIndex;
+import apros.codeart.ddd.repository.access.*;
 import apros.codeart.ddd.repository.access.internal.SqlDefinition;
 import apros.codeart.ddd.repository.access.internal.SqlStatement;
+import apros.codeart.util.ListUtil;
 import apros.codeart.util.StringUtil;
 
 /**
@@ -21,11 +20,49 @@ public final class ExpressionHelper {
 
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT ");
+
+        if (level == QueryLevel.NONE) {
+            sql.append(getDISTINCT(definition));
+        }
+
         StringUtil.appendLine(sql, getSelectFieldsSql(target, definition));
         StringUtil.appendLine(sql, " FROM ");
         StringUtil.append(sql, getTableSql(target, level, definition, lockSql));
 
         return getFinallyObjectSql(sql.toString(), target, definition, level);
+    }
+
+    private static String getDISTINCT(SqlDefinition definition) {
+        // 因为我们提供的是对象表达式，所以对象的查询是要去重复的
+        // 对象可能引用了集合属性，导致对象在查询时重复，在这里就处理，外界可以放心查询
+        // 如果遇到必须多行不重复的情况，就自己写sql实现，因为这种查询一般都不是基于对象的查询
+        if (DataSource.getDatabaseType() == DatabaseType.PostgreSql) {
+            String distinctFields = null;
+            String idField = EntityObject.IdPropertyName;
+            if (definition.order().isEmpty()) {
+                distinctFields = idField;
+            } else {
+
+                var columns = ListUtil.map(definition.columns().order(), (o) -> {
+                    return o; //可能要调整具体蒜贩
+                });
+
+                var findId = false;
+                for (var column : columns) {
+                    if (column.equalsIgnoreCase(idField)) {
+                        findId = true;
+                        break;
+                    }
+                }
+
+                if (!findId)
+                    columns.add(idField);
+                distinctFields = StringUtil.join(",", columns);
+            }
+            return String.format("DISTINCT ON (%s) ", distinctFields);
+        } else {
+            return "DISTINCT ";
+        }
     }
 
     public static String getTableSql(DataTable target, QueryLevel level, SqlDefinition definition, ILockSql lockSql) {
@@ -37,7 +74,7 @@ public final class ExpressionHelper {
             StringUtil.appendFormat(sql, " WHERE %s", definition.condition().code());
         }
 
-        return String.format("%s%s", sql.toString(), lockSql.get(level));
+        return String.format("%s%s", sql, lockSql.get(level));
     }
 
 //	#region 得到select语句
@@ -117,7 +154,7 @@ public final class ExpressionHelper {
 
     private static void fillFieldsSql(DataTable chainRoot, DataTable master, DataTable current, SqlDefinition exp,
                                       StringBuilder sql, TempDataTableIndex index) {
-        if (!containsTable(chainRoot, exp, current))
+        if (!containsSelectTable(chainRoot, exp, current))
             return;
 
         var chain = current.getChainPath(chainRoot);
@@ -186,7 +223,7 @@ public final class ExpressionHelper {
 
     private static void fillJoinSql(DataTable chainRoot, DataTable master, DataTable current, String masterChain,
                                     SqlDefinition exp, StringBuilder sql, TempDataTableIndex index) {
-        if (!containsTable(chainRoot, exp, current))
+        if (!containsJoinTable(chainRoot, exp, current))
             return;
         var chain = current.getChainPath(chainRoot);
         String masterTableName = StringUtil.isNullOrEmpty(masterChain) ? master.name() : masterChain;
@@ -204,7 +241,22 @@ public final class ExpressionHelper {
                         " LEFT JOIN {0} on {0}.{1}={2}.Id left join {3} as {4} on {0}.{5}={4}.Id",
                         SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
                         SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
-                        SqlStatement.qualifier(chain), GeneratedField.SlaveIdName);
+                        SqlStatement.qualifier(chain), SqlStatement.qualifier(GeneratedField.SlaveIdName));
+
+            } else if (current.type() == DataTableType.Middle) {
+
+                if (current.master().equals(current.root())) {
+                    StringUtil.appendMessageFormat(sql,
+                            " LEFT JOIN {0} as {3} on {3}.{1}={2}.Id",
+                            SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
+                            SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(chain));
+                } else {
+                    StringUtil.appendMessageFormat(sql,
+                            " LEFT JOIN {0} on {0}.{1}={2}.Id left join {3} as {4} on {0}.{5}={4}.Id",
+                            SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
+                            SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
+                            SqlStatement.qualifier(chain), SqlStatement.qualifier(GeneratedField.SlaveIdName));
+                }
 
             } else {
                 // 中间的查询会多一个{4}.{6}={2}.Id的限定，
@@ -212,7 +264,8 @@ public final class ExpressionHelper {
                         " LEFT JOIN {0} on {0}.{1}={2}.Id LEFT JOIN {3} as {4} on {0}.{5}={4}.Id and {4}.{6}={2}.Id",
                         SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
                         SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
-                        SqlStatement.qualifier(chain), GeneratedField.SlaveIdName, GeneratedField.RootIdName);
+                        SqlStatement.qualifier(chain), SqlStatement.qualifier(GeneratedField.SlaveIdName),
+                        SqlStatement.qualifier(GeneratedField.RootIdName));
             }
         } else {
             if (current.type() == DataTableType.AggregateRoot) {
@@ -231,14 +284,14 @@ public final class ExpressionHelper {
                             " LEFT JOIN {0} as {1} on {2}.{3}Id={1}.Id and {1}.{4}={5}.Id",
                             SqlStatement.qualifier(current.name()), SqlStatement.qualifier(chain),
                             SqlStatement.qualifier(masterTableName), tip.name(),
-                            GeneratedField.RootIdName, SqlStatement.qualifier(rootTableName));
+                            SqlStatement.qualifier(GeneratedField.RootIdName), SqlStatement.qualifier(rootTableName));
                 } else {
                     // 查询不是从根表发出的，而是从引用表，那么直接用@RootId来限定
                     var tip = current.memberPropertyTip();
-                    StringUtil.appendMessageFormat(sql, " LEFT JOIN {0} as {1} on {2}.{3}Id={1}.Id and {1}.{4}=@{4}",
+                    StringUtil.appendMessageFormat(sql, " LEFT JOIN {0} as {1} on {2}.{3}Id={1}.Id and {1}.{4}=@{5}",
                             SqlStatement.qualifier(current.name()), SqlStatement.qualifier(chain),
                             SqlStatement.qualifier(masterTableName), tip.name(),
-                            GeneratedField.RootIdName);
+                            SqlStatement.qualifier(GeneratedField.RootIdName), GeneratedField.RootIdName);
                 }
 
             }
@@ -255,7 +308,28 @@ public final class ExpressionHelper {
         return true;
     }
 
-    private static boolean containsTable(DataTable root, SqlDefinition exp, DataTable target) {
+    private static boolean containsSelectTable(DataTable root, SqlDefinition exp, DataTable target) {
+        var path = target.getChainPath(root);
+
+        if (target.isMultiple()) {
+            return exp.containsSelectChain(path);
+        }
+        var tip = target.memberPropertyTip();
+
+        if (exp.isSpecifiedField()) {
+            // 指定了加载字段，那么就看表是否提供了相关的字段
+            return exp.containsChain(path);
+        } else {
+            if (target.type() == DataTableType.AggregateRoot || tip.lazy()) {
+                if (!exp.containsChain(path)) {
+                    return false; // 默认情况下外部的内聚根、懒惰加载不连带查询
+                }
+            }
+            return true;
+        }
+    }
+
+    private static boolean containsJoinTable(DataTable root, SqlDefinition exp, DataTable target) {
         var path = target.getChainPath(root);
         boolean containsInner = exp.containsInner(path);
 
@@ -283,11 +357,18 @@ public final class ExpressionHelper {
     // 获取最终的输出代码
     private static String getFinallyObjectSql(String tableSql, DataTable table, SqlDefinition exp, QueryLevel level) {
 
+//        StringBuilder sb = new StringBuilder();
+//        StringUtil.appendFormat(sb, "WITH %s AS (", SqlStatement.qualifier(table.name()));
+//        StringUtil.appendLine(sb);
+//        StringUtil.appendLine(sb, DBUtil.format(tableSql, table, level));
+//        StringUtil.append(sb, ")");
+
+
         StringBuilder sb = new StringBuilder();
-        StringUtil.appendFormat(sb, "WITH %s AS (", SqlStatement.qualifier(table.name()));
+        StringUtil.append(sb, "(");
         StringUtil.appendLine(sb);
         StringUtil.appendLine(sb, DBUtil.format(tableSql, table, level));
-        StringUtil.append(sb, ")");
+        StringUtil.appendFormat(sb, ") AS %s", SqlStatement.qualifier(table.name()));
 
         return sb.toString();
     }

@@ -20,14 +20,19 @@ class QueryObject extends QueryObjectQB {
 
         String objectSql = ExpressionHelper.getObjectSql(target, level, definition, LockSql.INSTANCE);
 
-        var bottomSql = String.format("select distinct %s %s from %s %s", definition.top(),
+//        var bottomSql = String.format("select %s %s from %s %s", definition.top(),
+//                definition.getFieldsSql(),
+//                SqlStatement.qualifier(target.name()),
+//                definition.order());
+//
+//        bottomSql = DBUtil.format(bottomSql, target, QueryLevel.NONE);
+//
+//        return String.format("%s%s%s", objectSql, System.lineSeparator(), bottomSql);
+//
+        return String.format("select %s %s from %s %s", definition.top(),
                 definition.getFieldsSql(),
-                SqlStatement.qualifier(target.name()),
+                objectSql,
                 definition.order());
-
-        bottomSql = DBUtil.format(bottomSql, target, QueryLevel.NONE);
-
-        return String.format("%s%s%s", objectSql, System.lineSeparator(), bottomSql);
     }
 
     public static final QueryObject Instance = new QueryObject();

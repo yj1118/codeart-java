@@ -22,7 +22,7 @@ class QueryObject extends QueryObjectQB {
 
         String objectSql = ExpressionHelper.getObjectSql(target, level, definition, LockSql.INSTANCE);
 
-        var bottomSql = String.format("select distinct %s %s from %s %s", definition.top(),
+        var bottomSql = String.format("select %s %s from %s %s", definition.top(),
                 definition.getFieldsSql(),
                 SqlStatement.qualifier(tableName),
                 definition.order());

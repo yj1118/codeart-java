@@ -11,7 +11,7 @@ public class QueryPageCode {
 
     public QueryPageCode(String selectSql, String tableSql, String orderSql) {
         this._selectSql = selectSql;
-        this._tableSql = tableSql;
+        this._tableSql = tableSql;   //用于过滤重复行
         this._orderSql = orderSql;
     }
 

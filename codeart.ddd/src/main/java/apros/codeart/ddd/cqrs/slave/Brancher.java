@@ -53,7 +53,7 @@ public final class Brancher {
             arg.setValue("id", id);
         });
 
-        if (data.isEmpty()) return VirtualRoot.empty();
+        if (data.isEmpty()) return VirtualRoot.empty(name);
 
         return VirtualRepository.add(name, data);
     }

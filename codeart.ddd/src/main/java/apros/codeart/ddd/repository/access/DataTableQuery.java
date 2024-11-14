@@ -327,7 +327,7 @@ final class DataTableQuery {
         return fields.toString();
     }
 
-    private static Function<DataTable, Function<String, String>> _getFindEntryByExpression = LazyIndexer
+    private static final Function<DataTable, Function<String, String>> _getFindEntryByExpression = LazyIndexer
             .init((table) -> {
                 return LazyIndexer.init((expression) -> {
                     SqlDefinition def = SqlDefinition.create(expression);
@@ -564,7 +564,7 @@ final class DataTableQuery {
         return _getObjectIdExpression.apply(table);
     }
 
-    private static Function<DataTable, String> _getObjectIdExpression = LazyIndexer.init((table) -> {
+    private static final Function<DataTable, String> _getObjectIdExpression = LazyIndexer.init((table) -> {
         String expression = null;
         if (table.type() == DataTableType.AggregateRoot) {
             expression = StringUtil.format("{0}=@{0}", EntityObject.IdPropertyName);
