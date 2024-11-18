@@ -188,15 +188,15 @@ final class QueryFilter {
         }
     }
 
-    public static class ScalarGuids implements IQueryFilter {
+    public static class ScalarGUIDs implements IQueryFilter {
 
-        private Iterable<UUID> _result;
+        private UUID[] _result;
 
-        public Iterable<UUID> result() {
+        public UUID[] result() {
             return _result;
         }
 
-        public ScalarGuids() {
+        public ScalarGUIDs() {
         }
 
         @Override
@@ -204,13 +204,14 @@ final class QueryFilter {
             int length = getCount(rs);
 
             if (length == 0)
-                _result = ListUtil.empty();
+                _result = ListUtil.emptyGUIDs();
             else {
-                var items = new ArrayList<UUID>(length);
+                _result = new UUID[length];
+                int index = 0;
                 while (rs.next()) {
-                    items.add(UUID.fromString(rs.getString(1)));
+                    _result[index] = UUID.fromString(rs.getString(1));  //注意，传出的集合是从1开始读取数据
+                    index++;
                 }
-                _result = items;
             }
         }
     }

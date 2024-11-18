@@ -367,6 +367,10 @@ public final class ListUtil {
 
     private static final byte[] EmptyBytes;
 
+
+    private static final UUID[] EmptyGUIDs;
+
+
     private static final Object[] EmptyObjects;
 
     static {
@@ -374,6 +378,7 @@ public final class ListUtil {
         EmptyInts = new int[]{};
         EmptyLongs = new long[]{};
         EmptyBytes = new byte[]{};
+        EmptyGUIDs = new UUID[]{};
         EmptyObjects = new Object[]{};
     }
 
@@ -390,9 +395,14 @@ public final class ListUtil {
         return EmptyInts;
     }
 
-    public static byte[] emptyByts() {
+    public static byte[] emptyBytes() {
         return EmptyBytes;
     }
+
+    public static UUID[] emptyGUIDs() {
+        return EmptyGUIDs;
+    }
+
 
     public static Object[] emptyObjects() {
         return EmptyObjects;

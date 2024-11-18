@@ -115,8 +115,14 @@ public final class QueryRunner {
         return filter.result();
     }
 
-    public static long[] queryScalarLongs(Connection conn, String sql, MapData param, QueryLevel level) {
+    public static long[] queryLongs(Connection conn, String sql, MapData param, QueryLevel level) {
         var filter = new QueryFilter.ScalarLongs();
+        query(conn, sql, param, filter, level);
+        return filter.result();
+    }
+
+    public static UUID[] queryGUIDs(Connection conn, String sql, MapData param, QueryLevel level) {
+        var filter = new QueryFilter.ScalarGUIDs();
         query(conn, sql, param, filter, level);
         return filter.result();
     }

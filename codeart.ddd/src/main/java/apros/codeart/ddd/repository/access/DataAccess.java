@@ -410,12 +410,12 @@ public final class DataAccess {
     public long[] queryLongs(String sql, MapData param, QueryLevel level) {
         openDataContextLock(level);
         var nativeSql = getNativeSql(sql, param);
-        return QueryRunner.queryScalarLongs(_conn, nativeSql, param, level);
+        return QueryRunner.queryLongs(_conn, nativeSql, param, level);
     }
 
     public long[] nativeQueryLongs(String sql, MapData params, QueryLevel level) {
         openDataContextLock(level);
-        return QueryRunner.queryScalarLongs(_conn, sql, params, level);
+        return QueryRunner.queryLongs(_conn, sql, params, level);
     }
 
     //endregion
@@ -490,6 +490,66 @@ public final class DataAccess {
             if (_matched) return this;
             if (DataSource.getDatabaseType() == dbType) {
                 _value = _access.queryLongs(sql, _param, _level);
+                _matched = true;
+            }
+            return this;
+        }
+    }
+
+    //endregion
+
+    public UUID[] queryGUIDs(String sql, MapData param, QueryLevel level) {
+        openDataContextLock(level);
+        var nativeSql = getNativeSql(sql, param);
+        return QueryRunner.queryGUIDs(_conn, nativeSql, param, level);
+    }
+
+    //region queryGUIDs 的适配模式
+
+    public QueryGUIDsAdaptation queryGUIDs(MapData param, QueryLevel level) {
+        return new QueryGUIDsAdaptation(this, param, level);
+    }
+
+    public static class QueryGUIDsAdaptation {
+
+        private UUID[] _value;
+
+        public UUID[] value() {
+            return _value;
+        }
+
+        private final DataAccess _access;
+        private final MapData _param;
+        private final QueryLevel _level;
+
+        private boolean _matched = false;
+
+        public QueryGUIDsAdaptation(DataAccess access, MapData param, QueryLevel level) {
+            _access = access;
+            _param = param;
+            _level = level;
+        }
+
+        public QueryGUIDsAdaptation postgreSql(String sql) {
+            return exec(DatabaseType.PostgreSql, sql);
+        }
+
+        public QueryGUIDsAdaptation sqlserver(String sql) {
+            return exec(DatabaseType.SqlServer, sql);
+        }
+
+        public QueryGUIDsAdaptation mysql(String sql) {
+            return exec(DatabaseType.MySql, sql);
+        }
+
+        public QueryGUIDsAdaptation oracle(String sql) {
+            return exec(DatabaseType.Oracle, sql);
+        }
+
+        private QueryGUIDsAdaptation exec(DatabaseType dbType, String sql) {
+            if (_matched) return this;
+            if (DataSource.getDatabaseType() == dbType) {
+                _value = _access.queryGUIDs(sql, _param, _level);
                 _matched = true;
             }
             return this;

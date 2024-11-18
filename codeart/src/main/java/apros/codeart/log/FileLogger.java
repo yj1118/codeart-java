@@ -33,7 +33,7 @@ class FileLogger {
 
         builder.setStatusLevel(org.apache.logging.log4j.Level.ERROR);
         LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout").addAttribute("pattern",
-                "%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n");
+                "%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n%throwable");
 
         // 添加文件 appender
         AppenderComponentBuilder fileAppenderBuilder = builder.newAppender("LogFile", "File")

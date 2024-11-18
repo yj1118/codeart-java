@@ -302,7 +302,7 @@ final class DataTableInsert {
         if (obj.isEmpty()) {
             data.put(field.name(), Guid.Empty);
         } else {
-            ((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
+            ((IValueObject) obj).setPersistentIdentity(Guid.newGuid());
             var id = DataTableUtil.getObjectId(obj);
             data.put(field.name(), id);
 
@@ -327,7 +327,7 @@ final class DataTableInsert {
             var child = _self.findChild(_self, tip.name());
             if (child.type() == DataTableType.ValueObject) {
                 // 我们需要为ValueObject补充编号
-                ((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
+                ((IValueObject) obj).setPersistentIdentity(Guid.newGuid());
             }
             child.insertMember(root, current, obj);
             if (middle == null)

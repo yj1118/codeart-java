@@ -194,7 +194,7 @@ final class DataTableUpdate {
                 if (current.isPropertyChanged(tip.name())) {
                     var obj = (DomainObject) current.getValue(tip.name());
                     if (tip.category() == DomainPropertyCategory.ValueObject) {
-                        ((IValueObject) obj).setPersistentIdentity(Guid.NewGuid());
+                        ((IValueObject) obj).setPersistentIdentity(Guid.newGuid());
                     }
 
                     var id = DataTableUtil.getObjectId(obj);

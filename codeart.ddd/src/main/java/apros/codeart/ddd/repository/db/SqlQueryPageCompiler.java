@@ -53,8 +53,7 @@ public class SqlQueryPageCompiler implements IQueryPageCompiler {
 
     private final Function<QueryPageCode, String> _getPageCount = LazyIndexer.init((code) -> {
         var tableSql = _getPageTableSql.apply(code);
-        var bottomSql = "SELECT COUNT(*) FROM PageTableCTE";
-        return String.format("%s%s%s", tableSql, System.lineSeparator(), bottomSql);
+        return String.format("SELECT COUNT(*) FROM %s", tableSql);
     });
 
 //    private static String getFirstPageCT(QueryPageCode code) {

@@ -8,6 +8,9 @@ import apros.codeart.ddd.repository.access.internal.SqlStatement;
 import apros.codeart.ddd.repository.db.DBUtil;
 import apros.codeart.ddd.repository.db.ExpressionHelper;
 import apros.codeart.util.SafeAccess;
+import apros.codeart.util.StringUtil;
+
+import java.util.regex.Pattern;
 
 @SafeAccess
 class QueryObject extends QueryObjectQB {
@@ -29,10 +32,23 @@ class QueryObject extends QueryObjectQB {
 //
 //        return String.format("%s%s%s", objectSql, System.lineSeparator(), bottomSql);
 //
-        return String.format("select %s %s from %s %s", definition.top(),
+//        return String.format("select %s %s from %s %s", definition.top(),
+//                definition.getFieldsSql(),
+//                objectSql,
+//                definition.order());
+
+        String top = definition.top().isEmpty() ? StringUtil.empty() :
+                Pattern.compile("top", Pattern.CASE_INSENSITIVE)
+                        .matcher(definition.top())
+                        .replaceAll("LIMIT");
+
+        String sql = String.format("select %s from %s %s %s",
                 definition.getFieldsSql(),
                 objectSql,
-                definition.order());
+                definition.order(),
+                top);
+
+        return DBUtil.format(sql, target, QueryLevel.NONE);
     }
 
     public static final QueryObject Instance = new QueryObject();

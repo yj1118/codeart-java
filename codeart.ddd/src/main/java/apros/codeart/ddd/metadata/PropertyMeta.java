@@ -7,7 +7,6 @@ import java.util.function.BiFunction;
 import apros.codeart.ddd.*;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.runtime.TypeUtil;
-import apros.codeart.runtime.Util;
 import apros.codeart.util.Guid;
 
 public class PropertyMeta {
@@ -166,7 +165,7 @@ public class PropertyMeta {
     public PropertyMeta(String name, ValueMeta value, ObjectMeta declaring, PropertyAccessLevel accessGet,
                         PropertyAccessLevel accessSet, String call, Iterable<IPropertyValidator> validators, boolean lazy,
                         IPropertyDataLoader dataLoader) {
-        _id = Guid.NewGuid();
+        _id = Guid.newGuid();
         _name = name;
         _value = value;
         _declaring = declaring;

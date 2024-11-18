@@ -19,11 +19,15 @@ public final class Guid {
         return uuid.toString().replace("-", "");
     }
 
+    public static UUID empty() {
+        return Empty;
+    }
+
     public static boolean isNullOrEmpty(UUID value) {
         return value == null || value.equals(Empty);
     }
 
-    public static UUID NewGuid() {
+    public static UUID newGuid() {
         return UUID.randomUUID();
     }
 
