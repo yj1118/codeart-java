@@ -56,10 +56,21 @@ class AssignExpression extends TransformExpression {
             dto.setString(findExp, StringUtil.empty()); // 如果没有成员，就自动生成
         targets = dto.finds(findExp, false);
 
+        var targetPaths = _getFindExpPath.apply(findExp);
+
         var valueExpression = _getValueExpression.apply(valueFindExp);
 
         for (var target : targets) {
-            var parent = TypeUtil.as(target.getParent(), DTEObject.class);
+
+            int count = targetPaths.length;
+            DTEObject parent = TypeUtil.as(target.getParent(), DTEObject.class);
+            count--;
+            while (count > 0) {
+                if (parent == null) break;
+                parent = TypeUtil.as(parent.getParent(), DTEObject.class);
+                count--;
+            }
+
             if (parent == null)
                 throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
 
@@ -181,7 +192,7 @@ class AssignExpression extends TransformExpression {
     //endregion
 
     private static final Function<String, String[]> _getFindExpPath = LazyIndexer.init((valueFindExp) -> {
-        return valueFindExp.split(".");
+        return valueFindExp.split("\\.");
     });
 
     private static final Function<String, ValueTuple> _getValueExpression = LazyIndexer.init((valueFindExp) -> {
