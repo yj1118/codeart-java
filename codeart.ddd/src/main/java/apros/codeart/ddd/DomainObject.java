@@ -9,7 +9,6 @@ import java.util.function.Function;
 
 import apros.codeart.ddd.repository.ScheduledActionType;
 import apros.codeart.runtime.MethodUtil;
-import com.google.common.base.Preconditions;
 
 import apros.codeart.ddd.internal.DTOMapper;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
@@ -18,7 +17,6 @@ import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
 import apros.codeart.dto.serialization.IDTOSerializable;
 import apros.codeart.i18n.Language;
-import apros.codeart.runtime.FieldUtil;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.EventHandler;
 import apros.codeart.util.INullProxy;
@@ -530,6 +528,9 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         // }
 
         if (isChanged) {
+
+            handlePrePropertyChange(property.name(), value, oldValue);
+
             if (property.isCollection()) {
                 var collection = (IDomainCollection) value;
                 collection.setParent(this);
@@ -596,7 +597,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
     }
 
     /**
-     * 获得属性最后一次被更改前的值
+     * 获得属性在未被修改前的初始状态的值。
      *
      * @param property
      * @return
@@ -605,9 +606,74 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         return this.getOldValue(property.name());
     }
 
+    /**
+     * 获得属性在未被修改前的初始状态的值
+     *
+     * @param propertyName
+     * @return
+     */
     public Object getOldValue(String propertyName) {
         return this.dataProxy().loadOld(propertyName);
     }
+
+
+    /**
+     * 处理属性被改变时的行为
+     *
+     * @param propertyName
+     * @param newValue
+     * @param oldValue
+     */
+    private void handlePrePropertyChange(String propertyName, Object newValue, Object oldValue) {
+        readonlyCheckUp();
+        raisePrePropertyChange(propertyName, newValue, oldValue);
+        raisePreChangeEvent();
+    }
+
+    private void raisePrePropertyChange(String propertyName, Object newValue, Object oldValue) {
+        if (this.isConstructing())
+            return;// 构造时，不触发任何事件
+
+        onPrePropertyChange(propertyName, newValue, oldValue);
+    }
+
+    protected void onPrePropertyChange(String propertyName, Object newValue, Object oldValue) {
+        this.prePropertyChange.raise(this, () -> {
+            return new DomainPropertyChangeEventArgs(propertyName, newValue, oldValue);
+        });
+    }
+
+    public final EventHandler<DomainPropertyChangeEventArgs> prePropertyChange = new EventHandler<>();
+
+    private void raisePreChangeEvent() {
+        if (this.isEmpty())
+            return;// 空对象，不触发任何事件
+
+        if (this.isConstructing())
+            return;// 构造时，不触发任何事件
+
+        onPreChange();
+
+        StatusEvent.execute(StatusEventType.PreChange, this);
+    }
+
+    protected void onPreChange() {
+        if (_changed == null)
+            return;
+
+        this._changed.raise(this, () -> {
+            return new DomainObjectChangedEventArgs(this);
+        });
+    }
+
+    private EventHandler<DomainObjectChangedEventArgs> _preChange;
+
+    public EventHandler<DomainObjectChangedEventArgs> preChange() {
+        if (_preChange == null)
+            _preChange = new EventHandler<DomainObjectChangedEventArgs>();
+        return _preChange;
+    }
+
 
     /**
      * 外界标记某个属性发生了变化，这常常是由于属性本身的成员发生了变化，而触发的属性变化 该方法会触发属性被改变的事件
@@ -644,25 +710,30 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         if (this.isConstructing())
             return;// 构造时，不触发任何事件
 
+        onPropertyChanged(propertyName, newValue, oldValue);
+    }
+
+    protected void onPropertyChanged(String propertyName, Object newValue, Object oldValue) {
         this.propertyChanged.raise(this, () -> {
-            return new DomainPropertyChangedEventArgs(propertyName, newValue, oldValue);
+            return new DomainPropertyChangeEventArgs(propertyName, newValue, oldValue);
         });
     }
 
-    public final EventHandler<DomainPropertyChangedEventArgs> propertyChanged = new EventHandler<>();
+    public final EventHandler<DomainPropertyChangeEventArgs> propertyChanged = new EventHandler<>();
+
 
     /**
      * 得到被更改了的领域属性的信息
      */
-    public List<DomainPropertyChangedEventArgs> getChangedProperties() {
+    public List<DomainPropertyChangeEventArgs> getChangedProperties() {
         var properties = this.meta().properties();
-        ArrayList<DomainPropertyChangedEventArgs> items = new ArrayList<>();
+        ArrayList<DomainPropertyChangeEventArgs> items = new ArrayList<>();
         for (var property : properties) {
             var propertyName = property.name();
             if (this.isPropertyChanged(propertyName)) {
                 var newValue = this.getValue(propertyName);
                 var oldValue = this.getOldValue(propertyName);
-                items.add(new DomainPropertyChangedEventArgs(propertyName, newValue, oldValue));
+                items.add(new DomainPropertyChangeEventArgs(propertyName, newValue, oldValue));
             }
         }
         return items;

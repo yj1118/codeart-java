@@ -15,7 +15,7 @@ import apros.codeart.runtime.TypeUtil;
  */
 public abstract class DataProxy implements IDataProxy {
 
-    private Map<String, Object> _data;
+    private final Map<String, Object> _data;
 
     /**
      * 用于记录属性更改情况的数据
@@ -69,10 +69,10 @@ public abstract class DataProxy implements IDataProxy {
         return false;
     }
 
-    public void save(String propertyName, Object newValue, Object oldValue) {
+    public void save(String propertyName, Object newValue, Object originalValue) {
         _data.put(propertyName, newValue);
         if (this.isTrackPropertyChange())
-            _oldData.put(propertyName, oldValue);
+            _oldData.put(propertyName, originalValue);
     }
 
     public void copy(IDataProxy target) {
@@ -134,7 +134,7 @@ public abstract class DataProxy implements IDataProxy {
     }
 
     private boolean isTrackPropertyChange() {
-        return this._owner == null ? false : _owner.isTrackPropertyChange();
+        return this._owner != null && _owner.isTrackPropertyChange();
     }
 
     private static final class DataProxyStorage extends DataProxy {

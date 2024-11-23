@@ -1,6 +1,6 @@
 package apros.codeart.ddd;
 
-public class DomainPropertyChangedEventArgs {
+public class DomainPropertyChangeEventArgs {
 
     private final Object _newValue;
 
@@ -25,7 +25,7 @@ public class DomainPropertyChangedEventArgs {
         return _propertyName;
     }
 
-    public DomainPropertyChangedEventArgs(String propertyName, Object newValue, Object oldValue) {
+    public DomainPropertyChangeEventArgs(String propertyName, Object newValue, Object oldValue) {
         this._propertyName = propertyName;
         this._newValue = newValue;
         this._oldValue = oldValue;
