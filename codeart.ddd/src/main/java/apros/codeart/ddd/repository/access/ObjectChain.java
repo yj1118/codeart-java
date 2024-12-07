@@ -26,15 +26,20 @@ public class ObjectChain {
     private final Function<DataTable, String> _getPath = LazyIndexer.init((parent) -> {
         if (this.path().isEmpty())
             return StringUtil.empty();
-
+        
         StringBuilder code = new StringBuilder();
         for (var item : this.reverseFields()) {
-            if (item.equals(parent.memberField()))
-                break;
+//            if (item.equals(parent.memberField()))
+//                break;
             code.insert(0, String.format("%s_", item.propertyName()));
+            if (item.table().master().equals(parent)) {
+                break;
+            }
         }
+
         if (!code.isEmpty())
             StringUtil.removeLast(code);
+
         return code.toString();
     });
 

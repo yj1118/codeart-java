@@ -191,14 +191,14 @@ public final class ExpressionHelper {
     private static String getJoinSql(DataTable chainRoot, SqlDefinition exp) {
         StringBuilder sql = new StringBuilder();
         var index = new TempDataTableIndex();
-        fillJoinSql(chainRoot, chainRoot, exp, sql, index);
+        fillJoinSql(chainRoot, exp, sql, index);
 
         return sql.toString();
     }
 
-    private static void fillJoinSql(DataTable chainRoot, DataTable master, SqlDefinition exp, StringBuilder sql,
+    private static void fillJoinSql(DataTable chainRoot, SqlDefinition exp, StringBuilder sql,
                                     TempDataTableIndex index) {
-        fillChildJoinSql(chainRoot, chainRoot, exp, sql, index);
+        fillChildJoinSql(StringUtil.empty(), chainRoot, chainRoot, exp, sql, index);
     }
 
     /// <summary>
@@ -209,24 +209,35 @@ public final class ExpressionHelper {
     /// <param name="exp"></param>
     /// <param name="masterProxyName"></param>
     /// <param name="sql"></param>
-    private static void fillChildJoinSql(DataTable chainRoot, DataTable master, SqlDefinition exp, StringBuilder sql,
+    private static void fillChildJoinSql(String currentChain, DataTable chainRoot, DataTable master, SqlDefinition exp, StringBuilder sql,
                                          TempDataTableIndex index) {
-        var masterChain = master.getChainPath(chainRoot);
 
         for (var child : master.buildtimeChilds()) {
             if (!index.tryAdd(child))
                 continue; // 防止由于循环引用导致的死循环
 
-            fillJoinSql(chainRoot, master, child, masterChain, exp, sql, index);
+            fillJoinSql(chainRoot, master, child, currentChain, exp, sql, index);
         }
     }
 
-    private static void fillJoinSql(DataTable chainRoot, DataTable master, DataTable current, String masterChain,
+    private static String combineChain(String chain0, String chain1) {
+        if (chain0.isEmpty() && !chain1.isEmpty()) {
+            return chain1;
+        } else if (!chain0.isEmpty() && !chain1.isEmpty()) {
+            return String.format("%s_%s", chain0, chain1);
+        }
+        return chain0;
+    }
+
+
+    private static void fillJoinSql(DataTable chainRoot, DataTable master, DataTable current, String rootChain,
                                     SqlDefinition exp, StringBuilder sql, TempDataTableIndex index) {
-        if (!containsJoinTable(chainRoot, exp, current))
+        var masterChain = current.getChainPath(master);  //master 到 current的路径
+        var currentChain = combineChain(rootChain, masterChain); //root 到 current的路径
+
+        if (!containsJoinTable(currentChain, chainRoot, exp, current))
             return;
-        var chain = current.getChainPath(chainRoot);
-        String masterTableName = StringUtil.isNullOrEmpty(masterChain) ? master.name() : masterChain;
+        String masterTableName = StringUtil.isNullOrEmpty(rootChain) ? master.name() : rootChain;
 
         if (!sql.isEmpty())
             StringUtil.appendLine(sql);
@@ -241,7 +252,7 @@ public final class ExpressionHelper {
                         " LEFT JOIN {0} on {0}.{1}={2}.Id left join {3} as {4} on {0}.{5}={4}.Id",
                         SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
                         SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
-                        SqlStatement.qualifier(chain), SqlStatement.qualifier(GeneratedField.SlaveIdName));
+                        SqlStatement.qualifier(currentChain), SqlStatement.qualifier(GeneratedField.SlaveIdName));
 
             } else if (current.type() == DataTableType.Middle) {
 
@@ -249,13 +260,13 @@ public final class ExpressionHelper {
                     StringUtil.appendMessageFormat(sql,
                             " LEFT JOIN {0} as {3} on {3}.{1}={2}.Id",
                             SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
-                            SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(chain));
+                            SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(currentChain));
                 } else {
                     StringUtil.appendMessageFormat(sql,
                             " LEFT JOIN {0} on {0}.{1}={2}.Id left join {3} as {4} on {0}.{5}={4}.Id",
                             SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
                             SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
-                            SqlStatement.qualifier(chain), SqlStatement.qualifier(GeneratedField.SlaveIdName));
+                            SqlStatement.qualifier(currentChain), SqlStatement.qualifier(GeneratedField.SlaveIdName));
                 }
 
             } else {
@@ -264,15 +275,15 @@ public final class ExpressionHelper {
                         " LEFT JOIN {0} on {0}.{1}={2}.Id LEFT JOIN {3} as {4} on {0}.{5}={4}.Id and {4}.{6}={2}.Id",
                         SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
                         SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
-                        SqlStatement.qualifier(chain), SqlStatement.qualifier(GeneratedField.SlaveIdName),
+                        SqlStatement.qualifier(currentChain), SqlStatement.qualifier(GeneratedField.SlaveIdName),
                         SqlStatement.qualifier(GeneratedField.RootIdName));
             }
         } else {
             if (current.type() == DataTableType.AggregateRoot) {
                 var tip = current.memberPropertyTip();
-                StringUtil.appendMessageFormat(sql, " LEFT JOIN {0} as {1} on {2}.{3}Id={1}.Id",
-                        SqlStatement.qualifier(current.name()), SqlStatement.qualifier(chain),
-                        SqlStatement.qualifier(masterTableName), tip.name());
+                StringUtil.appendMessageFormat(sql, " LEFT JOIN {0} as {1} on {2}.{3}={1}.Id",
+                        SqlStatement.qualifier(current.name()), SqlStatement.qualifier(currentChain),
+                        SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(tip.name() + "Id"));
             } else {
                 if (chainRoot.type() == DataTableType.AggregateRoot) {
                     var chainRootMemberPropertyTip = current.chainRoot().memberPropertyTip();
@@ -282,23 +293,23 @@ public final class ExpressionHelper {
                     var tip = current.memberPropertyTip();
                     StringUtil.appendMessageFormat(sql,
                             " LEFT JOIN {0} as {1} on {2}.{3}Id={1}.Id and {1}.{4}={5}.Id",
-                            SqlStatement.qualifier(current.name()), SqlStatement.qualifier(chain),
+                            SqlStatement.qualifier(current.name()), SqlStatement.qualifier(currentChain),
                             SqlStatement.qualifier(masterTableName), tip.name(),
                             SqlStatement.qualifier(GeneratedField.RootIdName), SqlStatement.qualifier(rootTableName));
                 } else {
                     // 查询不是从根表发出的，而是从引用表，那么直接用@RootId来限定
                     var tip = current.memberPropertyTip();
                     StringUtil.appendMessageFormat(sql, " LEFT JOIN {0} as {1} on {2}.{3}Id={1}.Id and {1}.{4}=@{5}",
-                            SqlStatement.qualifier(current.name()), SqlStatement.qualifier(chain),
-                            SqlStatement.qualifier(masterTableName), tip.name(),
+                            SqlStatement.qualifier(current.name()), SqlStatement.qualifier(currentChain),
+                            SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(tip.name() + "Id"),
                             SqlStatement.qualifier(GeneratedField.RootIdName), GeneratedField.RootIdName);
                 }
 
             }
 
         }
-
-        fillChildJoinSql(chainRoot, current, exp, sql, index);
+        
+        fillChildJoinSql(currentChain, chainRoot, current, exp, sql, index);
     }
 
     private static boolean containsField(String fieldName, SqlDefinition exp) {
@@ -329,8 +340,8 @@ public final class ExpressionHelper {
         }
     }
 
-    private static boolean containsJoinTable(DataTable root, SqlDefinition exp, DataTable target) {
-        var path = target.getChainPath(root);
+    private static boolean containsJoinTable(String path, DataTable root, SqlDefinition exp, DataTable target) {
+//        var path = target.getChainPath(root);
         boolean containsInner = exp.containsInner(path);
 
         if (containsInner)

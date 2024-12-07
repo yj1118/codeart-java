@@ -411,7 +411,31 @@ public class SqlDefinition {
         int startIndex = _innerLength;
         var temp = expression.substring(startIndex).trim();
 
-        return ListUtil.asList(temp.split(","));
+        ArrayList<String> inners = new ArrayList<>();
+        for (String str : temp.split(",")) {
+            var items = splitString_(str);
+            for (var item : items) {
+                if (!inners.contains(item)) inners.add(item);
+            }
+        }
+
+        return inners;
+    }
+
+    public static ArrayList<String> splitString_(String input) {
+        ArrayList<String> result = new ArrayList<>();
+        String[] parts = input.split("_");
+
+        StringBuilder current = new StringBuilder();
+        for (int i = 0; i < parts.length; i++) {
+            if (i > 0) {
+                current.append("_");
+            }
+            current.append(parts[i]);
+            result.add(current.toString());
+        }
+
+        return result;
     }
 
 //	#region 子表达式
