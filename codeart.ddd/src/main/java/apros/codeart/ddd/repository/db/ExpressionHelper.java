@@ -292,14 +292,14 @@ public final class ExpressionHelper {
                             : chainRootMemberPropertyTip.name();
                     var tip = current.memberPropertyTip();
                     StringUtil.appendMessageFormat(sql,
-                            " LEFT JOIN {0} as {1} on {2}.{3}Id={1}.Id and {1}.{4}={5}.Id",
+                            " LEFT JOIN {0} as {1} on {2}.{3}={1}.Id and {1}.{4}={5}.Id",
                             SqlStatement.qualifier(current.name()), SqlStatement.qualifier(currentChain),
-                            SqlStatement.qualifier(masterTableName), tip.name(),
+                            SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(tip.name() + "Id"),
                             SqlStatement.qualifier(GeneratedField.RootIdName), SqlStatement.qualifier(rootTableName));
                 } else {
                     // 查询不是从根表发出的，而是从引用表，那么直接用@RootId来限定
                     var tip = current.memberPropertyTip();
-                    StringUtil.appendMessageFormat(sql, " LEFT JOIN {0} as {1} on {2}.{3}Id={1}.Id and {1}.{4}=@{5}",
+                    StringUtil.appendMessageFormat(sql, " LEFT JOIN {0} as {1} on {2}.{3}={1}.Id and {1}.{4}=@{5}",
                             SqlStatement.qualifier(current.name()), SqlStatement.qualifier(currentChain),
                             SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(tip.name() + "Id"),
                             SqlStatement.qualifier(GeneratedField.RootIdName), GeneratedField.RootIdName);
@@ -308,7 +308,7 @@ public final class ExpressionHelper {
             }
 
         }
-        
+
         fillChildJoinSql(currentChain, chainRoot, current, exp, sql, index);
     }
 
