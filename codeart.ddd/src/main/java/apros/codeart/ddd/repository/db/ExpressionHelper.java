@@ -138,27 +138,30 @@ public final class ExpressionHelper {
     private static String getSlaveSelectFieldsSql(DataTable chainRoot, DataTable master, SqlDefinition exp,
                                                   TempDataTableIndex index) {
         StringBuilder sql = new StringBuilder();
-        fillChildSelectFieldsSql(chainRoot, master, exp, sql, index);
+        fillChildSelectFieldsSql(StringUtil.empty(), chainRoot, master, exp, sql, index);
         return sql.toString();
     }
 
-    private static void fillChildSelectFieldsSql(DataTable chainRoot, DataTable master, SqlDefinition exp,
+    private static void fillChildSelectFieldsSql(String currentChain, DataTable chainRoot, DataTable master, SqlDefinition exp,
                                                  StringBuilder sql, TempDataTableIndex index) {
         for (var child : master.buildtimeChilds()) {
             if (!index.tryAdd(child))
                 continue; // 防止由于循环引用导致的死循环
 
-            fillFieldsSql(chainRoot, master, child, exp, sql, index);
+            fillFieldsSql(chainRoot, master, child, currentChain, exp, sql, index);
         }
     }
 
-    private static void fillFieldsSql(DataTable chainRoot, DataTable master, DataTable current, SqlDefinition exp,
+    private static void fillFieldsSql(DataTable chainRoot, DataTable master, DataTable current, String rootChain, SqlDefinition exp,
                                       StringBuilder sql, TempDataTableIndex index) {
-        if (!containsSelectTable(chainRoot, exp, current))
+        var masterChain = current.getChainPath(master);  //master 到 current的路径
+        var currentChain = combineChain(rootChain, masterChain); //root 到 current的路径
+
+        if (!containsSelectTable(currentChain, chainRoot, exp, current))
             return;
 
-        var chain = current.getChainPath(chainRoot);
-        boolean containsInner = exp.containsInner(chain);
+//        var chain = current.getChainPath(chainRoot);
+        boolean containsInner = exp.containsInner(currentChain);
 
         StringUtil.appendLine(sql);
 
@@ -168,16 +171,16 @@ public final class ExpressionHelper {
             if (field.tip().lazy() && !exp.specifiedField(field.name()))
                 continue;
 
-            var fieldName = String.format("%s_%s", chain, field.name());
+            var fieldName = String.format("%s_%s", currentChain, field.name());
 
             if (!containsInner && !containsField(fieldName, exp))
                 continue;
 
-            StringUtil.appendFormat(sql, "%s.%s as %s,", SqlStatement.qualifier(chain),
+            StringUtil.appendFormat(sql, "%s.%s as %s,", SqlStatement.qualifier(currentChain),
                     SqlStatement.qualifier(field.name()), SqlStatement.qualifier(fieldName));
         }
 
-        fillChildSelectFieldsSql(chainRoot, current, exp, sql, index);
+        fillChildSelectFieldsSql(currentChain, chainRoot, current, exp, sql, index);
     }
 
 //	region 获取from语句
@@ -319,8 +322,8 @@ public final class ExpressionHelper {
         return true;
     }
 
-    private static boolean containsSelectTable(DataTable root, SqlDefinition exp, DataTable target) {
-        var path = target.getChainPath(root);
+    private static boolean containsSelectTable(String path, DataTable root, SqlDefinition exp, DataTable target) {
+        //var path = target.getChainPath(root);
 
         if (target.isMultiple()) {
             return exp.containsSelectChain(path);
