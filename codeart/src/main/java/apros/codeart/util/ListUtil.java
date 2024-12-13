@@ -141,6 +141,58 @@ public final class ListUtil {
         return list;
     }
 
+    public static Iterable<?> asList(Object value) {
+        Iterable<?> values;
+        if (value instanceof Iterable) {
+            values = (Iterable<?>) value;
+        } else if (value != null && value.getClass().isArray()) {
+            // 基本类型数组处理
+            if (value instanceof long[]) {
+                values = Arrays.stream((long[]) value).boxed().toList();
+            } else if (value instanceof int[]) {
+                values = Arrays.stream((int[]) value).boxed().toList();
+            } else if (value instanceof double[]) {
+                values = Arrays.stream((double[]) value).boxed().toList();
+            } else if (value instanceof boolean[] booleanArray) {
+                List<Boolean> booleanList = new ArrayList<>();
+                for (boolean b : booleanArray) {
+                    booleanList.add(b); // 自动装箱为 Boolean
+                }
+                values = booleanList;
+            } else if (value instanceof char[] charArray) {
+                List<Character> charList = new ArrayList<>();
+                for (char c : charArray) {
+                    charList.add(c); // 自动装箱为 Character
+                }
+                values = charList;
+            } else if (value instanceof byte[] byteArray) {
+                List<Byte> byteList = new ArrayList<>();
+                for (byte b : byteArray) {
+                    byteList.add(b); // 自动装箱为 Boolean
+                }
+                values = byteList;
+            } else if (value instanceof short[] shortArray) {
+                List<Short> shortList = new ArrayList<>();
+                for (Short s : shortArray) {
+                    shortList.add(s); // 自动装箱为 Boolean
+                }
+                values = shortList;
+            } else if (value instanceof float[] floatArray) {
+                List<Float> floatList = new ArrayList<>();
+                for (float f : floatArray) {
+                    floatList.add(f); // 自动装箱为 Float
+                }
+                values = floatList;
+            } else {
+                // 引用类型数组
+                values = Arrays.asList((Object[]) value);
+            }
+        } else {
+            values = null;
+        }
+        return values;
+    }
+
     @SuppressWarnings("unchecked")
     public static <T> T[] asArray(Iterable<T> source, Class<T> type) {
         T[] array = (T[]) Array.newInstance(type, Iterables.size(source));

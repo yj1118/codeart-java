@@ -226,7 +226,7 @@ public final class SqlCondition {
         var ins = _getIns.apply(commandText);
         for (var sin : ins) {
             var name = sin.paramName();
-            var values = TypeUtil.as(param.get(name), Iterable.class);
+            var values = ListUtil.asList(param.get(name));
             param.remove(name);
 
             if (ListUtil.exists(values)) {
