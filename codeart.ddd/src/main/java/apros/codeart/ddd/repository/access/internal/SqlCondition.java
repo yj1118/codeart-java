@@ -167,7 +167,7 @@ public final class SqlCondition {
             code = StringUtil.insert(code, index + offset, replaceStr);
             code = StringUtil.remove(code, index + offset + replaceStr.length(), length);
 
-            SqlAny any = new SqlAny(_anys.size(), paraName, replaceStr, content);
+            SqlAny any = new SqlAny(_anys.size(), paraName);
             _anys.add(any);
 
             offset += replaceStr.length() - length; // 记录偏移量
@@ -190,12 +190,12 @@ public final class SqlCondition {
         // 先处理any
         for (var any : _anys) {
             // 经过sqlParser转移后，占位符可能会变，需要更新下，这样后续操作效率高
-            any.tryUpdate(commandText);
+            var placeholder = any.getPlaceholder(commandText);
 
             if (param.containsKey(any.paramName()))
-                commandText = commandText.replace(any.placeholder(), any.content());
+                commandText = commandText.replace(placeholder.symbol(), placeholder.content());
             else
-                commandText = commandText.replace(any.placeholder(), "1=1"); // 没有参数表示永远为真，这里不能替换为空文本，因为会出现where
+                commandText = commandText.replace(placeholder.symbol(), "1=1"); // 没有参数表示永远为真，这里不能替换为空文本，因为会出现where
             // 没有条件的BUG，所以为 where 0=0
         }
 

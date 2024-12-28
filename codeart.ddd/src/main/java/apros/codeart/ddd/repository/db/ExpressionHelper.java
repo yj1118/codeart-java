@@ -156,12 +156,13 @@ public final class ExpressionHelper {
                                       StringBuilder sql, TempDataTableIndex index) {
         var masterChain = current.getChainPath(master);  //master 到 current的路径
         var currentChain = combineChain(rootChain, masterChain); //root 到 current的路径
+        boolean containsInner = exp.containsInner(currentChain);
 
-        if (!containsSelectTable(currentChain, chainRoot, exp, current))
+        if (!containsSelectTable(currentChain, chainRoot, exp, current) && !containsInner)
             return;
 
 //        var chain = current.getChainPath(chainRoot);
-        boolean containsInner = exp.containsInner(currentChain);
+
 
         StringUtil.appendLine(sql);
 
@@ -252,7 +253,7 @@ public final class ExpressionHelper {
 
             if (current.type() == DataTableType.AggregateRoot) {
                 StringUtil.appendMessageFormat(sql,
-                        " LEFT JOIN {0} on {0}.{1}={2}.Id left join {3} as {4} on {0}.{5}={4}.Id",
+                        " LEFT JOIN {0} on {0}.{1}={2}.Id LEFT JOIN {3} as {4} on {0}.{5}={4}.Id",
                         SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
                         SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
                         SqlStatement.qualifier(currentChain), SqlStatement.qualifier(GeneratedField.SlaveIdName));
@@ -266,7 +267,7 @@ public final class ExpressionHelper {
                             SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(currentChain));
                 } else {
                     StringUtil.appendMessageFormat(sql,
-                            " LEFT JOIN {0} on {0}.{1}={2}.Id left join {3} as {4} on {0}.{5}={4}.Id",
+                            " LEFT JOIN {0} on {0}.{1}={2}.Id LEFT JOIN {3} as {4} on {0}.{5}={4}.Id",
                             SqlStatement.qualifier(middle.name()), SqlStatement.qualifier(masterIdName),
                             SqlStatement.qualifier(masterTableName), SqlStatement.qualifier(current.name()),
                             SqlStatement.qualifier(currentChain), SqlStatement.qualifier(GeneratedField.SlaveIdName));
@@ -291,9 +292,10 @@ public final class ExpressionHelper {
                 if (chainRoot.type() == DataTableType.AggregateRoot) {
                     var chainRootMemberPropertyTip = current.chainRoot().memberPropertyTip();
                     // string rootTableName = chainRoot.Name;
-                    String rootTableName = chainRootMemberPropertyTip == null ? chainRoot.name()
-                            : chainRootMemberPropertyTip.name();
+                    String rootTableName = master.isAggregateRoot() ? masterTableName : (chainRootMemberPropertyTip == null ? chainRoot.name()
+                            : chainRootMemberPropertyTip.name());
                     var tip = current.memberPropertyTip();
+
                     StringUtil.appendMessageFormat(sql,
                             " LEFT JOIN {0} as {1} on {2}.{3}={1}.Id and {1}.{4}={5}.Id",
                             SqlStatement.qualifier(current.name()), SqlStatement.qualifier(currentChain),

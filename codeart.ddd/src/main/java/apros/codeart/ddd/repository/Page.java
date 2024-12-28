@@ -45,6 +45,10 @@ public class Page<T> {
         return _objects;
     }
 
+    public T objectAt(int index) {
+        return Iterables.get(this._objects, index, null);
+    }
+
     public int pageCount() {
         if (_dataCount == 0 || _pageSize == 0)
             return 0;

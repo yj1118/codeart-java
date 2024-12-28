@@ -468,7 +468,7 @@ final class DataTableRead {
         var fields = table.defaultQueryFields();
 
         for (var field : fields) {
-            var name = String.format("%s %ss", tip.name(), field.name());
+            var name = String.format("%s_%s", tip.name(), field.name());
             if (!data.containsKey(name))
                 return false;
         }
