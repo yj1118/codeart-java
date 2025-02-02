@@ -353,6 +353,11 @@ public final class ListUtil {
     }
 
     public static record TransformResult<TT, ST>(Iterable<TT> adds, Iterable<ST> removes, Iterable<TT> updates) {
+
+        public boolean isEmpty() {
+            return Iterables.isEmpty(adds) && Iterables.isEmpty(removes) && Iterables.isEmpty(updates);
+        }
+
     }
 
     /// <summary>

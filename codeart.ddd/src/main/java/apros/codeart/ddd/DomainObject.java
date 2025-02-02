@@ -596,6 +596,20 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         return (T) value;
     }
 
+    @SuppressWarnings("unchecked")
+    public <T> T getOldValue(DomainProperty property, Class<T> valueType) {
+        return getOldValue(property.name(), valueType);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getOldValue(String propertyName, Class<T> valueType) {
+        var value = getValue(propertyName);
+        if (value == null) {
+            throw new BusinessException(strings("apros.codeart.ddd", "DomainCanNotNull", propertyName));
+        }
+        return (T) value;
+    }
+
     /**
      * 获得属性在未被修改前的初始状态的值。
      *

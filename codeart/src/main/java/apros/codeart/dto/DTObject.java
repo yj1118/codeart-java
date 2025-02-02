@@ -1420,7 +1420,6 @@ public class DTObject implements INullProxy, IDTOSchema {
      * @return
      */
     static DTObject createImpl(String schemaCode, Object target, boolean isReadonly) {
-
         var dy = as(target, IDTOSerializable.class);
         if (dy != null)
             return dy.getData(schemaCode);

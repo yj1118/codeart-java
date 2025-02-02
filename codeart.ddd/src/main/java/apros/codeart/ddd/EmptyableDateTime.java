@@ -7,22 +7,31 @@ import java.time.LocalDateTime;
  */
 public class EmptyableDateTime extends Emptyable<LocalDateTime> {
 
-	public EmptyableDateTime(LocalDateTime value) {
-		super(value);
-	}
+    public EmptyableDateTime(LocalDateTime value) {
+        super(value);
+    }
 
-	public static EmptyableDateTime createEmpty() {
-		return new EmptyableDateTime(null);
-	}
+    public static EmptyableDateTime empty() {
+        return Empty;
+    }
 
-	public final static Class<?> ValueType = LocalDateTime.class;
+    /**
+     * 这个方法框架会用到，不能删除
+     *
+     * @return
+     */
+    public static EmptyableDateTime createEmpty() {
+        return empty();
+    }
 
-	public final static EmptyableDateTime Empty = new EmptyableDateTime(null);
-	
-	
-	public static EmptyableDateTime now(){
-		return new EmptyableDateTime(LocalDateTime.now());
-	}
-	
-	
+    public final static Class<?> ValueType = LocalDateTime.class;
+
+    public final static EmptyableDateTime Empty = new EmptyableDateTime(null);
+
+
+    public static EmptyableDateTime now() {
+        return new EmptyableDateTime(LocalDateTime.now());
+    }
+
+
 }
