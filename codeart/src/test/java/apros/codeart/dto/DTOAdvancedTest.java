@@ -9,168 +9,170 @@ import apros.codeart.util.StringUtil;
 
 public class DTOAdvancedTest {
 
-	@Test
-	public void assignCommon() {
-		var code = "{\"id\":13,\"markedCode\":\"test\",\"name\":\"测试\",person:{\"name\":\"张三\"},\"orderIndex\":1,\"config\":[{\"name\":\"name0\",\"sex\":1},{\"name\":\"name1\",\"sex\":0}],\"description\":\"类型描述\"}";
-		DTObject dto = DTObject.editable(code);
-		dto.transform("id=id", (id) -> {
-			return 15;
-		});
+    @Test
+    public void assignCommon() {
+        var code = "{\"id\":13,\"markedCode\":\"test\",\"name\":\"测试\",person:{\"name\":\"张三\"},\"orderIndex\":1,\"config\":[{\"name\":\"name0\",\"sex\":1},{\"name\":\"name1\",\"sex\":0}],\"description\":\"类型描述\"}";
+        DTObject dto = DTObject.editable(code);
+        dto.transform("id=id", (id) -> {
+            return 15;
+        });
 
-		dto.transform("person.name=name", (name) -> {
-			return "李四";
-		});
+        dto.transform("person.name=name", (name) -> {
+            return "李四";
+        });
 
-		dto.transform("config.name=name", (v) -> {
-			return "name";
-		});
+        // 目前执行这句话户报错，因为config是数组，另外,config.name=name对数组成员统一赋一个值实际意义也不大，需要更改API，至少是可以有序号传入，为每个成员单独赋值
+        // todo
+        dto.transform("config.name=name", (v) -> {
+            return "name";
+        });
 
-		dto.each("config", (item) -> {
-			assertEquals("name", item.getString("name"));
-		});
+        dto.each("config", (item) -> {
+            assertEquals("name", item.getString("name"));
+        });
 
-		assertEquals("李四", dto.getString("person.name"));
-		assertEquals(15, dto.getInt("id"));
-	}
+        assertEquals("李四", dto.getString("person.name"));
+        assertEquals(15, dto.getInt("id"));
+    }
 
 //	private final String _code0 = "{\"name\":\"名称\",\"orderIndex\":\"1\",\"markedCode\":\"markedCode\",\"description\":\"这是一项描述\",\"attached\":[{\"name\":\"配置1\",\"type\":\"3\",\"required\":\"true\",\"options\":\"选项1\"},{\"name\":\"配置2\",\"type\":\"2\",\"required\":\"true\",\"options\":\"选项1，选项2\"},{\"name\":\"配置3\",\"type\":\"4\",\"required\":\"false\",\"options\":\"选项1，选项2，选项3\"}]}";
 
-	/// <summary>
-	/// 变换的时候集合是空的
-	/// </summary>
-	@Test
-	public void transformListIsEmpty() {
-		var code = "{\"config\":[],\"description\":\"类型描述\",\"id\":13,\"markedCode\":\"test\",\"name\":\"测试\",\"orderIndex\":1}";
-		DTObject dto = DTObject.editable(code);
-		dto.transform("id=>typeId;config=>attached");
-		dto.transform("attached.options=options", (v) -> {
-			var options = ListUtil.map((Object[]) v, (t) -> {
-				return (String) t;
-			});
+    /// <summary>
+    /// 变换的时候集合是空的
+    /// </summary>
+    @Test
+    public void transformListIsEmpty() {
+        var code = "{\"config\":[],\"description\":\"类型描述\",\"id\":13,\"markedCode\":\"test\",\"name\":\"测试\",\"orderIndex\":1}";
+        DTObject dto = DTObject.editable(code);
+        dto.transform("id=>typeId;config=>attached");
+        dto.transform("attached.options=options", (v) -> {
+            var options = ListUtil.map((Object[]) v, (t) -> {
+                return (String) t;
+            });
 
-			return StringUtil.join(",", options);
-		});
-		assertEquals(
-				"{\"attached\":[],\"description\":\"类型描述\",\"markedCode\":\"test\",\"name\":\"测试\",\"orderIndex\":1,\"typeId\":13}",
-				dto.getCode(true));
-	}
+            return StringUtil.join(",", options);
+        });
+        assertEquals(
+                "{\"attached\":[],\"description\":\"类型描述\",\"markedCode\":\"test\",\"name\":\"测试\",\"orderIndex\":1,\"typeId\":13}",
+                dto.getCode(true));
+    }
 
-	private final String _code1 = "{\"config\":[{\"message\":\"\",\"name\":\"1\",\"options\":[\"选项1\",\"选项2\"],\"required\":true,\"type\":4,\"persons\":[{id:\"1\",name:\"姓名1\"},{id:\"2\",name:\"姓名2\"}]}],\"description\":\"111\",\"id\":7,\"markedCode\":\"1\",\"name\":\"123\",\"orderIndex\":1,\"rootId\":6}";
+    private final String _code1 = "{\"config\":[{\"message\":\"\",\"name\":\"1\",\"options\":[\"选项1\",\"选项2\"],\"required\":true,\"type\":4,\"persons\":[{id:\"1\",name:\"姓名1\"},{id:\"2\",name:\"姓名2\"}]}],\"description\":\"111\",\"id\":7,\"markedCode\":\"1\",\"name\":\"123\",\"orderIndex\":1,\"rootId\":6}";
 
-	/// <summary>
-	/// 保留语句
-	/// </summary>
-	@Test
-	public void reserve() {
-		DTObject dto = DTObject.editable(_code1);
-		dto.transform("~config.name,config.options,config.persons,description,id");
-		assertEquals(
-				"{\"config\":[{\"name\":\"1\",\"options\":[\"选项1\",\"选项2\"],\"persons\":[{\"id\":\"1\",\"name\":\"姓名1\"},{\"id\":\"2\",\"name\":\"姓名2\"}]}],\"description\":\"111\",\"id\":7}",
-				dto.getCode());
+    /// <summary>
+    /// 保留语句
+    /// </summary>
+    @Test
+    public void reserve() {
+        DTObject dto = DTObject.editable(_code1);
+        dto.transform("~config.name,config.options,config.persons,description,id");
+        assertEquals(
+                "{\"config\":[{\"name\":\"1\",\"options\":[\"选项1\",\"选项2\"],\"persons\":[{\"id\":\"1\",\"name\":\"姓名1\"},{\"id\":\"2\",\"name\":\"姓名2\"}]}],\"description\":\"111\",\"id\":7}",
+                dto.getCode());
 
-		dto = DTObject.editable(_code1);
-		dto.transform("~config.name,config.options,config.persons.id,description,id");
-		assertEquals(
-				"{\"config\":[{\"name\":\"1\",\"options\":[\"选项1\",\"选项2\"],\"persons\":[{\"id\":\"1\"},{\"id\":\"2\"}]}],\"description\":\"111\",\"id\":7}",
-				dto.getCode());
-	}
+        dto = DTObject.editable(_code1);
+        dto.transform("~config.name,config.options,config.persons.id,description,id");
+        assertEquals(
+                "{\"config\":[{\"name\":\"1\",\"options\":[\"选项1\",\"选项2\"],\"persons\":[{\"id\":\"1\"},{\"id\":\"2\"}]}],\"description\":\"111\",\"id\":7}",
+                dto.getCode());
+    }
 
-	/// <summary>
-	/// 移除语句
-	/// </summary>
-	@Test
-	public void remove() {
-		DTObject dto = DTObject.editable(_code1);
-		dto.transform("!config.name,config.options,config.persons,description,id");
-		assertEquals(
-				"{\"config\":[{\"message\":\"\",\"required\":true,\"type\":4}],\"markedCode\":\"1\",\"name\":\"123\",\"orderIndex\":1,\"rootId\":6}",
-				dto.getCode(true));
+    /// <summary>
+    /// 移除语句
+    /// </summary>
+    @Test
+    public void remove() {
+        DTObject dto = DTObject.editable(_code1);
+        dto.transform("!config.name,config.options,config.persons,description,id");
+        assertEquals(
+                "{\"config\":[{\"message\":\"\",\"required\":true,\"type\":4}],\"markedCode\":\"1\",\"name\":\"123\",\"orderIndex\":1,\"rootId\":6}",
+                dto.getCode(true));
 
-		dto = DTObject.editable(_code1);
-		dto.transform("!config.name,config.options,config.persons.id,description,id");
-		assertEquals(
-				"{\"config\":[{\"message\":\"\",\"persons\":[{\"name\":\"姓名1\"},{\"name\":\"姓名2\"}],\"required\":true,\"type\":4}],\"markedCode\":\"1\",\"name\":\"123\",\"orderIndex\":1,\"rootId\":6}",
-				dto.getCode(true));
-	}
+        dto = DTObject.editable(_code1);
+        dto.transform("!config.name,config.options,config.persons.id,description,id");
+        assertEquals(
+                "{\"config\":[{\"message\":\"\",\"persons\":[{\"name\":\"姓名1\"},{\"name\":\"姓名2\"}],\"required\":true,\"type\":4}],\"markedCode\":\"1\",\"name\":\"123\",\"orderIndex\":1,\"rootId\":6}",
+                dto.getCode(true));
+    }
 
-	/// <summary>
-	/// 设置自己
-	/// </summary>
-	@Test
-	public void setSelf() {
-		var dto = DTObject.editable();
-		dto.setInt(2);
-		assertEquals(2, dto.getInt());
+    /// <summary>
+    /// 设置自己
+    /// </summary>
+    @Test
+    public void setSelf() {
+        var dto = DTObject.editable();
+        dto.setInt(2);
+        assertEquals(2, dto.getInt());
 
-		var newDTO = DTObject.editable("{id:3}");
-		dto.replace(newDTO); // 该表达式表示设置自己
-		assertEquals("{\"id\":3}", dto.getCode());
+        var newDTO = DTObject.editable("{id:3}");
+        dto.replace(newDTO); // 该表达式表示设置自己
+        assertEquals("{\"id\":3}", dto.getCode());
 
-	}
+    }
 
-	public static class ObjectTest {
+    public static class ObjectTest {
 
-		private int _id;
+        private int _id;
 
-		public int getId() {
-			return _id;
-		}
+        public int getId() {
+            return _id;
+        }
 
-		public void setId(int id) {
-			_id = id;
-		}
+        public void setId(int id) {
+            _id = id;
+        }
 
-		private String _name;
+        private String _name;
 
-		public String name() {
-			return _name;
-		}
+        public String name() {
+            return _name;
+        }
 
-		public void name(String name) {
-			_name = name;
-		}
+        public void name(String name) {
+            _name = name;
+        }
 
-		private int _index = 1;
+        private int _index = 1;
 
-		public int index() {
-			return _index;
-		}
+        public int index() {
+            return _index;
+        }
 
-		public void index(int index) {
-			_index = index;
-		}
+        public void index(int index) {
+            _index = index;
+        }
 
-		private byte _sex;
+        private byte _sex;
 
-		public byte sex() {
-			return _sex;
-		}
+        public byte sex() {
+            return _sex;
+        }
 
-		public void sex(byte value) {
-			_sex = value;
-		}
+        public void sex(byte value) {
+            _sex = value;
+        }
 
-		public ObjectTest() {
-		}
+        public ObjectTest() {
+        }
 
-	}
+    }
 
-	@Test
-	public void saveToObject() {
-		var dto = DTObject.editable();
-		dto.setInt("id", 1);
-		dto.setString("name", "李四");
-		dto.setByte("sex", (byte) 1);
+    @Test
+    public void saveToObject() {
+        var dto = DTObject.editable();
+        dto.setInt("id", 1);
+        dto.setString("name", "李四");
+        dto.setByte("sex", (byte) 1);
 
-		var obj = new ObjectTest();
+        var obj = new ObjectTest();
 
-		dto.save(obj);
+        dto.save(obj);
 
-		assertEquals(1, obj.getId());
-		assertEquals(1, obj.index()); // 由于dto里没有index的数据，所以不会赋值给obj
-		assertEquals("李四", obj.name());
-		assertEquals((byte) 1, obj.sex());
-	}
+        assertEquals(1, obj.getId());
+        assertEquals(1, obj.index()); // 由于dto里没有index的数据，所以不会赋值给obj
+        assertEquals("李四", obj.name());
+        assertEquals((byte) 1, obj.sex());
+    }
 
 //	/// <summary>
 //	/// 映射的对象内含有DTO成员
@@ -193,59 +195,59 @@ public class DTOAdvancedTest {
 //
 //	}
 
-	public class MapInnerDTOClass {
+    public class MapInnerDTOClass {
 
-		private String _name;
+        private String _name;
 
-		public String getName() {
-			return _name;
-		}
+        public String getName() {
+            return _name;
+        }
 
-		public void setName(String name) {
-			_name = name;
-		}
+        public void setName(String name) {
+            _name = name;
+        }
 
-		private short _orderIndex;
+        private short _orderIndex;
 
-		public short getOrderIndex() {
-			return _orderIndex;
-		}
+        public short getOrderIndex() {
+            return _orderIndex;
+        }
 
-		public void setOrderIndex(short orderIndex) {
-			_orderIndex = orderIndex;
-		}
+        public void setOrderIndex(short orderIndex) {
+            _orderIndex = orderIndex;
+        }
 
-		private String _markedCode;
+        private String _markedCode;
 
-		public String getMarkedCode() {
-			return _markedCode;
-		}
+        public String getMarkedCode() {
+            return _markedCode;
+        }
 
-		public void setMarkedCode(String markedCode) {
-			_markedCode = markedCode;
-		}
+        public void setMarkedCode(String markedCode) {
+            _markedCode = markedCode;
+        }
 
-		private String _description;
+        private String _description;
 
-		public String getDescription() {
-			return _description;
-		}
+        public String getDescription() {
+            return _description;
+        }
 
-		public void setDescription(String description) {
-			_description = description;
-		}
+        public void setDescription(String description) {
+            _description = description;
+        }
 
-		public DTObject _dscLimConfig;
+        public DTObject _dscLimConfig;
 
-		public void setDscLimConfig(DTObject data) {
-			_dscLimConfig = data;
-		}
+        public void setDscLimConfig(DTObject data) {
+            _dscLimConfig = data;
+        }
 
-		public DTObject getDscLimConfig() {
-			return _dscLimConfig;
-		}
+        public DTObject getDscLimConfig() {
+            return _dscLimConfig;
+        }
 
-	}
+    }
 //
 //	[TestMethod]
 //
