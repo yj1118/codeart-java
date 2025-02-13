@@ -21,8 +21,8 @@ final class DomainHost {
 
     private static boolean _initialized = false;
 
-    //
-//	/// <summary>
+
+    //	/// <summary>
 //	/// <para>初始化与领域对象相关的行为，由于许多行为是第一次使用对象的时候才触发，这样会导致没有使用对象却需要一些额外特性的时候缺少数据</para>
 //	/// <para>所以我们需要在使用领域驱动的之前执行初始化操作</para>
 //	/// </summary>

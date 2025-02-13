@@ -1,5 +1,6 @@
 package apros.codeart.io;
 
+import static apros.codeart.i18n.Language.strings;
 import static apros.codeart.runtime.Util.propagate;
 
 import java.io.BufferedWriter;
@@ -143,11 +144,29 @@ public final class IOUtil {
         var current = Paths.get(paths[0]);
 
         for (var i = 1; i < paths.length; i++) {
+            if (!isValidPathSegment(paths[i])) {
+                throw new IllegalArgumentException(strings("apros.codeart", "INVALID_PATH_SEGMENT", paths[i]));
+            }
             Path filePath = Paths.get(paths[i]);
             current = current.resolve(filePath);
         }
 
         return current;
+    }
+
+    public static boolean isValidPathSegment(String segment) {
+        // 检查是否包含盘符（冒号），或包含不允许的字符
+        if (segment.indexOf(':') >= 0) return false;
+
+        // 检查不允许的字符：<>:"/\\|?*
+        for (char c : segment.toCharArray()) {
+            if ("<>:\"/\\|?*".indexOf(c) >= 0) {
+                return false;
+            }
+        }
+
+        // 确保路径不是绝对路径（不以 / 或 \\ 开头）
+        return !segment.startsWith("/") && !segment.startsWith("\\");
     }
 
     public static void delete(String path) {

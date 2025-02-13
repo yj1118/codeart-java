@@ -1347,6 +1347,24 @@ public class DTObject implements INullProxy, IDTOSchema {
         return t;
     }
 
+    public static DTObject value(String name, String value) {
+        var t = DTObject.editable();
+        t.setString(name, value);
+        return t;
+    }
+
+    public static DTObject value(String name, boolean value) {
+        var t = DTObject.editable();
+        t.setBoolean(name, value);
+        return t;
+    }
+
+    public static DTObject value(String name, int value) {
+        var t = DTObject.editable();
+        t.setInt(name, value);
+        return t;
+    }
+
     /**
      * 根据架构代码将对象的信息加载到dto中
      *

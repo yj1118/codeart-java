@@ -14,7 +14,6 @@ public final class DomainMessage {
     /**
      * 发送领域消息
      *
-     * @param name
      * @param content
      */
     public static void send(String messageName, DTObject content) {
