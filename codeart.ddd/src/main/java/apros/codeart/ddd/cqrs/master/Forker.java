@@ -230,7 +230,7 @@ public final class Forker {
 //	}
 //
 //	private static Function<String, String> _getEventName = LazyIndexer.init((aggregate) -> {
-//		return String.format("d:cqrs-fork-%s", aggregate);
+//		return String.format("cqrs-fork-%s", aggregate);
 //	});
 //
 //	public static String getEventName(String aggregate) {

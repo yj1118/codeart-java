@@ -24,7 +24,7 @@ public final class ActionName {
     }
 
     private static final Function<String, String> _getObjectMeta = LazyIndexer.init((String typeName) -> {
-        return String.format("d:cqrs-getMeta-%s", typeName.toLowerCase());
+        return String.format("cqrs-getMeta-%s", typeName.toLowerCase());
     });
 
     public static String getObject(Class<?> type) {
@@ -34,12 +34,12 @@ public final class ActionName {
     public static String getObject(String typeName) {
         return _getObject.apply(typeName);
     }
-    
+
     /// <summary>
     /// 获取对象
     /// </summary>
     private static final Function<String, String> _getObject = LazyIndexer.init((String typeName) -> {
-        return String.format("d:cqrs-get-%s", typeName.toLowerCase());
+        return String.format("cqrs-get-%s", typeName.toLowerCase());
     });
 
     public static String objectAdded(String typeName) {
@@ -57,7 +57,7 @@ public final class ActionName {
     }
 
     private static Function<String, String> _getObjectAdded = LazyIndexer.init((typeName) -> {
-        return String.format("d:cqrs-%sAdded", StringUtil.firstToLower(typeName));
+        return String.format("cqrs-%sAdded", StringUtil.firstToLower(typeName));
     });
 
     public static String objectUpdated(Class<?> type) {
@@ -75,7 +75,7 @@ public final class ActionName {
     }
 
     private static final Function<String, String> _getObjectUpdated = LazyIndexer.init((typeName) -> {
-        return String.format("d:cqrs-%sUpdated", StringUtil.firstToLower(typeName));
+        return String.format("cqrs-%sUpdated", StringUtil.firstToLower(typeName));
     });
 
     public static String objectDeleted(Class<?> type) {
@@ -92,7 +92,7 @@ public final class ActionName {
     }
 
     private static final Function<String, String> _getObjectDeleted = LazyIndexer.init((typeName) -> {
-        return String.format("d:cqrs-%sDeleted", StringUtil.firstToLower(typeName));
+        return String.format("cqrs-%sDeleted", StringUtil.firstToLower(typeName));
     });
 
 }
