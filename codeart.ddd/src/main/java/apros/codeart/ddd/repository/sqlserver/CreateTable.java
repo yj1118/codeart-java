@@ -57,6 +57,15 @@ class CreateTable extends CreateTableQB {
                         ((maxLength == 0 || maxLength > max) ? "max" : maxLength),
                         (allowNull ? StringUtil.empty() : "NOT"));
             }
+            case DbType.BigDecimal: {
+                var precision = AccessUtil.getNumericPrecision(field.tip());
+                var scale = AccessUtil.getNumericScale(field.tip());
+                return String.format("[%s] [%s(%s, %s)] %s NULL,",
+                        field.name(),
+                        SQLServerUtil.getSqlDbTypeString(field.dbType()),
+                        precision, scale,
+                        (allowNull ? StringUtil.empty() : "NOT"));
+            }
             case DbType.LocalDateTime: {
                 var precision = AccessUtil.getTimePrecision(field.tip());
                 var pv = getTimePrecisionValue(precision);

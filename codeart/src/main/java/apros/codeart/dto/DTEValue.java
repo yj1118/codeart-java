@@ -2,6 +2,7 @@ package apros.codeart.dto;
 
 import static apros.codeart.i18n.Language.strings;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -47,6 +48,7 @@ public class DTEValue extends DTEntity {
         if (type == double.class || type == Double.class) return this.getDoubleRef();
         if (type == char.class || type == Character.class) return this.getCharRef();
         if (type == String.class) return this.getString();
+        if (type == BigDecimal.class) return this.getBigDecimal();
         return this.getValueRef();
     }
 
@@ -188,6 +190,12 @@ public class DTEValue extends DTEntity {
         if (_value != null)
             return (UUID) _value;
         return UUID.fromString(_valueCode);
+    }
+
+    public BigDecimal getBigDecimal() {
+        if (_value != null)
+            return (BigDecimal) _value;
+        return new BigDecimal(_valueCode);
     }
 
     /**

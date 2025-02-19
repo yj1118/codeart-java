@@ -1,5 +1,6 @@
 package apros.codeart.dto;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 
@@ -22,6 +23,8 @@ public interface IDTOWriter {
     void writeBoolean(String name, boolean value);
 
     void writeLocalDateTime(String name, LocalDateTime value);
+
+    void writeBigDecimal(String name, BigDecimal value);
 
     void writeInstant(String name, Instant value);
 

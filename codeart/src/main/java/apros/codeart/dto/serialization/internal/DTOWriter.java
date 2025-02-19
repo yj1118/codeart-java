@@ -1,5 +1,6 @@
 package apros.codeart.dto.serialization.internal;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 
@@ -71,6 +72,11 @@ abstract class DTOWriter implements IDTOWriter {
 
     @Override
     public void writeValue(String name, Object value) {
+        _dto.setValue(name, value);
+    }
+
+    @Override
+    public void writeBigDecimal(String name, BigDecimal value) {
         _dto.setValue(name, value);
     }
 

@@ -1,5 +1,6 @@
 package apros.codeart.ddd.repository.access;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -184,7 +185,7 @@ public class GeneratedField extends ValueField {
 
     public static class DateTimeMeta extends CustomMeta {
 
-        private TimePrecisions _precision;
+        private final TimePrecisions _precision;
 
         public TimePrecisions precision() {
             return _precision;
@@ -193,6 +194,27 @@ public class GeneratedField extends ValueField {
         public DateTimeMeta(String name, Class<?> declaringType, TimePrecisions precision) {
             super(name, String.class, declaringType);
             _precision = precision;
+        }
+    }
+
+    public static class NumericMeta extends CustomMeta {
+
+        private final int _precision;
+
+        public int precision() {
+            return _precision;
+        }
+
+        private final int _scale;
+
+        public int scale() {
+            return _scale;
+        }
+
+        public NumericMeta(String name, Class<?> declaringType, int precision, int scale) {
+            super(name, BigDecimal.class, declaringType);
+            _precision = precision;
+            _scale = scale;
         }
     }
 

@@ -20,6 +20,7 @@ public final class PostgresqlUtil {
             case DbType.Guid -> "uuid";
             case DbType.Int32 -> "integer";
             case DbType.Int64 -> "bigint";
+            case DbType.BigDecimal -> "NUMERIC";
             default -> throw new IllegalStateException(
                     Language.strings("apros.codeart.ddd", "UnsupportedFieldType", dbType.toString()));
         };

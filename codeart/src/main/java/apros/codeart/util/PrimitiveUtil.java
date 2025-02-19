@@ -1,5 +1,6 @@
 package apros.codeart.util;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -116,13 +117,15 @@ public final class PrimitiveUtil {
                 return String.class;
             case "guid":
                 return UUID.class;
+            case "bigdecimal":
+                return BigDecimal.class;
             default:
                 return null;
         }
     }
 
     /**
-     * 注意，我们把时间作为基础类型处理
+     * 注意，我们把时间和BigDecimal作为基础类型处理
      *
      * @param valueType
      * @return
@@ -131,7 +134,8 @@ public final class PrimitiveUtil {
         return valueType.isPrimitive() || valueType.equals(String.class) || valueType.equals(LocalDateTime.class)
                 || valueType.equals(ZonedDateTime.class) || valueType.equals(UUID.class)
                 || valueType.equals(Long.class) || valueType.equals(Integer.class) || valueType.equals(Float.class)
-                || valueType.equals(Byte.class) || valueType.equals(Short.class) || valueType.equals(Double.class);
+                || valueType.equals(Byte.class) || valueType.equals(Short.class) || valueType.equals(Double.class)
+                || valueType.equals(BigDecimal.class);
     }
 
     /**
@@ -156,6 +160,7 @@ public final class PrimitiveUtil {
         wrappers.add(Float.class);
         wrappers.add(Double.class);
         wrappers.add(Void.class);
+        wrappers.add(BigDecimal.class);
         return wrappers;
     }
 

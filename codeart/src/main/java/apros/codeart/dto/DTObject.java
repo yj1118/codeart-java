@@ -4,6 +4,7 @@ import static apros.codeart.i18n.Language.strings;
 import static apros.codeart.runtime.TypeUtil.as;
 import static apros.codeart.runtime.TypeUtil.is;
 
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -553,6 +554,11 @@ public class DTObject implements INullProxy, IDTOSchema {
     public void setZonedDateTime(String findExp, ZonedDateTime value) {
         setValueRef(findExp, value, true); // 时间转换成json，会带""号，所以valueCodeIsString是true
     }
+
+    public void setBigDecimal(String findExp, BigDecimal value) {
+        setValueRef(findExp, value, true);
+    }
+
 
     public void setInstant(String findExp, Instant value) {
         setValueRef(findExp, value, true);

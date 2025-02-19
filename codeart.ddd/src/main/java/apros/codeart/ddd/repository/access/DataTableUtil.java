@@ -2,6 +2,7 @@ package apros.codeart.ddd.repository.access;
 
 import static apros.codeart.i18n.Language.strings;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -283,6 +284,8 @@ final class DataTableUtil {
         _typeMap.put(UUID.class, DbType.Guid);
         _typeMap.put(LocalDateTime.class, DbType.LocalDateTime);
         _typeMap.put(ZonedDateTime.class, DbType.ZonedDateTime);
+        
+        _typeMap.put(BigDecimal.class, DbType.BigDecimal);
     }
 
     /**

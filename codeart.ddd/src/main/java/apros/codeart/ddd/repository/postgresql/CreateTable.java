@@ -3,6 +3,7 @@ package apros.codeart.ddd.repository.postgresql;
 import apros.codeart.ddd.repository.access.*;
 import apros.codeart.ddd.repository.access.internal.AccessUtil;
 import apros.codeart.ddd.repository.db.DBUtil;
+import apros.codeart.ddd.repository.sqlserver.SQLServerUtil;
 import apros.codeart.ddd.validation.TimePrecisions;
 import apros.codeart.util.SafeAccess;
 import apros.codeart.util.StringUtil;
@@ -74,6 +75,15 @@ class CreateTable extends CreateTableQB {
                 return String.format("\"%s\" varchar(%s) %s,", field.name(),
                         maxLength,
                         (allowNull ? StringUtil.empty() : "NOT NULL"));
+            }
+            case DbType.BigDecimal: {
+                var precision = AccessUtil.getNumericPrecision(field.tip());
+                var scale = AccessUtil.getNumericScale(field.tip());
+                return String.format("\"%s\" %s(%s, %s) %s NULL,",
+                        field.name(),
+                        SQLServerUtil.getSqlDbTypeString(field.dbType()),
+                        precision, scale,
+                        (allowNull ? StringUtil.empty() : "NOT"));
             }
             case DbType.LocalDateTime: {
                 var precision = AccessUtil.getTimePrecision(field.tip());

@@ -25,11 +25,12 @@ public final class SQLServerUtil {
             case DbType.Int32 -> "int";
             case DbType.Int64 -> "bigint";
             case DbType.String -> "nvarchar";
+            case DbType.BigDecimal -> "DECIMAL";
             default -> throw new IllegalStateException(
                     Language.strings("apros.codeart.ddd", "UnsupportedFieldType", dbType.toString()));
         };
     }
-    
+
 
 //	public static SqlDbType etSqlDbType(DbType dbType) {
 //		return _getSqlDbType(dbType);
