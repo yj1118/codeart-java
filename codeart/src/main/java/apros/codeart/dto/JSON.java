@@ -5,6 +5,7 @@ import static apros.codeart.runtime.TypeUtil.is;
 import static apros.codeart.util.StringUtil.last;
 import static apros.codeart.util.StringUtil.removeLast;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
@@ -87,6 +88,11 @@ public class JSON {
             return;
         }
 
+        if (valueClass == BigDecimal.class) {
+            writeBigDecimal(sb, (BigDecimal) value);
+            return;
+        }
+
         if (is(valueClass, Map.class)) {
             writeMap(sb, (Map<?, ?>) value);
             return;
@@ -98,6 +104,12 @@ public class JSON {
         } else {
             writeObject(sb, value);
         }
+    }
+
+    private static void writeBigDecimal(StringBuilder sb, BigDecimal value) {
+        sb.append("\"");
+        sb.append(value.toString());
+        sb.append("\"");
     }
 
     private static void writeZonedDateTime(StringBuilder sb, ZonedDateTime value) {
