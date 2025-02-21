@@ -81,11 +81,7 @@ public final class EventTrigger {
 
     private static DTObject raiseLocalEvent(DomainEvent event, DTObject args, EventContext ctx) {
         return DataContext.newScope(() -> {
-            var output = event.raise(args, ctx);
-            // 这里上下文如果保存失败了，那么事务肯定也执行失败，没问题
-            // 上下文如果保存成功了，那么当commit提交失败了，由于幂等性，就算执行回溯了，也没事
-            ctx.save();
-            return output;
+            return event.raise(args, ctx);
         });
     }
 

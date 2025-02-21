@@ -6,13 +6,8 @@
     }
   },
   "event": {
-    "rabbitmq.server": {
-      "host": "127.0.0.1",
-      "vhost": "sj",
-      "uid": "sa",
-      "pwd": "Q!1"
-    },
-    "subscriber.group": "PortalService",
+    "rabbitmq.server": "host:127.0.0.1;vhost:sj;uid:sa;pwd:Q!1",
+    "subscriber.group": "ddd-test",
     "subscriber.maxConcurrency": 5,
     "subscriber.maxConcurrency.UserUpdated": 2
   },

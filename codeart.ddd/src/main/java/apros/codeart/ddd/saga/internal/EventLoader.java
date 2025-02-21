@@ -4,6 +4,7 @@ import static apros.codeart.i18n.Language.strings;
 
 import java.util.ArrayList;
 
+import apros.codeart.ddd.saga.SAGAConfig;
 import apros.codeart.util.ListUtil;
 import com.google.common.collect.Iterables;
 
@@ -45,7 +46,13 @@ public final class EventLoader {
         ArrayList<DomainEvent> events = new ArrayList<>(Iterables.size(findedTypes));
         for (var findedType : findedTypes) {
             var event = SafeAccessImpl.createSingleton(findedType);
-            events.add(event);
+            if (event.server() == null)
+                events.add(event);
+            else {
+                // 如果事件指定了服务，那么就要跟服务名匹配才会加载
+                if (event.server().equals(SAGAConfig.server()))
+                    events.add(event);
+            }
         }
         return events;
     }
