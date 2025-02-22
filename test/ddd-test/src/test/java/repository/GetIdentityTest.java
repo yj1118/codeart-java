@@ -2,7 +2,6 @@ package repository;
 
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.launcher.TestLauncher;
-import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.Repository;
 import apros.codeart.ddd.repository.TransactionStatus;
@@ -42,7 +41,7 @@ public class GetIdentityTest {
         ConcurrentLinkedQueue<Long> queue = new ConcurrentLinkedQueue<>();
 
         Thread thread1 = asyncRun(() -> {
-            for(var i=0;i<1000;i++){
+            for (var i = 0; i < 1000; i++) {
                 DataContext.using(() -> {
                     var id = DataPortal.getIdentity(AuthPlatform.class);
                     queue.add(id);
@@ -51,7 +50,7 @@ public class GetIdentityTest {
         });
 
         Thread thread2 = asyncRun(() -> {
-            for(var i=0;i<1000;i++){
+            for (var i = 0; i < 1000; i++) {
                 DataContext.using(() -> {
                     var id = DataPortal.getIdentity(AuthPlatform.class);
                     queue.add(id);
@@ -60,7 +59,7 @@ public class GetIdentityTest {
         });
 
         Thread thread3 = asyncRun(() -> {
-            for(var i=0;i<1000;i++){
+            for (var i = 0; i < 1000; i++) {
                 DataContext.using(() -> {
                     var id = DataPortal.getIdentity(AuthPlatform.class);
                     queue.add(id);
@@ -95,7 +94,6 @@ public class GetIdentityTest {
             throw new RuntimeException(e);
         }
     }
-
 
 
     public static Thread asyncRun(Runnable action) {

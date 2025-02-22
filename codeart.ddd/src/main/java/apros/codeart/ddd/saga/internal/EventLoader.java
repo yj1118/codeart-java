@@ -5,6 +5,8 @@ import static apros.codeart.i18n.Language.strings;
 import java.util.ArrayList;
 
 import apros.codeart.ddd.saga.SAGAConfig;
+import apros.codeart.ddd.saga.SAGAEvents;
+import apros.codeart.echo.rpc.RPCEvents;
 import apros.codeart.util.ListUtil;
 import com.google.common.collect.Iterables;
 
@@ -42,16 +44,22 @@ public final class EventLoader {
     }
 
     private static Iterable<DomainEvent> findEvents() {
+        var specified = SAGAConfig.specifiedEvents() != null && SAGAConfig.specifiedEvents().length > 0;
+
         var findedTypes = Activator.getSubTypesOf(DomainEvent.class, App.archives());
         ArrayList<DomainEvent> events = new ArrayList<>(Iterables.size(findedTypes));
         for (var findedType : findedTypes) {
             var event = SafeAccessImpl.createSingleton(findedType);
-            if (event.server() == null)
-                events.add(event);
-            else {
-                // 如果事件指定了服务，那么就要跟服务名匹配才会加载
-                if (event.server().equals(SAGAConfig.server()))
+
+            if (specified) {
+                // 服务器只加载指定名称的领域事件
+                if (ListUtil.contains(SAGAConfig.specifiedEvents(), (eventName) -> eventName.equals(event.name()))) {
                     events.add(event);
+                    SAGAEvents.raiseEventRegistered(event, new SAGAEvents.RegisteredEventArgs(event.name()));
+                }
+            } else {
+                events.add(event);
+                SAGAEvents.raiseEventRegistered(event, new SAGAEvents.RegisteredEventArgs(event.name()));
             }
         }
         return events;

@@ -13,7 +13,7 @@ public final class RPCEvents {
     /// </summary>
     public static class ServerOpenedArgs {
 
-        private String _methodName;
+        private final String _methodName;
 
         public String methodName() {
             return _methodName;
@@ -42,7 +42,7 @@ public final class RPCEvents {
     /// RPC服务器已关闭的事件
     /// </summary>
     public static class ServerClosedArgs {
-        private String _methodName;
+        private final String _methodName;
 
         public String methodName() {
             return _methodName;
@@ -72,7 +72,7 @@ public final class RPCEvents {
     /// </summary>
     public static class ServerErrorArgs {
 
-        private Throwable _exception;
+        private final Throwable _exception;
 
         public Throwable exception() {
             return _exception;

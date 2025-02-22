@@ -6,25 +6,34 @@ import apros.codeart.dto.DTObject;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess
-public class SetValue2Event extends DomainEvent {
+public class SetValueEvent extends DomainEvent {
 
     @Override
     public String name() {
-        return "SetValue2Event";
+        return "SetValue1Event";
     }
 
     @Override
     public DTObject raise(DTObject arg, EventContext ctx) {
 
+        var a = Accumulator.Instance;
+        var oldValue = a.value();
+
         ctx.submit((log) -> {
-            log.setInt("value", Accumulator.Instance.value());
+            log.setInt("value", oldValue);
         });
 
         var value = arg.getInt("value");
-        // 什么都不做，只是返出去而已
-        Accumulator.Instance.setValue(value);
 
-        return Accumulator.Instance.toDTO();
+        boolean before_error = arg.getBoolean("before_error", false);
+        if (before_error) throw new IllegalStateException("before_error");
+
+        a.setValue(value);
+
+        boolean after_error = arg.getBoolean("after_error", false);
+        if (after_error) throw new IllegalStateException("after_error");
+
+        return DTObject.readonly("{value}", a);
     }
 
 

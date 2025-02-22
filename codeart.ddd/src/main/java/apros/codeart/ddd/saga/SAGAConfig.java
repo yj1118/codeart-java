@@ -42,16 +42,16 @@ public final class SAGAConfig {
     //region 测试支持
 
     @TestSupport
-    private static String _server;
+    private static String[] _specifiedEvents;
 
     @TestSupport
-    public static void server(String _server) {
-        _server = _server;
+    public static void specifiedEvents(String[] specifiedEvents) {
+        _specifiedEvents = specifiedEvents;
     }
 
     @TestSupport
-    public static String server() {
-        return _server;
+    public static String[] specifiedEvents() {
+        return _specifiedEvents;
     }
 
     //endregion

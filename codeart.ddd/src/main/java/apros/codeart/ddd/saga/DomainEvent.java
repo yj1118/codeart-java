@@ -60,17 +60,5 @@ public abstract class DomainEvent implements IDomainEvent {
      * 回溯事件
      */
     public abstract void reverse(DTObject log);
-
-
-    /**
-     * 仅在哪个服务器上运行
-     *
-     * @return
-     */
-    @TestSupport()
-    public String server() {
-        return null;
-    }
-
-
+    
 }
