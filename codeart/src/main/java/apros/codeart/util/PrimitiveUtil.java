@@ -3,6 +3,7 @@ package apros.codeart.util;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,6 +52,8 @@ public final class PrimitiveUtil {
             return Short.valueOf(value.toString());
         } else if (targetType.equals(LocalDateTime.class)) {
             return ISO8601.getLocalDateTime(value.toString());
+        } else if (targetType.equals(OffsetDateTime.class)) {
+            return ISO8601.getOffsetDateTime(value.toString());
         } else if (targetType.equals(ZonedDateTime.class)) {
             return ISO8601.getZonedDateTime(value.toString());
         } else if (targetType.equals(Instant.class)) {
@@ -98,9 +101,11 @@ public final class PrimitiveUtil {
                 return boolean.class;
             case "byte":
                 return byte.class;
-            case "localDateTime":
+            case "localdatetime":
                 return LocalDateTime.class;
-            case "zonedDateTime":
+            case "offsetdatetime":
+                return OffsetDateTime.class;
+            case "zoneddatetime":
                 return ZonedDateTime.class;
             case "double":
                 return double.class;
@@ -132,7 +137,7 @@ public final class PrimitiveUtil {
      */
     public static boolean is(Class<?> valueType) {
         return valueType.isPrimitive() || valueType.equals(String.class) || valueType.equals(LocalDateTime.class)
-                || valueType.equals(ZonedDateTime.class) || valueType.equals(UUID.class)
+                || valueType.equals(OffsetDateTime.class) || valueType.equals(ZonedDateTime.class) || valueType.equals(UUID.class)
                 || valueType.equals(Long.class) || valueType.equals(Integer.class) || valueType.equals(Float.class)
                 || valueType.equals(Byte.class) || valueType.equals(Short.class) || valueType.equals(Double.class)
                 || valueType.equals(BigDecimal.class);

@@ -3,6 +3,7 @@ package apros.codeart.dto.serialization.internal;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 import apros.codeart.dto.DTObject;
 import apros.codeart.dto.IDTOWriter;
@@ -48,6 +49,11 @@ abstract class DTOWriter implements IDTOWriter {
     @Override
     public void writeLocalDateTime(String name, LocalDateTime value) {
         _dto.setLocalDateTime(name, value);
+    }
+
+    @Override
+    public void writeOffsetDateTime(String name, OffsetDateTime value) {
+        _dto.setOffsetDateTime(name, value);
     }
 
     @Override

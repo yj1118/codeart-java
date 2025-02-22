@@ -8,6 +8,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.UUID;
@@ -191,6 +192,8 @@ public final class TypeUtil {
         else if (clazz == long.class)
             return TypeCode.Long;
         else if (clazz == LocalDateTime.class)
+            return TypeCode.DateTime;
+        else if (clazz == OffsetDateTime.class)
             return TypeCode.DateTime;
         else if (clazz == float.class)
             return TypeCode.Float;

@@ -8,6 +8,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -418,6 +419,21 @@ public class DTObject implements INullProxy, IDTOSchema {
         return entity == null ? defaultValue : entity.getLocalDateTime();
     }
 
+
+    public OffsetDateTime getOffsetDateTime(String findExp, OffsetDateTime defaultValue) {
+        return getOffsetDateTime(findExp, defaultValue, false);
+    }
+
+    public OffsetDateTime getOffsetDateTime(String findExp) {
+        return getOffsetDateTime(findExp, OffsetDateTime.MIN, true);
+    }
+
+    public OffsetDateTime getOffsetDateTime(String findExp, OffsetDateTime defaultValue, boolean throwError) {
+        DTEValue entity = find(DTEValue.class, findExp, throwError);
+        return entity == null ? defaultValue : entity.getOffsetDateTime();
+    }
+
+
     public ZonedDateTime getZonedDateTime(String findExp, ZonedDateTime defaultValue) {
         return getZonedDateTime(findExp, defaultValue, false);
     }
@@ -442,6 +458,19 @@ public class DTObject implements INullProxy, IDTOSchema {
     public Instant getInstant(String findExp, Instant defaultValue, boolean throwError) {
         DTEValue entity = find(DTEValue.class, findExp, throwError);
         return entity == null ? defaultValue : entity.getInstant();
+    }
+
+    public BigDecimal getBigDecimal(String findExp, BigDecimal defaultValue) {
+        return getBigDecimal(findExp, defaultValue, false);
+    }
+
+    public BigDecimal getBigDecimal(String findExp) {
+        return getBigDecimal(findExp, BigDecimal.ZERO, true);
+    }
+
+    public BigDecimal getBigDecimal(String findExp, BigDecimal defaultValue, boolean throwError) {
+        DTEValue entity = find(DTEValue.class, findExp, throwError);
+        return entity == null ? defaultValue : entity.getBigDecimal();
     }
 
     public void setByte(String findExp, byte value) {
@@ -548,6 +577,10 @@ public class DTObject implements INullProxy, IDTOSchema {
     // endregion
 
     public void setLocalDateTime(String findExp, LocalDateTime value) {
+        setValueRef(findExp, value, true); // 时间转换成json，会带""号，所以valueCodeIsString是true
+    }
+
+    public void setOffsetDateTime(String findExp, OffsetDateTime value) {
         setValueRef(findExp, value, true); // 时间转换成json，会带""号，所以valueCodeIsString是true
     }
 

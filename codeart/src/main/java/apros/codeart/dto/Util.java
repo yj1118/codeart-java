@@ -2,6 +2,7 @@ package apros.codeart.dto;
 
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -24,7 +25,7 @@ final class Util {
         if (cls.isPrimitive())
             return false;
 
-        if (cls.equals(String.class) || cls.equals(LocalDateTime.class) || cls.equals(DTObject.class)
+        if (cls.equals(String.class) || cls.equals(LocalDateTime.class) || cls.equals(OffsetDateTime.class) || cls.equals(DTObject.class)
                 || cls.equals(Instant.class) || cls.equals(ZonedDateTime.class))
             return true;
 

@@ -3,6 +3,7 @@ package apros.codeart.dto;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public interface IDTOWriter {
 
@@ -23,6 +24,8 @@ public interface IDTOWriter {
     void writeBoolean(String name, boolean value);
 
     void writeLocalDateTime(String name, LocalDateTime value);
+
+    void writeOffsetDateTime(String name, OffsetDateTime value);
 
     void writeBigDecimal(String name, BigDecimal value);
 

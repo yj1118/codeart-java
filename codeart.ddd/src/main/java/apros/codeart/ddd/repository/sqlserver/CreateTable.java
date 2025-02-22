@@ -72,6 +72,7 @@ class CreateTable extends CreateTableQB {
                 return String.format("[%s] [%s](%s) %s NULL,", field.name(), "datetime2", pv,
                         (allowNull ? StringUtil.empty() : "NOT"));
             }
+            case DbType.OffsetDateTime:
             case DbType.ZonedDateTime: {
                 var precision = AccessUtil.getTimePrecision(field.tip());
                 var pv = getTimePrecisionValue(precision);

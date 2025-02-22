@@ -5,6 +5,7 @@ import static apros.codeart.i18n.Language.strings;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.Collections;
 import java.util.UUID;
@@ -166,6 +167,12 @@ public class DTEValue extends DTEntity {
         if (_value != null)
             return (LocalDateTime) _value;
         return ISO8601.getLocalDateTime(_valueCode);
+    }
+
+    public OffsetDateTime getOffsetDateTime() {
+        if (_value != null)
+            return (OffsetDateTime) _value;
+        return ISO8601.getOffsetDateTime(_valueCode);
     }
 
     public ZonedDateTime getZonedDateTime() {

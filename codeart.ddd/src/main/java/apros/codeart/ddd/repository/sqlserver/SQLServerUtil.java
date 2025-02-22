@@ -17,7 +17,7 @@ public final class SQLServerUtil {
             case DbType.Byte -> "tinyint";
             case DbType.Boolean -> "BIT";
             case DbType.LocalDateTime -> "datetime2";
-            case DbType.ZonedDateTime -> "datetimeoffset";
+            case DbType.OffsetDateTime, DbType.ZonedDateTime -> "datetimeoffset";
             case DbType.Float -> "real";
             case DbType.Double -> "float";
             case DbType.Guid -> "uniqueidentifier";

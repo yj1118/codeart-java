@@ -8,6 +8,7 @@ import static apros.codeart.util.StringUtil.removeLast;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.UUID;
@@ -88,6 +89,11 @@ public class JSON {
             return;
         }
 
+        if (valueClass == OffsetDateTime.class) {
+            writeOffsetDateTime(sb, (OffsetDateTime) value);
+            return;
+        }
+
         if (valueClass == BigDecimal.class) {
             writeBigDecimal(sb, (BigDecimal) value);
             return;
@@ -109,6 +115,12 @@ public class JSON {
     private static void writeBigDecimal(StringBuilder sb, BigDecimal value) {
         sb.append("\"");
         sb.append(value.toString());
+        sb.append("\"");
+    }
+
+    private static void writeOffsetDateTime(StringBuilder sb, OffsetDateTime value) {
+        sb.append("\"");
+        sb.append(ISO8601.toString(value));
         sb.append("\"");
     }
 

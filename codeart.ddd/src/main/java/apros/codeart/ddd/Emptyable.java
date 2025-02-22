@@ -3,6 +3,7 @@ package apros.codeart.ddd;
 import static apros.codeart.i18n.Language.strings;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -97,6 +98,9 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, IDTO
     }
 
     public static IEmptyable create(Class<?> emptyableType, Object value) {
+
+        if (emptyableType.equals(EmptyableOffsetDateTime.class))
+            return new EmptyableOffsetDateTime((OffsetDateTime) value);
 
         if (emptyableType.equals(EmptyableDateTime.class))
             return new EmptyableDateTime((LocalDateTime) value);

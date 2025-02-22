@@ -3,6 +3,8 @@ package apros.codeart.ddd.repository.postgresql;
 import apros.codeart.ddd.repository.access.DbType;
 import apros.codeart.i18n.Language;
 
+import java.time.OffsetDateTime;
+
 public final class PostgresqlUtil {
 
     private PostgresqlUtil() {
@@ -14,7 +16,7 @@ public final class PostgresqlUtil {
             case DbType.Byte, DbType.Int16 -> "smallint"; // postgresql里没有8位存储，至少存16位
             case DbType.Boolean -> "boolean";
             case DbType.LocalDateTime -> "timestamp";
-            case DbType.ZonedDateTime -> "timestamptz";
+            case OffsetDateTime, DbType.ZonedDateTime -> "timestamptz";
             case DbType.Float -> "real";
             case DbType.Double -> "double precision";
             case DbType.Guid -> "uuid";
