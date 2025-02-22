@@ -10,7 +10,7 @@ public class SetValueEvent extends DomainEvent {
 
     @Override
     public String name() {
-        return "SetValue1Event";
+        return "SetValueEvent";
     }
 
     @Override

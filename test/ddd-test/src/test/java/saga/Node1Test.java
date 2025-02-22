@@ -34,7 +34,7 @@ public class Node1Test {
     void success() {
         var arg = DTObject.editable();
         arg.setInt("value", 3);
-        var result = EventCallable.execute("SetValue1Event", arg);
+        var result = EventCallable.execute("SetValueEvent", arg);
 
         var value = result.getInt("value");
         assertEquals(3, value);
@@ -47,7 +47,7 @@ public class Node1Test {
         arg.setBoolean("before_error", true);
 
         try {
-            var result = EventCallable.execute("SetValue1Event", arg);
+            var result = EventCallable.execute("SetValueEvent", arg);
             result.getInt("value");
             assertTrue(false);
         } catch (Exception e) {
