@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import apros.codeart.ddd.saga.SAGAConfig;
 import apros.codeart.ddd.saga.SAGAEvents;
 import apros.codeart.echo.rpc.RPCEvents;
+import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.ListUtil;
 import com.google.common.collect.Iterables;
 
@@ -49,6 +50,8 @@ public final class EventLoader {
         var findedTypes = Activator.getSubTypesOf(DomainEvent.class, App.archives());
         ArrayList<DomainEvent> events = new ArrayList<>(Iterables.size(findedTypes));
         for (var findedType : findedTypes) {
+            if (TypeUtil.isAbstract(findedType)) continue;
+            
             var event = SafeAccessImpl.createSingleton(findedType);
 
             if (specified) {

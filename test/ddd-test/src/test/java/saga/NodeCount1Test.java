@@ -9,11 +9,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import subsystem.saga.Accumulator;
 
+import static org.junit.jupiter.api.Assertions.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-public class Node1Test {
+public class NodeCount1Test {
 
     @BeforeAll
     public static void setup() {
@@ -27,29 +25,20 @@ public class Node1Test {
 
     @BeforeEach
     void setUp() {
-        Accumulator.Instance.setValue(0);
+        Common.init();
     }
 
     @Test
     void success() {
-        var arg = DTObject.editable();
-        arg.setInt("value", 3);
-        var result = EventCallable.execute("SetValueEvent", arg);
-
-        var value = result.getInt("value");
+        var value = Common.exec(new Common.Config(3));
         assertEquals(3, value);
     }
 
     @Test
-    void error_exec_before() {
-        var arg = DTObject.editable();
-        arg.setInt("value", 3);
-        arg.setBoolean("before_error", true);
-
+    void execBeforeThrowError() {
         try {
-            var result = EventCallable.execute("SetValueEvent", arg);
-            result.getInt("value");
-            assertTrue(false);
+            Common.exec(new Common.Config(3, true, false));
+            fail();
         } catch (Exception e) {
 
         } finally {
@@ -59,15 +48,9 @@ public class Node1Test {
 
     @Test
     void error_exec_after() {
-
-        var arg = DTObject.editable();
-        arg.setInt("value", 3);
-        arg.setBoolean("after_error", true);
-
         try {
-            var result = EventCallable.execute("SetValue1Event", arg);
-            result.getInt("value");
-            assertTrue(false);
+            Common.exec(new Common.Config(3, false, true));
+            fail();
         } catch (Exception e) {
 
         } finally {

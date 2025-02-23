@@ -339,13 +339,13 @@ final class DataTableRead {
 
     private Object readPrimitive(PropertyMeta tip, MapData data) {
         var value = tip.lazy() ? readValueByLazy(tip, data) : readValueFromData(tip, data);
-        if (!tip.isEmptyable())
-            return value;
         if (value == null) {
             // Emptyable类型的数据有可能存的是null值
-            return Emptyable.createEmpty(tip.monotype());
+            if (tip.isEmptyable())
+                return Emptyable.createEmpty(tip.monotype());
+            throw new IllegalStateException("Missing value for property " + tip.name());
         }
-        return Emptyable.create(tip.monotype(), value);
+        return value;
     }
 
     private Object readValueFromData(PropertyMeta tip, MapData data) {
@@ -357,28 +357,48 @@ final class DataTableRead {
 
         if (value == null) return null;
 
-        if (exceptType == UUID.class) {
-            if (value.getClass() == String.class) {
-                return UUID.fromString(value.toString());
-            }
-        } else if (exceptType.isEnum()) {
+        if (exceptType == UUID.class && value.getClass() == String.class) {
+            return UUID.fromString(value.toString());
+        }
+
+        if (exceptType.isEnum()) {
             return EnumUtil.fromValue(exceptType, value);
-        } else if (exceptType == OffsetDateTime.class) {
+        }
+
+        if (exceptType == EmptyableInt.class) {
+            return new EmptyableInt((Integer) value);
+        }
+
+        if (exceptType == EmptyableLong.class) {
+            return new EmptyableLong((Long) value);
+        }
+
+        if (exceptType == OffsetDateTime.class) {
             var time = (Timestamp) value;
             return time.toInstant().atOffset(ZoneOffset.UTC);
-        } else if (exceptType == EmptyableOffsetDateTime.class) {
+        }
+
+        if (exceptType == EmptyableOffsetDateTime.class) {
             var time = (Timestamp) value;
             return new EmptyableOffsetDateTime(time.toInstant().atOffset(ZoneOffset.UTC));
-        } else if (exceptType == LocalDateTime.class) {
+        }
+
+        if (exceptType == LocalDateTime.class) {
             var time = (Timestamp) value;
             return time.toLocalDateTime();
-        } else if (exceptType == EmptyableDateTime.class) {
+        }
+
+        if (exceptType == EmptyableDateTime.class) {
             var time = (Timestamp) value;
             return new EmptyableDateTime(time.toLocalDateTime());
-        } else if (exceptType == ZonedDateTime.class) {
+        }
+
+        if (exceptType == ZonedDateTime.class) {
             var time = (Timestamp) value;
             return TimeUtil.toUTC(time.toInstant());
-        } else if (exceptType == EmptyableZonedDateTime.class) {
+        }
+
+        if (exceptType == EmptyableZonedDateTime.class) {
             var time = (Timestamp) value;
             return new EmptyableZonedDateTime(TimeUtil.toUTC(time.toInstant()));
         }

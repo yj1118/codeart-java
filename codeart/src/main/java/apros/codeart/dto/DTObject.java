@@ -825,6 +825,28 @@ public class DTObject implements INullProxy, IDTOSchema {
         return getObjects(findExp, true);
     }
 
+    public boolean[] getBooleans(String findExp) {
+        return getBooleans(findExp, true);
+    }
+
+    public boolean[] getBooleans(String findExp, boolean throwError) {
+        DTEList entity = find(DTEList.class, findExp, throwError);
+        if (entity == null)
+            return null;
+        return entity.getBooleans();
+    }
+
+    public int[] getInts(String findExp) {
+        return getInts(findExp, true);
+    }
+
+    public int[] getInts(String findExp, boolean throwError) {
+        DTEList entity = find(DTEList.class, findExp, throwError);
+        if (entity == null)
+            return null;
+        return entity.getInts();
+    }
+
 //	private Iterable<Long> getLongs(String findExp, Long itemDefaultValue, boolean throwError) {
 //		DTEList entity = find(DTEList.class, findExp, throwError);
 //		if (entity == null)

@@ -309,10 +309,26 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
         });
     }
 
+    public int[] getInts() {
+        int[] values = new int[_items.size()];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = _items.get(i).getInt();
+        }
+        return values;
+    }
+
     public long[] getLongs() {
         long[] values = new long[_items.size()];
         for (int i = 0; i < values.length; i++) {
             values[i] = _items.get(i).getLong();
+        }
+        return values;
+    }
+
+    public boolean[] getBooleans() {
+        boolean[] values = new boolean[_items.size()];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = _items.get(i).getBoolean();
         }
         return values;
     }

@@ -50,10 +50,14 @@ public class EventQueue {
 
         entries.add(new EventEntry(source.name(), source, true, source));
 
-        for (var name : source.getPostEvents(input)) {
-            var e = createEntry(name, source);
-            entries.add(e);
+        var pes = source.getPostEvents(input);
+        if (pes != null) {
+            for (var name : pes) {
+                var e = createEntry(name, source);
+                entries.add(e);
+            }
         }
+
 
         return entries;
     }

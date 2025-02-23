@@ -50,6 +50,10 @@ public class DTObjects implements Iterable<DTObject> {
         _list.remove(item);
     }
 
+    public void remove(int index) {
+        _list.remove(index);
+    }
+
     /**
      * 将数组转为一个对象，数组作为对象的成员
      *

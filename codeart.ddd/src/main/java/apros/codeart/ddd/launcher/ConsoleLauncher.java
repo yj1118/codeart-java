@@ -1,7 +1,5 @@
 package apros.codeart.ddd.launcher;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import java.util.Scanner;
 
 import apros.codeart.App;
@@ -33,7 +31,7 @@ public final class ConsoleLauncher {
     }
 
     @TestSupport
-    public static void start_container(String containerName) {
+    public static void startContainer(String containerName) {
         start(new AppInstaller(), containerName);
     }
 

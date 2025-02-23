@@ -84,6 +84,9 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, IDTO
         if (emptyableType.equals(EmptyableDateTime.class))
             return EmptyableDateTime.Empty;
 
+        if (emptyableType.equals(EmptyableOffsetDateTime.class))
+            return EmptyableOffsetDateTime.Empty;
+
         if (emptyableType.equals(EmptyableInt.class))
             return EmptyableInt.Empty;
 
@@ -97,31 +100,34 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, IDTO
 
     }
 
-    public static IEmptyable create(Class<?> emptyableType, Object value) {
-
-        if (emptyableType.equals(EmptyableOffsetDateTime.class))
-            return new EmptyableOffsetDateTime((OffsetDateTime) value);
-
-        if (emptyableType.equals(EmptyableDateTime.class))
-            return new EmptyableDateTime((LocalDateTime) value);
-
-        if (emptyableType.equals(EmptyableInt.class))
-            return new EmptyableInt((Integer) value);
-
-        if (emptyableType.equals(EmptyableLong.class))
-            return new EmptyableLong((Long) value);
-
-        if (emptyableType.equals(EmptyableZonedDateTime.class))
-            return new EmptyableZonedDateTime((ZonedDateTime) value);
-
-        throw new IllegalStateException(strings("apros.codeart.ddd", "DidNotFindEmptyType", emptyableType.getName()));
-
-    }
+//    public static IEmptyable create(Class<?> emptyableType, Object value) {
+//
+//        if (emptyableType.equals(EmptyableOffsetDateTime.class))
+//            return new EmptyableOffsetDateTime((OffsetDateTime) value);
+//
+//        if (emptyableType.equals(EmptyableDateTime.class))
+//            return new EmptyableDateTime((LocalDateTime) value);
+//
+//        if (emptyableType.equals(EmptyableInt.class))
+//            return new EmptyableInt((Integer) value);
+//
+//        if (emptyableType.equals(EmptyableLong.class))
+//            return new EmptyableLong((Long) value);
+//
+//        if (emptyableType.equals(EmptyableZonedDateTime.class))
+//            return new EmptyableZonedDateTime((ZonedDateTime) value);
+//
+//        throw new IllegalStateException(strings("apros.codeart.ddd", "DidNotFindEmptyType", emptyableType.getName()));
+//
+//    }
 
     public static Class<?> getValueType(Class<?> emptyableType) {
 
         if (emptyableType.equals(EmptyableDateTime.class))
             return EmptyableDateTime.ValueType;
+
+        if (emptyableType.equals(EmptyableOffsetDateTime.class))
+            return EmptyableOffsetDateTime.ValueType;
 
         if (emptyableType.equals(EmptyableInt.class))
             return EmptyableInt.ValueType;

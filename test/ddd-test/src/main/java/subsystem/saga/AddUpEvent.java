@@ -1,12 +1,13 @@
 package subsystem.saga;
 
+import apros.codeart.ddd.launcher.DomainContainer;
 import apros.codeart.ddd.saga.DomainEvent;
 import apros.codeart.ddd.saga.EventContext;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.SafeAccess;
 
 @SafeAccess
-public class AddUpEvent extends DomainEvent {
+public class AddUpEvent extends BaseEvent {
 
     @Override
     public String name() {
@@ -16,32 +17,19 @@ public class AddUpEvent extends DomainEvent {
     @Override
     public DTObject raise(DTObject arg, EventContext ctx) {
 
-        var a = Accumulator.Instance;
-        var oldValue = a.value();
-
-        ctx.submit((log) -> {
-            log.setInt("value", oldValue);
-        });
-
         var value = arg.getInt("value");
 
-        boolean before_error = arg.getBoolean("before_error", false);
-        if (before_error) throw new IllegalStateException("before_error");
+        this.tryExecBeforeThrowError(arg);
+        value++;
+        this.tryExecAfterThrowError(arg);
 
-        a.setValue(value);
+        DomainContainer.println("AddUpEvent_raise");
 
-        boolean after_error = arg.getBoolean("after_error", false);
-        if (after_error) throw new IllegalStateException("after_error");
-
-        return DTObject.readonly("{value}", a);
+        return DTObject.value("value", value);
     }
-
 
     @Override
     public void reverse(DTObject log) {
-        if (log.isEmpty()) return;
-
-        var oldValue = log.getInt("value");
-        Accumulator.Instance.setValue(oldValue);
+        DomainContainer.println("AddUpEvent_reverse");
     }
 }
