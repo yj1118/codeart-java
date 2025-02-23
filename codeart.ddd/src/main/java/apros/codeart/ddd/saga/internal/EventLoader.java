@@ -32,7 +32,7 @@ public final class EventLoader {
         });
 
         if (event == null && throwError) {
-            throw new IllegalStateException(strings("apros.codeart.ddd", "NoFoundDomainEvent"));
+            throw new IllegalStateException(strings("apros.codeart.ddd", "NoFoundDomainEvent", name));
         }
         return event;
     }
@@ -51,7 +51,7 @@ public final class EventLoader {
         ArrayList<DomainEvent> events = new ArrayList<>(Iterables.size(findedTypes));
         for (var findedType : findedTypes) {
             if (TypeUtil.isAbstract(findedType)) continue;
-            
+
             var event = SafeAccessImpl.createSingleton(findedType);
 
             if (specified) {
