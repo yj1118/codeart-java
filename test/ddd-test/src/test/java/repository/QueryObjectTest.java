@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * 我们提供对单元测试里实现的锁关系承诺
- *
  */
 public class QueryObjectTest {
 
@@ -32,10 +31,10 @@ public class QueryObjectTest {
         DataContext.using(() -> {
             create("系统控制", "admin");
             create("用户博客", "blog");
-            createAccount("小李","127.0.0.1");
-            createAccount("小张","127.0.0.2");
-            createAccount("小明","127.0.0.2");
-            createAccount("王强","127.0.0.2");
+            createAccount("小李", "127.0.0.1");
+            createAccount("小张", "127.0.0.2");
+            createAccount("小明", "127.0.0.2");
+            createAccount("王强", "127.0.0.2");
         });
     }
 
@@ -45,9 +44,9 @@ public class QueryObjectTest {
         Repository.add(platform);
     }
 
-    private static void createAccount(String name,String ip) {
+    private static void createAccount(String name, String ip) {
         var id = DataPortal.getIdentity(Account.class);
-        var account = new Account(id,name,"111111");
+        var account = new Account(id, name, "111111");
         account.login(ip);
         Repository.add(account);
     }
@@ -61,12 +60,12 @@ public class QueryObjectTest {
     void query_by_id() {
         long id = DataContext.using(() -> {
             IAuthPlatformRepository repository = Repository.create(IAuthPlatformRepository.class);
-            var obj = repository.findByEN("admin",QueryLevel.NONE);
+            var obj = repository.findByEN("admin", QueryLevel.NONE);
             return obj.id();
         });
 
         DataContext.using(() -> {
-            var obj = Repository.find(AuthPlatform.class,id,QueryLevel.NONE);
+            var obj = Repository.find(AuthPlatform.class, id, QueryLevel.NONE);
             assertAdmin(obj);
         });
 
@@ -76,19 +75,19 @@ public class QueryObjectTest {
     void query_by_like_name() {
         DataContext.using(() -> {
             IAuthPlatformRepository repository = Repository.create(IAuthPlatformRepository.class);
-            var obj = repository.findByName("统控",QueryLevel.NONE);
+            var obj = repository.findByName("统控", QueryLevel.NONE);
             assertAdmin(obj);
         });
     }
 
-    private static void assertAdmin(AuthPlatform obj){
-        assertEquals("admin",obj.en());
-        assertEquals("系统控制",obj.name());
+    private static void assertAdmin(AuthPlatform obj) {
+        assertEquals("admin", obj.en());
+        assertEquals("系统控制", obj.name());
     }
 
-    private static void assertAccountXL(Account obj){
-        assertEquals("小李",obj.name());
-        assertEquals("127.0.0.1",obj.status().loginInfo().lastIP());
+    private static void assertAccountXL(Account obj) {
+        assertEquals("小李", obj.name());
+        assertEquals("127.0.0.1", obj.status().loginInfo().lastIP());
     }
 
 
@@ -133,7 +132,7 @@ public class QueryObjectTest {
     void query_by_page_1() {
         DataContext.using(() -> {
             IAccountRepository repository = Repository.create(IAccountRepository.class);
-            var page = repository.findPage("小",1,20);
+            var page = repository.findPage("小", 0, 20);
             assertEquals(3, Iterables.size(page.objects()));
             assertEquals(3, page.dataCount());
         });
@@ -143,7 +142,7 @@ public class QueryObjectTest {
     void query_by_page_2() {
         DataContext.using(() -> {
             IAccountRepository repository = Repository.create(IAccountRepository.class);
-            var page = repository.findPage("小",2,2);
+            var page = repository.findPage("小", 1, 2);
             assertEquals(1, Iterables.size(page.objects()));
             assertEquals(3, page.dataCount());
         });
@@ -153,7 +152,7 @@ public class QueryObjectTest {
     void query_by_page_ip() {
         DataContext.using(() -> {
             IAccountRepository repository = Repository.create(IAccountRepository.class);
-            var page = repository.findPageByIp("127.0.0.2",2,2);
+            var page = repository.findPageByIp("127.0.0.2", 1, 2);
             assertEquals(1, Iterables.size(page.objects()));
             assertEquals(3, page.dataCount());
         });

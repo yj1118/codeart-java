@@ -4,7 +4,6 @@ import apros.codeart.core.TestRunner;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-@ExtendWith(TestRunner.class)
 class LanguageTest {
 
     @Test
