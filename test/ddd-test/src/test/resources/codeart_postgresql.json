@@ -2,7 +2,7 @@
   "repository": {
     "db": {
       "type": "postgresql",
-      "url": "jdbc:postgresql://YJ1118:5432/ca-test?user=postgres&password=Q!1&trustServerCertificate=true"
+      "url": "jdbc:postgresql://localhost:5432/ca-test?user=postgres&password=Q!1&trustServerCertificate=true"
     }
   },
   "event": {
