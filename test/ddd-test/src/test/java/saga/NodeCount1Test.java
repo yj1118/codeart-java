@@ -1,13 +1,11 @@
 package saga;
 
-import apros.codeart.ddd.command.EventCallable;
 import apros.codeart.ddd.launcher.TestLauncher;
-import apros.codeart.dto.DTObject;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import subsystem.saga.Accumulator;
+import subsystem.saga.NodeStatus;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,31 +28,34 @@ public class NodeCount1Test {
 
     @Test
     void success() {
-        var value = Common.exec(new Common.Config(3));
-        assertEquals(3, value);
+        System.out.println("---------- success ----------");
+        var user = Common.exec(NodeStatus.SUCCESS);
+        assertTrue(Common.isRegistered(user));
     }
 
     @Test
     void execBeforeThrowError() {
+        System.out.println("---------- execBeforeThrowError ----------");
         try {
-            Common.exec(new Common.Config(3, true, false));
+            Common.exec(NodeStatus.ERROR_BEFORE);
             fail();
         } catch (Exception e) {
 
         } finally {
-            assertEquals(0, Accumulator.Instance.value());
+            assertFalse(Common.isRegistered());
         }
     }
 
     @Test
-    void error_exec_after() {
+    void execAfterThrowError() {
+        System.out.println("---------- execAfterThrowError ----------");
         try {
-            Common.exec(new Common.Config(3, false, true));
+            Common.exec(NodeStatus.ERROR_AFTER);
             fail();
         } catch (Exception e) {
 
         } finally {
-            assertEquals(0, Accumulator.Instance.value());
+            assertFalse(Common.isRegistered());
         }
     }
 

@@ -24,7 +24,7 @@ public class EventQueue {
         return _instanceId;
     }
 
-    private DomainEvent _source;
+    private final DomainEvent _source;
 
     /**
      * 引起事件链调用的事件源

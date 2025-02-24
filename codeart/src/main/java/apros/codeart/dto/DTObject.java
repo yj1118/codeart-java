@@ -3,9 +3,13 @@ package apros.codeart.dto;
 import static apros.codeart.i18n.Language.strings;
 import static apros.codeart.runtime.TypeUtil.as;
 import static apros.codeart.runtime.TypeUtil.is;
+import static apros.codeart.runtime.Util.propagate;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -18,6 +22,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import apros.codeart.io.IOUtil;
 import org.apache.logging.log4j.util.Strings;
 
 import com.google.common.collect.Iterables;
@@ -643,6 +648,12 @@ public class DTObject implements INullProxy, IDTOSchema {
 
     private void setValueRef(Object value, boolean valueCodeIsString) {
         setValueRef(StringUtil.empty(), value, valueCodeIsString);
+    }
+
+    public void pushString(String findExp, String value) {
+        DTObject member = DTObject.editable();
+        member.setString(value);
+        push(findExp, member);
     }
 
     public void pushStrings(String findExp, String[] values) {
@@ -1616,6 +1627,20 @@ public class DTObject implements INullProxy, IDTOSchema {
      */
     public static DTObject load(Object obj) {
         return DTObjectMapper.load(obj);
+    }
+
+    /**
+     * 从硬盘上的文件里加载dto
+     */
+    public static DTObject load(String fileName) {
+        var content = IOUtil.readString(fileName);
+        if (content == null) return DTObject.editable();
+        return DTObject.editable(content);
+    }
+
+    public void save(String fileName) {
+        var code = this.getCode();
+        IOUtil.writeString(fileName, code);
     }
 
 //	#region 转换

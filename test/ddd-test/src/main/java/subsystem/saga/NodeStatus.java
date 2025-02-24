@@ -1,10 +1,12 @@
 package subsystem.saga;
 
 public enum NodeStatus {
-    
-    ERROR((byte) 0),
 
-    SUCCESS((byte) 1);
+    SUCCESS((byte) 1),
+
+    ERROR_BEFORE((byte) 2),
+
+    ERROR_AFTER((byte) 3);
 
     private final byte value;
 
@@ -17,13 +19,12 @@ public enum NodeStatus {
     }
 
     public static NodeStatus valueOf(byte value) {
-        switch (value) {
-            case 0:
-                return ERROR;
-            case 1:
-                return SUCCESS;
-        }
-        return null;
+        return switch (value) {
+            case 1 -> SUCCESS;
+            case 2 -> ERROR_BEFORE;
+            case 3 -> ERROR_AFTER;
+            default -> null;
+        };
     }
 
 }

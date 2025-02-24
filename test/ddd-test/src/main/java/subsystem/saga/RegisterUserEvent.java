@@ -10,44 +10,14 @@ public class RegisterUserEvent extends BaseEvent {
 
     @Override
     public String name() {
-        return "RegisterUserEvent";
+        return RegisterUserEvent.Name;
     }
 
     @Override
-    public Iterable<String> getPostEvents(DTObject input) {
-        var nodes = RemoteNode.getNodes(input);
-        return ListUtil.map(nodes, RemoteNode::eventName);
+    protected String getMarkStatusName() {
+        return "Register";
     }
 
-    protected void copyValue(EventContext ctx) {
-        var a = Accumulator.Instance;
-        var oldValue = a.value();
+    public static final String Name = "RegisterUserEvent";
 
-        ctx.submit((log) -> {
-            log.setInt("value", oldValue);
-        });
-    }
-
-    @Override
-    public DTObject raise(DTObject arg, EventContext ctx) {
-
-        copyValue(ctx);
-
-        var value = arg.getInt("value");
-
-        tryExecBeforeThrowError(arg);
-        Accumulator.Instance.setValue(value);
-        tryExecAfterThrowError(arg);
-
-        return getResult(Accumulator.Instance.value(), arg);
-    }
-
-
-    @Override
-    public void reverse(DTObject log) {
-        if (log.isEmpty()) return;
-
-        var oldValue = log.getInt("value");
-        Accumulator.Instance.setValue(oldValue);
-    }
 }

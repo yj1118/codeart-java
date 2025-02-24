@@ -7,11 +7,8 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -33,9 +30,7 @@ public final class IOUtil {
             var p = stream.filter(Files::isRegularFile) // 筛选出文件
                     .findFirst(); // 返回第一个文件
 
-            if (p.isPresent())
-                return p.get();
-            return null;
+            return p.orElse(null);
 
         } catch (IOException e) {
             throw propagate(e);
@@ -100,6 +95,59 @@ public final class IOUtil {
     }
 
     /**
+     * 获取或者创建临时文件
+     *
+     * @param name 文件名称
+     */
+    public static String createTempFile(String name, boolean deleteOnExit) {
+        try {
+            String tempDir = System.getProperty("java.io.tmpdir"); // 获取系统临时目录
+            File tempFile = new File(tempDir, name);
+
+            if (tempFile.exists()) {
+                return tempFile.getAbsolutePath();
+            }
+
+            if (tempFile.createNewFile()) {
+                return tempFile.getAbsolutePath();
+            }
+
+            // 确保 JVM 退出时删除文件
+            if (deleteOnExit)
+                tempFile.deleteOnExit();
+
+        } catch (IOException e) {
+            throw propagate(e);
+        }
+
+        throw new IllegalStateException("Unable to create temporary file");
+    }
+
+    public static String getTempFile(String name) {
+        String tempDir = System.getProperty("java.io.tmpdir"); // 获取系统临时目录
+        return Path.of(tempDir, name).toAbsolutePath().toString(); // 仅生成路径，不创建文件
+    }
+
+    public static boolean existsTempFile(String name) {
+        var fileName = getTempFile(name);
+        return existsFile(fileName);
+    }
+
+    public static boolean existsFile(String fileName) {
+        File file = new File(fileName);
+        return file.exists();
+    }
+
+    public static void createFile(String fileName) {
+        try {
+            File file = new File(fileName);
+            if (file.exists() || file.createNewFile()) return;
+        } catch (IOException e) {
+            throw propagate(e);
+        }
+    }
+
+    /**
      * 获取当前程序运行的目录
      *
      * @return
@@ -120,53 +168,13 @@ public final class IOUtil {
     }
 
     public static Path combine(Path folder, String... paths) {
-
-        if (paths.length == 0)
-            return folder;
-
-        var current = folder;
-
-        for (var i = 0; i < paths.length; i++) {
-            Path filePath = Paths.get(paths[i]);
-            current = current.resolve(filePath);
-        }
-
-        return current;
+        return paths.length == 0 ? folder : Path.of(folder.toString(), paths);
     }
 
     public static Path combine(String... paths) {
-
-        if (paths.length == 0)
-            return null;
-        if (paths.length == 1)
-            return Paths.get(paths[0]);
-
-        var current = Paths.get(paths[0]);
-
-        for (var i = 1; i < paths.length; i++) {
-            if (!isValidPathSegment(paths[i])) {
-                throw new IllegalArgumentException(strings("apros.codeart", "INVALID_PATH_SEGMENT", paths[i]));
-            }
-            Path filePath = Paths.get(paths[i]);
-            current = current.resolve(filePath);
-        }
-
-        return current;
-    }
-
-    public static boolean isValidPathSegment(String segment) {
-        // 检查是否包含盘符（冒号），或包含不允许的字符
-        if (segment.indexOf(':') >= 0) return false;
-
-        // 检查不允许的字符：<>:"/\\|?*
-        for (char c : segment.toCharArray()) {
-            if ("<>:\"/\\|?*".indexOf(c) >= 0) {
-                return false;
-            }
-        }
-
-        // 确保路径不是绝对路径（不以 / 或 \\ 开头）
-        return !segment.startsWith("/") && !segment.startsWith("\\");
+        if (paths.length == 0) return null;
+        // 直接使用 Path.of() 拼接路径
+        return Path.of(paths[0], paths.length > 1 ? java.util.Arrays.copyOfRange(paths, 1, paths.length) : new String[]{});
     }
 
     public static void delete(String path) {
@@ -278,6 +286,19 @@ public final class IOUtil {
 
         try {
             return Files.readString(file);
+        } catch (IOException e) {
+            throw propagate(e);
+        }
+    }
+
+    public static void writeString(String path, String content) {
+
+        try {
+            Path filePath = Path.of(path);
+            // 自动创建文件并写入内容（CREATE = 如果文件不存在则创建）
+            Files.writeString(filePath, content, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
         } catch (IOException e) {
             throw propagate(e);
         }

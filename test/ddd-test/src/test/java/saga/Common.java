@@ -2,8 +2,11 @@ package saga;
 
 import apros.codeart.ddd.command.EventCallable;
 import apros.codeart.dto.DTObject;
-import subsystem.saga.Accumulator;
-import subsystem.saga.RemoteNode;
+import apros.codeart.util.ListUtil;
+import subsystem.saga.*;
+
+import java.nio.file.Path;
+import java.util.ArrayList;
 
 public final class Common {
 
@@ -11,28 +14,15 @@ public final class Common {
     }
 
     public static void init() {
-        Accumulator.Instance.setValue(0);
+        var user = DTObject.editable();
+        user.setLong("id", 1);
+        BaseEvent.saveUser(user);
     }
 
     public static class Config {
 
-        private final int _initialValue;
 
-        public int initialValue() {
-            return _initialValue;
-        }
-
-        private final boolean _execBeforeThrowError;
-
-        public boolean execBeforeThrowError() {
-            return _execBeforeThrowError;
-        }
-
-        private final boolean _execAfterThrowError;
-
-        public boolean execAfterThrowError() {
-            return _execAfterThrowError;
-        }
+        private final NodeStatus _localStatus;
 
         private final RemoteNode[] _remoteNodes;
 
@@ -40,48 +30,78 @@ public final class Common {
             return _remoteNodes;
         }
 
-        public Config(int initialValue) {
-            this(initialValue, false, false, RemoteNode.empty);
-        }
-
-        public Config(int initialValue, RemoteNode[] remoteNodes) {
-            this(initialValue, false, false, remoteNodes);
-        }
-
-        public Config(int initialValue, boolean execBeforeThrowError, boolean execAfterThrowError) {
-            this(initialValue, execBeforeThrowError, execAfterThrowError, RemoteNode.empty);
-        }
-
-        public Config(int initialValue, boolean execBeforeThrowError, boolean execAfterThrowError,
-                      RemoteNode[] remoteNodes) {
-            _initialValue = initialValue;
-            _execBeforeThrowError = execBeforeThrowError;
-            _execAfterThrowError = execAfterThrowError;
+        public Config(NodeStatus localStatus, RemoteNode[] remoteNodes) {
+            _localStatus = localStatus;
             _remoteNodes = remoteNodes;
         }
 
         public DTObject getArg() {
             var arg = DTObject.editable();
-            arg.setInt("value", _initialValue);
-            if (this.execBeforeThrowError()) arg.setBoolean("execBeforeThrowError", true);
-            if (this.execAfterThrowError()) arg.setBoolean("execAfterThrowError", true);
+            arg.setByte("status", _localStatus.getValue());
             for (var node : _remoteNodes) {
                 arg.push("remoteNodes", node.to());
             }
 
             return arg;
         }
-
     }
 
-    public static int exec(Config config) {
+    public static DTObject exec(Config config) {
         var arg = config.getArg();
-        var result = EventCallable.execute("RegisterUserEvent", arg);
-        return result.getInt("value");
+        var result = EventCallable.execute(RegisterUserEvent.Name, arg);
+        return result.getObject("user", DTObject.empty());
     }
 
-    public static int ERROR = 0;
 
-    public static int SUCCESS = 1;
+    private final static String[] eventNames = new String[]{
+            RegisterUserEvent.Name, OpenAccountEvent.Name, OpenWalletEvent.Name
+    };
+
+    public static DTObject exec(NodeStatus... nodeStatuses) {
+
+        var localStatus = nodeStatuses[0];
+
+        ArrayList<RemoteNode> temp = new ArrayList<>();
+        for (var i = 1; i < nodeStatuses.length; i++) {
+            var eventName = eventNames[i];
+            var status = nodeStatuses[i];
+            var node = new RemoteNode(eventName, status);
+            temp.add(node);
+        }
+
+        var remoteNodes = ListUtil.asArray(temp, RemoteNode.class);
+
+        var config = new Config(localStatus, remoteNodes);
+        return exec(config);
+    }
+
+
+    public static boolean isRegistered(DTObject user) {
+        if (!user.exist("Register")) return false;
+        return user.getInt("Register") == 1;
+    }
+
+    public static boolean isOpenWallet(DTObject user) {
+        if (!user.exist("Wallet")) return false;
+        return user.getInt("Wallet") == 1;
+    }
+
+    public static boolean isOpenAccount(DTObject user) {
+        if (!user.exist("Account")) return false;
+        return user.getInt("Account") == 1;
+    }
+
+
+    public static boolean isRegistered() {
+        return isRegistered(BaseEvent.loadUser());
+    }
+
+    public static boolean isOpenAccount() {
+        return isOpenAccount(BaseEvent.loadUser());
+    }
+
+    public static boolean isOpenWallet() {
+        return isOpenWallet(BaseEvent.loadUser());
+    }
 
 }

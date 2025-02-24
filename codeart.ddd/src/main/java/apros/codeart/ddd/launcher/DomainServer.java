@@ -1,10 +1,15 @@
 package apros.codeart.ddd.launcher;
 
 import apros.codeart.TestSupport;
+import apros.codeart.dto.DTObject;
+import apros.codeart.io.IOUtil;
 import apros.codeart.util.concurrent.LatchSignal;
+import apros.codeart.util.thread.ThreadUtil;
 
 import java.io.*;
 import java.lang.management.ManagementFactory;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
@@ -115,6 +120,8 @@ public class DomainServer {
             // 启动子进程
             _process = builder.start();
 
+            addProcess(_process.pid());
+
             _writer = new BufferedWriter(new OutputStreamWriter(_process.getOutputStream()));
 
             // 异步读取子进程输出
@@ -136,7 +143,7 @@ public class DomainServer {
         String started = String.format("[%s]started", this.name());
         String stopped = String.format("[%s]stopped", this.name());
 
-        try (Scanner scanner = new Scanner(new InputStreamReader(inputStream))) {
+        try (Scanner scanner = new Scanner(new InputStreamReader(inputStream, Charset.defaultCharset().displayName()))) {
             while (scanner.hasNextLine()) {
                 String line = scanner.nextLine();
                 if (started.equals(line)) {
@@ -203,7 +210,7 @@ public class DomainServer {
 
     private static String getClassPath() throws IOException, InterruptedException {
         // 启动 Maven 命令
-        ProcessBuilder mvnProcess = new ProcessBuilder("mvn.cmd", "dependency:build-classpath");
+        ProcessBuilder mvnProcess = new ProcessBuilder("mvn.cmd", "-U", "dependency:build-classpath");
         mvnProcess.redirectErrorStream(true); // 合并标准输出和错误输出
         Process mvn = mvnProcess.start();
 
@@ -239,5 +246,33 @@ public class DomainServer {
     }
 
     //endregion
+
+//    public DTObject getLog() {
+//        return DomainContainer.getLog(_name);
+//    }
+
+    // 进程的移除
+
+    private static void addProcess(long id) {
+        String fileName = IOUtil.createTempFile("domain-server-processes", false);
+        var dto = DTObject.load(fileName);
+        dto.pushLong("rows", id);
+        dto.save(fileName);
+    }
+
+    private static void killProcesses() {
+        String fileName = IOUtil.getTempFile("domain-server-processes");
+        var dto = DTObject.load(fileName);
+        var ids = dto.getLongs("rows", false);
+        if (ids != null) {
+            for (long id : ids) {
+                ThreadUtil.killProcess(id);
+            }
+        }
+    }
+
+    static {
+        killProcesses();
+    }
 
 }

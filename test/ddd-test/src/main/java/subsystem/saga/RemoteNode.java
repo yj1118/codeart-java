@@ -45,19 +45,6 @@ public final class RemoteNode {
         return ListUtil.asArray(temp, RemoteNode.class);
 
     }
-
-    public static RemoteNode create(String eventName, NodeStatus status) {
-        return new RemoteNode("AddUpEvent", status);
-    }
-
-    public static RemoteNode success(String eventName) {
-        return create(eventName, NodeStatus.SUCCESS);
-    }
-
-    public static RemoteNode error(String eventName) {
-        return create(eventName, NodeStatus.ERROR);
-    }
-
 }
 
 

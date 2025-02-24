@@ -3,24 +3,19 @@ package saga;
 import apros.codeart.ddd.launcher.TestLauncher;
 import apros.codeart.ddd.launcher.DomainServer;
 import apros.codeart.ddd.saga.SAGAConfig;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import subsystem.saga.Accumulator;
-import subsystem.saga.NodeStatus;
-import subsystem.saga.RemoteNode;
+import org.junit.jupiter.api.*;
+import subsystem.saga.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NodeCount2Test {
 
     private static final DomainServer _server1 = new DomainServer("server1");
 
     static {
-        SAGAConfig.specifiedEvents(new String[]{"RegisterUserEvent"});
-        _server1.domainEvents(new String[]{"AddUpEvent"});
+        SAGAConfig.specifiedEvents(new String[]{RegisterUserEvent.Name});
+        _server1.domainEvents(new String[]{OpenAccountEvent.Name});
     }
 
 
@@ -32,8 +27,8 @@ public class NodeCount2Test {
 
     @AfterAll
     public static void clean() {
-        TestLauncher.stop();
         _server1.close();
+        TestLauncher.stop();
     }
 
     @BeforeEach
@@ -43,50 +38,67 @@ public class NodeCount2Test {
 
     @Test
     void success() {
-        var value = Common.exec(new Common.Config(3,
-                new RemoteNode[]{RemoteNode.success("AddUpEvent")}));
-        assertEquals(4, value);
+        System.out.println("---------- success ----------");
+        var user = Common.exec(NodeStatus.SUCCESS, NodeStatus.SUCCESS);
+        Assertions.assertTrue(Common.isRegistered(user));
+        Assertions.assertTrue(Common.isOpenAccount(user));
     }
 
     @Test
-    void errorBefore() {
+    void node_1_errorBefore() {
+        System.out.println("---------- node_1_errorBefore ----------");
         try {
-            var value = Common.exec(new Common.Config(3, true, false,
-                    new RemoteNode[]{RemoteNode.success("AddUpEvent")}));
+            var user = Common.exec(NodeStatus.ERROR_BEFORE, NodeStatus.SUCCESS);
             fail();
         } catch (Exception e) {
 
         } finally {
-            assertEquals(0, Accumulator.Instance.value());
+            assertFalse(Common.isRegistered());
+            assertFalse(Common.isOpenAccount());
         }
     }
 
     @Test
-    void errorAfter() {
+    void node_1_errorAfter() {
+        System.out.println("---------- node_1_errorAfter ----------");
         try {
-            var value = Common.exec(new Common.Config(3, false, true,
-                    new RemoteNode[]{RemoteNode.success("AddUpEvent")}));
+            var user = Common.exec(NodeStatus.ERROR_AFTER, NodeStatus.SUCCESS);
             fail();
         } catch (Exception e) {
 
         } finally {
-            assertEquals(0, Accumulator.Instance.value());
+            assertFalse(Common.isRegistered());
+            assertFalse(Common.isOpenAccount());
         }
     }
 
 
-//    @Test
-//    void remoteNode1Error() {
-//        try {
-//            var value = Common.exec(new Common.Config(3,
-//                    new RemoteNode[]{RemoteNode.success("AddUpEvent")}));
-//            fail();
-//        } catch (Exception e) {
-//
-//        } finally {
-//            assertEquals(0, Accumulator.Instance.value());
-//        }
-//    }
+    @Test
+    void node_2_errorBefore() {
+        System.out.println("---------- node_2_errorBefore ----------");
+        try {
+            var user = Common.exec(NodeStatus.SUCCESS, NodeStatus.ERROR_BEFORE);
+            fail();
+        } catch (Exception e) {
 
+        } finally {
+            assertFalse(Common.isRegistered());
+            assertFalse(Common.isOpenAccount());
+        }
+    }
+
+    @Test
+    void node_2_errorAfter() {
+        System.out.println("---------- node_2_errorAfter ----------");
+        try {
+            var user = Common.exec(NodeStatus.SUCCESS, NodeStatus.ERROR_AFTER);
+            fail();
+        } catch (Exception e) {
+
+        } finally {
+            assertFalse(Common.isRegistered());
+            assertFalse(Common.isOpenAccount());
+        }
+    }
 
 }

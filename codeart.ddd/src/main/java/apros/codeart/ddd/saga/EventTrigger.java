@@ -3,6 +3,7 @@ package apros.codeart.ddd.saga;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import apros.codeart.ddd.launcher.DomainContainer;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.saga.internal.EventLog;
 import apros.codeart.ddd.saga.internal.EventUtil;
@@ -58,7 +59,7 @@ public final class EventTrigger {
             }
 
             var entryIndex = queue.entryIndex();
-
+            
             String eventName = entry.name();
             ctx.direct(eventName, entryIndex); // 将事件上下文重定向到新的事件上
             EventLog.writeRaise(ctx.id(), ctx.eventName(), entryIndex); // 一定要确保日志先被正确得写入，否则会有BUG
