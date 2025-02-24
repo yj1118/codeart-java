@@ -1,11 +1,13 @@
 package saga;
 
 import apros.codeart.ddd.launcher.TestLauncher;
+import apros.codeart.ddd.saga.SAGAConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import subsystem.saga.NodeStatus;
+import subsystem.saga.RegisterUserEvent;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,6 +15,7 @@ public class NodeCount1Test {
 
     @BeforeAll
     public static void setup() {
+        SAGAConfig.specifiedEvents(RegisterUserEvent.Name);
         TestLauncher.start();
     }
 

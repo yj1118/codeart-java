@@ -14,8 +14,8 @@ public class NodeCount2Test {
     private static final DomainServer _server1 = new DomainServer("server1");
 
     static {
-        SAGAConfig.specifiedEvents(new String[]{RegisterUserEvent.Name});
-        _server1.domainEvents(new String[]{OpenAccountEvent.Name});
+        SAGAConfig.specifiedEvents(RegisterUserEvent.Name);
+        _server1.domainEvents(OpenAccountEvent.Name);
     }
 
 

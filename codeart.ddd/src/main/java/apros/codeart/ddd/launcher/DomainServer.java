@@ -40,7 +40,7 @@ public class DomainServer {
         return _domainEvents;
     }
 
-    public void domainEvents(String[] value) {
+    public void domainEvents(String... value) {
         _domainEvents = value;
     }
 

@@ -54,7 +54,7 @@ public final class Common {
 
 
     private final static String[] eventNames = new String[]{
-            RegisterUserEvent.Name, OpenAccountEvent.Name, OpenWalletEvent.Name
+            RegisterUserEvent.Name, OpenAccountEvent.Name, OpenWalletEvent.Name, CheckEmailEvent.Name
     };
 
     public static DTObject exec(NodeStatus... nodeStatuses) {
@@ -91,6 +91,11 @@ public final class Common {
         return user.getInt("Account") == 1;
     }
 
+    public static boolean isCheckEmail(DTObject user) {
+        if (!user.exist("CheckEmail")) return false;
+        return user.getInt("CheckEmail") == 1;
+    }
+
 
     public static boolean isRegistered() {
         return isRegistered(BaseEvent.loadUser());
@@ -102,6 +107,10 @@ public final class Common {
 
     public static boolean isOpenWallet() {
         return isOpenWallet(BaseEvent.loadUser());
+    }
+
+    public static boolean isCheckEmail() {
+        return isCheckEmail(BaseEvent.loadUser());
     }
 
 }

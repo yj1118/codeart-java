@@ -1,3 +1,5 @@
 2025-02-21 14:33:10 [main] ERROR apros.codeart.log.FileLogger - java.lang.RuntimeException: java.lang.RuntimeException: org.postgresql.util.PSQLException: 错误: 字段 "Id" 不存在
   建议：也许您想要引用列"CA_DomainMessage.id"。
   位置：8
+2025-02-24 22:08:00 [] ERROR apros.codeart.log.FileLogger - java.lang.RuntimeException: java.lang.RuntimeException: com.rabbitmq.client.AlreadyClosedException: channel is already closed due to channel error; protocol method: #method<channel.close>(reply-code=404, reply-text=NOT_FOUND - no queue '202502247c730b9d37844d3c81735772c0c580df-OpenWalletEvent-1RaiseResult-ddd-test' in vhost 'sj', class-id=60, method-id=20)
+2025-02-24 22:08:02 [] ERROR apros.codeart.log.FileLogger - java.lang.RuntimeException: java.lang.RuntimeException: com.rabbitmq.client.AlreadyClosedException: channel is already closed due to channel error; protocol method: #method<channel.close>(reply-code=404, reply-text=NOT_FOUND - no queue '202502247c730b9d37844d3c81735772c0c580df-CheckEmailEvent-1RaiseResult-ddd-test' in vhost 'sj', class-id=50, method-id=20)

@@ -45,7 +45,7 @@ public final class SAGAConfig {
     private static String[] _specifiedEvents;
 
     @TestSupport
-    public static void specifiedEvents(String[] specifiedEvents) {
+    public static void specifiedEvents(String... specifiedEvents) {
         _specifiedEvents = specifiedEvents;
     }
 

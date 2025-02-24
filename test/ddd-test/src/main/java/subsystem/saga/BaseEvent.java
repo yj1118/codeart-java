@@ -31,6 +31,36 @@ public abstract class BaseEvent extends DomainEvent {
         return list;
     }
 
+    @Override
+    public DTObject raise(DTObject arg, EventContext ctx) {
+
+        var user = loadUser();
+        
+        copy(user, ctx);
+
+        var status = getMarkStatusName();
+
+        var statusCount = user.getInt(status, 0);
+        statusCount++;
+        user.setInt(status, statusCount);
+
+        DomainContainer.println(status + ":before");
+        tryExecBeforeThrowError(arg);
+
+        saveUser(user);
+
+        DomainContainer.println(status + ":after");
+        tryExecAfterThrowError(arg);
+
+        return getResult(user, arg);
+    }
+
+    @Override
+    public void reverse(DTObject log) {
+        DomainContainer.println(this.name() + ":reverse");
+        restore(log);
+    }
+
     private boolean execBeforeThrowError(DTObject arg) {
         return arg.getByte("status", (byte) 0) == NodeStatus.ERROR_BEFORE.getValue();
     }
@@ -49,6 +79,7 @@ public abstract class BaseEvent extends DomainEvent {
 
     public DTObject getResult(DTObject user, DTObject arg) {
         var result = DTObject.editable();
+
         result.setObject("user", user);
 
         var remoteNodes = arg.getList("remoteNodes", false);
@@ -100,35 +131,6 @@ public abstract class BaseEvent extends DomainEvent {
     }
 
 
-    @Override
-    public DTObject raise(DTObject arg, EventContext ctx) {
-
-        var user = loadUser();
-
-        copy(user, ctx);
-
-        var status = getMarkStatusName();
-
-        var statusCount = user.getInt(status, 0);
-        statusCount++;
-        user.setInt(status, statusCount);
-
-        DomainContainer.println(status + ":before");
-        tryExecBeforeThrowError(arg);
-        saveUser(user);
-
-        DomainContainer.println(status + ":after");
-        tryExecAfterThrowError(arg);
-
-        return getResult(user, arg);
-    }
-
     protected abstract String getMarkStatusName();
-
-    @Override
-    public void reverse(DTObject log) {
-        DomainContainer.println(this.name() + ":reverse");
-        restore(log);
-    }
 
 }

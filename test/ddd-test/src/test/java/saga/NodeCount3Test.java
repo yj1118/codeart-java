@@ -4,10 +4,7 @@ import apros.codeart.ddd.launcher.DomainServer;
 import apros.codeart.ddd.launcher.TestLauncher;
 import apros.codeart.ddd.saga.SAGAConfig;
 import org.junit.jupiter.api.*;
-import subsystem.saga.NodeStatus;
-import subsystem.saga.OpenAccountEvent;
-import subsystem.saga.OpenWalletEvent;
-import subsystem.saga.RegisterUserEvent;
+import subsystem.saga.*;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -18,10 +15,11 @@ public class NodeCount3Test {
 
     private static final DomainServer _server2 = new DomainServer("server2");
 
+
     static {
-        SAGAConfig.specifiedEvents(new String[]{RegisterUserEvent.Name});
-        _server1.domainEvents(new String[]{OpenAccountEvent.Name});
-        _server2.domainEvents(new String[]{OpenWalletEvent.Name});
+        SAGAConfig.specifiedEvents(RegisterUserEvent.Name);
+        _server1.domainEvents(OpenAccountEvent.Name);
+        _server2.domainEvents(OpenWalletEvent.Name);
     }
 
 
@@ -51,6 +49,7 @@ public class NodeCount3Test {
         Assertions.assertTrue(Common.isRegistered(user));
         Assertions.assertTrue(Common.isOpenAccount(user));
         Assertions.assertTrue(Common.isOpenWallet(user));
+        Assertions.assertTrue(Common.isCheckEmail(user));
     }
 
 
