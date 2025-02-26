@@ -82,14 +82,14 @@ public class RabbitBus implements AutoCloseable {
     public void queueDeclare(String queue) {
         try {
             if (this.policy().persistentQueue()) {
-                Logger.trace("queueDeclare_pre %s %s %s %s", queue, "durable:true", "exclusive:false", "autoDelete:false");
+                Logger.trace("rabbitmq", "queueDeclare_pre %s %s %s %s", queue, "durable:true", "exclusive:false", "autoDelete:false");
                 this.channel().queueDeclare(queue, true, false, false, null);
-                Logger.trace("queueDeclare_ok", queue);
+                Logger.trace("rabbitmq", "queueDeclare_ok", queue);
             } else {
-                Logger.trace("queueDeclare_pre %s %s %s %s", queue, "durable:false", "exclusive:false", "autoDelete:false");
+                Logger.trace("rabbitmq", "queueDeclare_pre %s %s %s %s", queue, "durable:false", "exclusive:false", "autoDelete:false");
                 // 注意，autoDelete如果为true，那么没有消费者就会删除队列
                 this.channel().queueDeclare(queue, false, false, false, null); // 最后一个true表示不持久化的消息，服务器端分发后就删除，适用于rpc模式
-                Logger.trace("queueDeclare_ok", queue);
+                Logger.trace("rabbitmq", "queueDeclare_ok", queue);
             }
         } catch (Throwable ex) {
             throw propagate(ex);
@@ -105,8 +105,8 @@ public class RabbitBus implements AutoCloseable {
     public String tempQueueDeclare() {
         try {
             // 临时队列是由rabbit分配名称、只有自己可以看见、用后就删除的队列
-            Logger.trace("queueDeclare_pre %s %s %s %s", "(temp)", "durable:false", "exclusive:true", "autoDelete:true");
-            var queueName = this.channel().queueDeclare(Strings.EMPTY, false, true, true, null).getQueue();
+            Logger.trace("queueDeclare_pre %s %s %s %s", "(temp)", "durable:false", "exclusive:true", "autoDelete:false");
+            var queueName = this.channel().queueDeclare(Strings.EMPTY, false, true, false, null).getQueue();
             Logger.trace("queueDeclare_ok %s", "(temp)");
             return queueName;
         } catch (Throwable ex) {

@@ -12,20 +12,19 @@ public final class Logger {
     }
 
     public static void error(Throwable ex) {
-        if (TypeUtil.is(ex, UIException.class)) return; // UI错误，不记日志
         FileLogger.INSTANCE.error(ex);
     }
 
-    public static void trace(DTObject content) {
-        TRACE_LOGGER.trace(content);
+    public static void trace(String moduleName, DTObject content) {
+        TRACE_LOGGER.trace(moduleName, content);
     }
 
-    public static void trace(String message) {
-        TRACE_LOGGER.trace(message);
+    public static void trace(String moduleName, String message) {
+        TRACE_LOGGER.trace(moduleName, message);
     }
 
-    public static void trace(String formatMessage, Object... args) {
-        TRACE_LOGGER.trace(formatMessage, args);
+    public static void trace(String moduleName, String formatMessage, Object... args) {
+        TRACE_LOGGER.trace(moduleName, formatMessage, args);
     }
 
     private final static ILogger TRACE_LOGGER;

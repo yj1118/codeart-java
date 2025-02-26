@@ -1,7 +1,9 @@
 package apros.codeart.log;
 
+import apros.codeart.UIException;
 import apros.codeart.dto.DTObject;
 import apros.codeart.io.IOUtil;
+import apros.codeart.runtime.TypeUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -67,22 +69,26 @@ class FileLogger implements ILogger {
 
     @Override
     public void error(Throwable ex) {
+        if (TypeUtil.is(ex, UIException.class)) return; // UI错误，不记日志
         LOG4J.error(ex.getMessage(), ex);  // 不能直接FileLogger.Instance.error(ex)，不会打印追踪信息
     }
 
     @Override
-    public void trace(DTObject content) {
+    public void trace(String moduleName, DTObject content) {
+        if (!LogFilter.enable(moduleName)) return;
         var message = content.getCode();
         LOG4J.info(message);
     }
 
     @Override
-    public void trace(String message) {
+    public void trace(String moduleName, String message) {
+        if (!LogFilter.enable(moduleName)) return;
         LOG4J.info(message);
     }
 
     @Override
-    public void trace(String formatMessage, Object... args) {
+    public void trace(String moduleName, String formatMessage, Object... args) {
+        if (!LogFilter.enable(moduleName)) return;
         LOG4J.info(String.format(formatMessage, args));
     }
 }

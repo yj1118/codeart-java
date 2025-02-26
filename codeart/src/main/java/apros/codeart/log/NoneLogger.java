@@ -18,18 +18,18 @@ public final class NoneLogger implements ILogger {
     }
 
     @Override
-    public void trace(DTObject content) {
+    public void trace(String moduleName, DTObject content) {
 
     }
 
     @Override
-    public void trace(String message) {
+    public void trace(String moduleName, String message) {
 
     }
 
     @Override
-    public void trace(String formatMessage, Object... args) {
-        
+    public void trace(String moduleName, String formatMessage, Object... args) {
+
     }
 
     static final NoneLogger INSTANCE = new NoneLogger();

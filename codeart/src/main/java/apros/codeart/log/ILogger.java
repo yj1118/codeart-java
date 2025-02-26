@@ -8,9 +8,9 @@ public interface ILogger {
 
     void error(Throwable ex);
 
-    void trace(DTObject content);
+    void trace(String moduleName, DTObject content);
 
-    void trace(String message);
+    void trace(String moduleName, String message);
 
-    void trace(String formatMessage, Object... args);
+    void trace(String moduleName, String formatMessage, Object... args);
 }
