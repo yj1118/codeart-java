@@ -55,6 +55,10 @@ public final class AppConfig {
         return _config.getString(path, null);
     }
 
+    public static boolean getBoolean(String path, boolean defaultValue) {
+        return _config.getBoolean(path, defaultValue);
+    }
+
     private static final DTObject _config;
 
     public static DTObject section() {

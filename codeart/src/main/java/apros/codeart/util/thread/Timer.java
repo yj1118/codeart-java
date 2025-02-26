@@ -67,7 +67,7 @@ public final class Timer {
                 try {
                     action.run();
                 } catch (Throwable e) {
-                    Logger.fatal(e);
+                    Logger.error(e);
                 }
             }, initialDelay, _period, _unit);
         } else {
@@ -75,7 +75,7 @@ public final class Timer {
                 try {
                     action.run();
                 } catch (Throwable e) {
-                    Logger.fatal(e);
+                    Logger.error(e);
                 }
             }, initialDelay, _period, _unit);
         }

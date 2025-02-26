@@ -1,7 +1,6 @@
 package apros.codeart.rabbitmq.event;
 
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 
 import apros.codeart.context.AppSession;
@@ -10,10 +9,8 @@ import apros.codeart.echo.event.ISubscriber;
 import apros.codeart.log.Logger;
 import apros.codeart.pooling.IPoolItem;
 import apros.codeart.rabbitmq.Consumer;
-import apros.codeart.rabbitmq.IConsumerCluster;
 import apros.codeart.rabbitmq.Message;
 import apros.codeart.rabbitmq.RabbitBus;
-import apros.codeart.util.SafeAccessImpl;
 import apros.codeart.util.thread.Parallel;
 
 /**
@@ -129,7 +126,7 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
             });
             elapsed = message.success();
         } catch (Throwable ex) {
-            Logger.fatal(ex);
+            Logger.error(ex);
             elapsed = message.failed(true); // true:提示RabbitMQ服务器重发消息给下一个订阅者，false:提示RabbitMQ服务器把消息从队列中移除
         }
         return elapsed;

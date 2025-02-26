@@ -11,7 +11,7 @@ public abstract class DomainEventHandler implements IEventHandler {
         try {
             handle(data);
         } catch (Throwable ex) {
-            Logger.fatal(ex);
+            Logger.error(ex);
         }
     }
 

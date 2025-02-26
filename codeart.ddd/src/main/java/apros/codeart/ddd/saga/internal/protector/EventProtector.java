@@ -94,7 +94,7 @@ public final class EventProtector {
             });
 
         } catch (Throwable ex) {
-            Logger.fatal(ex);
+            Logger.error(ex);
         }
     }
 

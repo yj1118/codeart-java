@@ -3,8 +3,6 @@ package apros.codeart.ddd.message.internal;
 import apros.codeart.context.AppSession;
 import apros.codeart.log.Logger;
 
-import java.util.UUID;
-
 public final class MessageProtector {
     private MessageProtector() {
 
@@ -39,7 +37,7 @@ public final class MessageProtector {
             });
 
         } catch (Throwable ex) {
-            Logger.fatal(ex);
+            Logger.error(ex);
         }
     }
 
