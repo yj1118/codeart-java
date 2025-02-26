@@ -3,6 +3,7 @@ package saga;
 import apros.codeart.ddd.command.EventCallable;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.ListUtil;
+import apros.codeart.util.SafeAccess;
 import subsystem.saga.*;
 
 import java.nio.file.Path;
@@ -54,7 +55,7 @@ public final class Common {
 
 
     private final static String[] eventNames = new String[]{
-            RegisterUserEvent.Name, OpenAccountEvent.Name, OpenWalletEvent.Name, CheckEmailEvent.Name
+            RegisterUserEvent.Name, OpenAccountEvent.Name, OpenWalletEvent.Name, CheckEmailEvent.Name,CompletedEvent.Name
     };
 
     public static DTObject exec(NodeStatus... nodeStatuses) {
@@ -96,6 +97,11 @@ public final class Common {
         return user.getInt("CheckEmail") == 1;
     }
 
+    public static boolean isCompleted(DTObject user){
+        if(!user.exist("Completed")) return  false;
+        return user.getInt("Completed")==1;
+    }
+
 
     public static boolean isRegistered() {
         return isRegistered(BaseEvent.loadUser());
@@ -112,5 +118,7 @@ public final class Common {
     public static boolean isCheckEmail() {
         return isCheckEmail(BaseEvent.loadUser());
     }
+
+    public static boolean isCompleted(){return isCompleted(BaseEvent.loadUser());}
 
 }
