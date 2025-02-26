@@ -1,6 +1,9 @@
 package apros.codeart.log;
 
+import apros.codeart.UIException;
+import apros.codeart.dto.DTObject;
 import apros.codeart.io.IOUtil;
+import apros.codeart.runtime.TypeUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -12,14 +15,19 @@ import org.apache.logging.log4j.core.config.builder.impl.BuiltConfiguration;
 
 import apros.codeart.AppConfig;
 
-class FileLogger {
+class FileLogger implements ILogger {
 
-
-    public static final Logger Instance;
+    public static final FileLogger INSTANCE;
 
     static {
         setupLogConfig();
-        Instance = LogManager.getLogger(FileLogger.class);
+        INSTANCE = new FileLogger();
+    }
+
+    private final Logger LOG4J;
+
+    private FileLogger() {
+        LOG4J = LogManager.getLogger(FileLogger.class);
     }
 
     private static void setupLogConfig() {
@@ -27,13 +35,16 @@ class FileLogger {
         var logConfig = AppConfig.section("log");
 
         var fileName = logConfig == null ? String.format("%s/app.log", IOUtil.getLogDirectory("app")) :
-                logConfig.getString("fileName", "logs/app.log"); // 默认是当前目录下的logs里的app.log文件
+                logConfig.getString("fileName", "log/app/app.log"); // 默认是当前目录下的logs里的app.log文件
 
         ConfigurationBuilder<BuiltConfiguration> builder = ConfigurationBuilderFactory.newConfigurationBuilder();
 
         builder.setStatusLevel(org.apache.logging.log4j.Level.ERROR);
-        LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout").addAttribute("pattern",
-                "%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n%throwable");
+//        LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout").addAttribute("pattern",
+//                "%d{yyyy-MM-dd HH:mm:ss} [%t] %-5level %logger{36} - %msg%n%throwable");
+
+        LayoutComponentBuilder layoutBuilder = builder.newLayout("PatternLayout")
+                .addAttribute("pattern", "%d{yyyy-MM-dd HH:mm:ss} [%t]%-5level%msg%n%throwable");
 
         // 添加文件 appender
         AppenderComponentBuilder fileAppenderBuilder = builder.newAppender("LogFile", "File")
@@ -56,4 +67,28 @@ class FileLogger {
     }
 
 
+    @Override
+    public void error(Throwable ex) {
+        if (TypeUtil.is(ex, UIException.class)) return; // UI错误，不记日志
+        LOG4J.error(ex.getMessage(), ex);  // 不能直接FileLogger.Instance.error(ex)，不会打印追踪信息
+    }
+
+    @Override
+    public void trace(String moduleName, DTObject content) {
+        if (!LogFilter.enable(moduleName)) return;
+        var message = content.getCode();
+        LOG4J.info(message);
+    }
+
+    @Override
+    public void trace(String moduleName, String message) {
+        if (!LogFilter.enable(moduleName)) return;
+        LOG4J.info(message);
+    }
+
+    @Override
+    public void trace(String moduleName, String formatMessage, Object... args) {
+        if (!LogFilter.enable(moduleName)) return;
+        LOG4J.info(String.format(formatMessage, args));
+    }
 }

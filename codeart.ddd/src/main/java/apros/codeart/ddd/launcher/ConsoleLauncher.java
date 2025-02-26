@@ -14,6 +14,7 @@ import apros.codeart.echo.rpc.RPCEvents.ServerErrorArgs;
 import apros.codeart.echo.rpc.RPCEvents.ServerOpenedArgs;
 import apros.codeart.echo.rpc.RPCServer;
 import apros.codeart.i18n.Language;
+import apros.codeart.log.Logger;
 import apros.codeart.util.IEventObserver;
 
 import static apros.codeart.runtime.Util.propagate;
@@ -73,6 +74,7 @@ public final class ConsoleLauncher {
                 System.out.printf("[%s]stopped%n", containerName);  //通讯用   //通讯用
 
         } catch (Throwable e) {
+            Logger.error(e);
             if (isContainer) {
                 System.out.println(e.getMessage());  //通讯用   //通讯用
                 return;

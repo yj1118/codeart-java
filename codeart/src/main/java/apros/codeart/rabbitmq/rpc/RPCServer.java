@@ -8,7 +8,6 @@ import org.apache.logging.log4j.util.Strings;
 
 import apros.codeart.context.AppSession;
 import apros.codeart.dto.DTObject;
-import apros.codeart.echo.TransferData;
 import apros.codeart.echo.rpc.IRPCHandler;
 import apros.codeart.echo.rpc.RPCEvents;
 import apros.codeart.log.Logger;
@@ -74,7 +73,7 @@ class RPCServer extends Consumer implements AutoCloseable {
                     replyProps.correlationId(correlationId);
                 });
             } catch (Throwable ex) {
-                Logger.fatal(ex);
+                Logger.error(ex);
 
                 var arg = new RPCEvents.ServerErrorArgs(ex);
                 RPCEvents.raiseServerError(this, arg);
@@ -98,7 +97,7 @@ class RPCServer extends Consumer implements AutoCloseable {
             var result = _handler.process(method, arg);
             body.combineObject("data", result);
         } catch (Throwable ex) {
-            Logger.fatal(ex);
+            Logger.error(ex);
             body.setString("error", ex.getMessage());
         }
         return body;
