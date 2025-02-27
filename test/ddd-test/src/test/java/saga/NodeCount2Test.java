@@ -1,7 +1,6 @@
 package saga;
 
 import apros.codeart.ddd.launcher.TestLauncher;
-import apros.codeart.ddd.launcher.DomainServer;
 import apros.codeart.ddd.saga.SAGAConfig;
 import org.junit.jupiter.api.*;
 import subsystem.saga.*;
@@ -11,23 +10,21 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class NodeCount2Test {
 
-    private static final DomainServer _server1 = new DomainServer("server1");
 
     static {
         SAGAConfig.specifiedEvents(RegisterUserEvent.Name);
-        _server1.domainEvents(OpenAccountEvent.Name);
     }
 
 
     @BeforeAll
     public static void setup() {
         TestLauncher.start();
-        _server1.open();
+        Servers.open(1);
     }
 
     @AfterAll
     public static void clean() {
-        _server1.close();
+        Servers.close();
         TestLauncher.stop();
     }
 
@@ -45,8 +42,8 @@ public class NodeCount2Test {
     }
 
     @Test
-    void node_1_errorBefore() {
-        System.out.println("---------- node_1_errorBefore ----------");
+    void node_0_errorBefore() {
+        System.out.println("---------- node_0_errorBefore ----------");
         try {
             var user = Common.exec(NodeStatus.ERROR_BEFORE, NodeStatus.SUCCESS);
             fail();
@@ -59,8 +56,8 @@ public class NodeCount2Test {
     }
 
     @Test
-    void node_1_errorAfter() {
-        System.out.println("---------- node_1_errorAfter ----------");
+    void node_0_errorAfter() {
+        System.out.println("---------- node_0_errorAfter ----------");
         try {
             var user = Common.exec(NodeStatus.ERROR_AFTER, NodeStatus.SUCCESS);
             fail();
@@ -74,8 +71,8 @@ public class NodeCount2Test {
 
 
     @Test
-    void node_2_errorBefore() {
-        System.out.println("---------- node_2_errorBefore ----------");
+    void node_1_errorBefore() {
+        System.out.println("---------- node_1_errorBefore ----------");
         try {
             var user = Common.exec(NodeStatus.SUCCESS, NodeStatus.ERROR_BEFORE);
             fail();
@@ -88,8 +85,8 @@ public class NodeCount2Test {
     }
 
     @Test
-    void node_2_errorAfter() {
-        System.out.println("---------- node_2_errorAfter ----------");
+    void node_1_errorAfter() {
+        System.out.println("---------- node_1_errorAfter ----------");
         try {
             var user = Common.exec(NodeStatus.SUCCESS, NodeStatus.ERROR_AFTER);
             fail();

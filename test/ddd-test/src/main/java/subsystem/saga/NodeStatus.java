@@ -8,9 +8,11 @@ public enum NodeStatus {
 
     ERROR_AFTER((byte) 3),
 
-    TIMEOUT((byte) 4),
+    TIMEOUT_BEFORE((byte) 4),
+    TIMEOUT_AFTER((byte) 5),
 
-    Unplugged((byte) 5);
+    Unplugged_BEFORE((byte) 6),
+    Unplugged_AFTER((byte) 7);
 
     private final byte value;
 
@@ -27,8 +29,10 @@ public enum NodeStatus {
             case 1 -> SUCCESS;
             case 2 -> ERROR_BEFORE;
             case 3 -> ERROR_AFTER;
-            case 4 -> TIMEOUT;
-            case 5 -> Unplugged;
+            case 4 -> TIMEOUT_BEFORE;
+            case 5 -> TIMEOUT_AFTER;
+            case 6 -> Unplugged_BEFORE;
+            case 7 -> Unplugged_AFTER;
             default -> null;
         };
     }

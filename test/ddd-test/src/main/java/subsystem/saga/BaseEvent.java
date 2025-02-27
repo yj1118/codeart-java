@@ -35,7 +35,7 @@ public abstract class BaseEvent extends DomainEvent {
     public DTObject raise(DTObject arg, EventContext ctx) {
 
         var user = loadUser();
-        
+
         copy(user, ctx);
 
         var status = getMarkStatusName();
@@ -61,21 +61,38 @@ public abstract class BaseEvent extends DomainEvent {
         restore(log);
     }
 
-    private boolean execBeforeThrowError(DTObject arg) {
-        return arg.getByte("status", (byte) 0) == NodeStatus.ERROR_BEFORE.getValue();
+    private boolean isNodeStatus(DTObject arg, NodeStatus status) {
+        return arg.getByte("status", (byte) 0) == status.getValue();
     }
+
+    // region 抛出异常
+
 
     protected void tryExecBeforeThrowError(DTObject arg) {
-        if (execBeforeThrowError(arg)) throw new IllegalStateException("execBeforeThrowError");
-    }
-
-    private boolean execAfterThrowError(DTObject arg) {
-        return arg.getByte("status", (byte) 0) == NodeStatus.ERROR_AFTER.getValue();
+        if (isNodeStatus(arg, NodeStatus.ERROR_BEFORE))
+            throw new IllegalStateException("execBeforeThrowError");
     }
 
     protected void tryExecAfterThrowError(DTObject arg) {
-        if (execAfterThrowError(arg)) throw new IllegalStateException("execAfterThrowError");
+        if (isNodeStatus(arg, NodeStatus.ERROR_AFTER))
+            throw new IllegalStateException("execAfterThrowError");
     }
+
+    // endregion
+
+//    // region 超时
+//
+//    protected void tryExecBeforeTimeout(DTObject arg) {
+//        if (isNodeStatus(arg, NodeStatus.TIMEOUT_BEFORE))
+//            throw new IllegalStateException("execBeforeThrowError");
+//    }
+//
+//    protected void tryExecAfterThrowError(DTObject arg) {
+//        if (isNodeStatus(arg, NodeStatus.TIMEOUT_AFTER))
+//            throw new IllegalStateException("execAfterThrowError");
+//    }
+//
+//    // endregion
 
     public DTObject getResult(DTObject user, DTObject arg) {
         var result = DTObject.editable();

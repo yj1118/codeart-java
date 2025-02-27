@@ -11,29 +11,21 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class NodeCount3Test {
 
-    private static final DomainServer _server1 = new DomainServer("server1");
-
-    private static final DomainServer _server2 = new DomainServer("server2");
-
 
     static {
         SAGAConfig.specifiedEvents(RegisterUserEvent.Name);
-        _server1.domainEvents(OpenAccountEvent.Name);
-        _server2.domainEvents(OpenWalletEvent.Name);
     }
 
 
     @BeforeAll
     public static void setup() {
         TestLauncher.start();
-        _server1.open();
-        _server2.open();
+        Servers.open(2);
     }
 
     @AfterAll
     public static void clean() {
-        _server1.close();
-        _server2.close();
+        Servers.close();
         TestLauncher.stop();
     }
 
@@ -55,7 +47,7 @@ public class NodeCount3Test {
     void node_1_errorBefore() {
         System.out.println("---------- node_1_errorBefore ----------");
         try {
-            var user = Common.exec(NodeStatus.SUCCESS,NodeStatus.ERROR_BEFORE, NodeStatus.SUCCESS);
+            var user = Common.exec(NodeStatus.SUCCESS, NodeStatus.ERROR_BEFORE, NodeStatus.SUCCESS);
             fail();
         } catch (Exception e) {
 
@@ -70,7 +62,7 @@ public class NodeCount3Test {
     void node_1_errorAfter() {
         System.out.println("---------- node_1_errorAfter ----------");
         try {
-            var user = Common.exec(NodeStatus.SUCCESS,NodeStatus.ERROR_AFTER, NodeStatus.SUCCESS);
+            var user = Common.exec(NodeStatus.SUCCESS, NodeStatus.ERROR_AFTER, NodeStatus.SUCCESS);
             fail();
         } catch (Exception e) {
 
