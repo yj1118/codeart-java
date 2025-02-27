@@ -46,11 +46,13 @@ public abstract class BaseEvent extends DomainEvent {
 
         DomainContainer.println(status + ":before");
         tryExecBeforeThrowError(arg);
+        tryExecBeforeTimeout(arg);
 
         saveUser(user);
 
         DomainContainer.println(status + ":after");
         tryExecAfterThrowError(arg);
+        tryExecAfterTimeout(arg);
 
         return getResult(user, arg);
     }
@@ -80,19 +82,29 @@ public abstract class BaseEvent extends DomainEvent {
 
     // endregion
 
-//    // region 超时
-//
-//    protected void tryExecBeforeTimeout(DTObject arg) {
-//        if (isNodeStatus(arg, NodeStatus.TIMEOUT_BEFORE))
-//            throw new IllegalStateException("execBeforeThrowError");
-//    }
-//
-//    protected void tryExecAfterThrowError(DTObject arg) {
-//        if (isNodeStatus(arg, NodeStatus.TIMEOUT_AFTER))
-//            throw new IllegalStateException("execAfterThrowError");
-//    }
-//
-//    // endregion
+    // region 超时
+
+    protected void tryExecBeforeTimeout(DTObject arg) {
+        if (isNodeStatus(arg, NodeStatus.TIMEOUT_BEFORE)) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    protected void tryExecAfterTimeout(DTObject arg) {
+        if (isNodeStatus(arg, NodeStatus.TIMEOUT_AFTER)) {
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    // endregion
 
     public DTObject getResult(DTObject user, DTObject arg) {
         var result = DTObject.editable();

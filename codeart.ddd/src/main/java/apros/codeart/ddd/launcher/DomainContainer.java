@@ -3,7 +3,9 @@ package apros.codeart.ddd.launcher;
 import apros.codeart.TestSupport;
 import apros.codeart.ddd.saga.SAGAConfig;
 import apros.codeart.dto.DTObject;
-import apros.codeart.io.IOUtil;
+import apros.codeart.util.ListUtil;
+
+import java.util.Base64;
 
 @TestSupport
 public class DomainContainer {
@@ -43,11 +45,21 @@ public class DomainContainer {
     private static void parseArgs(String[] args) {
         for (int i = 1; i < args.length; i++) {
             String arg = args[i];
-            if (arg.startsWith("-de ")) {
-                var domainEvents = arg.substring(4).split(",");
-                SAGAConfig.specifiedEvents(domainEvents);
+            if (arg.startsWith("-c ")) {
+                var encodedString = arg.substring(3);
+                byte[] decodedBytes = Base64.getDecoder().decode(encodedString);
+                String code = new String(decodedBytes);
+                DTObject config = DTObject.readonly(code);
+                initConfig(config);
+
             }
         }
+    }
+
+    private static void initConfig(DTObject config) {
+        var domainEvents = config.getStrings("DomainEvents", null);
+        if (domainEvents != null)
+            SAGAConfig.specifiedEvents(ListUtil.asArray(domainEvents, String.class));
     }
 
 

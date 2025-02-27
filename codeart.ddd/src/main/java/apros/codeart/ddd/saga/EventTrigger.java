@@ -59,7 +59,7 @@ public final class EventTrigger {
             }
 
             var entryIndex = queue.entryIndex();
-            
+
             String eventName = entry.name();
             ctx.direct(eventName, entryIndex); // 将事件上下文重定向到新的事件上
             EventLog.writeRaise(ctx.id(), ctx.eventName(), entryIndex); // 一定要确保日志先被正确得写入，否则会有BUG
@@ -102,7 +102,7 @@ public final class EventTrigger {
 
         try {
             // 等待远程调用的结果
-            var output = signal.wait(300, TimeUnit.SECONDS);
+            var output = signal.wait(100, TimeUnit.SECONDS);
 
             var error = output.getString("error", null);
 

@@ -1,6 +1,7 @@
 package saga;
 
 import apros.codeart.ddd.launcher.DomainServer;
+import apros.codeart.dto.DTObject;
 import subsystem.saga.*;
 
 import java.util.ArrayList;
@@ -17,10 +18,11 @@ public final class Servers {
         for (int i = 0; i < count; i++) {
             var index = i + 1;
             var serverName = String.format("server%d", index);
-            DomainServer server = new DomainServer(serverName);
-
             var eventName = Common.getEventName(index);
-            server.domainEvents(eventName);
+
+            DTObject config = DTObject.editable();
+            config.pushString("domainEvents", eventName);
+            DomainServer server = new DomainServer(serverName, config);
             _servers.add(server);
         }
     }

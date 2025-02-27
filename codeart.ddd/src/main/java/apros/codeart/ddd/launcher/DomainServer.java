@@ -10,6 +10,7 @@ import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.CompletableFuture;
@@ -34,18 +35,20 @@ public class DomainServer {
 
     private LatchSignal<Boolean> _stopSignal;
 
-    private String[] _domainEvents;
+    private DTObject _config;
 
-    public String[] domainEvents() {
-        return _domainEvents;
-    }
-
-    public void domainEvents(String... value) {
-        _domainEvents = value;
+    public DTObject config() {
+        return _config;
     }
 
     public DomainServer(String name) {
         _name = name;
+        _config = DTObject.empty();
+    }
+
+    public DomainServer(String name, DTObject config) {
+        _name = name;
+        _config = config.asReadonly();
     }
 
     private void delay(long millis) {
@@ -110,7 +113,7 @@ public class DomainServer {
             builder.command().add(currentClass);
 
             builder.command().add(this.name());      //第一个参数为服务器名称
-            fillDomainEventsConfig(builder);
+            fillConfig(builder);
 
             builder.environment().putAll(System.getenv()); // 继承环境变量
             builder.directory(new File(System.getProperty("user.dir"))); // 继承工作目录
@@ -133,9 +136,12 @@ public class DomainServer {
         }
     }
 
-    private void fillDomainEventsConfig(ProcessBuilder process) {
-        if (_domainEvents == null || _domainEvents.length == 0) return;
-        process.command().add(String.format("-de %s", String.join(",", _domainEvents)));
+    private void fillConfig(ProcessBuilder process) {
+        if (_config.isEmpty()) return;
+        // 获取 Base64 编码器
+        var code = _config.getCode();
+        String encodedString = Base64.getEncoder().encodeToString(code.getBytes());
+        process.command().add(String.format("-c %s", encodedString));
     }
 
     private void readStream(InputStream inputStream) {
