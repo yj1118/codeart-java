@@ -5,6 +5,7 @@ import apros.codeart.ddd.saga.DomainEvent;
 import apros.codeart.ddd.saga.EventContext;
 import apros.codeart.dto.DTObject;
 import apros.codeart.io.IOUtil;
+import apros.codeart.log.Logger;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.SafeAccess;
 
@@ -34,33 +35,32 @@ public abstract class BaseEvent extends DomainEvent {
     @Override
     public DTObject raise(DTObject arg, EventContext ctx) {
 
-        var user = loadUser();
+        var statusCount = loadStatusCount();
 
-        copy(user, ctx);
+        copy(statusCount, ctx);
+
+        statusCount++;
 
         var status = getMarkStatusName();
-
-        var statusCount = user.getInt(status, 0);
-        statusCount++;
-        user.setInt(status, statusCount);
 
         DomainContainer.println(status + ":before");
         tryExecBeforeThrowError(arg);
         tryExecBeforeTimeout(arg);
 
-        saveUser(user);
+        saveStatusCount(statusCount);
 
         DomainContainer.println(status + ":after");
         tryExecAfterThrowError(arg);
         tryExecAfterTimeout(arg);
 
-        return getResult(user, arg);
+        return getResult(arg);
     }
 
     @Override
     public void reverse(DTObject log) {
-        DomainContainer.println(this.name() + ":reverse");
+        DomainContainer.println(this.name() + ":reverseBefore");
         restore(log);
+        DomainContainer.println(this.name() + ":reverseAfter");
     }
 
     private boolean isNodeStatus(DTObject arg, NodeStatus status) {
@@ -87,7 +87,7 @@ public abstract class BaseEvent extends DomainEvent {
     protected void tryExecBeforeTimeout(DTObject arg) {
         if (isNodeStatus(arg, NodeStatus.TIMEOUT_BEFORE)) {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(10000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -97,7 +97,7 @@ public abstract class BaseEvent extends DomainEvent {
     protected void tryExecAfterTimeout(DTObject arg) {
         if (isNodeStatus(arg, NodeStatus.TIMEOUT_AFTER)) {
             try {
-                Thread.sleep(5000);
+                Thread.sleep(10000);
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
@@ -106,10 +106,10 @@ public abstract class BaseEvent extends DomainEvent {
 
     // endregion
 
-    public DTObject getResult(DTObject user, DTObject arg) {
+    public DTObject getResult(DTObject arg) {
         var result = DTObject.editable();
 
-        result.setObject("user", user);
+        result.setObject("user", loadUser());
 
         var remoteNodes = arg.getList("remoteNodes", false);
         if (remoteNodes != null && remoteNodes.size() > 0) {
@@ -125,38 +125,47 @@ public abstract class BaseEvent extends DomainEvent {
 
     public static DTObject loadUser() {
         var fileName = IOUtil.createTempFile("saga_user", true);
+        DomainContainer.println("userFileName:" + fileName);
         var dto = DTObject.load(fileName);
         return dto.isEmpty() ? DTObject.editable() : dto.asEditable();
+    }
+
+    public int loadStatusCount() {
+        var user = loadUser();
+        var status = getMarkStatusName();
+
+        return user.getInt(status, 0);
+    }
+
+    public void saveStatusCount(int statusCount) {
+        var user = loadUser();
+        var status = getMarkStatusName();
+        user.setInt(status, statusCount);
+        saveUser(user);
     }
 
     public static void saveUser(DTObject user) {
         var fileName = IOUtil.createTempFile("saga_user", true);
         user.save(fileName);
+        DomainContainer.println("userSavedCode:" + loadUser().getCode(false, false));
     }
 
 
-    protected void copy(DTObject user, EventContext ctx) {
+    protected void copy(int statusCount, EventContext ctx) {
         ctx.submit((log) -> {
-            log.setObject("user", user);
+            log.setInt("statusCount", statusCount); // 只用记录下，其实用不到
         });
     }
 
     protected void restore(DTObject log) {
         if (log.isEmpty()) return;
 
-        var user = log.getObject("user");
-        var status = getMarkStatusName();
+        var user = loadUser();
+        DomainContainer.println(this.name() + ":current - " + user.getCode(false, false));
+        var statusCount = log.getInt("statusCount", 0);
+        saveStatusCount(statusCount);
 
-        if (!user.exist(status)) {
-            saveUser(user);
-            return;
-        }
-
-        var statusCount = user.getInt(status);
-        statusCount--;
-        user.setInt(status, statusCount);
-
-        saveUser(user);
+        DomainContainer.println(this.name() + ":reverseSuccess - " + user.getCode(false, false));
     }
 
 

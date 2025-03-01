@@ -13,7 +13,6 @@ public class NodeCount3Test {
 
 
     static {
-        SAGAConfig.specifiedEvents(RegisterUserEvent.Name);
     }
 
 

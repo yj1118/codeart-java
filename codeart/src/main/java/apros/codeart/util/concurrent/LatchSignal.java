@@ -14,7 +14,7 @@ public final class LatchSignal<T> implements ISignal<T> {
     public LatchSignal() {
     }
 
-    public T wait(long timeout, TimeUnit unit) {
+    public T wait(long timeout, TimeUnit unit) throws SignalTimeoutException {
 
         try {
             boolean completed = _ready.await(timeout, unit);

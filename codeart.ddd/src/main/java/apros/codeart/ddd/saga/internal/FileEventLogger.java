@@ -17,11 +17,13 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import apros.codeart.ddd.launcher.DomainContainer;
 import apros.codeart.ddd.saga.IEventLog;
 import apros.codeart.ddd.saga.RaisedEntry;
 import apros.codeart.ddd.saga.SAGAConfig;
 import apros.codeart.dto.DTObject;
 import apros.codeart.io.IOUtil;
+import apros.codeart.log.Logger;
 import apros.codeart.util.Guid;
 import apros.codeart.util.SafeAccess;
 import apros.codeart.util.StringUtil;
@@ -50,6 +52,7 @@ final class FileEventLogger implements IEventLog {
     public void writeRaise(String queueId, String eventName, int entryIndex) {
         var folder = getQueueFolder(queueId);
         var fileName = getEventFileName(folder, entryIndex, eventName);
+        Logger.trace("saga", "fileLogWriteRaise:%s", fileName);
         IOUtil.atomicNewFile(fileName);
     }
 
@@ -80,6 +83,7 @@ final class FileEventLogger implements IEventLog {
 
         IOUtil.search(folder, "*.{e}", (file) -> {
             var name = file.getFileName().toString();
+            Logger.trace("saga", "fileLogFindRaised:%s\\%s", folder, name);
             var temp = name.split("\\.");
             var index = Integer.parseInt(temp[0]);
             var eventName = temp[1];
@@ -241,15 +245,15 @@ final class FileEventLogger implements IEventLog {
 
     private static String getQueueFolder(String queueId) {
         // 前8位是创建的日期，以日期建立子目录
-        return String.format("%s\\%s\\%s", _rootFolder, getDay(queueId), queueId);
+        return String.format("%s\\%s\\%s\\%s", _rootFolder, DomainContainer.serverName(), getDay(queueId), queueId);
     }
 
     private static String getEventFileName(String folder, int index, String eventName) {
-        return String.format("%s\\%02d.%s.e", folder, index, eventName);
+        return String.format("%s\\%d.%s.e", folder, index, eventName);
     }
 
     private static String getEventLogFileName(String folder, int index, String eventName) {
-        return String.format("%s\\%02d.%s.l", folder, index, eventName);
+        return String.format("%s\\%d.%s.l", folder, index, eventName);
     }
 
     private static String getEndFileName(String folder) {

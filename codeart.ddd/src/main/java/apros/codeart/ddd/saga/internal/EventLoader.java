@@ -45,7 +45,7 @@ public final class EventLoader {
     }
 
     private static Iterable<DomainEvent> findEvents() {
-        var specified = SAGAConfig.specifiedEvents() != null && SAGAConfig.specifiedEvents().length > 0;
+        var specified = SAGAConfig.specifiedEvents() != null && Iterables.size(SAGAConfig.specifiedEvents()) > 0;
 
         var findedTypes = Activator.getSubTypesOf(DomainEvent.class, App.archives());
         ArrayList<DomainEvent> events = new ArrayList<>(Iterables.size(findedTypes));

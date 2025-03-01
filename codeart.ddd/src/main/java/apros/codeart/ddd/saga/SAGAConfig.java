@@ -4,20 +4,38 @@ import apros.codeart.AppConfig;
 import apros.codeart.TestSupport;
 import apros.codeart.dto.DTObject;
 
+import java.util.List;
+
 public final class SAGAConfig {
 
     private SAGAConfig() {
 
     }
 
-    private static void loadEventLog(DTObject root) {
+    public static void load(DTObject root) {
+        if (root == null) return;
         _retainDays = root.getInt("@log.retain", 0); // 默认永久保留
+        _eventTimeout = root.getInt("@event.timeout", 60); //领域事件默认超时时间60秒
+        _specifiedEvents = root.getStrings("@event.specified", false);
     }
 
     private static int _retainDays;
 
     public static int retainDays() {
         return _retainDays;
+    }
+
+    private static int _eventTimeout;
+
+    public static int eventTimeout() {
+        return _eventTimeout;
+    }
+
+
+    private static Iterable<String> _specifiedEvents;
+
+    public static Iterable<String> specifiedEvents() {
+        return _specifiedEvents;
     }
 
     private static DTObject _section;
@@ -30,30 +48,11 @@ public final class SAGAConfig {
 
         _section = AppConfig.section("saga");
         if (_section != null) {
-            loadEventLog(_section);
+            load(_section);
         } else {
             _section = DTObject.Empty;
             _retainDays = 0;
         }
 
     }
-
-
-    //region 测试支持
-
-    @TestSupport
-    private static String[] _specifiedEvents;
-
-    @TestSupport
-    public static void specifiedEvents(String... specifiedEvents) {
-        _specifiedEvents = specifiedEvents;
-    }
-
-    @TestSupport
-    public static String[] specifiedEvents() {
-        return _specifiedEvents;
-    }
-
-    //endregion
-
 }

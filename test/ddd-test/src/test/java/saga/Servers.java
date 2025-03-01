@@ -21,7 +21,8 @@ public final class Servers {
             var eventName = Common.getEventName(index);
 
             DTObject config = DTObject.editable();
-            config.pushString("domainEvents", eventName);
+            config.pushString("saga.@event.specified", eventName);
+            config.setInt("saga.@event.timeout", 5);  // 5秒就认为超时，为模拟超时做准备
             DomainServer server = new DomainServer(serverName, config);
             _servers.add(server);
         }

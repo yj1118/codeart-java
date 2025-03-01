@@ -9,7 +9,6 @@ import apros.codeart.util.thread.ThreadUtil;
 import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.List;
 import java.util.Scanner;
@@ -35,7 +34,7 @@ public class DomainServer {
 
     private LatchSignal<Boolean> _stopSignal;
 
-    private DTObject _config;
+    private final DTObject _config;
 
     public DTObject config() {
         return _config;

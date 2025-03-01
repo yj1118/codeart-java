@@ -3,7 +3,9 @@ package apros.codeart.ddd.saga.internal.protector;
 import apros.codeart.context.AppSession;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.saga.DomainEvent;
+import apros.codeart.ddd.saga.EventStatus;
 import apros.codeart.ddd.saga.internal.EventLog;
+import apros.codeart.ddd.saga.internal.EventLocker;
 import apros.codeart.ddd.saga.internal.EventUtil;
 import apros.codeart.ddd.saga.internal.RaisedQueue;
 import apros.codeart.ddd.saga.EventTrigger;
@@ -17,51 +19,68 @@ public final class EventProtector {
 
     public static void restore(String queueId) {
 
-        Trace trace = new Trace(queueId);
+        TracePool.using((trace) -> {
+            try {
 
-        try {
+                EventLog.writeReverseStart(queueId);
 
-            EventLog.writeReverseStart(queueId);
+                var queue = EventLog.findRaised(queueId);
 
-            var queue = EventLog.findRaised(queueId);
+                // 已经没有数据了，表示不需要回溯
+                if (queue == null)
+                    return;
 
-            // 已经没有数据了，表示不需要回溯
-            if (queue == null)
-                return;
+                while (true) {
+                    // 触发回溯序列事件
+                    var entry = queue.next();
+                    if (entry == null) break;
 
-            while (true) {
-                // 触发回溯序列事件
-                var entry = queue.next();
-                if (entry == null) break;
+                    trace.start(entry);
+                    if (entry.local() != null) {
+                        var event = entry.local();
+                        var eventId = EventUtil.getEventId(queue.id(), event.name(), entry.index());
 
-                trace.start(entry);
-                if (entry.local() != null) {
-                    reverseLocalEvent(entry.local(), entry.log());
-                } else {
-                    reverseRemoteEvent(entry.name(), entry.index(), queue);
+                        Logger.trace("saga", "%s - reverseRemoteEventBefore", eventId);
+                        reverseLocalEvent(event, entry.log(), eventId);
+                        Logger.trace("saga", "%s - reverseRemoteEventAfter", eventId);
+                    } else {
+                        var eventName = entry.name();
+                        var eventId = EventUtil.getEventId(queue.id(), eventName, entry.index());
+                        Logger.trace("saga", "%s - reverseRemoteEventBefore", eventId);
+                        reverseRemoteEvent(eventName, eventId, queue);
+                        Logger.trace("saga", "%s - reverseRemoteEventAfter", eventId);
+                    }
+
+                    EventLog.writeReversed(queueId, entry);
+                    trace.end(entry);
                 }
 
-                EventLog.writeReversed(queueId, entry);
-                trace.end(entry);
+                EventLog.writeReverseEnd(queueId); // 指示恢复管理器事件队列的操作已经全部完成
+                trace.end();
+
+            } catch (Throwable ex) {
+                // 恢复期间发生了错误，写入故障转移，留待管理员处理
+                Failover.write(trace);
             }
-
-            EventLog.writeReverseEnd(queueId); // 指示恢复管理器事件队列的操作已经全部完成
-            trace.end();
-
-        } catch (Throwable ex) {
-            // 恢复期间发生了错误，写入故障转移，留待管理员处理
-            Failover.write(trace);
-        }
-    }
-
-    private static void reverseLocalEvent(DomainEvent event, DTObject log) {
-        DataContext.newScope(() -> {
-            event.reverse(log);
         });
     }
 
-    private static void reverseRemoteEvent(String eventName, int entryIndex, RaisedQueue queue) {
-        var eventId = EventUtil.getEventId(queue.id(), eventName, entryIndex);
+    private static void reverseLocalEvent(DomainEvent event, DTObject log, String eventId) {
+        // 回溯的优先级大于执行，所以直接切换状态
+        EventStatus.setStatus(eventId, EventStatus.Reversing);
+        EventLocker.lock(eventId, () -> {
+            try {
+                DataContext.newScope(() -> {
+                    event.reverse(log);
+                });
+                return null;
+            } finally {
+                EventStatus.removeStatus(eventId);
+            }
+        });
+    }
+
+    private static void reverseRemoteEvent(String eventName, String eventId, RaisedQueue queue) {
         // 调用远程事件时会创建一个接收结果的临时队列，有可能该临时队列没有被删除，所以需要在回逆的时候处理一次
         EventTrigger.cleanupRemoteEventResult(eventId);
 

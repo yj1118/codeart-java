@@ -1,4 +1,10 @@
 {
+  "log": {
+    "trace": true,
+    "trace.filter": [
+      "saga"
+    ]
+  },
   "repository": {
     "db": {
       "type": "postgresql",
@@ -26,6 +32,10 @@
     "log.folder": ""
   },
   "saga": {
+    "event.timeout": 5,
+    "event.specified": [
+      "RegisterUserEvent"
+    ],
     "log.folder": "",
     "log.retain": 30
   }

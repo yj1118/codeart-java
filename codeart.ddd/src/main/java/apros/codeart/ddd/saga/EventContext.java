@@ -1,5 +1,6 @@
 package apros.codeart.ddd.saga;
 
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import apros.codeart.ddd.saga.internal.EventLog;
@@ -102,6 +103,4 @@ public final class EventContext {
     public void stopPropagation() {
         _isPropagationStopped = true;
     }
-
-
 }

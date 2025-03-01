@@ -15,7 +15,6 @@ public class NodeCount1Test {
 
     @BeforeAll
     public static void setup() {
-        SAGAConfig.specifiedEvents(RegisterUserEvent.Name);
         TestLauncher.start();
     }
 

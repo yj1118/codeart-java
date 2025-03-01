@@ -10,7 +10,14 @@ import java.util.Base64;
 @TestSupport
 public class DomainContainer {
 
-    private static String _serverName = "undefined";
+    /**
+     * 领域容器默认的名称为main
+     */
+    private static String _serverName = "main";
+
+    public static String serverName() {
+        return _serverName;
+    }
 
     public static void main(String[] args) {
         if (args.length > 0) {
@@ -51,15 +58,13 @@ public class DomainContainer {
                 String code = new String(decodedBytes);
                 DTObject config = DTObject.readonly(code);
                 initConfig(config);
-
             }
         }
     }
 
     private static void initConfig(DTObject config) {
-        var domainEvents = config.getStrings("DomainEvents", null);
-        if (domainEvents != null)
-            SAGAConfig.specifiedEvents(ListUtil.asArray(domainEvents, String.class));
+        var sagaConfig = config.getObject("saga", null);
+        SAGAConfig.load(sagaConfig);
     }
 
 

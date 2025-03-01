@@ -9,7 +9,6 @@ import subsystem.saga.*;
 public class NodeCount5Test {
 
     static {
-        SAGAConfig.specifiedEvents(RegisterUserEvent.Name);
     }
 
     @BeforeAll

@@ -12,7 +12,7 @@ public class NodeCount2Test {
 
 
     static {
-        SAGAConfig.specifiedEvents(RegisterUserEvent.Name);
+
     }
 
 
@@ -93,6 +93,45 @@ public class NodeCount2Test {
         } catch (Exception e) {
 
         } finally {
+            assertFalse(Common.isRegistered());
+            assertFalse(Common.isOpenAccount());
+        }
+    }
+
+
+    @Test
+    void node_1_timeoutBefore() {
+        System.out.println("---------- node_1_errorBefore ----------");
+        try {
+            var user = Common.exec(NodeStatus.SUCCESS, NodeStatus.TIMEOUT_BEFORE);
+            fail();
+        } catch (Exception e) {
+
+        } finally {
+            try {
+                Thread.sleep(10000);   //要给时间让整个流程走完，免得提早结束没有暴露出超时节点的问题
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+            assertFalse(Common.isRegistered());
+            assertFalse(Common.isOpenAccount());
+        }
+    }
+
+    @Test
+    void node_1_timeoutAfter() {
+        System.out.println("---------- node_1_errorBefore ----------");
+        try {
+            var user = Common.exec(NodeStatus.SUCCESS, NodeStatus.TIMEOUT_AFTER);
+            fail();
+        } catch (Exception e) {
+
+        } finally {
+            try {
+                Thread.sleep(10000);   //要给时间让整个流程走完，免得提早结束没有暴露出超时节点的问题
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
             assertFalse(Common.isRegistered());
             assertFalse(Common.isOpenAccount());
         }
