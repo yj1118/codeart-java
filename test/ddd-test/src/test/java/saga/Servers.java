@@ -22,7 +22,7 @@ public final class Servers {
 
             DTObject config = DTObject.editable();
             config.pushString("saga.@event.specified", eventName);
-            config.setInt("saga.@event.timeout", 5);  // 5秒就认为超时，为模拟超时做准备
+            config.setInt("saga.@event.timeout", 2);  // 2秒就认为超时，为模拟超时做准备
             DomainServer server = new DomainServer(serverName, config);
             _servers.add(server);
         }

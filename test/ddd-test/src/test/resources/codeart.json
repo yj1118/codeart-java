@@ -32,7 +32,7 @@
     "log.folder": ""
   },
   "saga": {
-    "event.timeout": 5,
+    "event.timeout": 2,
     "event.specified": [
       "RegisterUserEvent"
     ],

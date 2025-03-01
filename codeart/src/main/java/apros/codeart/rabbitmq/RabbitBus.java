@@ -73,7 +73,9 @@ public class RabbitBus implements AutoCloseable {
     public void queueDeclare(String queue, String exchange, String routingKey) {
         queueDeclare(queue);
         try {
+            Logger.trace("rabbitmq", "queueBind_pre %s %s %s", queue, exchange, routingKey);
             this.channel().queueBind(queue, exchange, routingKey);
+            Logger.trace("rabbitmq", "queueBind_ok");
         } catch (Throwable ex) {
             throw propagate(ex);
         }
@@ -84,12 +86,12 @@ public class RabbitBus implements AutoCloseable {
             if (this.policy().persistentQueue()) {
                 Logger.trace("rabbitmq", "queueDeclare_pre %s %s %s %s", queue, "durable:true", "exclusive:false", "autoDelete:false");
                 this.channel().queueDeclare(queue, true, false, false, null);
-                Logger.trace("rabbitmq", "queueDeclare_ok", queue);
+                Logger.trace("rabbitmq", "queueDeclare_ok");
             } else {
                 Logger.trace("rabbitmq", "queueDeclare_pre %s %s %s %s", queue, "durable:false", "exclusive:false", "autoDelete:false");
                 // 注意，autoDelete如果为true，那么没有消费者就会删除队列
                 this.channel().queueDeclare(queue, false, false, false, null); // 最后一个true表示不持久化的消息，服务器端分发后就删除，适用于rpc模式
-                Logger.trace("rabbitmq", "queueDeclare_ok", queue);
+                Logger.trace("rabbitmq", "queueDeclare_ok");
             }
         } catch (Throwable ex) {
             throw propagate(ex);
@@ -243,7 +245,9 @@ public class RabbitBus implements AutoCloseable {
 
     private void ack(Envelope envelope) {
         try {
+            Logger.trace("rabbitmq", "ack_pre %s", envelope.getRoutingKey());
             this.channel().basicAck(envelope.getDeliveryTag(), false);
+            Logger.trace("rabbitmq", "ack_ok");
         } catch (IOException e) {
             throw propagate(e);
         }
@@ -251,7 +255,9 @@ public class RabbitBus implements AutoCloseable {
 
     private void reject(Envelope envelope, boolean requeue) {
         try {
+            Logger.trace("rabbitmq", "reject_pre %s %s", envelope.getRoutingKey(), requeue);
             this.channel().basicReject(envelope.getDeliveryTag(), requeue);
+            Logger.trace("rabbitmq", "reject_ok");
         } catch (IOException e) {
             throw propagate(e);
         }

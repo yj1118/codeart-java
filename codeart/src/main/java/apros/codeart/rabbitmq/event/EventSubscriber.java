@@ -105,8 +105,13 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
      */
     @Override
     protected Duration processMessage(RabbitBus sender, Message message) {
-        if (this.handlers().isEmpty())
+        Logger.trace("rabbitmq", "eventSubscriber processMessage");
+        if (this.handlers().isEmpty()) {
+            // 这里退出就么有执行message.success();或message.failed(true)，就没有ack，队列里就始终有该消息
+            Logger.trace("rabbitmq", "eventSubscriber handler is empty");
             return Duration.ZERO;
+        }
+
 
         // 以下代码段反映的是这样一个逻辑：
         // 如果是框架产生的异常，那么我们会告诉RabbitMQ服务器重发消息给下一个订阅者
@@ -114,9 +119,9 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
         // 如果事件内部被程序员抛出了异常，那么会被写入日志，并且提示RabbitMQ服务器重发消息给下一个订阅者，重新处理
         // 在这种情况下，由于事件会挂载多个，其中一个出错，前面执行的事件也会被重复执行，所以我们要保证事件的幂等性
         Duration elapsed = null;
-        var arg = message.content();
-        var language = arg.getString("__lang");
         try {
+            var arg = message.content();
+            var language = arg.getString("__lang");
 
             Parallel.forEach(this.handlers(), (handler) -> {
                 AppSession.using(() -> {
@@ -125,8 +130,10 @@ class EventSubscriber extends Consumer implements AutoCloseable, ISubscriber {
                 });
             });
             elapsed = message.success();
+            Logger.trace("rabbitmq", "eventSubscriber message process success");
         } catch (Throwable ex) {
             Logger.error(ex);
+            Logger.trace("rabbitmq", "eventSubscriber message process failed");
             elapsed = message.failed(true); // true:提示RabbitMQ服务器重发消息给下一个订阅者，false:提示RabbitMQ服务器把消息从队列中移除
         }
         return elapsed;

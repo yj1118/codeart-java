@@ -1,5 +1,6 @@
 package apros.codeart.ddd.saga.internal;
 
+import apros.codeart.ddd.launcher.DomainContainer;
 import apros.codeart.dto.DTObject;
 import apros.codeart.echo.event.IEventHandler;
 import apros.codeart.log.Logger;
@@ -11,6 +12,7 @@ public abstract class DomainEventHandler implements IEventHandler {
         try {
             handle(data);
         } catch (Throwable ex) {
+            DomainContainer.println(eventName + ":error");
             Logger.error(ex);
         }
     }

@@ -2,6 +2,7 @@ package saga;
 
 import apros.codeart.ddd.launcher.TestLauncher;
 import apros.codeart.ddd.saga.SAGAConfig;
+import apros.codeart.util.thread.ThreadUtil;
 import org.junit.jupiter.api.*;
 import subsystem.saga.*;
 
@@ -24,6 +25,10 @@ public class NodeCount2Test {
 
     @AfterAll
     public static void clean() {
+        // 注意，这个很重要，本地服务器在后续服务器超时后，本地服务器会中断执行，
+        // 导致后续进程模拟的服务器也强制中断，结果消息都没处理完就残留在队列里了
+        // 所以要多等一会
+        ThreadUtil.sleepSeconds(3);
         Servers.close();
         TestLauncher.stop();
     }
@@ -108,14 +113,15 @@ public class NodeCount2Test {
         } catch (Exception e) {
 
         } finally {
-            try {
-                Thread.sleep(10000);   //要给时间让整个流程走完，免得提早结束没有暴露出超时节点的问题
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            ThreadUtil.sleepSeconds(2);
             assertFalse(Common.isRegistered());
             assertFalse(Common.isOpenAccount());
         }
+
+        // 注意，这个很重要，本地服务器在后续服务器超时后，本地服务器会中断执行，
+        // 导致后续进程模拟的服务器也强制中断，结果消息都没处理完就残留在队列里了
+        // 所以要多等一会
+        ThreadUtil.sleepSeconds(2);
     }
 
     @Test
@@ -127,11 +133,7 @@ public class NodeCount2Test {
         } catch (Exception e) {
 
         } finally {
-            try {
-                Thread.sleep(10000);   //要给时间让整个流程走完，免得提早结束没有暴露出超时节点的问题
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            ThreadUtil.sleepSeconds(2);
             assertFalse(Common.isRegistered());
             assertFalse(Common.isOpenAccount());
         }

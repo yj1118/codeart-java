@@ -153,14 +153,14 @@ public class DomainServer {
                 String line = scanner.nextLine();
                 if (started.equals(line)) {
                     runStarted();
-//                    System.out.printf("[%s]started%n", this.name());
+                    System.out.printf("[%s]started%n", this.name());
                     continue;
                 }
 
                 if (stopped.equals(line)) {
                     delay(200); //等待200毫秒，让close的逻辑能进入到waitStop()
                     stopped();
-//                    System.out.printf("[%s]stopped%n", this.name());
+                    System.out.printf("[%s]stopped%n", this.name());
                     break;  // 注意，关闭了就退出
                 }
 
@@ -206,7 +206,14 @@ public class DomainServer {
 
     static {
         try {
-            CLASS_PATH = getClassPath();
+
+            var fileName = IOUtil.getTempFile("CLASS_PATH_TEST");
+            if (!IOUtil.existsFile(fileName)) {
+                CLASS_PATH = getClassPath();
+                IOUtil.writeString(fileName, CLASS_PATH);
+            } else {
+                CLASS_PATH = IOUtil.readString(fileName);
+            }
         } catch (Exception e) {
             throw propagate(e);
         }
@@ -274,6 +281,7 @@ public class DomainServer {
                 ThreadUtil.killProcess(id);
             }
         }
+        IOUtil.delete(fileName);
     }
 
     static {

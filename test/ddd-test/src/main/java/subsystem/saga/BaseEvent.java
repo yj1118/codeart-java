@@ -8,6 +8,7 @@ import apros.codeart.io.IOUtil;
 import apros.codeart.log.Logger;
 import apros.codeart.util.ListUtil;
 import apros.codeart.util.SafeAccess;
+import apros.codeart.util.thread.ThreadUtil;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -86,21 +87,13 @@ public abstract class BaseEvent extends DomainEvent {
 
     protected void tryExecBeforeTimeout(DTObject arg) {
         if (isNodeStatus(arg, NodeStatus.TIMEOUT_BEFORE)) {
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            ThreadUtil.sleepSeconds(3);
         }
     }
 
     protected void tryExecAfterTimeout(DTObject arg) {
         if (isNodeStatus(arg, NodeStatus.TIMEOUT_AFTER)) {
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
+            ThreadUtil.sleepSeconds(3);
         }
     }
 
@@ -125,7 +118,6 @@ public abstract class BaseEvent extends DomainEvent {
 
     public static DTObject loadUser() {
         var fileName = IOUtil.createTempFile("saga_user", true);
-        DomainContainer.println("userFileName:" + fileName);
         var dto = DTObject.load(fileName);
         return dto.isEmpty() ? DTObject.editable() : dto.asEditable();
     }
@@ -147,7 +139,6 @@ public abstract class BaseEvent extends DomainEvent {
     public static void saveUser(DTObject user) {
         var fileName = IOUtil.createTempFile("saga_user", true);
         user.save(fileName);
-        DomainContainer.println("userSavedCode:" + loadUser().getCode(false, false));
     }
 
 
@@ -161,11 +152,8 @@ public abstract class BaseEvent extends DomainEvent {
         if (log.isEmpty()) return;
 
         var user = loadUser();
-        DomainContainer.println(this.name() + ":current - " + user.getCode(false, false));
         var statusCount = log.getInt("statusCount", 0);
         saveStatusCount(statusCount);
-
-        DomainContainer.println(this.name() + ":reverseSuccess - " + user.getCode(false, false));
     }
 
 
