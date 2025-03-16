@@ -288,6 +288,8 @@ final class DataTableUtil {
         _typeMap.put(ZonedDateTime.class, DbType.ZonedDateTime);
 
         _typeMap.put(BigDecimal.class, DbType.BigDecimal);
+
+        _typeMap.put(DTObject.class, DbType.DTObject);
     }
 
     /**

@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 import apros.codeart.ddd.*;
+import apros.codeart.dto.DTObject;
 import apros.codeart.runtime.EnumUtil;
 import apros.codeart.util.TimeUtil;
 import com.google.common.collect.Iterables;
@@ -401,6 +402,13 @@ final class DataTableRead {
         if (exceptType == EmptyableZonedDateTime.class) {
             var time = (Timestamp) value;
             return new EmptyableZonedDateTime(TimeUtil.toUTC(time.toInstant()));
+        }
+
+        if (exceptType == DTObject.class) {
+            var code = value.toString();
+            // 由于DTObject类型的属性，是用来对值类型对象的补充（快速建立动态值对象）
+            // 所以DTObject类型的属性也要遵守值类型的约定：不能更改值类型对象的属性，只能完全替换。
+            return DTObject.readonly(code);
         }
 
         return value;

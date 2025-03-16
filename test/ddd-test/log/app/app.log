@@ -3365,3 +3365,265 @@ java.util.NoSuchElementException: No line found
 2025-03-01 21:43:35 [main]INFO 20250301387590b880184504825d62a31aab72a1-RegisterUserEvent-0 - reverseRemoteEventAfter
 2025-03-01 21:43:35 [main]INFO 20250301387590b880184504825d62a31aab72a1-OpenAccountEvent-1 - reverseRemoteEventBefore
 2025-03-01 21:43:35 [main]INFO 20250301387590b880184504825d62a31aab72a1-OpenAccountEvent-1 - reverseRemoteEventAfter
+2025-03-02 17:22:59 [main]INFO RegisterUserEvent - writeRaiseBefore
+2025-03-02 17:22:59 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\202503028f91fc4647b841618e64135662ef6b0c\0.RegisterUserEvent.e
+2025-03-02 17:22:59 [main]INFO RegisterUserEvent - writeRaiseAfter
+2025-03-02 17:22:59 [main]INFO 202503028f91fc4647b841618e64135662ef6b0c-RegisterUserEvent-0 - raiseLocalEventBefore
+2025-03-02 17:22:59 [main]INFO 202503028f91fc4647b841618e64135662ef6b0c-RegisterUserEvent-0 - raiseLocalEventAfter
+2025-03-02 17:22:59 [main]INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:22:59 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\202503028f91fc4647b841618e64135662ef6b0c\1.OpenAccountEvent.e
+2025-03-02 17:22:59 [main]INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:22:59 [main]INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenAccountEvent-1 - raiseRemoteEventBefore
+2025-03-02 17:22:59 [main]INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenAccountEvent-1 - publishBefore
+2025-03-02 17:22:59 [main]INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenAccountEvent-1 - publishAfter
+2025-03-02 17:22:59 [main]INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenAccountEvent-1 - waitResponseBefore
+2025-03-02 17:22:59 []INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:22:59 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\202503028f91fc4647b841618e64135662ef6b0c\0.OpenAccountEvent.e
+2025-03-02 17:22:59 []INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:22:59 []INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenAccountEvent-0 - raiseLocalEventBefore
+2025-03-02 17:22:59 []INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenAccountEvent-0 - raiseLocalEventAfter
+2025-03-02 17:22:59 []INFO OpenWalletEvent - writeRaiseBefore
+2025-03-02 17:22:59 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\202503028f91fc4647b841618e64135662ef6b0c\1.OpenWalletEvent.e
+2025-03-02 17:22:59 []INFO OpenWalletEvent - writeRaiseAfter
+2025-03-02 17:22:59 []INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenWalletEvent-1 - raiseRemoteEventBefore
+2025-03-02 17:22:59 []INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenWalletEvent-1 - publishBefore
+2025-03-02 17:22:59 []INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenWalletEvent-1 - publishAfter
+2025-03-02 17:22:59 []INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenWalletEvent-1 - waitResponseBefore
+2025-03-02 17:22:59 []INFO OpenWalletEvent - writeRaiseBefore
+2025-03-02 17:22:59 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server2\20250302\202503028f91fc4647b841618e64135662ef6b0c\0.OpenWalletEvent.e
+2025-03-02 17:22:59 []INFO OpenWalletEvent - writeRaiseAfter
+2025-03-02 17:22:59 []INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenWalletEvent-0 - raiseLocalEventBefore
+2025-03-02 17:22:59 []INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenWalletEvent-0 - raiseLocalEventAfter
+2025-03-02 17:22:59 []INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenWalletEvent-1 - waitResponseAfter
+2025-03-02 17:22:59 []INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenWalletEvent-1 - completed
+2025-03-02 17:22:59 []INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenWalletEvent-1 - raiseRemoteEventAfter
+2025-03-02 17:22:59 [main]INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenAccountEvent-1 - waitResponseAfter
+2025-03-02 17:22:59 [main]INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenAccountEvent-1 - completed
+2025-03-02 17:22:59 [main]INFO 202503028f91fc4647b841618e64135662ef6b0c-OpenAccountEvent-1 - raiseRemoteEventAfter
+2025-03-02 17:22:59 [main]INFO RegisterUserEvent - writeRaiseBefore
+2025-03-02 17:22:59 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\20250302bf36ca4b114441338b1da49d891077f7\0.RegisterUserEvent.e
+2025-03-02 17:22:59 [main]INFO RegisterUserEvent - writeRaiseAfter
+2025-03-02 17:22:59 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-RegisterUserEvent-0 - raiseLocalEventBefore
+2025-03-02 17:22:59 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-RegisterUserEvent-0 - raiseLocalEventAfter
+2025-03-02 17:22:59 [main]INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:22:59 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\20250302bf36ca4b114441338b1da49d891077f7\1.OpenAccountEvent.e
+2025-03-02 17:22:59 [main]INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:22:59 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-1 - raiseRemoteEventBefore
+2025-03-02 17:22:59 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-1 - publishBefore
+2025-03-02 17:22:59 []INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:22:59 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\20250302bf36ca4b114441338b1da49d891077f7\0.OpenAccountEvent.e
+2025-03-02 17:22:59 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-1 - publishAfter
+2025-03-02 17:22:59 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-1 - waitResponseBefore
+2025-03-02 17:22:59 []INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:22:59 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-0 - raiseLocalEventBefore
+2025-03-02 17:22:59 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-0 - raiseLocalEventAfter
+2025-03-02 17:22:59 []INFO OpenWalletEvent - writeRaiseBefore
+2025-03-02 17:22:59 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\20250302bf36ca4b114441338b1da49d891077f7\1.OpenWalletEvent.e
+2025-03-02 17:22:59 []INFO OpenWalletEvent - writeRaiseAfter
+2025-03-02 17:22:59 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-1 - raiseRemoteEventBefore
+2025-03-02 17:22:59 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-1 - publishBefore
+2025-03-02 17:22:59 []INFO OpenWalletEvent - writeRaiseBefore
+2025-03-02 17:22:59 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server2\20250302\20250302bf36ca4b114441338b1da49d891077f7\0.OpenWalletEvent.e
+2025-03-02 17:22:59 []INFO OpenWalletEvent - writeRaiseAfter
+2025-03-02 17:22:59 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-0 - raiseLocalEventBefore
+2025-03-02 17:22:59 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-1 - publishAfter
+2025-03-02 17:23:00 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-1 - waitResponseBefore
+2025-03-02 17:23:01 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-1 - timeout:2
+2025-03-02 17:23:02 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-1 - timeout:2
+2025-03-02 17:23:02 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-1 - completed
+2025-03-02 17:23:02 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\20250302bf36ca4b114441338b1da49d891077f7\0.RegisterUserEvent.e
+2025-03-02 17:23:02 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\20250302bf36ca4b114441338b1da49d891077f7\1.OpenAccountEvent.e
+2025-03-02 17:23:02 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-RegisterUserEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:02 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-RegisterUserEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:02 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-1 - reverseRemoteEventBefore
+2025-03-02 17:23:02 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\20250302bf36ca4b114441338b1da49d891077f7\0.OpenAccountEvent.e
+2025-03-02 17:23:02 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\20250302bf36ca4b114441338b1da49d891077f7\1.OpenWalletEvent.e
+2025-03-02 17:23:02 [main]INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-1 - reverseRemoteEventAfter
+2025-03-02 17:23:02 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:02 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-1 - completed
+2025-03-02 17:23:02 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\20250302bf36ca4b114441338b1da49d891077f7\0.OpenAccountEvent.e
+2025-03-02 17:23:02 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\20250302bf36ca4b114441338b1da49d891077f7\1.OpenWalletEvent.e
+2025-03-02 17:23:02 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:02 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:02 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-1 - reverseRemoteEventBefore
+2025-03-02 17:23:02 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenAccountEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:02 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-1 - reverseRemoteEventBefore
+2025-03-02 17:23:02 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server2\20250302\20250302bf36ca4b114441338b1da49d891077f7\0.OpenWalletEvent.e
+2025-03-02 17:23:02 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:02 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-1 - reverseRemoteEventAfter
+2025-03-02 17:23:02 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-1 - reverseRemoteEventAfter
+2025-03-02 17:23:03 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server2\20250302\20250302bf36ca4b114441338b1da49d891077f7\0.OpenWalletEvent.e
+2025-03-02 17:23:03 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:03 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:03 []INFO 20250302bf36ca4b114441338b1da49d891077f7-OpenWalletEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:04 [main]INFO RegisterUserEvent - writeRaiseBefore
+2025-03-02 17:23:04 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030247286a1945964f6b8d1689680b2551d7\0.RegisterUserEvent.e
+2025-03-02 17:23:04 [main]INFO RegisterUserEvent - writeRaiseAfter
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-RegisterUserEvent-0 - raiseLocalEventBefore
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-RegisterUserEvent-0 - raiseLocalEventAfter
+2025-03-02 17:23:04 [main]INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:23:04 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030247286a1945964f6b8d1689680b2551d7\1.OpenAccountEvent.e
+2025-03-02 17:23:04 [main]INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-1 - raiseRemoteEventBefore
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-1 - publishBefore
+2025-03-02 17:23:04 []INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:23:04 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\2025030247286a1945964f6b8d1689680b2551d7\0.OpenAccountEvent.e
+2025-03-02 17:23:04 []INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:23:04 []INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-0 - raiseLocalEventBefore
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-1 - publishAfter
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-1 - waitResponseBefore
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-1 - waitResponseAfter
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-1 - error
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-1 - throwError
+2025-03-02 17:23:04 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\2025030247286a1945964f6b8d1689680b2551d7\0.OpenAccountEvent.e
+2025-03-02 17:23:04 []INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:04 []INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-1 - completed
+2025-03-02 17:23:04 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030247286a1945964f6b8d1689680b2551d7\0.RegisterUserEvent.e
+2025-03-02 17:23:04 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030247286a1945964f6b8d1689680b2551d7\1.OpenAccountEvent.e
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-RegisterUserEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-RegisterUserEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-1 - reverseRemoteEventBefore
+2025-03-02 17:23:04 [main]INFO 2025030247286a1945964f6b8d1689680b2551d7-OpenAccountEvent-1 - reverseRemoteEventAfter
+2025-03-02 17:23:04 [main]INFO RegisterUserEvent - writeRaiseBefore
+2025-03-02 17:23:04 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\0.RegisterUserEvent.e
+2025-03-02 17:23:04 [main]INFO RegisterUserEvent - writeRaiseAfter
+2025-03-02 17:23:04 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-RegisterUserEvent-0 - raiseLocalEventBefore
+2025-03-02 17:23:04 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-RegisterUserEvent-0 - raiseLocalEventAfter
+2025-03-02 17:23:04 [main]INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:23:04 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\1.OpenAccountEvent.e
+2025-03-02 17:23:04 [main]INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:23:04 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-1 - raiseRemoteEventBefore
+2025-03-02 17:23:04 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-1 - publishBefore
+2025-03-02 17:23:04 []INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:23:04 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\0.OpenAccountEvent.e
+2025-03-02 17:23:04 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-1 - publishAfter
+2025-03-02 17:23:04 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-1 - waitResponseBefore
+2025-03-02 17:23:04 []INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:23:04 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-0 - raiseLocalEventBefore
+2025-03-02 17:23:04 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-0 - raiseLocalEventAfter
+2025-03-02 17:23:04 []INFO OpenWalletEvent - writeRaiseBefore
+2025-03-02 17:23:04 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\1.OpenWalletEvent.e
+2025-03-02 17:23:04 []INFO OpenWalletEvent - writeRaiseAfter
+2025-03-02 17:23:04 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-1 - raiseRemoteEventBefore
+2025-03-02 17:23:04 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-1 - publishBefore
+2025-03-02 17:23:04 []INFO OpenWalletEvent - writeRaiseBefore
+2025-03-02 17:23:04 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server2\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\0.OpenWalletEvent.e
+2025-03-02 17:23:04 []INFO OpenWalletEvent - writeRaiseAfter
+2025-03-02 17:23:04 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-0 - raiseLocalEventBefore
+2025-03-02 17:23:04 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-1 - publishAfter
+2025-03-02 17:23:04 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-1 - waitResponseBefore
+2025-03-02 17:23:06 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-1 - timeout:2
+2025-03-02 17:23:06 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-1 - completed
+2025-03-02 17:23:06 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\0.RegisterUserEvent.e
+2025-03-02 17:23:06 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\1.OpenAccountEvent.e
+2025-03-02 17:23:06 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-RegisterUserEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:06 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-RegisterUserEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:06 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-1 - reverseRemoteEventBefore
+2025-03-02 17:23:06 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\0.OpenAccountEvent.e
+2025-03-02 17:23:06 [main]INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-1 - reverseRemoteEventAfter
+2025-03-02 17:23:06 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\1.OpenWalletEvent.e
+2025-03-02 17:23:06 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:06 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenAccountEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:06 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-1 - reverseRemoteEventBefore
+2025-03-02 17:23:06 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-1 - timeout:2
+2025-03-02 17:23:06 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-1 - completed
+2025-03-02 17:23:06 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\1.OpenWalletEvent.e
+2025-03-02 17:23:06 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-1 - reverseRemoteEventBefore
+2025-03-02 17:23:06 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server2\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\0.OpenWalletEvent.e
+2025-03-02 17:23:06 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:06 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-1 - reverseRemoteEventAfter
+2025-03-02 17:23:06 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-1 - reverseRemoteEventAfter
+2025-03-02 17:23:07 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server2\20250302\202503026e645d26b5c247db8fe3a63ec55e2ffa\0.OpenWalletEvent.e
+2025-03-02 17:23:07 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:07 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:07 []INFO 202503026e645d26b5c247db8fe3a63ec55e2ffa-OpenWalletEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:08 [main]INFO RegisterUserEvent - writeRaiseBefore
+2025-03-02 17:23:08 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030274eab146671146d697dcfcf7489a53bb\0.RegisterUserEvent.e
+2025-03-02 17:23:08 [main]INFO RegisterUserEvent - writeRaiseAfter
+2025-03-02 17:23:08 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-RegisterUserEvent-0 - raiseLocalEventBefore
+2025-03-02 17:23:08 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-RegisterUserEvent-0 - raiseLocalEventAfter
+2025-03-02 17:23:08 [main]INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:23:08 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030274eab146671146d697dcfcf7489a53bb\1.OpenAccountEvent.e
+2025-03-02 17:23:08 [main]INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:23:08 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-1 - raiseRemoteEventBefore
+2025-03-02 17:23:08 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-1 - publishBefore
+2025-03-02 17:23:08 []INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:23:08 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\2025030274eab146671146d697dcfcf7489a53bb\0.OpenAccountEvent.e
+2025-03-02 17:23:08 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-1 - publishAfter
+2025-03-02 17:23:08 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-1 - waitResponseBefore
+2025-03-02 17:23:08 []INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:23:08 []INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-0 - raiseLocalEventBefore
+2025-03-02 17:23:10 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-1 - timeout:2
+2025-03-02 17:23:10 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-1 - completed
+2025-03-02 17:23:10 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030274eab146671146d697dcfcf7489a53bb\0.RegisterUserEvent.e
+2025-03-02 17:23:10 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030274eab146671146d697dcfcf7489a53bb\1.OpenAccountEvent.e
+2025-03-02 17:23:10 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-RegisterUserEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:10 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-RegisterUserEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:10 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-1 - reverseRemoteEventBefore
+2025-03-02 17:23:10 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\2025030274eab146671146d697dcfcf7489a53bb\0.OpenAccountEvent.e
+2025-03-02 17:23:10 []INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:10 [main]INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-1 - reverseRemoteEventAfter
+2025-03-02 17:23:11 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\2025030274eab146671146d697dcfcf7489a53bb\0.OpenAccountEvent.e
+2025-03-02 17:23:11 []INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:11 []INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:11 []INFO 2025030274eab146671146d697dcfcf7489a53bb-OpenAccountEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:12 [main]INFO RegisterUserEvent - writeRaiseBefore
+2025-03-02 17:23:12 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030240f26fefacb9499f9c116b53289dded4\0.RegisterUserEvent.e
+2025-03-02 17:23:12 [main]INFO RegisterUserEvent - writeRaiseAfter
+2025-03-02 17:23:12 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-RegisterUserEvent-0 - raiseLocalEventBefore
+2025-03-02 17:23:12 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-RegisterUserEvent-0 - raiseLocalEventAfter
+2025-03-02 17:23:12 [main]INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:23:12 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030240f26fefacb9499f9c116b53289dded4\1.OpenAccountEvent.e
+2025-03-02 17:23:12 [main]INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:23:12 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-1 - raiseRemoteEventBefore
+2025-03-02 17:23:12 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-1 - publishBefore
+2025-03-02 17:23:12 []INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:23:12 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\2025030240f26fefacb9499f9c116b53289dded4\0.OpenAccountEvent.e
+2025-03-02 17:23:12 []INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:23:12 []INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-0 - raiseLocalEventBefore
+2025-03-02 17:23:12 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-1 - publishAfter
+2025-03-02 17:23:12 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-1 - waitResponseBefore
+2025-03-02 17:23:14 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-1 - timeout:2
+2025-03-02 17:23:14 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-1 - completed
+2025-03-02 17:23:14 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030240f26fefacb9499f9c116b53289dded4\0.RegisterUserEvent.e
+2025-03-02 17:23:14 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030240f26fefacb9499f9c116b53289dded4\1.OpenAccountEvent.e
+2025-03-02 17:23:14 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-RegisterUserEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:14 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-RegisterUserEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:14 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-1 - reverseRemoteEventBefore
+2025-03-02 17:23:14 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\2025030240f26fefacb9499f9c116b53289dded4\0.OpenAccountEvent.e
+2025-03-02 17:23:14 []INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:14 [main]INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-1 - reverseRemoteEventAfter
+2025-03-02 17:23:15 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\2025030240f26fefacb9499f9c116b53289dded4\0.OpenAccountEvent.e
+2025-03-02 17:23:15 []INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:15 []INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:15 []INFO 2025030240f26fefacb9499f9c116b53289dded4-OpenAccountEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:16 [main]INFO RegisterUserEvent - writeRaiseBefore
+2025-03-02 17:23:16 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030288344a2f19ca4c3ebe5326bec4e35674\0.RegisterUserEvent.e
+2025-03-02 17:23:16 [main]INFO RegisterUserEvent - writeRaiseAfter
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-RegisterUserEvent-0 - raiseLocalEventBefore
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-RegisterUserEvent-0 - raiseLocalEventAfter
+2025-03-02 17:23:16 [main]INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:23:16 [main]INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030288344a2f19ca4c3ebe5326bec4e35674\1.OpenAccountEvent.e
+2025-03-02 17:23:16 [main]INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-1 - raiseRemoteEventBefore
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-1 - publishBefore
+2025-03-02 17:23:16 []INFO OpenAccountEvent - writeRaiseBefore
+2025-03-02 17:23:16 []INFO fileLogWriteRaise:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\2025030288344a2f19ca4c3ebe5326bec4e35674\0.OpenAccountEvent.e
+2025-03-02 17:23:16 []INFO OpenAccountEvent - writeRaiseAfter
+2025-03-02 17:23:16 []INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-0 - raiseLocalEventBefore
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-1 - publishAfter
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-1 - waitResponseBefore
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-1 - waitResponseAfter
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-1 - error
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-1 - throwError
+2025-03-02 17:23:16 []INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\server1\20250302\2025030288344a2f19ca4c3ebe5326bec4e35674\0.OpenAccountEvent.e
+2025-03-02 17:23:16 []INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:16 []INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-1 - completed
+2025-03-02 17:23:16 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030288344a2f19ca4c3ebe5326bec4e35674\0.RegisterUserEvent.e
+2025-03-02 17:23:16 [main]INFO fileLogFindRaised:D:\workspace\java\codeart-java\test\ddd-test\log\domain-event-log\main\20250302\2025030288344a2f19ca4c3ebe5326bec4e35674\1.OpenAccountEvent.e
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-RegisterUserEvent-0 - reverseRemoteEventBefore
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-RegisterUserEvent-0 - reverseRemoteEventAfter
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-1 - reverseRemoteEventBefore
+2025-03-02 17:23:16 [main]INFO 2025030288344a2f19ca4c3ebe5326bec4e35674-OpenAccountEvent-1 - reverseRemoteEventAfter

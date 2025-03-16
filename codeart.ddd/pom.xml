@@ -35,6 +35,12 @@
             <artifactId>jsqlparser</artifactId>
             <version>4.5</version> <!-- 确保使用最新的版本号 -->
         </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.7.3</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>

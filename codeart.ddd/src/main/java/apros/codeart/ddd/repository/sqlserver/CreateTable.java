@@ -80,7 +80,7 @@ class CreateTable extends CreateTableQB {
                         (allowNull ? StringUtil.empty() : "NOT"));
             }
             default:
-                return String.format("[%s] [%s] %s NULL,", field.name(), SQLServerUtil.getSqlDbTypeString(field.dbType()),
+                return String.format("[%s] %s %s NULL,", field.name(), SQLServerUtil.getSqlDbTypeString(field.dbType()),
                         (allowNull ? StringUtil.empty() : "NOT"));
         }
     }

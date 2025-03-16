@@ -23,6 +23,7 @@ public final class PostgresqlUtil {
             case DbType.Int32 -> "integer";
             case DbType.Int64 -> "bigint";
             case DbType.BigDecimal -> "NUMERIC";
+            case DbType.DTObject -> "JSONB";
             default -> throw new IllegalStateException(
                     Language.strings("apros.codeart.ddd", "UnsupportedFieldType", dbType.toString()));
         };

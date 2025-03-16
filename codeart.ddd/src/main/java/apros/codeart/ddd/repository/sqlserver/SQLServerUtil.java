@@ -26,6 +26,7 @@ public final class SQLServerUtil {
             case DbType.Int64 -> "bigint";
             case DbType.String -> "nvarchar";
             case DbType.BigDecimal -> "DECIMAL";
+            case DbType.DTObject -> "NVARCHAR(MAX)";
             default -> throw new IllegalStateException(
                     Language.strings("apros.codeart.ddd", "UnsupportedFieldType", dbType.toString()));
         };

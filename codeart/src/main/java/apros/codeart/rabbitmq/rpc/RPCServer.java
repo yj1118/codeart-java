@@ -90,7 +90,7 @@ class RPCServer extends Consumer implements AutoCloseable {
             return elapsed;
         });
     }
-
+    
     private DTObject process(String method, DTObject arg) {
         DTObject body = DTObject.editable();
         try {

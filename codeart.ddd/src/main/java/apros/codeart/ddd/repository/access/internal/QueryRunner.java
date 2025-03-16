@@ -13,6 +13,7 @@ import java.util.function.Function;
 import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.repository.access.DataSource;
+import apros.codeart.ddd.repository.access.DatabaseAgent;
 import apros.codeart.ddd.repository.access.DatabaseType;
 import apros.codeart.runtime.EnumUtil;
 import apros.codeart.util.HashUtil;
@@ -25,6 +26,7 @@ import apros.codeart.ddd.repository.access.internal.QueryFilter.Row;
 import apros.codeart.ddd.repository.access.internal.QueryFilter.Rows;
 import apros.codeart.dto.DTObject;
 import apros.codeart.util.LazyIndexer;
+import org.postgresql.util.PGobject;
 
 import javax.xml.crypto.Data;
 
@@ -230,6 +232,19 @@ public final class QueryRunner {
 
                     if (value instanceof Enum) {
                         value = (byte) EnumUtil.getValue(value);
+                    } else if (value instanceof DTObject) {
+
+                        String jsonString = ((DTObject) value).getCode(false, false);
+
+                        if (DataSource.getDatabaseType() == DatabaseType.PostgreSql) {
+                            PGobject jsonObject = new PGobject();
+                            jsonObject.setType("jsonb");
+                            jsonObject.setValue(jsonString);
+
+                            value = jsonObject;
+                        } else {
+                            value = jsonString;
+                        }
                     }
 
                     var index = i + 1; // sql里的参数是从1开始算的

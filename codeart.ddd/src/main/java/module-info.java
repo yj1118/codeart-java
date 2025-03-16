@@ -7,6 +7,7 @@ module apros.codeart.ddd {
     requires org.jetbrains.annotations;
     requires java.xml.crypto;
     requires java.management;
+    requires org.postgresql.jdbc;
 
     exports apros.codeart.ddd;
     exports apros.codeart.ddd.validation;

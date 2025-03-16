@@ -473,6 +473,24 @@ final class QueryFilter {
                     dto.setZonedDateTime(name, value.toZonedDateTime());
                     break;
                 }
+                case Types.OTHER: { // PostgreSQL JSONB 类型
+                    String columnTypeName = rsmd.getColumnTypeName(i);
+
+                    if ("jsonb".equalsIgnoreCase(columnTypeName) || "json".equalsIgnoreCase(columnTypeName)) {
+                        String jsonbValue = rs.getString(i);
+                        if (rs.wasNull())
+                            break;
+
+                        // 至于是用readonly 还是editable，待定
+                        var value = DTObject.readonly(jsonbValue);
+                        String name = rsmd.getColumnName(i);
+                        dto.setObject(name, value);
+
+                    } else {
+                        throw new IllegalStateException("Unsupported Types.OTHER column: " + columnTypeName);
+                    }
+                    break;
+                }
                 default: {
                     throw new IllegalStateException(strings("apros.codeart.ddd", "TypeMismatch"));
                 }

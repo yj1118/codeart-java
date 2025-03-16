@@ -11,6 +11,7 @@ import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.Emptyable;
 import apros.codeart.ddd.IEmptyable;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
+import apros.codeart.dto.DTObject;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.Guid;
 import apros.codeart.util.LazyIndexer;
@@ -126,8 +127,10 @@ public class ValueMeta {
         if (char.class.equals(valueType))
             return StringUtil.empty();
 
-        return null;
+        if (DTObject.class.equals(valueType))
+            return DTObject.empty();
 
+        return null;
     });
 
     /**
