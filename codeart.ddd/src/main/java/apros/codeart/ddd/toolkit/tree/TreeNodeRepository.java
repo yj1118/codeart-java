@@ -1,8 +1,6 @@
 package apros.codeart.ddd.toolkit.tree;
 
-import apros.codeart.ddd.DDDConfig;
 import apros.codeart.ddd.repository.DataContext;
-import apros.codeart.ddd.repository.Page;
 import apros.codeart.ddd.repository.access.DataPortal;
 import apros.codeart.ddd.repository.access.DataSource;
 import apros.codeart.ddd.repository.access.DatabaseType;
@@ -25,7 +23,7 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
     @Override
     public void init() {
         super.init();
-        var tableName = this.getRootType().getSimpleName();
+        var tableName = this.getRootType().getSimpleName().toLowerCase();
         insert_function_name = tableName + "_tree_insert";
         delete_function_name = tableName + "_tree_delete";
         move_function_name = tableName + "_tree_move";
@@ -71,20 +69,20 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
         sql.append("        parentRight := 0;\n"); // 没有父节点，不需要偏移
         sql.append("    ELSE\n");
 
-        sql.append(String.format("        SELECT \"RootId\" INTO rootId FROM %s WHERE \"Id\" = parentId;\n", tableName));
-        sql.append(String.format("        SELECT \"Id\" FROM %s WHERE \"RootId\" = rootId FOR UPDATE;\n", tableName));
-        sql.append(String.format("        SELECT \"Right\" INTO parentRight FROM %s WHERE \"Id\" = parentId;\n", tableName));
+        sql.append(String.format("        SELECT \"NodeRootId\" INTO rootId FROM \"%s\" WHERE \"Id\" = parentId;\n", tableName));
+        sql.append(String.format("        SELECT \"Id\" FROM \"%s\" WHERE \"NodeRootId\" = rootId FOR UPDATE;\n", tableName));
+        sql.append(String.format("        SELECT \"Right\" INTO parentRight FROM \"%s\" WHERE \"Id\" = parentId;\n", tableName));
 
         sql.append("        IF parentRight IS NULL THEN\n");
         sql.append("            parentRight := 0;\n");
         sql.append("        ELSE\n");
-        sql.append(String.format("            UPDATE %s SET \"Right\" = \"Right\" + 2 WHERE \"Right\" >= parentRight AND \"RootId\" = rootId;\n", tableName));
-        sql.append(String.format("            UPDATE %s SET \"Left\" = \"Left\" + 2 WHERE \"Left\" >= parentRight AND  \"RootId\" = rootId;\n", tableName));
+        sql.append(String.format("            UPDATE \"%s\" SET \"Right\" = \"Right\" + 2 WHERE \"Right\" >= parentRight AND \"NodeRootId\" = rootId;\n", tableName));
+        sql.append(String.format("            UPDATE \"%s\" SET \"Left\" = \"Left\" + 2 WHERE \"Left\" >= parentRight AND  \"NodeRootId\" = rootId;\n", tableName));
         sql.append("        END IF;\n");
 
         sql.append("    END IF;\n");
 
-        sql.append(String.format("    UPDATE %s SET \"Left\" = parentRight, \"Right\" = parentRight + 1, \"RootId\" = rootId, \"Moving\" = false WHERE \"Id\" = id;\n", tableName));
+        sql.append(String.format("    UPDATE \"%s\" SET \"Left\" = parentRight, \"Right\" = parentRight + 1, \"NodeRootId\" = rootId, \"Moving\" = false WHERE \"Id\" = id;\n", tableName));
 
         sql.append("END;\n");
         sql.append("$$ LANGUAGE plpgsql;\n");
@@ -127,20 +125,20 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
         sql.append("    disValue int;\n");
         sql.append("BEGIN\n");
 
-        // 获取当前节点的 Left, Right, RootId
-        sql.append(String.format("    SELECT \"Left\", \"Right\", \"RootId\" INTO lft, rgt, rootId FROM %s WHERE \"Id\" = id;\n", tableName));
+        // 获取当前节点的 Left, Right, NodeRootId
+        sql.append(String.format("    SELECT \"Left\", \"Right\", \"NodeRootId\" INTO lft, rgt, rootId FROM \"%s\" WHERE \"Id\" = id;\n", tableName));
 
         // 锁整棵树
-        sql.append(String.format("    SELECT \"Id\" FROM %s WHERE \"RootId\" = rootId FOR UPDATE;\n", tableName));
+        sql.append(String.format("    SELECT \"Id\" FROM \"%s\" WHERE \"NodeRootId\" = rootId FOR UPDATE;\n", tableName));
 
         // 计算差值
         sql.append("    disValue := rgt - lft + 1;\n");
 
         // 更新右值
-        sql.append(String.format("    UPDATE %s SET \"Right\" = \"Right\" - disValue WHERE \"Right\" >= rgt AND \"RootId\" = rootId;\n", tableName));
+        sql.append(String.format("    UPDATE \"%s\" SET \"Right\" = \"Right\" - disValue WHERE \"Right\" >= rgt AND \"NodeRootId\" = rootId;\n", tableName));
 
         // 更新左值
-        sql.append(String.format("    UPDATE %s SET \"Left\" = \"Left\" - disValue WHERE \"Left\" >= rgt AND \"RootId\" = rootId;\n", tableName));
+        sql.append(String.format("    UPDATE \"%s\" SET \"Left\" = \"Left\" - disValue WHERE \"Left\" >= rgt AND \"NodeRootId\" = rootId;\n", tableName));
 
         sql.append("END;\n");
         sql.append("$$ LANGUAGE plpgsql;\n");
@@ -187,37 +185,37 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
         sql.append("BEGIN\n");
 
         // 获取当前节点信息
-        sql.append(String.format("    SELECT \"Left\", \"Right\", \"RootId\" INTO lft, rgt, rootId FROM %s WHERE \"Id\" = currentId;\n", tableName));
+        sql.append(String.format("    SELECT \"Left\", \"Right\", \"NodeRootId\" INTO lft, rgt, rootId FROM \"%s\" WHERE \"Id\" = currentId;\n", tableName));
 
         // 锁整棵树
-        sql.append(String.format("    SELECT \"Id\" FROM %s WHERE \"RootId\" = rootId FOR UPDATE;\n", tableName));
+        sql.append(String.format("    SELECT \"Id\" FROM \"%s\" WHERE \"NodeRootId\" = rootId FOR UPDATE;\n", tableName));
 
         // 计算差值
         sql.append("    disValue := rgt - lft + 1;\n");
 
         // 标记子树 moving=1
-        sql.append(String.format("    UPDATE %s SET \"Moving\" = true WHERE \"Left\" > lft AND \"Left\" < rgt AND \"RootId\" = rootId;\n", tableName));
+        sql.append(String.format("    UPDATE \"%s\" SET \"Moving\" = true WHERE \"Left\" > lft AND \"Left\" < rgt AND \"NodeRootId\" = rootId;\n", tableName));
 
         // 删除当前位置（非子树）
-        sql.append(String.format("    UPDATE %s SET \"Right\" = \"Right\" - disValue WHERE \"Right\" >= rgt AND \"RootId\" = rootId AND \"Moving\" = false;\n", tableName));
-        sql.append(String.format("    UPDATE %s SET \"Left\" = \"Left\" - disValue WHERE \"Left\" >= rgt AND \"RootId\" = rootId AND \"Moving\" = false;\n", tableName));
+        sql.append(String.format("    UPDATE \"%s\" SET \"Right\" = \"Right\" - disValue WHERE \"Right\" >= rgt AND \"NodeRootId\" = rootId AND \"Moving\" = false;\n", tableName));
+        sql.append(String.format("    UPDATE \"%s\" SET \"Left\" = \"Left\" - disValue WHERE \"Left\" >= rgt AND \"NodeRootId\" = rootId AND \"Moving\" = false;\n", tableName));
 
         // 获取目标父节点的右值
-        sql.append(String.format("    SELECT \"Right\" INTO prgt FROM %s WHERE \"Id\" = targetId;\n", tableName));
+        sql.append(String.format("    SELECT \"Right\" INTO prgt FROM \"%s\" WHERE \"Id\" = targetId;\n", tableName));
         sql.append("    IF prgt IS NULL THEN\n");
         sql.append("        prgt := 0;\n");
         sql.append("    ELSE\n");
-        sql.append(String.format("        UPDATE %s SET \"Right\" = \"Right\" + disValue WHERE \"Right\" >= prgt AND \"RootId\" = rootId AND \"Moving\" = false;\n", tableName));
-        sql.append(String.format("        UPDATE %s SET \"Left\" = \"Left\" + disValue WHERE \"Left\" >= prgt AND \"RootId\" = rootId AND \"Moving\" = false;\n", tableName));
+        sql.append(String.format("        UPDATE \"%s\" SET \"Right\" = \"Right\" + disValue WHERE \"Right\" >= prgt AND \"NodeRootId\" = rootId AND \"Moving\" = false;\n", tableName));
+        sql.append(String.format("        UPDATE \"%s\" SET \"Left\" = \"Left\" + disValue WHERE \"Left\" >= prgt AND \"NodeRootId\" = rootId AND \"Moving\" = false;\n", tableName));
         sql.append("    END IF;\n");
 
         // 更新自身位置
         sql.append("    newLft := prgt;\n");
-        sql.append(String.format("    UPDATE %s SET \"Left\" = newLft, \"Right\" = newLft + disValue - 1, \"RootId\" = rootId WHERE \"Id\" = currentId;\n", tableName));
+        sql.append(String.format("    UPDATE \"%s\" SET \"Left\" = newLft, \"Right\" = newLft + disValue - 1, \"NodeRootId\" = rootId WHERE \"Id\" = currentId;\n", tableName));
 
         // 更新子树位置
         sql.append("    lftDisValue := newLft - lft;\n");
-        sql.append(String.format("    UPDATE %s SET \"Left\" = \"Left\" + lftDisValue, \"Right\" = \"Right\" + lftDisValue, \"Moving\" = false WHERE \"Left\" > lft AND \"Left\" < rgt AND \"RootId\" = rootId AND \"Moving\" = true;\n", tableName));
+        sql.append(String.format("    UPDATE \"%s\" SET \"Left\" = \"Left\" + lftDisValue, \"Right\" = \"Right\" + lftDisValue, \"Moving\" = false WHERE \"Left\" > lft AND \"Left\" < rgt AND \"NodeRootId\" = rootId AND \"Moving\" = true;\n", tableName));
 
         sql.append("END;\n");
         sql.append("$$ LANGUAGE plpgsql;\n");
@@ -258,11 +256,11 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
         sb.append("    rootId bigint;\n");
         sb.append("BEGIN\n");
 
-        // 获取当前节点的 lft、rgt、RootId
-        sb.append(String.format("    SELECT \"Left\", \"Right\", \"RootId\" INTO lft, rgt, rootId FROM %s WHERE \"Id\" = currentId;\n", tableName));
+        // 获取当前节点的 lft、rgt、NodeRootId
+        sb.append(String.format("    SELECT \"Left\", \"Right\", \"NodeRootId\" INTO lft, rgt, rootId FROM \"%s\" WHERE \"Id\" = currentId;\n", tableName));
 
         // 查询所有祖先节点
-        sb.append(String.format("    RETURN QUERY SELECT \"Id\" FROM %s WHERE \"Left\" < lft AND \"Right\" > rgt AND \"RootId\" = rootId ORDER BY \"Left\";\n", tableName));
+        sb.append(String.format("    RETURN QUERY SELECT \"Id\" FROM \"%s\" WHERE \"Left\" < lft AND \"Right\" > rgt AND \"NodeRootId\" = rootId ORDER BY \"Left\";\n", tableName));
 
         sb.append("END;\n");
         sb.append("$$ LANGUAGE plpgsql;\n");
@@ -281,9 +279,9 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
         var parentId = obj.parent().getIdentity();
         var id = obj.getIdentity();
 
-        DataPortal.direct((conn) ->
-        {
-            conn.access().execute(String.format("%s(%s,%s)", insert_function_name, parentId, id));
+        DataPortal.direct((conn) -> {
+            var sql = String.format("SELECT %s(%s,%s)", insert_function_name, parentId, id);
+            conn.access().execute(sql);
         });
     }
 
@@ -293,9 +291,9 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
 
         var id = obj.getIdentity();
 
-        DataPortal.direct((conn) ->
-        {
-            conn.access().execute(String.format("%s(%s)", delete_function_name, id));
+        DataPortal.direct((conn) -> {
+            var sql = String.format("SELECT %s(%s)", delete_function_name, id);
+            conn.access().execute(sql);
         });
     }
 
@@ -304,9 +302,9 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
     public void move(TreeNode<?> current, TreeNode<?> target) {
         var currentId = current.getIdentity();
         var targetId = target.getIdentity();
-        DataPortal.direct((conn) ->
-        {
-            conn.access().execute(String.format("%s(%s,%s)", move_function_name, currentId, targetId));
+        DataPortal.direct((conn) -> {
+            var sql = String.format("SELECT %s(%s,%s)", move_function_name, currentId, targetId);
+            conn.access().execute(sql);
         });
     }
 }

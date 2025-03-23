@@ -206,7 +206,7 @@ public class PropertyMeta {
      */
     void correct(ObjectProperty op) {
         if (op == null) return;
-        _value = ValueMeta.createBy(this.value().isCollection(), op.type(), this.value().getDefaultValue());
+        _value = ValueMeta.createBy(this.value().isCollection(), op.type(), null); //设置为null，会重新生成获取空值的方法
     }
 
     private static DomainPropertyCategory getCategory(ValueMeta valueMeta) {

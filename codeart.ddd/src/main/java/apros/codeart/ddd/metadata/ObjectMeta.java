@@ -9,6 +9,7 @@ import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.ListUtil;
+import com.google.common.collect.Iterables;
 
 public class ObjectMeta {
 
@@ -117,10 +118,12 @@ public class ObjectMeta {
     public void merge() {
         // 将基类的属性合并到子类
         var types = TypeUtil.getInherits(this.objectType());
-
+        
         var correctProperties = this.objectType().getAnnotationsByType(ObjectProperty.class);
 
-        for (var type : types) {
+        for (int i = Iterables.size(types) - 1; i >= 0; i--) {
+            var type = Iterables.get(types, i);
+
             if (!ObjectMetaLoader.isMetadatable(type))
                 continue;
 

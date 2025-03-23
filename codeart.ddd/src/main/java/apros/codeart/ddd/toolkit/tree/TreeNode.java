@@ -7,10 +7,7 @@ import apros.codeart.ddd.toolkit.OrderItemLong;
 import apros.codeart.ddd.validation.List;
 import apros.codeart.ddd.validation.NotEmpty;
 import apros.codeart.dto.DTObject;
-import apros.codeart.i18n.Language;
-import apros.codeart.runtime.MethodUtil;
 import apros.codeart.runtime.TypeUtil;
-import apros.codeart.runtime.Util;
 import apros.codeart.util.ListUtil;
 
 import java.util.ArrayList;
@@ -21,7 +18,7 @@ import java.util.Objects;
 @FrameworkDomain
 public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong {
 
-    public static final String RootPropertyName = "Root";
+    public static final String NodeRootPropertyName = "NodeRoot";
 
     public static final String ParentPropertyName = "Parent";
 
@@ -31,15 +28,15 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
 
     @PropertyRepository(lazy = true)
     @NotEmpty()
-    public static final DomainProperty RootProperty = DomainProperty.register("Root", TreeNode.class, TreeNode.class);
+    public static final DomainProperty NodeRootProperty = DomainProperty.register("NodeRoot", TreeNode.class, TreeNode.class);
 
     @SuppressWarnings("unchecked")
-    public T root() {
-        return (T) this.getValue(RootProperty, TreeNode.class);
+    public T nodeRoot() {
+        return (T) this.getValue(NodeRootProperty, TreeNode.class);
     }
 
-    private void root(T value) {
-        this.setValue(RootProperty, value);
+    private void nodeRoot(T value) {
+        this.setValue(NodeRootProperty, value);
     }
 
     //endregion
@@ -47,7 +44,6 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
     //region 父节点
 
     @PropertyRepository(lazy = true)
-    @NotEmpty()
     public static final DomainProperty ParentProperty = DomainProperty.register("Parent", TreeNode.class, TreeNode.class);
 
     @SuppressWarnings("unchecked")
