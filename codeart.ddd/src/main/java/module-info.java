@@ -20,6 +20,7 @@ module apros.codeart.ddd {
     exports apros.codeart.ddd.launcher;
     exports apros.codeart.ddd.service;
     exports apros.codeart.ddd.toolkit;
+    exports apros.codeart.ddd.toolkit.tree;
 
     exports apros.codeart.ddd.saga;
 

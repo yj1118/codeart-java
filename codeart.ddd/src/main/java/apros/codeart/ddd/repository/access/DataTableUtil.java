@@ -310,15 +310,15 @@ final class DataTableUtil {
         return _getNextName.apply(name);
     }
 
-    private static Function<String, String> _getIdName = LazyIndexer.init((name) -> {
+    private static final Function<String, String> _getIdName = LazyIndexer.init((name) -> {
         return String.format("%s%s", name, EntityObject.IdPropertyName);
     });
 
-    private static Function<String, String> _getNameWithSeparated = LazyIndexer.init((name) -> {
+    private static final Function<String, String> _getNameWithSeparated = LazyIndexer.init((name) -> {
         return String.format("%s_", name);
     });
 
-    private static Function<String, String> _getNextName = LazyIndexer.init((name) -> {
+    private static final Function<String, String> _getNextName = LazyIndexer.init((name) -> {
         var pos = name.indexOf("_");
         return name.substring(pos + 1);
     });

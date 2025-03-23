@@ -115,7 +115,6 @@ public final class ObjectMetaLoader {
         // 再加载完整定义，即出发静态构造
         for (var domainType : domainTypes) {
             staticConstructor(domainType);
-
             // 尝试为派生类做支持
             DerivedClassImpl.init(domainType);
         }
@@ -129,8 +128,9 @@ public final class ObjectMetaLoader {
         // 最后移除多余的元数据（是由基类建立的过度元数据）
         var typeNames = _metas.keySet().toArray();
         for (var typeName : typeNames) {
-            if (!ListUtil.contains(domainTypes, (t) -> t.getSimpleName().equalsIgnoreCase((String) typeName))) {
-                _metas.remove(typeName);
+            var tn = (String) typeName;
+            if (!ListUtil.contains(domainTypes, (t) -> t.getSimpleName().equalsIgnoreCase(tn))) {
+                _metas.remove(tn);
             }
         }
     }

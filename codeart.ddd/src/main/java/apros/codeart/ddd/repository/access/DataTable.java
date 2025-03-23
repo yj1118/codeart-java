@@ -24,7 +24,7 @@ import apros.codeart.util.TypeMismatchException;
 
 public class DataTable {
 
-    private String _id;
+    private final String _id;
 
     /**
      * 表的唯一表号，由引用路径生成
@@ -581,7 +581,7 @@ public class DataTable {
         _objectFields = objectFields;
 
         initObjectType(objectType, memberField == null ? null : memberField.tip());
-        
+
         this._chain = this.memberField() == null ? ObjectChain.Empty : new ObjectChain(this.memberField());
 
         this._isMultiple = this.memberField() == null ? false : this.memberField().isMultiple();

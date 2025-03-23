@@ -31,7 +31,7 @@ public class PropertyMeta {
     /**
      * 属性的值的类型，比如字符串/整型等
      */
-    private final ValueMeta _value;
+    private ValueMeta _value;
 
     public ValueMeta value() {
         return _value;
@@ -128,7 +128,7 @@ public class PropertyMeta {
         return null;
     }
 
-    private boolean _lazy;
+    private final boolean _lazy;
 
     /**
      * 属性是否为懒惰加载
@@ -199,6 +199,14 @@ public class PropertyMeta {
     @Override
     public String toString() {
         return "PropertyMeta{name='" + this.name() + "'}";
+    }
+
+    /**
+     * 从注解中修正属性元数据信息，这主要用于子类修正父类定义的领域属性
+     */
+    void correct(ObjectProperty op) {
+        if (op == null) return;
+        _value = ValueMeta.createBy(this.value().isCollection(), op.type(), this.value().getDefaultValue());
     }
 
     private static DomainPropertyCategory getCategory(ValueMeta valueMeta) {

@@ -118,6 +118,8 @@ public class ObjectMeta {
         // 将基类的属性合并到子类
         var types = TypeUtil.getInherits(this.objectType());
 
+        var correctProperties = this.objectType().getAnnotationsByType(ObjectProperty.class);
+
         for (var type : types) {
             if (!ObjectMetaLoader.isMetadatable(type))
                 continue;
@@ -130,10 +132,14 @@ public class ObjectMeta {
                 if (existProperty(p.name()))
                     continue;
 
-                var np = new PropertyMeta(p.name(), p.value(), this, p.accessGet(), p.accessSet(), p.call(),
+                var op = ListUtil.find(correctProperties, (t) -> t.name().equalsIgnoreCase(p.name()));
+
+                PropertyMeta pm = new PropertyMeta(p.name(), p.value(), this, p.accessGet(), p.accessSet(), p.call(),
                         p.validators(), p.lazy(), p.dataLoader());
 
-                _properties.push(np);
+                pm.correct(op);
+
+                _properties.push(pm);
             }
 
         }
