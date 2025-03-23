@@ -435,8 +435,8 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
     }
 
     public boolean isPropertyLoaded(String propertyName) {
-        var property = DomainProperty.getProperty(this.getClass(), propertyName);
-        return this.dataProxy().isLoaded(property.name());
+//        var property = DomainProperty.getProperty(this.getClass(), propertyName);
+        return this.dataProxy().isLoaded(propertyName);
     }
 
     public int dataVersion() {

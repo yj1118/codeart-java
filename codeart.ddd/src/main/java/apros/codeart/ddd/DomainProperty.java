@@ -7,9 +7,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.function.BiFunction;
-import java.util.function.Supplier;
 
-import apros.codeart.runtime.MethodUtil;
 import com.google.common.base.Objects;
 
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
@@ -420,7 +418,7 @@ public class DomainProperty {
         }
     }
 
-    private static final MapList<Class<?>, DomainProperty> _propertis = new MapList<>(false);
+    private static final MapList<Class<?>, DomainProperty> _properties = new MapList<>(false);
 
     /**
      * 添加领域属性到数据集中，新版中我们要确保 {@code objectType} 一定等于 {@code property.declaringType()}
@@ -428,15 +426,15 @@ public class DomainProperty {
      * @param property
      */
     private static void addProperty(DomainProperty property) {
-        _propertis.put(property.declaringType(), property);
+        _properties.put(property.declaringType(), property);
     }
 
     public static Iterable<DomainProperty> getProperties(Class<?> objectType) {
-        return _propertis.getValues(objectType);
+        return _properties.getValues(objectType);
     }
 
     public static DomainProperty getProperty(Class<?> objectType, String propertyName) {
-        return _propertis.getValue(objectType, (p) -> {
+        return _properties.getValue(objectType, (p) -> {
             return p.name().equalsIgnoreCase(propertyName);
         });
     }

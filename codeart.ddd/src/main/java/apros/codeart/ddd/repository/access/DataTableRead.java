@@ -125,13 +125,13 @@ final class DataTableRead {
      * 集合在对象中的属性定义
      *
      * @param parent
-     * @param listType
      * @param tip
      * @return
      */
     @SuppressWarnings("rawtypes")
     private Collection createList(DomainObject parent, Class<?> elementType, PropertyMeta tip) {
-        var collection = new DomainCollection<>(elementType, DomainProperty.getProperty(tip));
+        //var collection = new DomainCollection<>(elementType, DomainProperty.getProperty(tip)); // 不用该方法，目前DomainProperty.getProperty(tip)只会从子类获取领域属性，父类的领域属性并没有被加载，所以DomainProperty.getProperty(tip)可能为Null
+        var collection = new DomainCollection<>(elementType, tip.declaring().name());
         collection.setParent(parent);
         return collection;
     }

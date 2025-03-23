@@ -70,7 +70,7 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
         sql.append("    ELSE\n");
 
         sql.append(String.format("        SELECT \"NodeRootId\" INTO rootId FROM \"%s\" WHERE \"Id\" = parentId;\n", tableName));
-        sql.append(String.format("        SELECT \"Id\" FROM \"%s\" WHERE \"NodeRootId\" = rootId FOR UPDATE;\n", tableName));
+        sql.append(String.format("        PERFORM \"Id\" FROM \"%s\" WHERE \"NodeRootId\" = rootId FOR UPDATE;\n", tableName));
         sql.append(String.format("        SELECT \"Right\" INTO parentRight FROM \"%s\" WHERE \"Id\" = parentId;\n", tableName));
 
         sql.append("        IF parentRight IS NULL THEN\n");
@@ -129,7 +129,7 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
         sql.append(String.format("    SELECT \"Left\", \"Right\", \"NodeRootId\" INTO lft, rgt, rootId FROM \"%s\" WHERE \"Id\" = id;\n", tableName));
 
         // 锁整棵树
-        sql.append(String.format("    SELECT \"Id\" FROM \"%s\" WHERE \"NodeRootId\" = rootId FOR UPDATE;\n", tableName));
+        sql.append(String.format("    PERFORM \"Id\" FROM \"%s\" WHERE \"NodeRootId\" = rootId FOR UPDATE;\n", tableName));
 
         // 计算差值
         sql.append("    disValue := rgt - lft + 1;\n");
@@ -188,7 +188,7 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
         sql.append(String.format("    SELECT \"Left\", \"Right\", \"NodeRootId\" INTO lft, rgt, rootId FROM \"%s\" WHERE \"Id\" = currentId;\n", tableName));
 
         // 锁整棵树
-        sql.append(String.format("    SELECT \"Id\" FROM \"%s\" WHERE \"NodeRootId\" = rootId FOR UPDATE;\n", tableName));
+        sql.append(String.format("    PERFORM \"Id\" FROM \"%s\" WHERE \"NodeRootId\" = rootId FOR UPDATE;\n", tableName));
 
         // 计算差值
         sql.append("    disValue := rgt - lft + 1;\n");
