@@ -1,6 +1,7 @@
 package apros.codeart.ddd.validation;
 
 import apros.codeart.ddd.*;
+import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.repository.ScheduledActionType;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
@@ -28,7 +29,7 @@ public class ListValidator extends PropertyValidatorImpl {
     }
 
     @Override
-    protected void validate(DomainObject domainObject, DomainProperty property, Object propertyValue,
+    protected void validate(DomainObject domainObject, PropertyMeta property, Object propertyValue,
                             ScheduledActionType actionType, ValidationResult result) {
         var list = TypeUtil.as(propertyValue, Iterable.class);
 

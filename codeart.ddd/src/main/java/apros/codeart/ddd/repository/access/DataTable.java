@@ -59,7 +59,7 @@ public class DataTable {
         return _repositoryTip;
     }
 
-    private DataTableType _type;
+    private final DataTableType _type;
 
     /**
      * 表类型

@@ -4,6 +4,7 @@ import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.IAggregateRoot;
 import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.ValidationResult;
+import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.metadata.ValueMeta;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.access.DataPortal;
@@ -26,13 +27,13 @@ public final class ValidatorUtil {
      * 该方法仅用于判断字符串类型的属性
      *
      * @param obj
-     * @param property
+     * @param propertyName
      * @param <T>
      * @return
      */
-    private static <T extends IAggregateRoot> boolean isPropertyRepeated(T obj, DomainProperty property) {
-        if (!obj.isPropertyDirty(property)) return false;
-        var propertyValue = obj.getPropertyValue(property);
+    private static <T extends IAggregateRoot> boolean isPropertyRepeated(T obj, String propertyName) {
+        if (!obj.isPropertyDirty(propertyName)) return false;
+        var propertyValue = obj.getPropertyValue(propertyName);
 
         String stringValue = TypeUtil.as(propertyValue, String.class);
         if (stringValue != null) {
@@ -42,12 +43,12 @@ public final class ValidatorUtil {
             if (ValueMeta.isDefaultValue(propertyValue)) return false;
         }
 
-        var exp = _getPropertyNameCondition.apply(property.name());
+        var exp = _getPropertyNameCondition.apply(propertyName);
 
         var target = DataContext.using(() -> {
             return DataPortal.querySingle(obj.getClass(), exp, (data) ->
             {
-                data.put(property.name(), propertyValue);
+                data.put(propertyName, propertyValue);
             }, QueryLevel.HOLD);
         });
 
@@ -61,32 +62,42 @@ public final class ValidatorUtil {
         return String.format("%s=@%s", propertyName, propertyName);
     });
 
-    /// <summary>
-    /// 验证属性值是否重复
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="obj"></param>
-    /// <param name="property"></param>
-    public static <T extends IAggregateRoot> void checkPropertyRepeated(@NotNull T obj, String propertyName, ValidationResult result) {
-        var property = DomainProperty.getProperty(obj.getClass(), propertyName);
-        checkPropertyRepeated(obj, property, result);
+//    /**
+//     * 验证属性值是否重复
+//     *
+//     * @param obj
+//     * @param propertyName
+//     * @param result
+//     * @param <T>
+//     */
+//    public static <T extends IAggregateRoot> void checkPropertyRepeated(@NotNull T obj, String propertyName, ValidationResult result) {
+//        var property = DomainProperty.getProperty(obj.getClass(), propertyName);
+//        checkPropertyRepeated(obj, propertyName, result);
+//    }
+
+
+    /**
+     * 验证属性值是否重复
+     *
+     * @param obj
+     * @param property
+     * @param result
+     * @param <T>
+     */
+    public static <T extends IAggregateRoot> void checkPropertyRepeated(T obj, DomainProperty property, ValidationResult result) {
+        checkPropertyRepeated(obj, property.name(), result);
     }
 
-    /// <summary>
-    /// 验证属性值是否重复
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="obj"></param>
-    /// <param name="property"></param>
-    public static <T extends IAggregateRoot> void checkPropertyRepeated(T obj, DomainProperty property, ValidationResult result) {
-        if (isPropertyRepeated(obj, property)) {
+    public static <T extends IAggregateRoot> void checkPropertyRepeated(T obj, String propertyName, ValidationResult result) {
+        if (isPropertyRepeated(obj, propertyName)) {
+            var property = obj.meta().findProperty(propertyName);
             var code = _getPropertyRepeatedErrorCode.apply(property);
-            String value = obj.getPropertyValue(property).toString();
+            String value = obj.getPropertyValue(propertyName).toString();
             result.append(code, Language.strings("apros.codeart.ddd", "PropertyValueRepeated", property.call(), value));
         }
     }
 
-    private static final Function<DomainProperty, String> _getPropertyRepeatedErrorCode = LazyIndexer.init(((property) ->
+    private static final Function<PropertyMeta, String> _getPropertyRepeatedErrorCode = LazyIndexer.init(((property) ->
     {
         return String.format("%s.%sRepeated", property.declaringType().getSimpleName(), property.name());
     }));

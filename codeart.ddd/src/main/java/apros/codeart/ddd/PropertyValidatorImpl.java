@@ -3,6 +3,7 @@ package apros.codeart.ddd;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 
+import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.repository.ScheduledActionType;
 import apros.codeart.runtime.Activator;
 import apros.codeart.runtime.TypeUtil;
@@ -29,18 +30,18 @@ public abstract class PropertyValidatorImpl implements IPropertyValidator {
         _tip = tip;
     }
 
-    public void validate(IDomainObject domainObject, DomainProperty property, ScheduledActionType actionType, ValidationResult result) {
+    @Override
+    public void validate(IDomainObject domainObject, PropertyMeta property, ScheduledActionType actionType, ValidationResult result) {
 
         // 属性验证在删除对象时不必验证
         if (actionType == ScheduledActionType.Delete) return;
 
         var obj = (DomainObject) domainObject;
-        var pro = (DomainProperty) property;
-        var propertyValue = obj.getValue(pro);
-        validate(obj, pro, propertyValue, actionType, result);
+        var propertyValue = obj.getValue(property.name());
+        validate(obj, property, propertyValue, actionType, result);
     }
 
-    protected abstract void validate(DomainObject domainObject, DomainProperty property, Object propertyValue,
+    protected abstract void validate(DomainObject domainObject, PropertyMeta property, Object propertyValue,
                                      ScheduledActionType actionType, ValidationResult result);
 
     public static ArrayList<IPropertyValidator> getValidators(Iterable<Annotation> anns) {

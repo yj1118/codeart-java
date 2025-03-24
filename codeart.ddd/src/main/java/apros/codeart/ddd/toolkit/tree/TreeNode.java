@@ -39,6 +39,10 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
         this.setValue(NodeRootProperty, value);
     }
 
+    public boolean isRoot() {
+        return this.equals(this.nodeRoot());
+    }
+
     //endregion
 
     //region 父节点
@@ -302,14 +306,23 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
 //        return obj;
 //    }
 
+    public void onAdded() {
+        super.onAdded();
+        if (!this.isRoot())
+            Repository.update(this.parent());
+    }
+
     public TreeNode(long id) {
         super(id);
         this.onConstructed();
     }
 
+    @SuppressWarnings("unchecked")
     public TreeNode(long id, T parent) {
         super(id);
         this.setParent(parent);
+        if (parent.isEmpty()) this.nodeRoot((T) this);
+        else this.nodeRoot(parent.nodeRoot());
         this.onConstructed();
     }
 }

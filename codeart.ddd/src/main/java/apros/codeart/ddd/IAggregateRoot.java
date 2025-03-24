@@ -11,97 +11,97 @@ import apros.codeart.util.EventHandler;
  */
 public interface IAggregateRoot extends IEntityObject {
 
-	/**
-	 * 对象在仓储中的唯一键，这不是领域驱动的概念，是框架为了优化系统性能追加的属性
-	 * 
-	 * 在同样的类型下，该值也可以用于判断唯一性
-	 * 
-	 * @return
-	 */
-	String uniqueKey();
+    /**
+     * 对象在仓储中的唯一键，这不是领域驱动的概念，是框架为了优化系统性能追加的属性
+     * <p>
+     * 在同样的类型下，该值也可以用于判断唯一性
+     *
+     * @return
+     */
+    String uniqueKey();
 
-	/**
-	 * 内聚根是否为无效的
-	 * 
-	 * @return
-	 */
-	boolean invalid();
+    /**
+     * 内聚根是否为无效的
+     *
+     * @return
+     */
+    boolean invalid();
 
-	/**
-	 * 仓储操作回滚
-	 */
-	EventHandler<RepositoryRollbackEventArgs> rollback();
+    /**
+     * 仓储操作回滚
+     */
+    EventHandler<RepositoryRollbackEventArgs> rollback();
 
-	void onRollback(Object sender, RepositoryRollbackEventArgs e);
+    void onRollback(Object sender, RepositoryRollbackEventArgs e);
 
-	EventHandler<RepositoryEventArgs> preAdd();
+    EventHandler<RepositoryEventArgs> preAdd();
 
-	/**
-	 * 加入仓储之前
-	 */
-	void onPreAdd();
+    /**
+     * 加入仓储之前
+     */
+    void onPreAdd();
 
-	EventHandler<RepositoryEventArgs> added();
+    EventHandler<RepositoryEventArgs> added();
 
-	/**
-	 * 加入仓储之后
-	 */
-	void onAdded();
+    /**
+     * 加入仓储之后
+     */
+    void onAdded();
 
-	EventHandler<RepositoryEventArgs> preUpdate();
+    EventHandler<RepositoryEventArgs> preUpdate();
 
-	/**
-	 * 修改之前
-	 */
-	void onPreUpdate();
+    /**
+     * 修改之前
+     */
+    void onPreUpdate();
 
-	EventHandler<RepositoryEventArgs> updated();
+    EventHandler<RepositoryEventArgs> updated();
 
-	/**
-	 * 修改之后
-	 */
-	void onUpdated();
+    /**
+     * 修改之后
+     */
+    void onUpdated();
 
-	EventHandler<RepositoryEventArgs> preDelete();
+    EventHandler<RepositoryEventArgs> preDelete();
 
-	/**
-	 * 删除之前
-	 */
-	void onPreDelete();
+    /**
+     * 删除之前
+     */
+    void onPreDelete();
 
-	EventHandler<RepositoryEventArgs> deleted();
+    EventHandler<RepositoryEventArgs> deleted();
 
-	/**
-	 * 删除之后
-	 */
-	void onDeleted();
+    /**
+     * 删除之后
+     */
+    void onDeleted();
 
-	/**
-	 * 提交增加操作之前
-	 * 
-	 * @return
-	 */
-	EventHandler<RepositoryEventArgs> addPreCommit();
+    /**
+     * 提交增加操作之前
+     *
+     * @return
+     */
+    EventHandler<RepositoryEventArgs> addPreCommit();
 
-	void onAddPreCommit();
+    void onAddPreCommit();
 
-	EventHandler<RepositoryEventArgs> addCommitted();
+    EventHandler<RepositoryEventArgs> addCommitted();
 
-	void onAddCommitted();
+    void onAddCommitted();
 
-	EventHandler<RepositoryEventArgs> updatePreCommit();
+    EventHandler<RepositoryEventArgs> updatePreCommit();
 
-	void onUpdatePreCommit();
+    void onUpdatePreCommit();
 
-	EventHandler<RepositoryEventArgs> updateCommitted();
+    EventHandler<RepositoryEventArgs> updateCommitted();
 
-	void onUpdateCommitted();
+    void onUpdateCommitted();
 
-	EventHandler<RepositoryEventArgs> deletePreCommit();
+    EventHandler<RepositoryEventArgs> deletePreCommit();
 
-	void onDeletePreCommit();
+    void onDeletePreCommit();
 
-	EventHandler<RepositoryEventArgs> deleteCommitted();
+    EventHandler<RepositoryEventArgs> deleteCommitted();
 
-	void onDeleteCommitted();
+    void onDeleteCommitted();
 }

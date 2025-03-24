@@ -1,5 +1,6 @@
 package apros.codeart.ddd.validation;
 
+import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.repository.ScheduledActionType;
 import apros.codeart.i18n.Language;
 import com.google.common.base.Strings;
@@ -28,7 +29,7 @@ public class NotEmptyValidator extends PropertyValidatorImpl {
     }
 
     @Override
-    protected void validate(DomainObject domainObject, DomainProperty property, Object propertyValue,
+    protected void validate(DomainObject domainObject, PropertyMeta property, Object propertyValue,
                             ScheduledActionType actionType, ValidationResult result) {
 
         if (propertyValue == null) {
@@ -72,7 +73,7 @@ public class NotEmptyValidator extends PropertyValidatorImpl {
 
     }
 
-    private void addError(DomainProperty property, ValidationResult result) {
+    private void addError(PropertyMeta property, ValidationResult result) {
         result.append(property.name(), "NotEmpty", Language.strings("apros.codeart.ddd", "NotEmpty", property.call()));
     }
 

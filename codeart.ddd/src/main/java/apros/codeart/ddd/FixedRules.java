@@ -1,5 +1,6 @@
 package apros.codeart.ddd;
 
+import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.repository.ScheduledActionType;
 import apros.codeart.util.SafeAccess;
 
@@ -19,9 +20,9 @@ public class FixedRules implements IFixedRules {
 //	#region 验证属性
 
     private void validateProperties(IDomainObject obj, ScheduledActionType actionType, ValidationResult result) {
-        var properties = DomainProperty.getProperties(obj.getClass());
+        var properties = obj.meta().properties();
         for (var property : properties) {
-            if (obj.isPropertyDirty(property)) {
+            if (obj.isPropertyDirty(property.name())) {
                 // 我们只用验证脏属性
                 validateProperty(obj, property, actionType, result);
             }
@@ -29,7 +30,7 @@ public class FixedRules implements IFixedRules {
         }
     }
 
-    private void validateProperty(IDomainObject obj, DomainProperty property, ScheduledActionType actionType, ValidationResult result) {
+    private void validateProperty(IDomainObject obj, PropertyMeta property, ScheduledActionType actionType, ValidationResult result) {
         for (var validator : property.validators()) {
             validator.validate(obj, property, actionType, result);
         }

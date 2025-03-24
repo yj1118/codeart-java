@@ -162,9 +162,9 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         _machine.markNew();
     }
 
-    /// <summary>
-    /// 设置对象为干净的
-    /// </summary>
+    /**
+     * 设置对象为干净的
+     */
     public void markClean() {
         _machine.markClean();
         // 当对象为干净对象时，那么对象的所有内聚成员应该也是干净的
@@ -309,20 +309,23 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
     /**
      * 属性是否为脏的
      *
-     * @param property
+     * @param propertyName
      * @return
      */
-    public boolean isPropertyDirty(DomainProperty property) {
+    public boolean isPropertyDirty(String propertyName) {
+
+        var pm = this.meta().findProperty(propertyName);
+
         if (this.isNew())
             return true; // 如果是新建对象，那么属性一定是脏的
-        var isChanged = isPropertyChanged(property);
+        var isChanged = isPropertyChanged(propertyName);
         if (isChanged)
             return true; // 属性如果被改变，那么我们认为就是脏的，这是一种粗略的判断，因为就算属性改变了，有可能经过2次修改后变成与数据库一样的值，这样就不是脏的了，但是为了简单化处理，我们仅认为只要改变了就是脏的，这种判断不过可以满足100%应用
         // 如果属性没有被改变，那么我们需要进一步判断属性的成员是否发生改变
-        switch (property.category()) {
+        switch (pm.category()) {
             case DomainPropertyCategory.ValueObject:
             case DomainPropertyCategory.EntityObject: {
-                DomainObject obj = tryGetValue(property);
+                DomainObject obj = tryGetValue(propertyName);
                 if (obj != null) {
                     // 如果加载了，就进一步判断
                     return obj.isDirty();
@@ -331,7 +334,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
             break;
             case DomainPropertyCategory.ValueObjectList:
             case DomainPropertyCategory.EntityObjectList: {
-                Iterable<DomainObject> list = tryGetValue(property);
+                Iterable<DomainObject> list = tryGetValue(propertyName);
                 if (list != null) {
                     // 如果加载了，就进一步判断
                     for (DomainObject obj : list) {
@@ -350,10 +353,10 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         return false;
     }
 
-    public boolean isPropertyDirty(String propertyName) {
-        var property = DomainProperty.getProperty(this.getClass(), propertyName);
-        return isPropertyDirty(property);
-    }
+//    public boolean isPropertyDirty(String propertyName) {
+//        var property = DomainProperty.getProperty(this.getClass(), propertyName);
+//        return isPropertyDirty(property);
+//    }
 
     /**
      * 是否有脏的属性
@@ -361,7 +364,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
      * @return
      */
     private boolean hasDirtyProperty() {
-        var properties = DomainProperty.getProperties(this.getClass());
+        var properties = this.meta().properties();
         for (var property : properties) {
             if (isPropertyDirty(property.name()))
                 return true;
@@ -377,12 +380,12 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
     private void invokeProperties(Consumer<DomainObject> action) {
         if (this.isEmpty()) return;
 
-        var properties = DomainProperty.getProperties(this.getClass());
+        var properties = this.meta().properties();
         for (var property : properties) {
             switch (property.category()) {
                 case DomainPropertyCategory.EntityObject:
                 case DomainPropertyCategory.ValueObject: {
-                    DomainObject obj = tryGetValue(property);
+                    DomainObject obj = tryGetValue(property.name());
                     if (obj != null) {
                         action.accept(obj);
                     }
@@ -390,7 +393,7 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
                 break;
                 case DomainPropertyCategory.EntityObjectList:
                 case DomainPropertyCategory.ValueObjectList: {
-                    Iterable<DomainObject> list = tryGetValue(property);
+                    Iterable<DomainObject> list = tryGetValue(property.name());
                     if (list != null) {
                         for (DomainObject obj : list) {
                             action.accept(obj);
@@ -559,13 +562,13 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
     /**
      * 当属性的值已经被加载，就获取数据，否则不获取
      *
-     * @param property
+     * @param propertyName
      * @return
      */
     @SuppressWarnings("unchecked")
-    private <T> T tryGetValue(DomainProperty property) {
-        if (this.dataProxy().isLoaded(property.name())) {
-            return (T) getValue(property);
+    private <T> T tryGetValue(String propertyName) {
+        if (this.dataProxy().isLoaded(propertyName)) {
+            return (T) getValue(propertyName);
         }
         return null;
     }
@@ -578,8 +581,9 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         return getValue(property.name());
     }
 
-    public Object getPropertyValue(DomainProperty property) {
-        return getValue(property);
+    @Override
+    public Object getPropertyValue(String propertyName) {
+        return getValue(propertyName);
     }
 
 

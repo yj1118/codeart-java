@@ -6,6 +6,7 @@ import apros.codeart.ddd.DomainObject;
 import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.PropertyValidatorImpl;
 import apros.codeart.ddd.ValidationResult;
+import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.repository.ScheduledActionType;
 import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
@@ -26,7 +27,7 @@ public class EmailValidator extends PropertyValidatorImpl {
     }
 
     @Override
-    protected void validate(DomainObject domainObject, DomainProperty property, Object propertyValue,
+    protected void validate(DomainObject domainObject, PropertyMeta property, Object propertyValue,
                             ScheduledActionType actionType, ValidationResult result) {
         var value = (String) propertyValue;
         if (StringUtil.isNullOrEmpty(value))

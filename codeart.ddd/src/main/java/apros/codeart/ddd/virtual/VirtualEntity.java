@@ -23,8 +23,7 @@ public class VirtualEntity extends VirtualObject implements IEntityObject {
     }
 
     public Object getIdentity() {
-        var property = DomainProperty.getProperty(this.getClass(), EntityObject.IdPropertyName);
-        return this.getValue(property);
+        return this.getValue(EntityObject.IdPropertyName);
     }
 
 }

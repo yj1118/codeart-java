@@ -429,18 +429,28 @@ public class DomainProperty {
         _properties.put(property.declaringType(), property);
     }
 
-    public static Iterable<DomainProperty> getProperties(Class<?> objectType) {
-        return _properties.getValues(objectType);
-    }
+//    /**
+//     * 根据属性元数据，添加领域属性到定义中，这是因为继承关系，需要补充
+//     *
+//     * @param meta
+//     */
+//    public static void addProperty(PropertyMeta meta) {
+//        var property = new DomainProperty(meta);
+//        addProperty(property);
+//    }
+//
+//    public static Iterable<DomainProperty> getProperties(Class<?> objectType) {
+//        return _properties.getValues(objectType);
+//    }
 
-    public static DomainProperty getProperty(Class<?> objectType, String propertyName) {
-        return _properties.getValue(objectType, (p) -> {
-            return p.name().equalsIgnoreCase(propertyName);
-        });
-    }
-
-    public static DomainProperty getProperty(PropertyMeta tip) {
-        return getProperty(tip.declaringType(), tip.name());
-    }
+//    public static DomainProperty getProperty(Class<?> objectType, String propertyName) {
+//        return _properties.getValue(objectType, (p) -> {
+//            return p.name().equalsIgnoreCase(propertyName);
+//        });
+//    }
+//
+//    public static DomainProperty getProperty(PropertyMeta tip) {
+//        return getProperty(tip.declaringType(), tip.name());
+//    }
 
 }

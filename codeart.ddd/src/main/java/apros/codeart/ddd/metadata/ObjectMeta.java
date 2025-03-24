@@ -118,7 +118,7 @@ public class ObjectMeta {
     public void merge() {
         // 将基类的属性合并到子类
         var types = TypeUtil.getInherits(this.objectType());
-        
+
         var correctProperties = this.objectType().getAnnotationsByType(ObjectProperty.class);
 
         for (int i = Iterables.size(types) - 1; i >= 0; i--) {
@@ -143,6 +143,8 @@ public class ObjectMeta {
                 pm.correct(op);
 
                 _properties.push(pm);
+
+//                DomainProperty.addProperty(pm);
             }
 
         }
