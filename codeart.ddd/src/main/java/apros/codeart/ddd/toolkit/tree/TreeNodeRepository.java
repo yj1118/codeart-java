@@ -286,8 +286,8 @@ public abstract class TreeNodeRepository<T extends TreeNode<T>> extends SqlRepos
     }
 
     @Override
-    public void onDeleted(T obj) {
-        super.onDeleted(obj);
+    public void onPreDelete(T obj) {
+        super.onPreDelete(obj);
 
         var id = obj.getIdentity();
 

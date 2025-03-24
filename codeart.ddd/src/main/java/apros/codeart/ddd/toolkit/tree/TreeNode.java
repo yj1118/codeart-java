@@ -14,6 +14,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
 
+
+/**
+ * 在做操作时,请根据业务自行锁根
+ *
+ * @param <T>
+ */
 @MergeDomain
 @FrameworkDomain
 public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong {
@@ -144,15 +150,46 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
         _children().remove(child);
     }
 
-    void removeChild(long childId, T empty) {
-        var child = this.getChild(childId, empty);
-        if (child.isEmpty()) return;
+//    void removeChild(long childId, T empty) {
+//        var child = this.getChild(childId, empty);
+//        if (child.isEmpty()) return;
+//
+//        this._children().remove(child);
+//
+//        Repository.delete(child);
+//    }
 
-        this._children().remove(child);
-
-        Repository.delete(child);
+    public static <T extends TreeNode<T>> void remove(Class<T> type, long id) {
+        //在做操作时,请根据业务自行锁根
+        var obj = Repository.find(type, id, QueryLevel.NONE);
+        if (obj.isEmpty()) return;
+        var parent = obj.parent();
+        if (!parent.isEmpty())
+            parent.removeChild(obj);
+        removeSelf(obj);
+        if (!parent.isEmpty())
+            Repository.update(parent);
     }
 
+    private static <T extends TreeNode<T>> void removeSelf(T obj) {
+        if (obj.isEmpty()) return;
+        for (var child : obj.children()) {
+            removeSelf(child);
+        }
+        // 直接删除
+        Repository.delete(obj);
+    }
+
+//    internal static void RemoveChild(Competitor competitor, long parentId, long id)
+//    {
+//        var repository = Repository.Create<IFunctionRepository>();
+//
+//        var parent = GetParent(competitor, parentId, repository);
+//
+//        parent.RemoveChild(id);
+//
+//        repository.Update(parent);
+//    }
 
     /**
      * 判断targetId目录是否为当前节点的子节点
@@ -306,6 +343,7 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
 //        return obj;
 //    }
 
+    @Override
     public void onAdded() {
         super.onAdded();
         if (!this.isRoot())
