@@ -3,6 +3,7 @@ package apros.codeart.ddd;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.function.Predicate;
 
 import apros.codeart.runtime.TypeUtil;
@@ -187,6 +188,12 @@ public class DomainCollection<E> extends ArrayList<E>
         }
         collectionChanged();
         return super.retainAll(c);
+    }
+
+    @Override
+    public void sort(Comparator<? super E> c) {
+        super.sort(c);
+        collectionChanged();
     }
 
     @Override

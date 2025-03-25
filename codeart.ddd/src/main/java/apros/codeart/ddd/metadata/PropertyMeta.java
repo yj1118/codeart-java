@@ -106,7 +106,7 @@ public class PropertyMeta {
      * @return
      */
     public String call() {
-        return _call;
+        return _call == null ? this.name() : _call;
     }
 
     public BiFunction<DomainObject, String, Object> getDefaultValue() {

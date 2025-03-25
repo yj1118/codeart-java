@@ -180,6 +180,20 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
         Repository.delete(obj);
     }
 
+    public void sort(long[] ids) {
+
+        var type = this.getClass();
+
+        for (var i = 0; i < ids.length; i++) {
+            var id = ids[i];
+            var obj = Repository.find(type, id, QueryLevel.NONE);
+            obj.orderIndex(i);
+            Repository.update(obj);
+        }
+
+        this._children().sort(Comparator.comparing(TreeNode::orderIndex));  //排序并不影响左右值计算
+    }
+
 //    internal static void RemoveChild(Competitor competitor, long parentId, long id)
 //    {
 //        var repository = Repository.Create<IFunctionRepository>();
@@ -265,7 +279,8 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
 
     @SuppressWarnings("unchecked")
     public void move(Class<T> objectType, T target) {
-        if (this.isEmpty()) return;
+        if (this.isEmpty() || target.isEmpty()) return;
+        if (this.parent().equals(target)) return;
         if (target.id() == this.id() || this.isChild(target.id()))
             throw new BusinessException("This operation is not supported");
 
@@ -277,14 +292,16 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
         this.parent(target);
         var newParent = this.parent();
         this.level(newParent.level() + 1);
-
-        repository.updateRoot(oldParent);
+        newParent.addChild((T) this);
 
         // 需要用仓储来管理this、parent、target三者改变后，左右值的同步
         {
             var tnRepository = TypeUtil.as(Repository.createByObjectType(objectType), ITreeNodeRepository.class);
             tnRepository.move(this, target);
         }
+
+        repository.updateRoot(oldParent);
+        repository.updateRoot(newParent);
 
         if (this.childrenCount() > 0) handleChildrenLevel();
     }
