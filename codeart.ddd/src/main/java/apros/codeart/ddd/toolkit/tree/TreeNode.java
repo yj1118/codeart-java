@@ -120,16 +120,16 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
         return _children();
     }
 
-    void sortChildren(Class<T> nodeClass, Iterable<OrderItemLong> items) {
-
-        for (var item : items) {
-            var obj = Repository.find(nodeClass, item.id(), QueryLevel.NONE);
-            obj.orderIndex(item.orderIndex());
-            Repository.update(obj);
-        }
-
-        this._children().sort(Comparator.comparing(T::orderIndex));
-    }
+//    void sortChildren(Class<T> nodeClass, Iterable<OrderItemLong> items) {
+//
+//        for (var item : items) {
+//            var obj = Repository.find(nodeClass, item.id(), QueryLevel.NONE);
+//            obj.orderIndex(item.orderIndex());
+//            Repository.update(obj);
+//        }
+//
+//        this._children().sort(Comparator.comparing(T::orderIndex));
+//    }
 
     public int childrenCount() {
         return _children().size();
@@ -306,16 +306,15 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
         if (this.childrenCount() > 0) handleChildrenLevel();
     }
 
-    public DTObject output() {
-        DTObject data = DTObject.readonly("{id,name,level}", this);
+    public DTObject output(String schemaCode) {
+        DTObject data = DTObject.readonly(schemaCode, this);
 
         for (var child : this.children()) {
-            var item = child.output();
+            var item = child.output(schemaCode);
             data.push("children", item);
         }
         return data;
     }
-
 
     /**
      * 更新级别
