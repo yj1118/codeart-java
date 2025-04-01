@@ -309,6 +309,14 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
         });
     }
 
+    public byte[] getBytes() {
+        byte[] values = new byte[_items.size()];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = _items.get(i).getByte();
+        }
+        return values;
+    }
+
     public int[] getInts() {
         int[] values = new int[_items.size()];
         for (int i = 0; i < values.length; i++) {

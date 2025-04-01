@@ -162,14 +162,43 @@ public class DTObject implements INullProxy, IDTOSchema {
         return this.getValues(String.class, findExp, null, throwError);
     }
 
+
+    public byte[] getBytes(String findExp) {
+        return getBytes(findExp, true);
+    }
+
+    public byte[] getBytes(String findExp, boolean throwError) {
+        return getBytes(findExp, throwError, null);
+    }
+
+    public byte[] getBytes(String findExp, byte[] defaultValue) {
+        return getBytes(findExp, false, defaultValue);
+    }
+
+    private byte[] getBytes(String findExp, boolean throwError, byte[] defaultValue) {
+        DTEList entity = find(DTEList.class, findExp, throwError);
+        if (entity == null)
+            return defaultValue;
+        return entity.getBytes();
+    }
+
+
     public long[] getLongs(String findExp) {
         return getLongs(findExp, true);
     }
 
     public long[] getLongs(String findExp, boolean throwError) {
+        return getLongs(findExp, throwError, null);
+    }
+
+    public long[] getLongs(String findExp, long[] defaultValue) {
+        return getLongs(findExp, false, defaultValue);
+    }
+
+    private long[] getLongs(String findExp, boolean throwError, long[] defaultValue) {
         DTEList entity = find(DTEList.class, findExp, throwError);
         if (entity == null)
-            return null;
+            return defaultValue;
         return entity.getLongs();
     }
 

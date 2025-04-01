@@ -121,7 +121,7 @@ public class MapData implements Iterable<Map.Entry<String, Object>> {
         return _data.entrySet();
     }
 
-	
+
     public static final MapData EMPTY = new MapData();
 
 }

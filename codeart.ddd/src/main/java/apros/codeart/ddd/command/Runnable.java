@@ -7,5 +7,6 @@ public abstract class Runnable implements IRunnable {
         DataContext.using(this::executeImpl);
     }
 
-    protected abstract void executeImpl();
+    protected void executeImpl() {
+    }
 }

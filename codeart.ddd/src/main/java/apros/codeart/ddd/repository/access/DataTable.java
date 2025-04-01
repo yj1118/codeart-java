@@ -92,7 +92,7 @@ public class DataTable {
         return this.objectType() == null ? false : ObjectMeta.isAggregateRoot(this.objectType());
     }
 
-    private DataTable _chainRoot;
+    private final DataTable _chainRoot;
 
     /**
      * 在引用链中的根表，这个属性大多数情况等属性Root，但是在跨根引用中会有所不同
@@ -308,7 +308,7 @@ public class DataTable {
         return _nonclusteredIndexs;
     }
 
-    private Iterable<IDataField> _objectFields;
+    private final Iterable<IDataField> _objectFields;
 
     public Iterable<IDataField> objectFields() {
         return _objectFields;
