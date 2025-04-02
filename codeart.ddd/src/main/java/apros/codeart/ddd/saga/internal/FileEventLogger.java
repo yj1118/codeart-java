@@ -24,7 +24,7 @@ import apros.codeart.ddd.saga.SAGAConfig;
 import apros.codeart.dto.DTObject;
 import apros.codeart.io.IOUtil;
 import apros.codeart.log.Logger;
-import apros.codeart.util.Guid;
+import apros.codeart.util.GUID;
 import apros.codeart.util.SafeAccess;
 import apros.codeart.util.StringUtil;
 import apros.codeart.util.TimeUtil;
@@ -39,7 +39,7 @@ final class FileEventLogger implements IEventLog {
     @Override
     public String newId() {
         var day = TimeUtil.format(LocalDateTime.now(), "yyyyMMdd");
-        return String.format("%s%s", day, Guid.compact());
+        return String.format("%s%s", day, GUID.compact());
     }
 
     @Override

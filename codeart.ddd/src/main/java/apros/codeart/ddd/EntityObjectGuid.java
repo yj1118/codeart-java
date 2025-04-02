@@ -3,30 +3,36 @@ package apros.codeart.ddd;
 import java.util.UUID;
 
 import apros.codeart.ddd.repository.PropertyRepository;
+import apros.codeart.util.GUID;
 
 @MergeDomain
 @FrameworkDomain
 public abstract class EntityObjectGuid extends EntityObject {
 
-	@PropertyRepository
-	public static final DomainProperty IdProperty = DomainProperty.register(IdPropertyName, UUID.class,
-			EntityObjectGuid.class);
+    @PropertyRepository
+    public static final DomainProperty IdProperty = DomainProperty.register(IdPropertyName, UUID.class,
+            EntityObjectGuid.class);
 
-	public UUID id() {
-		return this.getValue(IdProperty, UUID.class);
-	}
+    public UUID id() {
+        return this.getValue(IdProperty, UUID.class);
+    }
 
-	private void setId(UUID value) {
-		this.setValue(IdProperty, value);
-	}
+    private void setId(UUID value) {
+        this.setValue(IdProperty, value);
+    }
 
-	public EntityObjectGuid(UUID id) {
-		this.setId(id);
-		this.onConstructed();
-	}
+    public EntityObjectGuid(UUID id) {
+        this.setId(id);
+        this.onConstructed();
+    }
 
-	public Object getIdentity() {
-		return this.id();
-	}
+    public Object getIdentity() {
+        return this.id();
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.id().equals(GUID.empty());
+    }
 
 }

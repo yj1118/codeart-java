@@ -10,7 +10,7 @@ import java.util.UUID;
 import com.google.common.collect.Iterables;
 
 import apros.codeart.dto.DTObject;
-import apros.codeart.util.Guid;
+import apros.codeart.util.GUID;
 import apros.codeart.util.StringUtil;
 
 public class MapData implements Iterable<Map.Entry<String, Object>> {
@@ -92,7 +92,7 @@ public class MapData implements Iterable<Map.Entry<String, Object>> {
     }
 
     public void tryPut(String name, UUID value) {
-        if (Guid.isNullOrEmpty(value))
+        if (GUID.isNullOrEmpty(value))
             return;
         _data.put(name, value);
     }

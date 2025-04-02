@@ -153,7 +153,7 @@ public final class Activator {
 
                 obj.load();
             }
-            
+
             // 返回生成的字节码
             var cls = cg.toClass(Activator.class.getClassLoader());
 
@@ -255,7 +255,7 @@ public final class Activator {
 //	private static CreateInstanceMethod GenerateCreateInstanceMethod(ConstructorInfo constructor)
 //    {
 //        var objectType = constructor.DeclaringType;
-//        DynamicMethod method = new DynamicMethod(string.Format("CreateInstanceByConstructor_{0}", Guid.NewGuid().ToString("n"))
+//        DynamicMethod method = new DynamicMethod(string.Format("CreateInstanceByConstructor_{0}", GUID.NewGuid().ToString("n"))
 //                                                , typeof(object)
 //                                                , new Type[] { typeof(object[]) }
 //                                                , true);

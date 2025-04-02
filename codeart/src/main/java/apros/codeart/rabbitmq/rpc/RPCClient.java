@@ -6,7 +6,6 @@ import org.apache.logging.log4j.util.Strings;
 
 import apros.codeart.context.AppSession;
 import apros.codeart.dto.DTObject;
-import apros.codeart.echo.TransferData;
 import apros.codeart.echo.rpc.IClient;
 import apros.codeart.i18n.Language;
 import apros.codeart.pooling.IPoolItem;
@@ -14,7 +13,7 @@ import apros.codeart.rabbitmq.IMessageHandler;
 import apros.codeart.rabbitmq.Message;
 import apros.codeart.rabbitmq.RabbitBus;
 import apros.codeart.rabbitmq.RabbitMQException;
-import apros.codeart.util.Guid;
+import apros.codeart.util.GUID;
 import apros.codeart.util.StringUtil;
 import apros.codeart.util.concurrent.LatchSignal;
 
@@ -43,7 +42,7 @@ public class RPCClient implements IClient, AutoCloseable, IMessageHandler {
         RabbitBus bus = _busItem.getItem();
 
         _success = false;
-        _correlationId = Guid.compact();
+        _correlationId = GUID.compact();
 
         DTObject data = DTObject.editable();
         data.setString("method", method);

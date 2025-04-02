@@ -11,7 +11,6 @@ import apros.codeart.ddd.metadata.ValueMeta;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.ddd.repository.access.internal.AccessUtil;
 import apros.codeart.ddd.validation.TimePrecisions;
-import apros.codeart.util.Guid;
 import apros.codeart.util.ListUtil;
 
 public class GeneratedField extends ValueField {

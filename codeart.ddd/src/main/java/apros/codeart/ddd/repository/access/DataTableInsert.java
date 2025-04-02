@@ -11,7 +11,7 @@ import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.TypeUtil;
-import apros.codeart.util.Guid;
+import apros.codeart.util.GUID;
 import apros.codeart.util.ObjectUtil;
 import apros.codeart.util.StringUtil;
 
@@ -300,9 +300,9 @@ final class DataTableInsert {
         var obj = TypeUtil.as(current.getValue(tip.name()), DomainObject.class);
 
         if (obj.isEmpty()) {
-            data.put(field.name(), Guid.Empty);
+            data.put(field.name(), GUID.Empty);
         } else {
-            ((IValueObject) obj).setPersistentIdentity(Guid.newGuid());
+            ((IValueObject) obj).setPersistentIdentity(GUID.newGuid());
             var id = DataTableUtil.getObjectId(obj);
             data.put(field.name(), id);
 
@@ -327,7 +327,7 @@ final class DataTableInsert {
             var child = _self.findChild(_self, tip.name());
             if (child.type() == DataTableType.ValueObject) {
                 // 我们需要为ValueObject补充编号
-                ((IValueObject) obj).setPersistentIdentity(Guid.newGuid());
+                ((IValueObject) obj).setPersistentIdentity(GUID.newGuid());
             }
             child.insertMember(root, current, obj);
             if (middle == null)

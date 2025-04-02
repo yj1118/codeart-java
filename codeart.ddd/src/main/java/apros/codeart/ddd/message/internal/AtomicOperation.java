@@ -6,7 +6,6 @@ import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.ddd.repository.access.DataAccess;
 import apros.codeart.ddd.repository.access.DataSource;
 import apros.codeart.ddd.repository.access.DatabaseType;
-import apros.codeart.util.Guid;
 import apros.codeart.util.ListUtil;
 
 public final class AtomicOperation {

@@ -5,7 +5,7 @@ import static apros.codeart.runtime.Util.propagate;
 import apros.codeart.bytecode.ClassGenerator;
 import apros.codeart.bytecode.MethodGenerator;
 import apros.codeart.dto.IDTOReader;
-import apros.codeart.util.Guid;
+import apros.codeart.util.GUID;
 
 final class DTODeserializeMethodGenerator {
 
@@ -14,7 +14,7 @@ final class DTODeserializeMethodGenerator {
 
     public static DeserializeMethod generateMethod(TypeSerializationInfo typeInfo) {
 
-        String methodName = String.format("DTODeserialize_%s", Guid.compact());
+        String methodName = String.format("DTODeserialize_%s", GUID.compact());
 
         try (var cg = ClassGenerator.define()) {
 

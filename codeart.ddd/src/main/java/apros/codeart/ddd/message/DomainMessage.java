@@ -5,7 +5,7 @@ import apros.codeart.ddd.message.internal.MessageLog;
 import apros.codeart.ddd.repository.DataContext;
 import apros.codeart.dto.DTObject;
 import apros.codeart.echo.event.EventPortal;
-import apros.codeart.util.Guid;
+import apros.codeart.util.GUID;
 
 public final class DomainMessage {
     private DomainMessage() {
@@ -18,7 +18,7 @@ public final class DomainMessage {
      */
     public static void send(String messageName, DTObject content) {
 
-        var id = Guid.compact();
+        var id = GUID.compact();
         // 这里写日志
         MessageLog.write(id, messageName, content);
 

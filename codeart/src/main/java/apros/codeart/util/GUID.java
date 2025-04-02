@@ -2,9 +2,9 @@ package apros.codeart.util;
 
 import java.util.UUID;
 
-public final class Guid {
+public final class GUID {
 
-    private Guid() {
+    private GUID() {
     }
 
     public static final UUID Empty = UUID.fromString("00000000-0000-0000-0000-000000000000");

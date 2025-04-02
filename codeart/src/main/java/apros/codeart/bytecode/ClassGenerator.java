@@ -12,7 +12,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 
-import apros.codeart.util.Guid;
+import apros.codeart.util.GUID;
 
 public final class ClassGenerator implements AutoCloseable {
     private final ClassWriter _cw;
@@ -48,7 +48,7 @@ public final class ClassGenerator implements AutoCloseable {
     // region
 
     private static String randomClassName() {
-        String guid = Guid.compact();
+        String guid = GUID.compact();
         return String.format("DynamicClass_%s", guid);
     }
 

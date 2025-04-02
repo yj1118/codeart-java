@@ -7,13 +7,11 @@ import java.util.function.Function;
 
 import apros.codeart.ddd.DomainCollection;
 import apros.codeart.ddd.DomainObject;
-import apros.codeart.ddd.DomainProperty;
 import apros.codeart.ddd.Emptyable;
 import apros.codeart.ddd.IEmptyable;
 import apros.codeart.ddd.metadata.internal.ObjectMetaLoader;
 import apros.codeart.dto.DTObject;
-import apros.codeart.runtime.TypeUtil;
-import apros.codeart.util.Guid;
+import apros.codeart.util.GUID;
 import apros.codeart.util.LazyIndexer;
 import apros.codeart.util.StringUtil;
 
@@ -96,7 +94,7 @@ public class ValueMeta {
             return false;
 
         if (valueType.equals(UUID.class))
-            return Guid.Empty;
+            return GUID.Empty;
 
         if (valueType.equals(LocalDate.class))
             return LocalDate.MIN;

@@ -282,7 +282,7 @@ final class DataTableUtil {
 
         _typeMap.put(String.class, DbType.String);
 
-        _typeMap.put(UUID.class, DbType.Guid);
+        _typeMap.put(UUID.class, DbType.GUID);
         _typeMap.put(LocalDateTime.class, DbType.LocalDateTime);
         _typeMap.put(OffsetDateTime.class, DbType.OffsetDateTime);
         _typeMap.put(ZonedDateTime.class, DbType.ZonedDateTime);

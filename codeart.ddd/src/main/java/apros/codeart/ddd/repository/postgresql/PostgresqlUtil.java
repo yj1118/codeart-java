@@ -19,7 +19,7 @@ public final class PostgresqlUtil {
             case OffsetDateTime, DbType.ZonedDateTime -> "timestamptz";
             case DbType.Float -> "real";
             case DbType.Double -> "double precision";
-            case DbType.Guid -> "uuid";
+            case DbType.GUID -> "uuid";
             case DbType.Int32 -> "integer";
             case DbType.Int64 -> "bigint";
             case DbType.BigDecimal -> "NUMERIC";

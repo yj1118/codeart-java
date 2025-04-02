@@ -200,7 +200,7 @@ public final class TypeUtil {
         else if (clazz == double.class)
             return TypeCode.Double;
         else if (clazz == UUID.class)
-            return TypeCode.Guid;
+            return TypeCode.GUID;
         else
             return TypeCode.Object; // 默认为 OBJECT
     });

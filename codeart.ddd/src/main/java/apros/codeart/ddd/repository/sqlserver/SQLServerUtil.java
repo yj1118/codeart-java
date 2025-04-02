@@ -20,7 +20,7 @@ public final class SQLServerUtil {
             case DbType.OffsetDateTime, DbType.ZonedDateTime -> "datetimeoffset";
             case DbType.Float -> "real";
             case DbType.Double -> "float";
-            case DbType.Guid -> "uniqueidentifier";
+            case DbType.GUID -> "uniqueidentifier";
             case DbType.Int16 -> "smallint";
             case DbType.Int32 -> "int";
             case DbType.Int64 -> "bigint";
@@ -85,7 +85,7 @@ public final class SQLServerUtil {
 //		case TypeCode.UInt64:
 //			return SqlDbType.BigInt;
 //		case TypeCode.Object: {
-//			if (type == typeof(Guid))
+//			if (type == typeof(GUID))
 //				return SqlDbType.UniqueIdentifier;
 //			break;
 //		}

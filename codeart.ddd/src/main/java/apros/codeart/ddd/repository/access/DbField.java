@@ -44,7 +44,7 @@ public abstract class DbField {
                 return new IntField(name);
             case TypeCode.Long:
                 return new LongField(name);
-            case TypeCode.Guid: {
+            case TypeCode.GUID: {
                 return new GuidField(name);
             }
             default:

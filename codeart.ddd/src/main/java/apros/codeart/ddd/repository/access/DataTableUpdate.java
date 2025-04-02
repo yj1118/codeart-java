@@ -10,7 +10,7 @@ import apros.codeart.ddd.QueryLevel;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.i18n.Language;
-import apros.codeart.util.Guid;
+import apros.codeart.util.GUID;
 import apros.codeart.util.ListUtil;
 
 final class DataTableUpdate {
@@ -194,7 +194,7 @@ final class DataTableUpdate {
                 if (current.isPropertyChanged(tip.name())) {
                     var obj = (DomainObject) current.getValue(tip.name());
                     if (tip.category() == DomainPropertyCategory.ValueObject) {
-                        ((IValueObject) obj).setPersistentIdentity(Guid.newGuid());
+                        ((IValueObject) obj).setPersistentIdentity(GUID.newGuid());
                     }
 
                     var id = DataTableUtil.getObjectId(obj);
