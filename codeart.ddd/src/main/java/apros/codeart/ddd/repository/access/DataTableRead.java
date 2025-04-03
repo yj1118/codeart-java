@@ -114,10 +114,20 @@ final class DataTableRead {
         var list = createList(parent, elementType, tip);
 
         var valueName = GeneratedField.PrimitiveValueName;
-        for (var data : datas) {
-            var value = data.get(valueName);
-            list.add(value);
+
+        if (elementType.isEnum()) {
+            for (var data : datas) {
+                var value = data.get(valueName);
+                var e = EnumUtil.fromValue(elementType, value);
+                list.add(e);
+            }
+        } else {
+            for (var data : datas) {
+                var value = data.get(valueName);
+                list.add(value);
+            }
         }
+
         return list;
     }
 

@@ -47,8 +47,8 @@ public final class EnumUtil {
 
     public static Object getValue(Object enumValue) {
         try {
-            var getValeu = _resolveGetValue.apply(enumValue.getClass());
-            return getValeu.invoke(enumValue);
+            var getValue = _resolveGetValue.apply(enumValue.getClass());
+            return getValue.invoke(enumValue);
         } catch (Throwable e) {
             throw propagate(e);
         }
