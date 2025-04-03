@@ -29,6 +29,11 @@ public final class ListUtil {
         return null;
     }
 
+    public static <T> T find(Iterable<T> source, Function<T, Boolean> predicate, T defaultValue) {
+        return Objects.requireNonNullElse(find(source, predicate), defaultValue);
+    }
+
+
     public static <T> Iterable<T> filter(Iterable<T> source, Function<T, Boolean> predicate) {
         ArrayList<T> items = null;
         for (T item : source) {

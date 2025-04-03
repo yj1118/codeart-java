@@ -85,6 +85,12 @@ public class DTObject implements INullProxy, IDTOSchema {
 
 //	#region 值
 
+    private final static Byte ByteZero = Byte.valueOf("0");
+
+    public byte getByteRef() {
+        return this.getValue(StringUtil.empty(), ByteZero, true, DTEValue::getByteRef);
+    }
+
     public Byte getByteRef(String findExp) {
         return this.getValue(findExp, null, true, DTEValue::getByteRef);
     }
@@ -180,6 +186,26 @@ public class DTObject implements INullProxy, IDTOSchema {
         if (entity == null)
             return defaultValue;
         return entity.getBytes();
+    }
+
+
+    public Byte[] getByteRefs(String findExp) {
+        return getByteRefs(findExp, true);
+    }
+
+    public Byte[] getByteRefs(String findExp, boolean throwError) {
+        return getByteRefs(findExp, throwError, null);
+    }
+
+    public Byte[] getByteRefs(String findExp, Byte[] defaultValue) {
+        return getByteRefs(findExp, false, defaultValue);
+    }
+
+    private Byte[] getByteRefs(String findExp, boolean throwError, Byte[] defaultValue) {
+        DTEList entity = find(DTEList.class, findExp, throwError);
+        if (entity == null)
+            return defaultValue;
+        return entity.getByteRefs();
     }
 
 
