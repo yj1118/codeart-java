@@ -7,8 +7,7 @@ import java.util.function.Function;
 import apros.codeart.ddd.virtual.IVirtualObject;
 import apros.codeart.dto.IDTOSchema;
 import apros.codeart.runtime.MethodUtil;
-import apros.codeart.util.LazyIndexer;
-import apros.codeart.util.StringUtil;
+import apros.codeart.util.*;
 import com.google.common.collect.Iterables;
 
 import apros.codeart.ddd.DomainCollection;
@@ -22,8 +21,6 @@ import apros.codeart.dto.DTObject;
 import apros.codeart.i18n.Language;
 import apros.codeart.runtime.Activator;
 import apros.codeart.runtime.TypeUtil;
-import apros.codeart.util.ListUtil;
-import apros.codeart.util.PrimitiveUtil;
 
 public final class DTOMapper {
     private DTOMapper() {
@@ -69,7 +66,7 @@ public final class DTOMapper {
 
 
                 var obj = TypeUtil.as(value, DomainObject.class);
-                if (obj != null) {
+                if (!Common.isNull(obj)) {
                     var childSchema = schema.getChildSchema(memberName);
                     value = toDTO(obj, childSchema); // 对象
                     data.setValue(memberName, value);
@@ -90,7 +87,8 @@ public final class DTOMapper {
                     continue;
                 }
 
-                data.setValue(memberName, value); // 值
+                if (!Common.isNull(value))
+                    data.setValue(memberName, value); // 值
 
             }
             return data;

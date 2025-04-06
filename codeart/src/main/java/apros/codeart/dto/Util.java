@@ -34,6 +34,7 @@ final class Util {
     }
 
     public static boolean getValueCodeIsString(Object value) {
+        if (value == null) return false;
         var valueClass = value.getClass();
         if (valueClass.equals(String.class) || valueClass.equals(Character.class))
             return true;

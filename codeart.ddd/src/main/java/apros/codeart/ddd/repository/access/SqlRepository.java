@@ -8,7 +8,7 @@ import apros.codeart.ddd.repository.DataContext;
 
 public abstract class SqlRepository<TRoot extends IAggregateRoot> extends AbstractRepository<TRoot> {
 
-//	#region 增删改
+    //region 增删改
 
     @Override
     protected void persistAddRoot(TRoot obj) {
@@ -60,7 +60,7 @@ public abstract class SqlRepository<TRoot extends IAggregateRoot> extends Abstra
     }
 
 
-//	#endregion
+    //endregion
 
     @Override
     public IAggregateRoot findRoot(Object id, QueryLevel level) {
