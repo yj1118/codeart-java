@@ -55,7 +55,7 @@ public final class EnumUtil {
     }
 
     //constant是值对应的枚举值
-    private static record EnumValue(byte value, Object constant) {
+    private static record EnumValue(Object value, Object constant) {
     }
 
     private static final Function<Class<?>, List<EnumValue>> _enumValues = LazyIndexer.init((enumType) -> {
@@ -66,7 +66,7 @@ public final class EnumUtil {
                 // 获取枚举常量的 getValue 方法
                 var enumValue = enumType.getMethod("getValue").invoke(enumConstant);
 
-                items.add(new EnumValue((byte) enumValue, enumConstant));
+                items.add(new EnumValue(enumValue, enumConstant));
 
             } catch (Throwable e) {
                 throw propagate(e);
@@ -88,14 +88,20 @@ public final class EnumUtil {
         return v;
     }
 
+    private static boolean numericEquals(Object value1, Object value2) {
+        if (value1 instanceof Number && value2 instanceof Number) {
+            return ((Number) value1).intValue() == ((Number) value2).intValue();
+        }
+        return false;
+    }
+
     /**
      * 通用方法，根据byte值获取任意枚举类型的实例
      */
     public static Object fromValue(Class<?> enumType, Object value) {
 
-        var v = toByte(value);
 
-        var item = ListUtil.find(_enumValues.apply(enumType), (t) -> t.value() == v);
+        var item = ListUtil.find(_enumValues.apply(enumType), (t) -> numericEquals(t.value(), value));
 
         if (item == null)
             throw new IllegalArgumentException("Unknown value: " + value + " for enum " + enumType.getName());
