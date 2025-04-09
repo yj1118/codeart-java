@@ -110,12 +110,7 @@ public class DomainProperty {
     }
 
     boolean isChanged(Object oldValue, Object newValue) {
-        // 属性如果是集合、实体对象（引用对象），那么不用判断值，直接认为是被改变了 todo（该算法是否修复成更高效，更精准，稍后琢磨）
-        if (this.isCollection() || _meta.category() == DomainPropertyCategory.EntityObject)
-            return true;
-
-        // 普通类型就用常规比较
-        return !Objects.equal(oldValue, newValue);
+        return _meta.isChanged(oldValue, newValue);
     }
 
     public UUID id() {

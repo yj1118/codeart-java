@@ -4,9 +4,11 @@ import static apros.codeart.i18n.Language.strings;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.ddd.repository.ScheduledActionType;
 import apros.codeart.runtime.MethodUtil;
 
@@ -501,34 +503,30 @@ public abstract class DomainObject implements IDomainObject, INullProxy, IDTOSer
         return this.meta().getPropertyDefaultValue(this, propertyName);
     }
 
+    public void setValue(String propertyName, Object value) {
+        var property = _meta.findProperty(propertyName);
+        this.setValue(property, value);
+    }
+
+    public void setValue(DomainProperty property, Object value) {
+        this.setValue(property.name(), value);
+    }
+
     /**
      * 该方法虽然是公开的，但是 {@code property} 都是由类内部定义的，所以获取值和设置值只能通过常规的属性操作，无法通过该方法
      *
      * @param property
      * @param value
      */
-    public void setValue(DomainProperty property, Object value) {
+    public void setValue(PropertyMeta property, Object value) {
         var oldValue = this.dataProxy().load(property.name(),
                 () -> this.getPropertyDefaultValue(property.name()));
         boolean isChanged = false;
 
         if (property.isChanged(oldValue, value)) {
             isChanged = true;
-            this.setPropertyChanged(property);
+            this.setPropertyChanged(property.name());
         }
-
-        // if (property.ChangedMode == PropertyChangedMode.Compare)
-        // {
-        // if (this.SetPropertyChanged(property, oldValue, value))
-        // {
-        // isChanged = true;
-        // }
-        // }
-        // else if (property.ChangedMode == PropertyChangedMode.Definite)
-        // {
-        // this.SetPropertyChanged(property);
-        // isChanged = true;
-        // }
 
         if (isChanged) {
 
