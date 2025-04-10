@@ -37,8 +37,12 @@ public final class EnumUtil {
      *
      * @return
      */
-    public static Class<?> getUnderlyingType() {
-        return byte.class;
+    public static Class<?> getUnderlyingType(Class<?> enumType) {
+
+        Object[] constants = enumType.getEnumConstants();
+        if (constants.length == 0) return byte.class;
+
+        return getValue(constants[0]).getClass();
     }
 
     private static final Function<Class<?>, Method> _resolveGetValue = LazyIndexer.init((enumType) -> {

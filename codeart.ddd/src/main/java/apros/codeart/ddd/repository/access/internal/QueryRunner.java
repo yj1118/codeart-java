@@ -231,7 +231,7 @@ public final class QueryRunner {
                     var value = param.get(name);
 
                     if (value instanceof Enum) {
-                        value = (byte) EnumUtil.getValue(value);
+                        value = EnumUtil.getValue(value);
                     } else if (value instanceof DTObject) {
 
                         String jsonString = ((DTObject) value).getCode(false, false);

@@ -113,7 +113,7 @@ final class DataTableUtil {
         }
 
         if (dataType.isEnum()) {
-            dataType = EnumUtil.getUnderlyingType();
+            dataType = EnumUtil.getUnderlyingType(dataType);
         }
 
         DbType dbType = _typeMap.get(dataType);
@@ -169,9 +169,7 @@ final class DataTableUtil {
 
         var list = TypeUtil.as(value, Iterable.class);
         if (elementType.isEnum()) {
-            return ListUtil.map(list, (item) -> {
-                return EnumUtil.getValue(item);
-            });
+            return ListUtil.map(list, EnumUtil::getValue);
         } else {
             return ListUtil.map(list, (item) -> {
                 return (Object) item;
