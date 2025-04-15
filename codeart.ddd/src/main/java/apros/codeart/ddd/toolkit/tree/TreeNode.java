@@ -13,6 +13,8 @@ import apros.codeart.util.ListUtil;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Objects;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 
 /**
@@ -71,7 +73,7 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
 
         if (value.isEmpty()) {
             this.parent(value);
-            this.level(1);
+            this.level(0);  // 根是0级
         } else {
             boolean existChild = ListUtil.contains(value.children(), (c) -> c.equals(value));
 
@@ -306,14 +308,23 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
         if (this.childrenCount() > 0) handleChildrenLevel();
     }
 
-    public DTObject output(String schemaCode) {
+
+    public DTObject output(String schemaCode, Predicate<T> predicate) {
+
+        if (predicate != null && !predicate.test((T) this)) return DTObject.empty();
+
         DTObject data = DTObject.readonly(schemaCode, this);
 
         for (var child : this.children()) {
             var item = child.output(schemaCode);
+            if (item.isEmpty()) continue;
             data.push("children", item);
         }
         return data;
+    }
+
+    public DTObject output(String schemaCode) {
+        return output(schemaCode, null);
     }
 
     /**

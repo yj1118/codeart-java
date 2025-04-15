@@ -83,7 +83,7 @@ public class DTObject implements INullProxy, IDTOSchema {
         _isReadonly = isReadOnly;
     }
 
-//	#region 值
+    //	#region 值
 
     private final static Byte ByteZero = Byte.valueOf("0");
 
@@ -143,7 +143,7 @@ public class DTObject implements INullProxy, IDTOSchema {
         return this.getValue(findExp, null, true, DTEValue::getBooleanRef);
     }
 
-    public Boolean getBooleanRef(String findExp, boolean defaultValue) {
+    public Boolean getBooleanRef(String findExp, Boolean defaultValue) {
         return this.getValue(findExp, defaultValue, false, DTEValue::getBooleanRef);
     }
 
