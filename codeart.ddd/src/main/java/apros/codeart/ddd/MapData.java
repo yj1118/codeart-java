@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import apros.codeart.dto.DTObjects;
 import com.google.common.collect.Iterables;
 
 import apros.codeart.dto.DTObject;
@@ -113,6 +114,14 @@ public class MapData implements Iterable<Map.Entry<String, Object>> {
         DTObject dto = DTObject.editable();
         for (var p : _data.entrySet()) {
             dto.setValue(p.getKey(), p.getValue());
+        }
+        return dto;
+    }
+
+    public static DTObjects asDTO(Iterable<MapData> data) {
+        DTObjects dto = new DTObjects();
+        for (var item : data) {
+            dto.add(item.asDTO());
         }
         return dto;
     }

@@ -191,6 +191,27 @@ public final class StringUtil {
         return ListUtil.<String, String>map(strs, (e) -> StringUtil.trim(e));
     }
 
+
+    /**
+     * 将 byte[] 数组按指定分隔符连接成字符串
+     *
+     * @return 拼接后的字符串，例如 "1,2,3"
+     */
+    public static String join(String separator, byte[] values) {
+        if (values == null || values.length == 0) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < values.length; i++) {
+            sb.append(values[i]);
+            if (i < values.length - 1) {
+                sb.append(separator);
+            }
+        }
+        return sb.toString();
+    }
+
     /**
      * 组成一句话，可以指定分隔符
      *
