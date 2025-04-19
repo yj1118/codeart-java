@@ -1,12 +1,6 @@
 package apros.codeart.ddd.repository.access;
 
-import apros.codeart.ddd.DomainBuffer;
-import apros.codeart.ddd.DomainObject;
-import apros.codeart.ddd.EntityObject;
-import apros.codeart.ddd.IDomainObject;
-import apros.codeart.ddd.IValueObject;
-import apros.codeart.ddd.MapData;
-import apros.codeart.ddd.QueryLevel;
+import apros.codeart.ddd.*;
 import apros.codeart.ddd.metadata.DomainPropertyCategory;
 import apros.codeart.ddd.metadata.PropertyMeta;
 import apros.codeart.i18n.Language;
@@ -257,13 +251,15 @@ final class DataTableUpdate {
             break;
             case DomainPropertyCategory.EntityObjectList: {
                 if (current.isPropertyChanged(tip.name())) {
-                    var targets = (Iterable<IDomainObject>) current.getValue(tip.name());
+                    var targets = (Iterable<IEntityObject>) current.getValue(tip.name());
 
                     // 加载原始数据
                     var rawData = ((DataProxyImpl) current.dataProxy()).originalData();
-                    var raw = (Iterable<IDomainObject>) _self.readMembers(current, tip, null, rawData, QueryLevel.NONE);
+                    var raw = (Iterable<IEntityObject>) _self.readMembers(current, tip, null, rawData, QueryLevel.NONE);
                     // 对比
-                    var diff = ListUtil.transform(raw, targets);
+                    var diff = ListUtil.transform(raw, targets, (s, t) -> {
+                        return s.getIdentity().equals(t.getIdentity());
+                    });
 
                     _self.insertMembers(root, parent, current, diff.adds(), tip);
 

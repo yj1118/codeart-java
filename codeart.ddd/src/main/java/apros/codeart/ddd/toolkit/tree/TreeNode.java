@@ -377,6 +377,11 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
             Repository.update(this.parent());
     }
 
+    public long rootId() {
+        return this.nodeRoot().id();
+    }
+
+
     public TreeNode(long id) {
         super(id);
         this.onConstructed();
