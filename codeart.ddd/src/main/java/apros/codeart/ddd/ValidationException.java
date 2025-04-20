@@ -1,10 +1,8 @@
 package apros.codeart.ddd;
 
-import apros.codeart.UIException;
-
 import java.io.Serial;
 
-public class ValidationException extends UIException {
+public class ValidationException extends BusinessException {
 
     /**
      *

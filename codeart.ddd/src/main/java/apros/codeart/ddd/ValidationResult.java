@@ -23,7 +23,7 @@ public class ValidationResult {
     }
 
     public boolean isSatisfied() {
-        return _errors == null || _errors.size() == 0;
+        return _errors == null || _errors.isEmpty();
     }
 
     public void append(DomainProperty property, String code, String message) {
