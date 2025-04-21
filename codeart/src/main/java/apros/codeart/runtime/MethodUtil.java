@@ -46,7 +46,7 @@ public final class MethodUtil {
      * @return
      */
     private static Iterable<Method> findMethods(Class<?> objCls, String methodName) {
-        Method[] methods = objCls.getDeclaredMethods();
+        Method[] methods = objCls.getMethods();
 
         return ListUtil.filter(methods, (m) -> {
             return m.getName().equalsIgnoreCase(methodName);

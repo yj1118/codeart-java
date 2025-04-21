@@ -12,6 +12,7 @@ import apros.codeart.util.ListUtil;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -181,6 +182,7 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
         // 直接删除
         Repository.delete(obj);
     }
+
 
     public void sort(long[] ids) {
 
@@ -381,6 +383,27 @@ public abstract class TreeNode<T extends TreeNode<T>> extends AggregateRootLong 
         return this.nodeRoot().id();
     }
 
+    public abstract String getLable();
+
+    public String breadcrumb() {
+        LinkedList<String> parts = new LinkedList<>();
+        var p = this;
+        while (!p.isRoot()) {
+            parts.addFirst(p.getLable());
+            p = p.parent();
+        }
+        return String.join(" > ", parts);
+    }
+
+    public Iterable<T> closest() {
+        LinkedList<T> closest = new LinkedList<>();
+        var p = this;
+        while (!p.isRoot()) {
+            closest.addFirst((T) p);
+            p = p.parent();
+        }
+        return closest;
+    }
 
     public TreeNode(long id) {
         super(id);
