@@ -63,7 +63,7 @@ final class DataTableRead {
             var root = model.root();
             var slaveIdName = GeneratedField.SlaveIdName;
 
-            var queryLevel = getQueryAggreateRootLevel(level);
+            var queryLevel = getQueryAggregateRootLevel(level);
             for (var data : datas) {
                 var slaveId = data.get(slaveIdName);
                 var item = (IDomainObject) root.querySingle(slaveId, queryLevel);
@@ -459,17 +459,19 @@ final class DataTableRead {
 
 //	#endregion
 
-    private static QueryLevel getQueryAggreateRootLevel(QueryLevel masterLevel) {
+    private static QueryLevel getQueryAggregateRootLevel(QueryLevel masterLevel) {
         // 除了镜像外，通过属性读取外部根，我们都是无锁的查询方式
         return masterLevel == QueryLevel.MIRRORING ? QueryLevel.MIRRORING : QueryLevel.NONE;
     }
 
-    /// <summary>
-    /// 获得子对象的数据
-    /// </summary>
-    /// <param name="name"></param>
-    /// <param name="value"></param>
-    /// <returns></returns>
+
+    /**
+     * 获得子对象的数据
+     *
+     * @param data
+     * @param tip
+     * @return
+     */
     private MapData getObjectData(MapData data, PropertyMeta tip) {
         // 以前缀来最大化收集，因为会出现类似Good_Unit_Name 这种字段，不是默认字段，但是也要收集，是通过inner good.unit的语法来的
         var prefix = String.format("%s_", tip.name());
@@ -523,7 +525,8 @@ final class DataTableRead {
     private Object readAggregateRoot(PropertyMeta tip, MapData data, QueryLevel level) {
         var model = DataModelLoader.get((Class<? extends IAggregateRoot>) tip.monotype());
         var item = getObjectData(data, tip);
-        if (item != null) {
+        if (item != null &&
+                item.containsKey(EntityObject.IdPropertyName)) {  // 追加的item.containsKey(EntityObject.IdPropertyName)判断很重要，有可能因为查询条件导致多出的数据，不能作为完整对象输出
             MapData entry = (MapData) item;
             return model.root().createObject(tip.monotype(), entry, QueryLevel.NONE); // 从数据中直接加载的根对象信息，一定是不带锁的
         }
@@ -532,7 +535,7 @@ final class DataTableRead {
 
         Object id = data.get(dataKey);
         if (id != null) {
-            var queryLevel = getQueryAggreateRootLevel(level);
+            var queryLevel = getQueryAggregateRootLevel(level);
             return model.root().querySingle(id, queryLevel);
         }
         return null;

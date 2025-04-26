@@ -211,6 +211,18 @@ public final class ListUtil {
         return array;
     }
 
+    public static long[] asLongs(Iterable<Long> source) {
+        long[] array = new long[Iterables.size(source)];
+
+        var index = 0;
+        for (var s : source) {
+            array[index] = s;
+            index++;
+        }
+
+        return array;
+    }
+
     public static <T> List<T> asReadonly(Iterable<T> source) {
         return ImmutableList.copyOf(source);
     }
