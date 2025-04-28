@@ -228,6 +228,25 @@ public class DTObject implements INullProxy, IDTOSchema {
         return entity.getLongs();
     }
 
+    public UUID[] getUUIDs(String findExp) {
+        return getUUIDs(findExp, true);
+    }
+
+    public UUID[] getUUIDs(String findExp, boolean throwError) {
+        return getUUIDs(findExp, throwError, null);
+    }
+
+    public UUID[] getUUIDs(String findExp, UUID[] defaultValue) {
+        return getUUIDs(findExp, false, defaultValue);
+    }
+
+    private UUID[] getUUIDs(String findExp, boolean throwError, UUID[] defaultValue) {
+        DTEList entity = find(DTEList.class, findExp, throwError);
+        if (entity == null)
+            return defaultValue;
+        return entity.getUUIDs();
+    }
+
     private Object extractValueRef(DTEntity entity) {
         switch (entity.getType()) {
             case DTEntityType.VALUE: {
@@ -463,6 +482,11 @@ public class DTObject implements INullProxy, IDTOSchema {
 
     public UUID getUUID(String findExp) {
         String uuid = getString(findExp);
+        return UUID.fromString(uuid);
+    }
+
+    public UUID getUUID() {
+        String uuid = getString();
         return UUID.fromString(uuid);
     }
 

@@ -54,6 +54,10 @@ public class DTObjects implements Iterable<DTObject> {
         _list.remove(index);
     }
 
+    public List<DTObject> subList(int fromIndex, int toIndex) {
+        return _list.subList(fromIndex, toIndex);
+    }
+
     /**
      * 将数组转为一个对象，数组作为对象的成员
      *

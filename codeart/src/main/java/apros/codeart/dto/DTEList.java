@@ -4,12 +4,7 @@ import static apros.codeart.i18n.Language.strings;
 import static apros.codeart.util.StringUtil.isNullOrEmpty;
 import static apros.codeart.util.StringUtil.removeLast;
 
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -338,6 +333,14 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
         long[] values = new long[_items.size()];
         for (int i = 0; i < values.length; i++) {
             values[i] = _items.get(i).getLong();
+        }
+        return values;
+    }
+
+    public UUID[] getUUIDs() {
+        UUID[] values = new UUID[_items.size()];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = _items.get(i).getUUID();
         }
         return values;
     }
