@@ -23,6 +23,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 import apros.codeart.io.IOUtil;
+import apros.codeart.runtime.EnumUtil;
 import org.apache.logging.log4j.util.Strings;
 
 import com.google.common.collect.Iterables;
@@ -360,6 +361,20 @@ public class DTObject implements INullProxy, IDTOSchema {
     public byte getByte() {
         return getByte(StringUtil.empty(), (byte) 0, true);
     }
+
+    public <E extends Enum<E>> E getEnum(Class<E> enumType, String findExp) {
+        return getEnum(enumType, findExp, null, true);
+    }
+
+    public <E extends Enum<E>> E getEnum(Class<E> enumType, String findExp, E defaultValue) {
+        return getEnum(enumType, findExp, defaultValue, false);
+    }
+
+    private <E extends Enum<E>> E getEnum(Class<E> enumType, String findExp, E defaultValue, boolean throwError) {
+        DTEValue entity = find(DTEValue.class, findExp, throwError);
+        return entity == null ? defaultValue : entity.getEnum(enumType);
+    }
+
 
     public char getChar(String findExp, char defaultValue) {
         return getChar(findExp, defaultValue, false);

@@ -69,6 +69,10 @@ public class Page<T> {
         _dataCount = dataCount;
     }
 
+    public Page(Iterable<T> objects) {
+        this(0, Iterables.size(objects), objects, Iterables.size(objects));
+    }
+
     public DTObject toDTO(String rowSchemaCode, Function<T, DTObject> map) {
         var result = DTObject.editable();
         result.setInt("dataCount", this.dataCount());

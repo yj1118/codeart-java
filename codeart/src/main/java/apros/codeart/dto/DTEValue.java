@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.UUID;
 import java.util.function.Function;
 
+import apros.codeart.runtime.EnumUtil;
 import apros.codeart.runtime.TypeUtil;
 import apros.codeart.util.ISO8601;
 import apros.codeart.util.StringUtil;
@@ -125,6 +126,15 @@ public class DTEValue extends DTEntity {
         if (_value != null)
             return (byte) _value;
         return Byte.parseByte(_valueCode);
+    }
+
+    public <E extends Enum<E>> E getEnum(Class<E> enumType) {
+        if (_value != null)
+            return enumType.cast(_value);
+        var underlyingType = EnumUtil.getUnderlyingType(enumType);
+        if (underlyingType == Integer.class || underlyingType == int.class)
+            return (E) EnumUtil.fromValue(enumType, this.getInt());
+        return (E) EnumUtil.fromValue(enumType, this.getByte());
     }
 
     public short getShort() {
