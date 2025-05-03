@@ -424,7 +424,7 @@ public class DTObject implements INullProxy, IDTOSchema {
 
     private int getInt(String findExp, int defaultValue, boolean throwError) {
         DTEValue entity = find(DTEValue.class, findExp, throwError);
-        return entity == null ? defaultValue : entity.getInt();
+        return entity == null || entity.getString().isEmpty() ? defaultValue : entity.getInt();
     }
 
     public long getLong(String findExp, long defaultValue) {
