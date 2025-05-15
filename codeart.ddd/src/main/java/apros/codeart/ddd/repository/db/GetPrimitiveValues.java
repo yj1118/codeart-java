@@ -32,13 +32,13 @@ public class GetPrimitiveValues extends GetPrimitiveValuesQB {
             var masterId = GeneratedField.MasterIdName;
 
             StringUtil.appendMessageFormat(sql,
-                    "select {1} from {2} where {2}.{0} = @{0} and {2}.{3}=@{5} order by {4} asc",
+                    "select {1} from {2} where {2}.{0} = @{6} and {2}.{3}=@{5} order by {4} asc",
                     SqlStatement.qualifier(rootId),
                     SqlStatement.qualifier(GeneratedField.PrimitiveValueName),
                     SqlStatement.qualifier(middle.name()),
                     SqlStatement.qualifier(masterId),
                     SqlStatement.qualifier(GeneratedField.OrderIndexName),
-                    masterId);
+                    masterId, rootId);
         }
         return sql.toString();
     }
