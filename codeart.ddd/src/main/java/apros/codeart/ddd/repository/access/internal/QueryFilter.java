@@ -476,7 +476,12 @@ final class QueryFilter {
                 case Types.OTHER: { // PostgreSQL JSONB 类型
                     String columnTypeName = rsmd.getColumnTypeName(i);
 
-                    if ("jsonb".equalsIgnoreCase(columnTypeName) || "json".equalsIgnoreCase(columnTypeName)) {
+                    if ("uuid".equalsIgnoreCase(columnTypeName)) {
+                        String name = rsmd.getColumnName(i);
+                        String uuidValue = rs.getString(i);
+                        var uuid = UUID.fromString(uuidValue);
+                        dto.setValue(name, uuid);
+                    } else if ("jsonb".equalsIgnoreCase(columnTypeName) || "json".equalsIgnoreCase(columnTypeName)) {
                         String jsonbValue = rs.getString(i);
                         if (rs.wasNull())
                             break;
