@@ -92,6 +92,18 @@ public class MapData implements Iterable<Map.Entry<String, Object>> {
         _data.put(name, value);
     }
 
+    public void tryPut(String name, long[] value) {
+        if (value == null || value.length == 0)
+            return;
+        _data.put(name, value);
+    }
+
+    public void tryPut(String name, UUID[] value) {
+        if (value == null || value.length == 0)
+            return;
+        _data.put(name, value);
+    }
+
     public void tryPut(String name, UUID value) {
         if (GUID.isNullOrEmpty(value))
             return;
