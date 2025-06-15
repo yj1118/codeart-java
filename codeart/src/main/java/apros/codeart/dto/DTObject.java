@@ -1100,6 +1100,16 @@ public class DTObject implements INullProxy, IDTOSchema {
         }
     }
 
+    public void pushLongs(String findExp, Iterable<Long> values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            DTObject member = DTObject.editable();
+            member.setLong(value);
+            entity.push(member);
+        }
+    }
+
     public void pushFloat(String findExp, float value) {
         DTObject member = DTObject.editable();
         member.setFloat(value);

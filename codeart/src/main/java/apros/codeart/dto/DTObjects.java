@@ -70,6 +70,10 @@ public class DTObjects implements Iterable<DTObject> {
         return obj;
     }
 
+    public DTObject[] toArray() {
+        return this._list.toArray(new DTObject[_list.size()]);
+    }
+
 //    //region 自定义方法
 //
 //    public DTObject[] ToArray()

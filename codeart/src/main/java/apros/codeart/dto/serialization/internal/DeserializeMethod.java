@@ -7,7 +7,7 @@ import java.lang.reflect.Method;
 import apros.codeart.dto.IDTOReader;
 
 class DeserializeMethod {
-    private Method _method;
+    private final Method _method;
 
     public DeserializeMethod(Method method) {
         _method = method;
