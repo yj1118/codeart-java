@@ -104,6 +104,10 @@ public final class EnumUtil {
      */
     public static Object fromValue(Class<?> enumType, Object value) {
 
+        // 如果 value 已经是 enumType 的实例，直接返回
+        if (enumType.isInstance(value)) {
+            return value;
+        }
 
         var item = ListUtil.find(_enumValues.apply(enumType), (t) -> numericEquals(t.value(), value));
 
