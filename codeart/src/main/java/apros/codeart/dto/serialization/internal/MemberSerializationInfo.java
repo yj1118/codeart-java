@@ -1,6 +1,7 @@
 package apros.codeart.dto.serialization.internal;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Map;
 
 import apros.codeart.bytecode.LogicOperator;
@@ -15,9 +16,18 @@ public class MemberSerializationInfo {
 //	#region 静态构造
 
     private static Class<?> getTargetClass(Class<?> classType, Field field) {
-        if (classType != null)
+        if (classType != null) {
             return classType;
-        return field.getType();
+        }
+
+        Class<?> fieldType = field.getType();
+
+        if (Iterable.class.isAssignableFrom(fieldType)) {
+            // 将抽象集合，映射
+            return ArrayList.class; // 将所有 Iterable 类型映射为 ArrayList
+        }
+
+        return fieldType;
     }
 
     private static MemberSerializationInfo createByCollection(Class<?> targetClass, Field field,

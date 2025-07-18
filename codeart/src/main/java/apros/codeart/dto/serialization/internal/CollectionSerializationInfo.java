@@ -78,13 +78,11 @@ class CollectionSerializationInfo extends MemberSerializationInfo {
             g.when(() -> {
                 g.load(count);
                 g.load(0);
-                return LogicOperator.AreEqual;
+                return LogicOperator.LessThan;
             }, () -> {
-//数量小于1
-//list = new List<T>();
-//				var elementType = this.TargetType.ResolveElementType();
+//数量小于1，直接返回null，只有等于0或者大于0才创建
                 g.assign(list, () -> {
-                    g.newObject(targetClass);
+                    g.loadNull();
                 });
             }, () -> {
 //list = new List<T>();

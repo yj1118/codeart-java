@@ -303,7 +303,7 @@ public class MethodGenerator implements AutoCloseable {
     }
 
     public MethodGenerator assignField(Runnable loadOwner, String fieldName, Runnable loadValue) {
-
+        
         try {
             // 先加载变量
             loadOwner.run();
@@ -311,6 +311,7 @@ public class MethodGenerator implements AutoCloseable {
             var objectType = _evalStack.peek().getValueType().type();
 
             loadValue.run();
+
 
             var accessor = FieldUtil.getFieldSetter(objectType, fieldName);
             if (accessor.isField()) {
@@ -556,6 +557,10 @@ public class MethodGenerator implements AutoCloseable {
             var argClasses = getArgClasses(1); // 栈顶第一个值是this，不作为参数，所以偏移量为1
 
             Method method = MethodUtil.resolveLike(cls, methodName, argClasses);
+
+            if (method == null)
+                throw new IllegalStateException("not found method: " + cls.getSimpleName() + "." + methodName);
+
             var isInterface = cls.isInterface();
             var opcode = isInterface ? Opcodes.INVOKEINTERFACE : Opcodes.INVOKEVIRTUAL;
 
