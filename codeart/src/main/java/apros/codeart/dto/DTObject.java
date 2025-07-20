@@ -878,6 +878,12 @@ public class DTObject implements INullProxy, IDTOSchema {
         return find(findExp, false) != null;
     }
 
+    public boolean isList(String findExp) {
+        var entity = find(findExp, false);
+        if (entity == null) return false;
+        return entity.getType() == DTEntityType.LIST;
+    }
+
     public DTEntity find(String findExp, boolean throwError) {
         var query = QueryExpression.create(findExp);
 
@@ -1831,6 +1837,11 @@ public class DTObject implements INullProxy, IDTOSchema {
     public boolean isNull() {
         return this.isEmpty();
     }
+
+    private final static String SuccessCode = "{success:true}";
+
+    public static final DTObject SUCCESS = DTObject.readonly(SuccessCode);
+
 
 //	#endregion
 
