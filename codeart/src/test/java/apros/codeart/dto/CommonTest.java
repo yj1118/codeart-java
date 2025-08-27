@@ -203,4 +203,13 @@ class CommonTest {
         assertEquals("[::ffff:192.168.0.13]:59714", ds.get(0).getString());
     }
 
+
+    @Test
+    public void createMulArray() {
+        DTObject dto = DTObject.readonly("{ \"setupWindowsRel\": [[0.1, 0.2],[0.2, 0.3]]}");
+
+        assertEquals("{\"setupWindowsRel\":[[0.1,0.2],[0.2,0.3]]}", dto.getCode(false, false));
+        assertEquals(2, dto.getList("setupWindowsRel").size());
+    }
+
 }

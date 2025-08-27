@@ -187,7 +187,7 @@ public class JSON {
             sb.append(":");
             writeValue(sb, entry.getValue());
             sb.append(",");
-            if (hasItems == false)
+            if (!hasItems)
                 hasItems = true;
         }
         if (hasItems)
@@ -201,7 +201,7 @@ public class JSON {
         for (var item : value) {
             writeValue(sb, item);
             sb.append(",");
-            if (hasItems == false)
+            if (!hasItems)
                 hasItems = true;
         }
 

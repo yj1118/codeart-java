@@ -275,6 +275,14 @@ public final class DTEObject extends DTEntity {
         return false;
     }
 
+    public boolean isArrayValue() {
+        if (isNullOrEmpty(this.getName()) && _members.size() == 1) {
+            var member = as(_members.get(0), DTEList.class);
+            return member != null && isNullOrEmpty(member.getName());
+        }
+        return false;
+    }
+
     private void fillCodeImpl(StringBuilder code, boolean sequential, BiConsumer<StringBuilder, String> outputName,
                               BiConsumer<StringBuilder, DTEntity> fillMemberCode) {
         String name = this.getName();
@@ -285,6 +293,8 @@ public final class DTEObject extends DTEntity {
             code.append(":");
 
         if (this.isSingleValue()) {
+            fillMemberCode.accept(code, _members.get(0));
+        } else if (this.isArrayValue()) {
             fillMemberCode.accept(code, _members.get(0));
         } else {
             code.append("{");

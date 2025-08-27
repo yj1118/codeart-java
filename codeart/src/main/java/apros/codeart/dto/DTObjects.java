@@ -5,6 +5,7 @@ import apros.codeart.util.StringUtil;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -24,6 +25,10 @@ public class DTObjects implements Iterable<DTObject> {
 
     public DTObjects(List<DTObject> items) {
         _list = items;
+    }
+
+    public DTObjects(DTObject[] items) {
+        this(Arrays.asList(items));
     }
 
     public void add(DTObject item) {

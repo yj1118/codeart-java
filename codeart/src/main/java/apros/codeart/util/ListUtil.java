@@ -297,6 +297,14 @@ public final class ListUtil {
         }
     }
 
+    public static <T> void insertAfter(List<T> list, T target, T newElement) {
+        int index = list.indexOf(target);
+        if (index == -1) {
+            throw new IllegalArgumentException("Target element not found in list");
+        }
+        list.add(index + 1, newElement);
+    }
+
     public static <T> LinkedList<T> reverse(LinkedList<T> source) {
         LinkedList<T> temp = new LinkedList<>(source);
         Collections.reverse(temp);
