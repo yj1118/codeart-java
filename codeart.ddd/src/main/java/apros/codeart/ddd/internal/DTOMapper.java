@@ -2,6 +2,9 @@ package apros.codeart.ddd.internal;
 
 import static apros.codeart.runtime.Util.propagate;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 import apros.codeart.ddd.virtual.IVirtualObject;
@@ -84,6 +87,20 @@ public final class DTOMapper {
 
                         return DTObject.value(item);
                     });
+                    continue;
+                }
+
+                // 再处理配列
+                if (value != null && value.getClass().isArray()) {
+                    var childSchema = schema.getChildSchema(memberName);
+
+                    int length = Array.getLength(value);
+                    for (int i = 0; i < length; i++) {
+                        Object item = Array.get(value, i); // 配列要素取得
+                        var o = TypeUtil.as(item, DomainObject.class);
+                        DTObject dto = o != null ? toDTO(o, childSchema) : DTObject.value(item);
+                        data.push(memberName, dto);
+                    }
                     continue;
                 }
 

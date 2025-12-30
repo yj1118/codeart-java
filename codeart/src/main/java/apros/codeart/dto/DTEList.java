@@ -337,6 +337,22 @@ public final class DTEList extends DTEntity implements Iterable<DTObject> {
         return values;
     }
 
+    public float[] getFloats() {
+        float[] values = new float[_items.size()];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = _items.get(i).getFloat();
+        }
+        return values;
+    }
+
+    public double[] getDoubles() {
+        double[] values = new double[_items.size()];
+        for (int i = 0; i < values.length; i++) {
+            values[i] = _items.get(i).getDouble();
+        }
+        return values;
+    }
+
     public UUID[] getUUIDs() {
         UUID[] values = new UUID[_items.size()];
         for (int i = 0; i < values.length; i++) {

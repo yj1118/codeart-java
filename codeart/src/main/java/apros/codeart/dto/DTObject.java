@@ -760,8 +760,18 @@ public class DTObject implements INullProxy, IDTOSchema {
         }
     }
 
+    public void setStrings(String findExp, String[] values) {
+        this.clearList(findExp);
+        this.pushStrings(findExp, values);
+    }
+
     public void pushStrings(String findExp, Iterable<String> values) {
         pushValues(findExp, values);
+    }
+
+    public void setStrings(String findExp, Iterable<String> values) {
+        this.clearList(findExp);
+        this.pushStrings(findExp, values);
     }
 
     private void pushValues(String findExp, Iterable<?> values) {
@@ -776,6 +786,16 @@ public class DTObject implements INullProxy, IDTOSchema {
         }
     }
 
+    public void remove(String findExp) {
+        var targets = this.finds(findExp, false);
+        for (var target : targets) {
+            var parent = target.getParent();
+            if (parent == null)
+                throw new IllegalArgumentException(strings("apros.codeart", "UnknownException"));
+            parent.removeMember(target);
+        }
+    }
+
     /**
      * 该方法会将obj克隆到当前dto中，obj的后续操作和当前dto的后续操作互不相关
      *
@@ -783,8 +803,10 @@ public class DTObject implements INullProxy, IDTOSchema {
      * @param obj
      */
     public void setObject(String findExp, DTObject obj) {
-        if (obj == null || obj.isEmpty())
+        if (obj == null || obj.isEmpty()) {
+            remove(findExp);
             return;
+        }
         validateReadOnly();
 
         if (StringUtil.isNullOrEmpty(findExp)) {
@@ -878,6 +900,10 @@ public class DTObject implements INullProxy, IDTOSchema {
         return find(findExp, false) != null;
     }
 
+    public boolean contains(String findExp) {
+        return this.exist(findExp);
+    }
+
     public boolean isList(String findExp) {
         var entity = find(findExp, false);
         if (entity == null) return false;
@@ -956,6 +982,28 @@ public class DTObject implements INullProxy, IDTOSchema {
         if (entity == null)
             return null;
         return entity.getInts();
+    }
+
+    public float[] getFloats(String findExp, boolean throwError) {
+        DTEList entity = find(DTEList.class, findExp, throwError);
+        if (entity == null)
+            return null;
+        return entity.getFloats();
+    }
+
+    public float[] getFloats(String findExp) {
+        return getFloats(findExp, true);
+    }
+
+    public double[] getDoubles(String findExp, boolean throwError) {
+        DTEList entity = find(DTEList.class, findExp, throwError);
+        if (entity == null)
+            return null;
+        return entity.getDoubles();
+    }
+
+    public double[] getDoubles(String findExp) {
+        return getDoubles(findExp, true);
     }
 
 //	private Iterable<Long> getLongs(String findExp, Long itemDefaultValue, boolean throwError) {
@@ -1058,6 +1106,11 @@ public class DTObject implements INullProxy, IDTOSchema {
         }
     }
 
+    public void setBytes(String findExp, byte[] values) {
+        this.clearList(findExp);
+        this.pushBytes(findExp, values);
+    }
+
     public void clearList(String findExp) {
         validateReadOnly();
         DTEList entity = getOrCreateList(findExp);
@@ -1122,6 +1175,16 @@ public class DTObject implements INullProxy, IDTOSchema {
         }
     }
 
+    public void setLongs(String findExp, Iterable<Long> values) {
+        this.clearList(findExp);
+        this.pushLongs(findExp, values);
+    }
+
+    public void setLongs(String findExp, long[] values) {
+        this.clearList(findExp);
+        this.pushLongs(findExp, values);
+    }
+
     public void pushFloat(String findExp, float value) {
         DTObject member = DTObject.editable();
         member.setFloat(value);
@@ -1138,10 +1201,20 @@ public class DTObject implements INullProxy, IDTOSchema {
         }
     }
 
+    public void setFloats(String findExp, float[] values) {
+        clearList(findExp);
+        pushFloats(findExp, values);
+    }
+
     public void pushDouble(String findExp, double value) {
         DTObject member = DTObject.editable();
         member.setDouble(value);
         push(findExp, member);
+    }
+
+    public <T> void setObjects(String findExp, String rowSchemaCode, Iterable<T> objs) {
+        this.clearList(findExp);
+        this.pushObjects(findExp, rowSchemaCode, objs);
     }
 
     public <T> void pushObjects(String findExp, String rowSchemaCode, Iterable<T> objs) {
@@ -1149,7 +1222,25 @@ public class DTObject implements INullProxy, IDTOSchema {
         this.pushObjects(findExp, data.getList("rows"));
     }
 
+    public void setObjects(String findExp, Iterable<DTObject> values) {
+        this.clearList(findExp);
+        this.pushObjects(findExp, values);
+    }
+
+    public void setObjects(String findExp, DTObject[] values) {
+        this.clearList(findExp);
+        this.pushObjects(findExp, values);
+    }
+
     public void pushObjects(String findExp, Iterable<DTObject> values) {
+        validateReadOnly();
+        DTEList entity = getOrCreateList(findExp);
+        for (var value : values) {
+            entity.push(value);
+        }
+    }
+
+    public void pushObjects(String findExp, DTObject[] values) {
         validateReadOnly();
         DTEList entity = getOrCreateList(findExp);
         for (var value : values) {

@@ -90,6 +90,9 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, IDTO
         if (emptyableType.equals(EmptyableLong.class))
             return EmptyableLong.Empty;
 
+        if (emptyableType.equals(EmptyableFloat.class))
+            return EmptyableFloat.Empty;
+
         if (emptyableType.equals(EmptyableZonedDateTime.class))
             return EmptyableZonedDateTime.Empty;
 
@@ -110,6 +113,9 @@ public abstract class Emptyable<T> implements IEmptyable, IDTOSerializable, IDTO
 
         if (emptyableType.equals(EmptyableLong.class))
             return EmptyableLong.ValueType;
+
+        if (emptyableType.equals(EmptyableFloat.class))
+            return EmptyableFloat.ValueType;
 
         if (emptyableType.equals(EmptyableZonedDateTime.class))
             return EmptyableZonedDateTime.ValueType;

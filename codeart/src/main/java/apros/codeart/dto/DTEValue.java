@@ -56,6 +56,7 @@ public class DTEValue extends DTEntity {
 
     Long getLongRef() {
         if (_value == null) {
+            if (_valueCode.isEmpty()) return null;
             _value = JSON.getLongRef(_valueCode);
         }
         return (Long) _value;
@@ -63,6 +64,7 @@ public class DTEValue extends DTEntity {
 
     Integer getIntRef() {
         if (_value == null) {
+            if (_valueCode.isEmpty()) return null;
             _value = JSON.getIntRef(_valueCode);
         }
         return (Integer) _value;
@@ -70,6 +72,7 @@ public class DTEValue extends DTEntity {
 
     Boolean getBooleanRef() {
         if (_value == null) {
+            if (_valueCode.isEmpty()) return null;
             _value = JSON.getBooleanRef(_valueCode);
         }
         return (Boolean) _value;
@@ -77,6 +80,7 @@ public class DTEValue extends DTEntity {
 
     Byte getByteRef() {
         if (_value == null) {
+            if (_valueCode.isEmpty()) return null;
             _value = JSON.getByteRef(_valueCode);
         }
         return (Byte) _value;
@@ -84,6 +88,7 @@ public class DTEValue extends DTEntity {
 
     Short getShortRef() {
         if (_value == null) {
+            if (_valueCode.isEmpty()) return null;
             _value = JSON.getShortRef(_valueCode);
         }
         return (Short) _value;
@@ -91,6 +96,7 @@ public class DTEValue extends DTEntity {
 
     Float getFloatRef() {
         if (_value == null) {
+            if (_valueCode.isEmpty()) return null;
             _value = JSON.getFloatRef(_valueCode);
         }
         return (Float) _value;
@@ -98,6 +104,7 @@ public class DTEValue extends DTEntity {
 
     Double getDoubleRef() {
         if (_value == null) {
+            if (_valueCode.isEmpty()) return null;
             _value = JSON.getDoubleRef(_valueCode);
         }
         return (Double) _value;
@@ -105,6 +112,7 @@ public class DTEValue extends DTEntity {
 
     Character getCharRef() {
         if (_value == null) {
+            if (_valueCode.isEmpty()) return null;
             _value = JSON.getCharRef(_valueCode);
         }
         return (Character) _value;
@@ -192,8 +200,12 @@ public class DTEValue extends DTEntity {
     }
 
     public String getString() {
-        if (_value != null)
-            return (String) _value;
+        if (_value != null) {
+            if (_value instanceof String s) {
+                return s; // 已经是 String，直接返回
+            }
+            return _value.toString();
+        }
         return _valueCode;
     }
 

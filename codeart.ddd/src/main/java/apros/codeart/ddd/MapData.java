@@ -116,6 +116,12 @@ public class MapData implements Iterable<Map.Entry<String, Object>> {
         _data.put(name, value);
     }
 
+    public void tryPut(String name, Byte value) {
+        if (value == null)
+            return;
+        _data.put(name, value);
+    }
+
     public void tryPut(String name, Iterable<?> value) {
         if (value == null || Iterables.size(value) == 0)
             return;

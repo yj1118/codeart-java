@@ -122,12 +122,36 @@ public final class ListUtil {
         return list;
     }
 
+    public static <R> ArrayList<R> map(long[] source, Function<Long, R> selector) {
+        ArrayList<R> list = new ArrayList<R>(source.length);
+        for (long item : source) {
+            list.add(selector.apply(item));
+        }
+        return list;
+    }
+
     public static ArrayList<Long> asList(long[] source) {
         Long[] longObjects = Arrays.stream(source)
                 .boxed() // box the primitive long to Long
                 .toArray(Long[]::new);
 
         return asList(longObjects);
+    }
+
+    public static ArrayList<Float> asList(float[] source) {
+        ArrayList<Float> items = new ArrayList<>(source.length);
+        for (float item : source) {
+            items.add(item);
+        }
+        return items;
+    }
+
+    public static ArrayList<Double> asList(double[] source) {
+        ArrayList<Double> items = new ArrayList<>(source.length);
+        for (double item : source) {
+            items.add(item);
+        }
+        return items;
     }
 
     public static <T> ArrayList<T> asList(T[] source) {
@@ -213,6 +237,18 @@ public final class ListUtil {
 
     public static long[] asLongs(Iterable<Long> source) {
         long[] array = new long[Iterables.size(source)];
+
+        var index = 0;
+        for (var s : source) {
+            array[index] = s;
+            index++;
+        }
+
+        return array;
+    }
+
+    public static byte[] asBytes(Iterable<Byte> source) {
+        byte[] array = new byte[Iterables.size(source)];
 
         var index = 0;
         for (var s : source) {
